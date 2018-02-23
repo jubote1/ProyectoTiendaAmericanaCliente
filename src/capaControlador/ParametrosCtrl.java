@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import capaDAOPixelpos.TiendaDAO;
-import capaDAOPixelpos.GeneralDAO;
-import capaDAOPixelpos.TiempoPedidoDAO;
+import capaDAO.GeneralDAO;
+import capaDAO.TiempoPedidoDAO;
+import capaDAO.TiendaDAO;
 import capaModelo.Correo;
 import capaModelo.Tienda;
 import utilidades.ControladorEnvioCorreo;

@@ -1,4 +1,4 @@
-package capaDAOPixelpos;
+package capaDAO;
 import capaModelo.Usuario;
 
 import capaConexion.ConexionBaseDatos;

@@ -2,9 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="C:/Users/JuanDavid/Desktop/CURSO DE JAVA/workspace10am/ProyectoTiendaAmericanaCliente/javax.mail.jar"/>
-	<classpathentry kind="lib" path="C:/Users/JuanDavid/Desktop/CURSO DE JAVA/workspace10am/ProyectoTiendaAmericanaCliente/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="C:/Users/JuanDavid/Desktop/CURSO DE JAVA/workspace10am/ProyectoTiendaAmericanaCliente/mysql-connector-java-5.0.8-bin.jar"/>
-	<classpathentry kind="lib" path="C:/Users/JuanDavid/Desktop/CURSO DE JAVA/workspace10am/ProyectoTiendaAmericanaCliente/sajdbc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/JuanDavid/POSGit/ProyectoTiendaAmericanaCliente/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="C:/Users/JuanDavid/POSGit/ProyectoTiendaAmericanaCliente/mysql-connector-java-5.0.8-bin.jar"/>
+	<classpathentry kind="lib" path="C:/Users/JuanDavid/POSGit/ProyectoTiendaAmericanaCliente/sajdbc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/JuanDavid/POSGit/ProyectoTiendaAmericanaCliente/javax.mail.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

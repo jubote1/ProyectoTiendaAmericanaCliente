@@ -10,7 +10,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import capaDAOPixelpos.PedidoPixelDAO;
+import capaDAO.PedidoPixelDAO;
 import capaModelo.Cliente;
 import capaModelo.DetallePedidoPixel;
 import capaModelo.EstadoPedidoTienda;

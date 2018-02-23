@@ -1,4 +1,4 @@
-package capaDAOPixelpos;
+package capaDAO;
 
 import java.sql.Connection;
 

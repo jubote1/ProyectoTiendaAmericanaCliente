@@ -5,8 +5,8 @@ import capaModelo.Usuario;
 
 import java.util.ArrayList;
 
-import capaDAOPixelpos.MenuAgrupadorDAO;
-import capaDAOPixelpos.UsuarioDAO;
+import capaDAO.MenuAgrupadorDAO;
+import capaDAO.UsuarioDAO;
 
 /**
  * Clase AutenticacionCtrl tiene como objetivo hacer las veces de Controlador para la autenticación de usuarios
@@ -60,6 +60,24 @@ public class AutenticacionCtrl {
 	{
 		ArrayList<Object>  menus = MenuAgrupadorDAO.obtenerMenusAgrupador();
 		return(menus);
+	}
+	
+	public int insertarMenuAgrupador(MenuAgrupador menu)
+	{
+		int idMenu = MenuAgrupadorDAO.insertarMenuAgrupador(menu);
+		return(idMenu);
+	}
+	
+	public boolean editarMenuAgrupador(MenuAgrupador menu)
+	{
+		boolean respuesta  = MenuAgrupadorDAO.EditarMenuAgrupador(menu);
+		return(respuesta);
+	}
+	
+	public boolean eliminarMenuAgrupador(int idMenu)
+	{
+		boolean respuesta = MenuAgrupadorDAO.eliminarMenuAgrupador(idMenu);
+		return(respuesta);
 	}
 
 }
