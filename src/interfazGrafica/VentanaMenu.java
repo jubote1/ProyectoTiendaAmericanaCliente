@@ -3,6 +3,7 @@ package interfazGrafica;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -51,9 +52,14 @@ public class VentanaMenu extends JFrame {
 		setUndecorated(true);
 		
 		tableMenu = new JTable();
+		tableMenu.setDefaultRenderer(Object.class, new RenderVentanaMenu());
+		
+		JButton btn1 = new JButton("Alitas");
+		JButton btn2 = new JButton("Nugetts");
+		
 		tableMenu.setModel(new DefaultTableModel(
 			new Object[][] {
-				{null, null, null, null, null, null},
+				{null, null, null, null, btn1, btn2},
 				{null, null, null, null, null, null},
 				{null, null, null, null, null, null},
 				{null, null, null, null, null, null},
@@ -67,6 +73,7 @@ public class VentanaMenu extends JFrame {
 		tableMenu.setBounds(289, 11, 944, 483);
 		contentPane.add(tableMenu);
 		
+			
 		
 	}
 }
