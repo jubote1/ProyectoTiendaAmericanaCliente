@@ -69,7 +69,13 @@ public class VentanaMenu extends JFrame {
 			new String[] {
 				"New column", "New column", "New column", "New column", "New column", "New column"
 			}
-		));
+		))
+//		{
+//			public boolean isCellEditable (int row,int column) {
+//				return false;
+//			}
+//		}
+		;
 		tableMenu.setBounds(289, 11, 944, 483);
 		contentPane.add(tableMenu);
 		
