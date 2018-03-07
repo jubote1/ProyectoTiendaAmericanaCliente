@@ -2,16 +2,24 @@ package capaControlador;
 
 import java.util.ArrayList;
 
+import capaDAO.EleccionForzadaDAO;
 import capaDAO.ImpuestoDAO;
 import capaDAO.ImpuestoProductoDAO;
 import capaDAO.ItemInventarioDAO;
+import capaDAO.ItemInventarioProductoDAO;
 import capaDAO.MenuAgrupadorDAO;
+import capaDAO.PreguntaDAO;
 import capaDAO.ProductoDAO;
+import capaDAO.ProductoIncluidoDAO;
+import capaModelo.EleccionForzada;
 import capaModelo.Impuesto;
 import capaModelo.ImpuestoProducto;
 import capaModelo.ItemInventario;
+import capaModelo.ItemInventarioProducto;
 import capaModelo.MenuAgrupador;
+import capaModelo.Pregunta;
 import capaModelo.Producto;
+import capaModelo.ProductoIncluido;
 
 /**
  * Clase de la capa Controlador que busca agrupar desde la capa de Negocio el comportamiento de los objetos relacionados con los productos
@@ -100,6 +108,76 @@ public class ParametrosProductoCtrl {
 			boolean respuesta = ImpuestoProductoDAO.eliminarImpuestoProducto(idImpuestoProducto);
 			return(respuesta);
 		}
+
+		//PRODUCTO_INCLUIDO
+			/**
+			 * Método de capa controladora para el retorno de los productos incluidos
+			 * @return ArrayList con tipo de datos genérico de productos incluidos.
+			 */
+			public ArrayList<Object> obtenerProductosIncluidos(int idproductoincluido)
+			{
+				ArrayList<Object>  productosIncluidos = ProductoIncluidoDAO.obtenerProductosIncluidos(idproductoincluido);
+				return(productosIncluidos);
+			}
+			
+			/**
+			 * Método de capa controladora encargado de la inserción de un nuevo producto incluido
+			 * @param producto Incluido Se recibe el objeto de la entidad Producto Incluido con los datos para insertar
+			 * @return Se retorna valor entero con el idproducto_incluido creado en el sistema.
+			 */
+			public int insertarProductoIncluido(ProductoIncluido productoIncluido)
+			{
+				int idproducto_incluido = ProductoIncluidoDAO.insertarProductoIncluido(productoIncluido);
+				return(idproducto_incluido);
+			}
+			
+			
+			/**
+			 * Método de la capa controladora que se encarga de eliminar un determinado producto Incluido
+			 * @param idproducto_incluido Se recibe el idproducto_incluido que se desea eliminar
+			 * @return Se retorna un valor booleano que indica el resultado del proceso
+			 */
+			public boolean eliminarProductoIncluido(int idproducto_incluido)
+			{
+				boolean respuesta = ProductoIncluidoDAO.eliminarProductoIncluido(idproducto_incluido);
+				return(respuesta);
+			}
+
+		
+		//ITEM_INVENTARIO_X_PRODUCTO
+		
+			/**
+			 * Método de capa controladora para el retorno de los items inventario por producto
+			 * @return ArrayList con tipo de datos genérico de items inventario producto.
+			 */
+			public ArrayList<Object> obtenerItemsInventarioProducto(int idProducto)
+			{
+				ArrayList<Object>  itemsProducto = ItemInventarioProductoDAO.obtenerItemsInventarioProducto(idProducto);
+				return(itemsProducto);
+			}
+			
+			/**
+			 * Método de capa controladora encargado de la inserción de un nuevo impuesto por producto
+			 * @param impuesto por Producto Se recibe el objeto de la entidad impuesto por producto con los datos para insertar
+			 * @return Se retorna valor entero con el idimpuestoProducto creado en el sistema.
+			 */
+			public int insertarItemInventarioProducto(ItemInventarioProducto itemProducto)
+			{
+				int idItemProducto = ItemInventarioProductoDAO.insertarItemInventarioProducto(itemProducto);
+				return(idItemProducto);
+			}
+			
+			
+			/**
+			 * Método de la capa controladora que se encarga de eliminar un determinado item inventario por producto
+			 * @param idItemProducto Se recibe el id item por producto que se desea eliminar
+			 * @return Se retorna un valor booleano que indica el resultado del proceso
+			 */
+			public boolean eliminarItemInventarioProducto(int idItemProducto)
+			{
+				boolean respuesta = ItemInventarioProductoDAO.eliminarItemInventarioProducto(idItemProducto);
+				return(respuesta);
+			}
 
 	
 	//ITEM INVENTARIO
@@ -205,4 +283,112 @@ public class ParametrosProductoCtrl {
 			return(respuesta);
 		}
 	
+		
+		
+		//ELECCIÓN FORZADA
+		
+		/**
+		 * Método de capa controladora para el retorno de las elecciones forzadas
+		 * @return ArrayList con tipo de datos genérico de elección forzada.
+		 */
+		public ArrayList<Object> obtenerEleccionForzadas(int idPregunta)
+		{
+			ArrayList<Object>  eleccionesForzadas = EleccionForzadaDAO.obtenerEleccionesForzadas(idPregunta);
+			return(eleccionesForzadas);
+		}
+		
+		
+		
+		
+		
+		/**
+		 * Método de capa controladora encargado de la inserción de una nueva elección forzada
+		 * @param Eleccion Forzada Se recibe el objeto de la entidad ElecciónForzada con los datos para insertar
+		 * @return Se retorna valor entero con el ideleccion_forzada creado en el sistema.
+		 */
+		public int insertarEleccionForzada(EleccionForzada eleccion)
+		{
+			int idEleccion = EleccionForzadaDAO.insertarEleccionForzada(eleccion);
+			return(idEleccion);
+		}
+		
+		/**
+		 * Método que se encarga de la edición de una eleccion Forzada desde la capa de controlador.
+		 * @param EleccionFOrzada Se recibe como parámetro un objeto de la entidad EleccionForzada que tendrá los datos a modificar.
+		 * @return Se retorna un valor booleano que indica el resultado del proceso
+		 */
+		public boolean editarEleccionForzada(EleccionForzada eleccion)
+		{
+			boolean respuesta  = EleccionForzadaDAO.EditarEleccionForzada(eleccion);
+			return(respuesta);
+		}
+		/**
+		 * Método de la capa controladora que se encarga de eliminar una determinada EleccionForzada
+		 * @param idEleccion Se recibe el idEleccion que se desea eliminar
+		 * @return Se retorna un valor booleano que indica el resultado del proceso
+		 */
+		public boolean eliminarEleccionForzada(int idEleccion)
+		{
+			boolean respuesta = EleccionForzadaDAO.eliminarEleccionForzada(idEleccion);
+			return(respuesta);
+		}
+		
+		//PREGUNTA
+		
+		/**
+		 * Método de capa controladora para el retorno de las elecciones forzadas
+		 * @return ArrayList con tipo de datos genérico de preguntas.
+		 */
+		public ArrayList<Object> obtenerPreguntas()
+		{
+			ArrayList<Object>  preguntas = PreguntaDAO.obtenerPreguntas();
+			return(preguntas);
+		}	
+		
+		
+		/**
+		 * Método de la capa controladora que se encarga de retornar una Pregunta con base en el idPregunta enviado
+		 * como parámetro.
+		 * @param idPregunta
+		 * @return Se retorna un objeto del tipo Pregunta
+		 */
+		public Pregunta obtenerPregunta(int idPregunta)
+		{
+			Pregunta pregunta = PreguntaDAO.obtenerPregunta(idPregunta);
+			return(pregunta);
+		}
+		
+		
+				/**
+				 * Método de capa controladora encargado de la inserción de una nueva pregunta
+				 * @param Pregunta Se recibe el objeto de la entidad pregunta con los datos para insertar
+				 * @return Se retorna valor entero con el idpregunta creado en el sistema.
+				 */
+				public int insertarPregunta(Pregunta pregunta)
+				{
+					int idPregunta = PreguntaDAO.insertarPregunta(pregunta);
+					return(idPregunta);
+				}
+				
+				/**
+				 * Método que se encarga de la edición de una Pregunta desde la capa de controlador.
+				 * @param pregunta Se recibe como parámetro un objeto de la entidad pregunta que tendrá los datos a modificar.
+				 * @return Se retorna un valor booleano que indica el resultado del proceso
+				 */
+				public boolean editarPregunta(Pregunta pregunta)
+				{
+					boolean respuesta  = PreguntaDAO.EditarPregunta(pregunta);
+					return(respuesta);
+				}
+				/**
+				 * Método de la capa controladora que se encarga de eliminar una determinada Pregunta
+				 * @param idPregunta Se recibe el idpregunta que se desea eliminar
+				 * @return Se retorna un valor booleano que indica el resultado del proceso
+				 */
+				public boolean eliminarPregunta(int idPregunta)
+				{
+					boolean respuesta = PreguntaDAO.eliminarPregunta(idPregunta);
+					return(respuesta);
+				}
+
 }

@@ -9,6 +9,7 @@ import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.Impuesto;
 import capaModelo.ImpuestoProducto;
+import capaModelo.ItemInventarioProducto;
 import capaModelo.MenuAgrupador;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;
@@ -18,23 +19,23 @@ import com.mysql.jdbc.ResultSetMetaData;
  * @author JuanDavid
  *
  */
-public class ImpuestoProductoDAO {
+public class ItemInventarioProductoDAO {
 	
 /**
- * Método que se encarga de retonar todos los impuestos por producto, dado un id producto determinado parametrizado en el sistema.
+ * Método que se encarga de retonar todos los items de inventario por producto, dado un id producto determinado parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerImpuestosProducto(int idImpuestoProducto)
+	public static ArrayList obtenerItemsInventarioProducto(int idProducto)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		ArrayList impuestosProducto = new ArrayList();
+		ArrayList itemsProducto = new ArrayList();
 		
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idimpuesto_producto, a.idproducto , c.descripcion, a.idimpuesto, b.descripcion from impuesto_x_producto a, impuesto b, producto c where a.idproducto = c.idproducto and a.idimpuesto = b.idimpuesto and a.idproducto = " + idImpuestoProducto;
+			String consulta = "select a.iditem_producto , c.descripcion, a.iditem, b.nombre_item, a.cantidad from item_inventario_x_producto a, item_inventario b, producto c where a.idproducto = c.idproducto and a.iditem = b.iditem and a.idproducto = " + idProducto;
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
@@ -46,7 +47,7 @@ public class ImpuestoProductoDAO {
 				{
 					fila[y] = rs.getString(y+1);
 				}
-				impuestosProducto.add(fila);
+				itemsProducto.add(fila);
 				
 			}
 			rs.close();
@@ -62,31 +63,31 @@ public class ImpuestoProductoDAO {
 			{
 			}
 		}
-		return(impuestosProducto);
+		return(itemsProducto);
 		
 	}
 	
 	/**
-	 * Método de la capa DAO que se encarga de insertar una entidad impuesto por producto.
-	 * @param impuesto Recibe un objeto de tipo impuesto del cual se extrae la información para la inserción.
-	 * @return Se retorna un valor entero con el idimpuesto creado en la base de datos
+	 * Método de la capa DAO que se encarga de insertar una entidad item inventario por producto.
+	 * @param impuesto Recibe un objeto de tipo item inventari por producto del cual se extrae la información para la inserción.
+	 * @return Se retorna un valor entero con el iditem_producto creado en la base de datos
 	 */
-	public static int insertarImpuestoProducto(ImpuestoProducto impuestoProducto)
+	public static int insertarItemInventarioProducto(ItemInventarioProducto itemProducto)
 	{
 		Logger logger = Logger.getLogger("log_file");
-		int idImpuestoIns = 0;
+		int idItemIns = 0;
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into impuesto_x_producto (idproducto, idimpuesto) values (" + impuestoProducto.getIdProducto() + ", " + impuestoProducto.getIdImpuesto() + ")"; 
+			String insert = "insert into item_inventario_x_producto (idproducto, iditem, cantidad) values (" + itemProducto.getIdProducto() + ", " + itemProducto.getIdItem() + " , " + itemProducto.getCantidad() + ")"; 
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
-				idImpuestoIns=rs.getInt(1);
-				logger.info("id impuesto insertada en bd " + idImpuestoIns);
+				idItemIns=rs.getInt(1);
+				logger.info("id impuesto insertada en bd " + idItemIns);
 	        }
 			stm.close();
 			con1.close();
@@ -101,16 +102,16 @@ public class ImpuestoProductoDAO {
 			}
 			return(0);
 		}
-		return(idImpuestoIns);
+		return(idItemIns);
 	}
 	
 	/**
-	 * Método que se encarga de eliminar un determinado en impuesto, teniendo en cuenta el idImpuestoProducto pasado como parámetro
-	 * @param idImpuestoProducto Se recibe como parámetro el idimpuesto que se desea eliminar, teniendo en cuenta que es la 
+	 * Método que se encarga de eliminar un determinado item inventario producto, teniendo en cuenta el idItemProducto pasado como parámetro
+	 * @param idItemProducto Se recibe como parámetro el idItemProducto que se desea eliminar, teniendo en cuenta que es la 
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarImpuestoProducto(int idImpuestoProducto)
+	public static boolean eliminarItemInventarioProducto(int idItemProducto)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -119,7 +120,7 @@ public class ImpuestoProductoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String delete = "delete from impuesto_x_producto where idimpuesto_producto = " + idImpuestoProducto; 
+			String delete = "delete from item_inventario_x_producto where iditem_producto = " + idItemProducto; 
 			logger.info(delete);
 			stm.executeUpdate(delete);
 			respuesta = true;
