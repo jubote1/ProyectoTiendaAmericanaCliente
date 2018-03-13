@@ -115,14 +115,14 @@ public class VentCRUDEleccionForzada extends JFrame {
         columnsName[5] = "Estado";
         ParametrosProductoCtrl par = new ParametrosProductoCtrl();
 		ArrayList<Object> items = par.obtenerEleccionForzadas(idPregunta);
-		DefaultTableModel modeloImpuestos = new DefaultTableModel();
-		modeloImpuestos.setColumnIdentifiers(columnsName);
+		DefaultTableModel modeloPreguntas = new DefaultTableModel();
+		modeloPreguntas.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < items.size();y++)
 		{
 			String[] fila =(String[]) items.get(y);
-			modeloImpuestos.addRow(fila);
+			modeloPreguntas.addRow(fila);
 		}
-		return(modeloImpuestos);
+		return(modeloPreguntas);
 		
 	}
 	
@@ -328,7 +328,7 @@ public class VentCRUDEleccionForzada extends JFrame {
 				{
 					idProducto = Integer.parseInt(strIdProducto);
 				}
-				EleccionForzada eleccionFor = new EleccionForzada(0, idPregunta, idProducto, precio,estado);
+				EleccionForzada eleccionFor = new EleccionForzada(0, idProducto, idPregunta, precio,estado);
 				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
 				parCtrl.insertarEleccionForzada(eleccionFor);
 				DefaultTableModel modeloEleccion = pintarEleccionesForzadas();
@@ -489,10 +489,10 @@ public class VentCRUDEleccionForzada extends JFrame {
 				} 
 				Pregunta preguntaNueva = new Pregunta(idPregunta,tituloPregunta,obligaEleccion,numeroMaximoElecciones,estado,permiteDividir,descripcion); 
 				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				int idPregunta = parCtrl.insertarPregunta(preguntaNueva);
+				int idPre = parCtrl.insertarPregunta(preguntaNueva);
 				DefaultTableModel modelo = pintarPreguntas();
 				jTablePreguntas.setModel(modelo);
-				
+				idPregunta = idPre;
 				//Limpiamos el contenido de los campos
 				
 			

@@ -26,7 +26,7 @@ import capaModelo.Producto;
 import java.awt.Color;
 import java.awt.Component;
 
-public class VentanaMenu extends JFrame {
+public class VentanaMenuBK extends JFrame {
 
 	private JPanel contentPane;
 	private JTable tableMenu;
@@ -38,7 +38,7 @@ public class VentanaMenu extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaMenu frame = new VentanaMenu();
+					VentanaMenuBK frame = new VentanaMenuBK();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -50,7 +50,7 @@ public class VentanaMenu extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentanaMenu() {
+	public VentanaMenuBK() {
 		setBackground(Color.WHITE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);

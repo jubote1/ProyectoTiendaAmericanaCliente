@@ -64,6 +64,11 @@ public class VentCRUDProducto extends JFrame {
 	private JTextField textCantidadItem;
 	private JTextField textCantidadIncluir;
 	private JTable tableProductoIncluir;
+	private JComboBox comboBoxPreForzada1;
+	private JComboBox comboBoxPreForzada2;
+	private JComboBox comboBoxPreForzada3;
+	private JComboBox comboBoxPreForzada4;
+	private JComboBox comboBoxPreForzada5;
 	/**
 	 * Launch the application.
 	 */
@@ -420,23 +425,23 @@ public class VentCRUDProducto extends JFrame {
 		lblPanelPreguntasForzadas.setBounds(134, 12, 125, 14);
 		panelPreguntasForzadas.add(lblPanelPreguntasForzadas);
 		
-		JComboBox comboBoxPreForzada1 = new JComboBox();
+		comboBoxPreForzada1 = new JComboBox();
 		comboBoxPreForzada1.setBounds(160, 37, 182, 20);
 		panelPreguntasForzadas.add(comboBoxPreForzada1);
 		
-		JComboBox comboBoxPreForzada2 = new JComboBox();
+		comboBoxPreForzada2 = new JComboBox();
 		comboBoxPreForzada2.setBounds(160, 63, 182, 20);
 		panelPreguntasForzadas.add(comboBoxPreForzada2);
 		
-		JComboBox comboBoxPreForzada3 = new JComboBox();
+		comboBoxPreForzada3 = new JComboBox();
 		comboBoxPreForzada3.setBounds(160, 89, 182, 20);
 		panelPreguntasForzadas.add(comboBoxPreForzada3);
 		
-		JComboBox comboBoxPreForzada4 = new JComboBox();
+		comboBoxPreForzada4 = new JComboBox();
 		comboBoxPreForzada4.setBounds(160, 113, 182, 20);
 		panelPreguntasForzadas.add(comboBoxPreForzada4);
 		
-		JComboBox comboBoxPreForzada5 = new JComboBox();
+		comboBoxPreForzada5 = new JComboBox();
 		comboBoxPreForzada5.setBounds(160, 138, 182, 20);
 		panelPreguntasForzadas.add(comboBoxPreForzada5);
 		
@@ -572,6 +577,7 @@ public class VentCRUDProducto extends JFrame {
 		comboPrecioProductoIncluir.setBounds(346, 182, 186, 20);
 		panelProductoIncluido.add(comboPrecioProductoIncluir);
 		initComboProductoIncluir();
+		initCombosPreguntas();
 		tableProductoIncluir = new JTable();
 		tableProductoIncluir.setBounds(116, 237, 546, 89);
 		panelProductoIncluido.add(tableProductoIncluir);
@@ -1029,6 +1035,22 @@ public void initComboProductoIncluir()
 	comboPrecioProductoIncluir.addItem("precio8");
 	comboPrecioProductoIncluir.addItem("precio9");
 	comboPrecioProductoIncluir.addItem("precio10");
+}
+
+public void initCombosPreguntas()
+{
+	ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
+	ArrayList preguntas = parCtrl.obtenerPreguntas();
+	for(int i = 0; i<preguntas.size();i++)
+	{
+		String[] fila =  (String[]) preguntas.get(i);
+		comboBoxPreForzada1.addItem(fila[0]+"-"+fila[6]);
+		comboBoxPreForzada2.addItem(fila[0]+"-"+fila[6]);
+		comboBoxPreForzada3.addItem(fila[0]+"-"+fila[6]);
+		comboBoxPreForzada4.addItem(fila[0]+"-"+fila[6]);
+		comboBoxPreForzada5.addItem(fila[0]+"-"+fila[6]);
+	}
+	
 }
 
 public boolean validarAgregarProductoIncluido()
