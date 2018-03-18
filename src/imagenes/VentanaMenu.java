@@ -1,4 +1,4 @@
-package interfazGrafica;
+package imagenes;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -22,6 +22,7 @@ import javax.swing.table.TableCellRenderer;
 
 import capaControlador.ParametrosProductoCtrl;
 import capaModelo.Producto;
+
 
 import java.awt.Color;
 import java.awt.Component;
@@ -59,10 +60,10 @@ public class VentanaMenu extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JPanel panel = new JPanel();
-		panel.setBackground(Color.WHITE);
-		panel.setBounds(10, 11, 269, 340);
-		contentPane.add(panel);
+		JPanel panelComandos = new JPanel();
+		panelComandos.setBackground(Color.LIGHT_GRAY);
+		panelComandos.setBounds(10, 11, 269, 332);
+		contentPane.add(panelComandos);
 		setExtendedState(MAXIMIZED_BOTH);//otro metodo
 		setUndecorated(true);
 		
@@ -70,7 +71,7 @@ public class VentanaMenu extends JFrame {
 		tableMenu.setCellSelectionEnabled(true);
 		tableMenu.setDefaultRenderer(Object.class, new ButtonRenderer());
 		tableMenu.setCellEditor(new ButtonEditor());
-		
+		tableMenu.setRowHeight(60);
 		JButton btn;
 				
 		// Creación botones 
@@ -100,12 +101,6 @@ public class VentanaMenu extends JFrame {
 		tableMenu.setModel(model);
 		tableMenu.setDefaultRenderer(JButton.class, new ButtonRenderer());
 		tableMenu.setDefaultEditor(JButton.class, new ButtonEditor());
-		
-//		{
-//			public boolean isCellEditable (int row,int column) {
-//				return false;
-//			}
-//		}
 		;
 		
 				
