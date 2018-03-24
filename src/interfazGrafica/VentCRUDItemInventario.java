@@ -80,7 +80,7 @@ public class VentCRUDItemInventario extends JFrame {
 	public VentCRUDItemInventario() {
 		setTitle("MAESTRO DE ITEMS DE INVENTARIOS");
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 773, 392);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

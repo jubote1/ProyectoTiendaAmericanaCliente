@@ -30,76 +30,7 @@ public class PedidoCtrl {
 	 * @param datos Se recibe un string en formato JSON con todos los datos para la inserción del pedido.
 	 * @return Se retorna un string en formato JSON con la respuesta de la inserción del pedido.
 	 */
-	public String InsertarPedidoPixel(String datos)
-	{
-		// Debemos de procesar todo datos para extraer todo los datos requeridos
-		 JSONParser parser = new JSONParser();
-		 JSONArray respuestaJSON = new JSONArray();
-		 try {
-			 System.out.println(datos);
-			 Object objParser = parser.parse(datos);
-			 JSONObject jsonPedido = (JSONObject) objParser;
-			 int idpedido;
-			 boolean insertado;
-			 String dsnTienda;
-			 int memcode;
-			 String clienteJSON;
-			 boolean indicadorAct;
-			 double valorformapago;
-			 double valortotal;
-			 int cantidaditempedido;
-			 int idformapagotienda;
-			  // Realizamos el parseo inicial de la información que se le envía al servicio
-			 Long tempidpedido = new Long((long)jsonPedido.get("idpedido"));
-			 idpedido =  (new Integer(tempidpedido.intValue()));
-			 System.out.println("ippedido " + idpedido);
-			 //insertado = (boolean)jsonPedido.get("insertado");
-			 dsnTienda = (String)jsonPedido.get("dsntienda");
-			 Long tempmemcode = new Long((long)jsonPedido.get("memcode"));
-			 memcode = (new Integer(tempmemcode.intValue()));
-			 clienteJSON = (String)jsonPedido.get("cliente");
-			 indicadorAct = (boolean)jsonPedido.get("indicadoract");
-			 valorformapago = new Double((long)jsonPedido.get("valorformapago"));
-			 valortotal = new Double((long)jsonPedido.get("valortotal"));
-			 Long idformapagotientmp = new Long((long)jsonPedido.get("idformapagotienda"));
-			 idformapagotienda = (new Integer(idformapagotientmp.intValue()));
-			  // Realizamos el parseo para el nivel de clientes
-			 Object objParserCliente = parser.parse(clienteJSON);
-			 JSONObject jsonCliente =(JSONObject) ((JSONArray)objParserCliente).get(0);
-			 Long tempidcliente = new Long((long)jsonCliente.get("idcliente"));
-			 Long tempclimemcode = new Long((long)jsonCliente.get("memcode"));
-			 Cliente cliente = new Cliente((new Integer(tempidcliente.intValue())), (String) jsonCliente.get("telefono") , (String) jsonCliente.get("nombres"), (String) jsonCliente.get("apellidos"), (String) jsonCliente.get("nombrecompania"), (String) jsonCliente.get("direccion"), "", 0,
-						0, (String) jsonCliente.get("zonadireccion"), (String) jsonCliente.get("observacion"), "", 0, (new Integer(tempclimemcode.intValue())));
-			 //Sacamos la cantidad de detalles pedidos
-			 Long tempcantidaditem = new Long((long)jsonPedido.get("cantidaditempedido"));
-			 cantidaditempedido = (new Integer(tempcantidaditem.intValue()));
-			 // Realizamos el parseo para el pedido
-			 ArrayList<DetallePedidoPixel> detPedidoPixel= new ArrayList();
-			 Long tempidprod;
-			 double tempcantidad;
-			 for(int i = 1; i<= cantidaditempedido; i++)
-			 {
-				 System.out.println("idproductoext"+ i);
-				 tempidprod = new Long((long)jsonPedido.get("idproductoext"+ i));
-				 tempcantidad = ((Number)jsonPedido.get("cantidad" + i)).doubleValue();
-				 detPedidoPixel.add(new DetallePedidoPixel( tempidprod.intValue(), tempcantidad ));
-			 }
-			 RespuestaPedidoPixel respuesta = PedidoPixelDAO.confirmarPedidoPixelTienda(idpedido,valorformapago, valortotal, cliente,indicadorAct, dsnTienda, detPedidoPixel,idformapagotienda);
-			
-			 JSONObject cadaResJSON = new JSONObject();
-			 cadaResJSON.put("creacliente", respuesta.getClienteCreado());
-			 cadaResJSON.put("numerofactura", respuesta.getNumeroFactura());
-			 cadaResJSON.put("membercode", respuesta.getMembercode());
-			 cadaResJSON.put("idpedido", respuesta.getIdpedido());
-			 cadaResJSON.put("idcliente", respuesta.getIdcliente());
-			 respuestaJSON.add(cadaResJSON);
-			 
-			 
-		 }catch (Exception e) {
-	            e.printStackTrace();
-	     } 
-		 return(respuestaJSON.toString());
-	}
+	
 	
 	/**
 	 * Método de la capa controladora que se encarga de retornar en formato Json los estados de los pedidos tipo 

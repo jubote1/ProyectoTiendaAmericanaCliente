@@ -106,6 +106,7 @@ public class Principal extends JFrame {
 						JOptionPane.showConfirmDialog(null,  "Bienvenido al Sistema " + objUsuario.getNombreLargo() , "Ingresaste al Sistema!!", JOptionPane.OK_OPTION);
 						VentanaPrincipal ventPrincipal = new VentanaPrincipal();
 						ventPrincipal.setVisible(true);
+						dispose();
 					}else
 					{
 						JOptionPane.showMessageDialog(null, "Usuario y/o Clave Incorrecta", "Usuario y/o Clave Incorrecta", JOptionPane.ERROR_MESSAGE);

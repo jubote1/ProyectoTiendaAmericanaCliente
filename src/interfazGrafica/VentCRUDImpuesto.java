@@ -81,7 +81,7 @@ public class VentCRUDImpuesto extends JFrame {
 	public VentCRUDImpuesto() {
 		setTitle("MAESTRO DE IMPUESTOS");
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 773, 392);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

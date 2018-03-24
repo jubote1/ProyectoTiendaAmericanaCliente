@@ -1,6 +1,10 @@
 package capaModelo;
 
-
+/**
+ * Clase que implementa la entidad Cliente en el sistema
+ * @author JuanDavid
+ *
+ */
 public class Cliente {
 
 	private int idcliente;
@@ -18,7 +22,11 @@ public class Cliente {
 	private String tienda;
 	private int idtienda;
 	private int memcode;
-	
+	private int idnomenclatura;
+	private String numNomenclatura;
+	private String numNomenclatura2;
+	private String num3;
+	private String nomenclatura;
 	
 	
 	
@@ -28,7 +36,7 @@ public class Cliente {
 		this.idcliente = id;
 		this.telefono = telefono;
 		this.nombres = nombres;
-		Direccion = direccion;
+		this.Direccion = direccion;
 		this.zonaDireccion = zonaDireccion;
 		this.observacion = observacion;
 		this.tienda = tienda;
@@ -39,7 +47,7 @@ public class Cliente {
 		super();
 		this.telefono = telefono;
 		this.nombres = nombres;
-		Direccion = direccion;
+		this.Direccion = direccion;
 		this.zonaDireccion = zonaDireccion;
 		this.observacion = observacion;
 		this.tienda = tienda;
@@ -49,7 +57,7 @@ public class Cliente {
 		super();
 		this.telefono = telefono;
 		this.nombres = nombres;
-		Direccion = direccion;
+		this.Direccion = direccion;
 		this.zonaDireccion = zonaDireccion;
 		this.observacion = observacion;
 		this.tienda = tienda;
@@ -60,14 +68,14 @@ public class Cliente {
 	
 
 	public Cliente(int idcliente, String telefono, String nombres, String apellidos, String nombreCompania, String direccion, String Municipio, float latitud,
-			float lontitud, String zonaDireccion, String observacion, String tienda, int idtienda, int memcode) {
+			float lontitud, String zonaDireccion, String observacion, String tienda, int idtienda, int memcode, int idnomenclatura, String numNomenclatura, String numNomenclatura2, String num3, String nomenclatura) {
 		super();
 		this.idcliente = idcliente;
 		this.telefono = telefono;
 		this.nombres = nombres;
 		this.apellidos = apellidos;
 		this.nombreCompania = nombreCompania;
-		Direccion = direccion;
+		this.Direccion = direccion;
 		this.Municipio = Municipio;
 		this.latitud = latitud;
 		this.lontitud = lontitud;
@@ -76,20 +84,25 @@ public class Cliente {
 		this.tienda = tienda;
 		this.idtienda = idtienda;
 		this.memcode = memcode;
+		this.idnomenclatura = idnomenclatura;
+		this.numNomenclatura = numNomenclatura;
+		this.numNomenclatura2 = numNomenclatura2;
+		this.num3 = num3;
+		this.nomenclatura = nomenclatura; 
 	}
 
 	
 	public Cliente(int idcliente, String telefono, String nombres, String apellidos, String nombreCompania,
 			String direccion, String municipio, int idMunicipio, float latitud, float lontitud, String zonaDireccion,
-			String observacion, String tienda, int idtienda, int memcode) {
+			String observacion, String tienda, int idtienda, int memcode, int idnomenclatura, String numNomenclatura, String numNomenclatura2, String num3, String nomenclatura) {
 		super();
 		this.idcliente = idcliente;
 		this.telefono = telefono;
 		this.nombres = nombres;
 		this.apellidos = apellidos;
 		this.nombreCompania = nombreCompania;
-		Direccion = direccion;
-		Municipio = municipio;
+		this.Direccion = direccion;
+		this.Municipio = municipio;
 		this.idMunicipio = idMunicipio;
 		this.latitud = latitud;
 		this.lontitud = lontitud;
@@ -98,12 +111,27 @@ public class Cliente {
 		this.tienda = tienda;
 		this.idtienda = idtienda;
 		this.memcode = memcode;
+		this.idnomenclatura = idnomenclatura;
+		this.numNomenclatura = numNomenclatura;
+		this.numNomenclatura2 = numNomenclatura2;
+		this.num3 = num3;
+		this.nomenclatura = nomenclatura; 
 	}
 
 	
 	
 	public int getMemcode() {
 		return memcode;
+	}
+	
+	
+
+	public String getNomenclatura() {
+		return nomenclatura;
+	}
+
+	public void setNomenclatura(String nomenclatura) {
+		this.nomenclatura = nomenclatura;
 	}
 
 	public void setMemcode(int memcode) {
@@ -124,6 +152,38 @@ public class Cliente {
 
 
 
+
+	public int getIdnomenclatura() {
+		return idnomenclatura;
+	}
+
+	public void setIdnomenclatura(int idnomenclatura) {
+		this.idnomenclatura = idnomenclatura;
+	}
+
+	public String getNumNomenclatura() {
+		return numNomenclatura;
+	}
+
+	public void setNumNomenclatura(String numNomenclatura) {
+		this.numNomenclatura = numNomenclatura;
+	}
+
+	public String getNumNomenclatura2() {
+		return numNomenclatura2;
+	}
+
+	public void setNumNomenclatura2(String numNomenclatura2) {
+		this.numNomenclatura2 = numNomenclatura2;
+	}
+
+	public String getNum3() {
+		return num3;
+	}
+
+	public void setNum3(String num3) {
+		this.num3 = num3;
+	}
 
 	public void setMunicipio(String idMunicipio) {
 		this.Municipio = idMunicipio;
@@ -230,7 +290,7 @@ public class Cliente {
 
 
 	public void setDireccion(String direccion) {
-		Direccion = direccion;
+		this.Direccion = direccion;
 	}
 
 

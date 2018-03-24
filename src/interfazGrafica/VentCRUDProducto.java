@@ -194,7 +194,7 @@ public class VentCRUDProducto extends JFrame {
 	public VentCRUDProducto() {
 		setTitle("MAESTRO DE ITEMS DE PRODUCTOS");
 		idProducto = 0;
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 833, 646);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
