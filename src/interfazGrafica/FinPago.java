@@ -10,6 +10,7 @@ import javax.swing.JTextPane;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import java.awt.Font;
+import java.awt.Color;
 
 public class FinPago extends JFrame {
 
@@ -42,9 +43,14 @@ public class FinPago extends JFrame {
 		setContentPane(contentenorFinPago);
 		contentenorFinPago.setLayout(null);
 		
-		JTextPane textPaneTotal = new JTextPane();
-		textPaneTotal.setBounds(179, 11, 282, 44);
-		contentenorFinPago.add(textPaneTotal);
+		JTextPane textPanelTotal = new JTextPane();
+		textPanelTotal.setText("$ 987'654.321.01");
+		textPanelTotal.setEditable(false);
+		textPanelTotal.setForeground(Color.YELLOW);
+		textPanelTotal.setBackground(Color.BLACK);
+		textPanelTotal.setFont(new Font("Calibri", Font.BOLD, 30));
+		textPanelTotal.setBounds(180, 11, 230, 58);
+		contentenorFinPago.add(textPanelTotal);
 		
 		JButton btnNum_1 = new JButton("1");
 		btnNum_1.setFont(new Font("Calibri", Font.BOLD, 24));
