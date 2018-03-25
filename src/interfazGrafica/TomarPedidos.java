@@ -38,11 +38,11 @@ public class TomarPedidos extends JFrame {
 	private JPanel contentPane;
 	private JTable table;
 	private JTable tableMenu;
-	//Creamos una variable Arreglo Global que contendrá la Configuración Menú
+	//Creamos una variable Arreglo Global que contendrï¿½ la Configuraciï¿½n Menï¿½
 	private ConfiguracionMenu[][] confiMenu;
-	// El arreglo con los botones del menú activo se manejará como variable global
+	// El arreglo con los botones del menï¿½ activo se manejarï¿½ como variable global
 	private Object[][] botones;
-	//Parámetros que se tendrán en Tomador Pedidos para la selección de clientes
+	//Parï¿½metros que se tendrï¿½n en Tomador Pedidos para la selecciï¿½n de clientes
 	public static int idCliente = 0;
 	public static String nombreCliente = "";
 	JLabel lblIdCliente;
@@ -122,6 +122,7 @@ public class TomarPedidos extends JFrame {
 		tableMenu.setDefaultRenderer(Object.class, new ButtonRenderer());
 		tableMenu.setCellEditor(new ButtonEditor());
 		tableMenu.setRowHeight(46);
+		tableMenu.setOpaque(false);
 		JButton btn;
 			
 		botones = new Object[6][6];
@@ -238,8 +239,8 @@ public class TomarPedidos extends JFrame {
 		JButton btnAsignarCliente = new JButton("Asignar Cliente");
 		btnAsignarCliente.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//Se debería crear una nueva ventana para la asignación y creación de clientes
-				//Al momento de instanciar VentCliente se le pasará como parámetro el idCliente del pedido
+				//Se deberï¿½a crear una nueva ventana para la asignaciï¿½n y creaciï¿½n de clientes
+				//Al momento de instanciar VentCliente se le pasarï¿½ como parï¿½metro el idCliente del pedido
 				VentCliente cliente = new VentCliente(idCliente);
 				cliente.setVisible(true);
 			}
@@ -305,7 +306,7 @@ public class TomarPedidos extends JFrame {
 //		int intMultimenu = Integer.parseInt(StrMulti.nextToken().trim());
 		MenuCtrl menuCtrl = new MenuCtrl();
 		confiMenu = menuCtrl.obtenerConfMenu(intMultimenu);
-		//Aqui debería pintarse el menú
+		//Aqui deberï¿½a pintarse el menï¿½
 		JButton btn = new JButton();
 		ConfiguracionMenu objConfMenu;
 		Object objGenerico;
@@ -318,9 +319,12 @@ public class TomarPedidos extends JFrame {
 				boolean noMenu = false;
 				if (objGenerico == null)
 				{
-					//btn = new JButton("Menú " + numBoton);
+					//btn = new JButton("Menï¿½ " + numBoton);
 					btn = new JButton("");
 					noMenu = true;
+					btn.setOpaque(false);
+					btn.setBorderPainted(false);
+					btn.setContentAreaFilled(false);
 				}
 				else
 				{
@@ -345,4 +349,5 @@ public class TomarPedidos extends JFrame {
 			},botones);
 		tableMenu.setModel(model);
 	}
+		
 }
