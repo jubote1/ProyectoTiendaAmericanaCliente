@@ -15,13 +15,17 @@ import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+
 import javax.swing.JTextField;
+import java.awt.event.KeyAdapter;
 
 public class FinPago extends JFrame {
 
 	private JPanel contentenorFinPago;
 	private final Action action = new SwingAction();
 	private JTextField displayPago;
+	private JTextField txtCantidadAdeudada;
 	
 	/**
 	 * Launch the application.
@@ -38,13 +42,20 @@ public class FinPago extends JFrame {
 			}
 		});
 	}
+	
+//	public void limiteDisplay(KeyEvent evt){
+//		int limite = 12;
+//		if (displayPago.getText().length() >= limite) {
+//			evt.consume();
+//		}
+//	}
 
 	/**
 	 * Create the frame.
 	 */
 	public FinPago() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 724, 474);
+		setBounds(100, 100, 763, 503);
 		contentenorFinPago = new JPanel();
 		contentenorFinPago.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentenorFinPago);
@@ -171,6 +182,7 @@ public class FinPago extends JFrame {
 		contentenorFinPago.add(btnPoint);
 		
 		displayPago = new JTextField();
+		displayPago.setEditable(false);
 		displayPago.setText("$ ");
 		displayPago.setFont(new Font("Calibri", Font.BOLD, 40));
 		displayPago.setForeground(Color.YELLOW);
@@ -179,6 +191,32 @@ public class FinPago extends JFrame {
 		displayPago.setBounds(180, 27, 230, 70);
 		contentenorFinPago.add(displayPago);
 		displayPago.setColumns(10);
+		
+		JButton Efectivo = new JButton("Efectivo");
+		Efectivo.setFont(new Font("Calibri", Font.BOLD, 40));
+		Efectivo.setBounds(448, 107, 202, 70);
+		contentenorFinPago.add(Efectivo);
+		
+		JButton Tarjeta = new JButton("Tarjeta");
+		Tarjeta.setFont(new Font("Calibri", Font.BOLD, 40));
+		Tarjeta.setBounds(448, 27, 202, 70);
+		contentenorFinPago.add(Tarjeta);
+		
+		JButton Finalizar = new JButton("Finalizar");
+		Finalizar.setFont(new Font("Calibri", Font.BOLD, 40));
+		Finalizar.setBounds(448, 336, 202, 70);
+		contentenorFinPago.add(Finalizar);
+		
+		txtCantidadAdeudada = new JTextField();
+		txtCantidadAdeudada.setFont(new Font("Tahoma", Font.BOLD, 16));
+		txtCantidadAdeudada.setBackground(Color.YELLOW);
+		txtCantidadAdeudada.setForeground(Color.RED);
+		txtCantidadAdeudada.setHorizontalAlignment(SwingConstants.RIGHT);
+		txtCantidadAdeudada.setEditable(false);
+		txtCantidadAdeudada.setText("Cantidad Adeudada");
+		txtCantidadAdeudada.setBounds(180, 8, 230, 20);
+		contentenorFinPago.add(txtCantidadAdeudada);
+		txtCantidadAdeudada.setColumns(10);
 	}
 	private class SwingAction extends AbstractAction {
 		public SwingAction() {
