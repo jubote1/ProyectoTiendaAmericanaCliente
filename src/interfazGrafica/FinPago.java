@@ -43,6 +43,21 @@ public class FinPago extends JFrame {
 		});
 	}
 	
+	public static boolean existePunto (String Valor){
+		boolean resultado = false;
+		int i = 0;
+		do {
+			if (Valor.substring(i,i+1).equals(".")) {
+				resultado = true;
+				i = Valor.length();
+			}else {
+				i++;
+			}
+		} while (i < Valor.length());
+		
+		return resultado;
+	}
+	
 //	public void limiteDisplay(KeyEvent evt){
 //		int limite = 12;
 //		if (displayPago.getText().length() >= limite) {
@@ -174,7 +189,14 @@ public class FinPago extends JFrame {
 		JButton btnPoint = new JButton(".");
 		btnPoint.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				displayPago.setText(displayPago.getText()+".");
+				boolean conPunto = false;
+				
+				conPunto = existePunto(displayPago.getText());
+				if (conPunto) {
+					displayPago.setText(displayPago.getText());
+				}else {
+					displayPago.setText(displayPago.getText()+".");
+				}							
 			}
 		});
 		btnPoint.setFont(new Font("Calibri", Font.BOLD, 24));

@@ -258,6 +258,12 @@ public class TomarPedidos extends JFrame {
 		panelAcciones.add(btnDescuento);
 		
 		JButton btnFinalizarPedido = new JButton("Finalizar Pedido");
+		btnFinalizarPedido.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				FinPago Finalizar = new FinPago();
+				Finalizar.setVisible(true);
+			}
+		});
 		btnFinalizarPedido.setBounds(612, 11, 89, 47);
 		panelAcciones.add(btnFinalizarPedido);
 		
