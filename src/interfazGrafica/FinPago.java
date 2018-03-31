@@ -29,6 +29,8 @@ public class FinPago extends JFrame {
 	private JTextField textTotal;
 	private JTextField displayTotal;
 	
+	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 ;
+	
 	/**
 	 * Launch the application.
 	 */
