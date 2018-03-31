@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.html.parser.ParserDelegator;
 import javax.swing.JTextPane;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
@@ -16,9 +17,13 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import javax.swing.JTextField;
 import java.awt.event.KeyAdapter;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 public class FinPago extends JFrame {
 
@@ -26,11 +31,11 @@ public class FinPago extends JFrame {
 	private final Action action = new SwingAction();
 	private JTextField displayPago;
 	private JTextField txtCantidadAdeudada;
-	private JTextField textTotal;
-	private JTextField displayTotal;
 	
-	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 ;
+	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = 100000 ;
+	private JTable tablePago;
 	
+		
 	/**
 	 * Launch the application.
 	 */
@@ -60,6 +65,20 @@ public class FinPago extends JFrame {
 		} while (i < Valor.length());
 		
 		return resultado;
+	}
+	
+	public static String Formato (double valor){
+		String StrResultado = "";
+		NumberFormat Formatter = NumberFormat.getInstance(Locale.ENGLISH);
+		StringBuilder StrTotal = null;
+		
+		Formatter.setMaximumFractionDigits(2);
+		StrTotal = new StringBuilder(Formatter.format(valor));
+		StrTotal.insert(0, "$ ");
+		
+		StrResultado = StrTotal.toString();
+		
+		return StrResultado;
 	}
 	
 //	public void limiteDisplay(KeyEvent evt){
@@ -219,12 +238,12 @@ public class FinPago extends JFrame {
 		
 		JButton Efectivo = new JButton("Efectivo");
 		Efectivo.setFont(new Font("Calibri", Font.BOLD, 40));
-		Efectivo.setBounds(733, 91, 202, 70);
+		Efectivo.setBounds(606, 235, 202, 70);
 		contentenorFinPago.add(Efectivo);
 		
 		JButton Tarjeta = new JButton("Tarjeta");
 		Tarjeta.setFont(new Font("Calibri", Font.BOLD, 40));
-		Tarjeta.setBounds(733, 212, 202, 70);
+		Tarjeta.setBounds(606, 316, 202, 70);
 		contentenorFinPago.add(Tarjeta);
 		
 		JButton Finalizar = new JButton("Finalizar");
@@ -256,26 +275,27 @@ public class FinPago extends JFrame {
 		btnBorrar.setBounds(462, 452, 100, 70);
 		contentenorFinPago.add(btnBorrar);
 		
-		textTotal = new JTextField();
-		textTotal.setText("Total");
-		textTotal.setHorizontalAlignment(SwingConstants.CENTER);
-		textTotal.setForeground(Color.BLUE);
-		textTotal.setFont(new Font("Tahoma", Font.BOLD, 16));
-		textTotal.setEditable(false);
-		textTotal.setColumns(10);
-		textTotal.setBackground(Color.WHITE);
-		textTotal.setBounds(222, 27, 230, 20);
-		contentenorFinPago.add(textTotal);
+		JButton btnAplicar = new JButton("Aplicar");
+		btnAplicar.setFont(new Font("Calibri", Font.BOLD, 30));
+		btnAplicar.setBounds(606, 394, 202, 70);
+		contentenorFinPago.add(btnAplicar);
 		
-		displayTotal = new JTextField();
-		displayTotal.setHorizontalAlignment(SwingConstants.RIGHT);
-		displayTotal.setForeground(Color.BLUE);
-		displayTotal.setFont(new Font("Calibri", Font.BOLD, 40));
-		displayTotal.setEditable(false);
-		displayTotal.setColumns(10);
-		displayTotal.setBackground(Color.WHITE);
-		displayTotal.setBounds(222, 46, 230, 61);
-		contentenorFinPago.add(displayTotal);
+		tablePago = new JTable();
+		tablePago.setEnabled(false);
+		tablePago.setFont(new Font("Calibri", Font.PLAIN, 20));
+		tablePago.setModel(new DefaultTableModel(
+			new Object[][] {
+				{"Total", Formato(Total)},
+				{"Efectivo", null},
+				{"Tarjeta", null},
+				{"Cambio", null},
+			},
+			new String[] {
+				"New column", "New column"
+			}
+		));
+		tablePago.setBounds(10, 366, 202, 156);
+		contentenorFinPago.add(tablePago);
 	}
 	private class SwingAction extends AbstractAction {
 		public SwingAction() {
