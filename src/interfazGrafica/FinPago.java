@@ -26,6 +26,8 @@ public class FinPago extends JFrame {
 	private final Action action = new SwingAction();
 	private JTextField displayPago;
 	private JTextField txtCantidadAdeudada;
+	private JTextField textTotal;
+	private JTextField displayTotal;
 	
 	/**
 	 * Launch the application.
@@ -70,7 +72,7 @@ public class FinPago extends JFrame {
 	 */
 	public FinPago() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 763, 503);
+		setBounds(100, 100, 961, 636);
 		contentenorFinPago = new JPanel();
 		contentenorFinPago.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentenorFinPago);
@@ -83,7 +85,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_1.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_1.setBounds(180, 260, 70, 70);
+		btnNum_1.setBounds(222, 371, 70, 70);
 		contentenorFinPago.add(btnNum_1);
 		
 		JButton btnNum_2 = new JButton("2");
@@ -93,7 +95,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_2.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_2.setBounds(260, 260, 70, 70);
+		btnNum_2.setBounds(302, 371, 70, 70);
 		contentenorFinPago.add(btnNum_2);
 		
 		JButton btnNum_3 = new JButton("3");
@@ -103,7 +105,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_3.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_3.setBounds(340, 260, 70, 70);
+		btnNum_3.setBounds(382, 371, 70, 70);
 		contentenorFinPago.add(btnNum_3);
 		
 		JButton btnNum_4 = new JButton("4");
@@ -113,7 +115,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_4.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_4.setBounds(180, 180, 70, 70);
+		btnNum_4.setBounds(222, 292, 70, 70);
 		contentenorFinPago.add(btnNum_4);
 		
 		JButton btnNum_5 = new JButton("5");
@@ -123,7 +125,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_5.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_5.setBounds(260, 180, 70, 70);
+		btnNum_5.setBounds(302, 292, 70, 70);
 		contentenorFinPago.add(btnNum_5);
 		
 		JButton btnNum_6 = new JButton("6");
@@ -133,7 +135,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_6.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_6.setBounds(340, 180, 70, 70);
+		btnNum_6.setBounds(382, 292, 70, 70);
 		contentenorFinPago.add(btnNum_6);
 		
 		JButton butNum_7 = new JButton("7");
@@ -143,7 +145,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		butNum_7.setFont(new Font("Calibri", Font.BOLD, 24));
-		butNum_7.setBounds(180, 100, 70, 70);
+		butNum_7.setBounds(222, 211, 70, 70);
 		contentenorFinPago.add(butNum_7);
 		
 		JButton butNum_8 = new JButton("8");
@@ -153,7 +155,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		butNum_8.setFont(new Font("Calibri", Font.BOLD, 24));
-		butNum_8.setBounds(260, 100, 70, 70);
+		butNum_8.setBounds(302, 211, 70, 70);
 		contentenorFinPago.add(butNum_8);
 		
 		JButton btnNum_9 = new JButton("9");
@@ -163,7 +165,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_9.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_9.setBounds(340, 100, 70, 70);
+		btnNum_9.setBounds(382, 211, 70, 70);
 		contentenorFinPago.add(btnNum_9);
 		
 		JButton btnNum_0 = new JButton("0");
@@ -173,7 +175,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_0.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_0.setBounds(180, 340, 70, 70);
+		btnNum_0.setBounds(222, 452, 70, 70);
 		contentenorFinPago.add(btnNum_0);
 		
 		JButton btnNum_000 = new JButton("000");
@@ -183,7 +185,7 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnNum_000.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnNum_000.setBounds(260, 340, 70, 70);
+		btnNum_000.setBounds(302, 452, 70, 70);
 		contentenorFinPago.add(btnNum_000);
 		
 		JButton btnPoint = new JButton(".");
@@ -200,45 +202,78 @@ public class FinPago extends JFrame {
 			}
 		});
 		btnPoint.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnPoint.setBounds(340, 340, 70, 70);
+		btnPoint.setBounds(382, 452, 70, 70);
 		contentenorFinPago.add(btnPoint);
 		
 		displayPago = new JTextField();
 		displayPago.setEditable(false);
-		displayPago.setText("$ ");
-		displayPago.setFont(new Font("Calibri", Font.BOLD, 40));
+		displayPago.setFont(new Font("Calibri", Font.BOLD, 30));
 		displayPago.setForeground(Color.YELLOW);
 		displayPago.setBackground(Color.BLACK);
 		displayPago.setHorizontalAlignment(SwingConstants.RIGHT);
-		displayPago.setBounds(180, 27, 230, 70);
+		displayPago.setBounds(222, 138, 230, 50);
 		contentenorFinPago.add(displayPago);
 		displayPago.setColumns(10);
 		
 		JButton Efectivo = new JButton("Efectivo");
 		Efectivo.setFont(new Font("Calibri", Font.BOLD, 40));
-		Efectivo.setBounds(448, 107, 202, 70);
+		Efectivo.setBounds(733, 91, 202, 70);
 		contentenorFinPago.add(Efectivo);
 		
 		JButton Tarjeta = new JButton("Tarjeta");
 		Tarjeta.setFont(new Font("Calibri", Font.BOLD, 40));
-		Tarjeta.setBounds(448, 27, 202, 70);
+		Tarjeta.setBounds(733, 212, 202, 70);
 		contentenorFinPago.add(Tarjeta);
 		
 		JButton Finalizar = new JButton("Finalizar");
 		Finalizar.setFont(new Font("Calibri", Font.BOLD, 40));
-		Finalizar.setBounds(448, 336, 202, 70);
+		Finalizar.setBounds(733, 495, 202, 70);
 		contentenorFinPago.add(Finalizar);
 		
 		txtCantidadAdeudada = new JTextField();
 		txtCantidadAdeudada.setFont(new Font("Tahoma", Font.BOLD, 16));
 		txtCantidadAdeudada.setBackground(Color.YELLOW);
 		txtCantidadAdeudada.setForeground(Color.RED);
-		txtCantidadAdeudada.setHorizontalAlignment(SwingConstants.RIGHT);
+		txtCantidadAdeudada.setHorizontalAlignment(SwingConstants.CENTER);
 		txtCantidadAdeudada.setEditable(false);
 		txtCantidadAdeudada.setText("Cantidad Adeudada");
-		txtCantidadAdeudada.setBounds(180, 8, 230, 20);
+		txtCantidadAdeudada.setBounds(222, 119, 230, 20);
 		contentenorFinPago.add(txtCantidadAdeudada);
 		txtCantidadAdeudada.setColumns(10);
+		
+		JButton btnBorrar = new JButton("Borrar");
+		btnBorrar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String BorrarValor = displayPago.getText();
+				if (BorrarValor.length() > 0) {
+					displayPago.setText(BorrarValor.substring(0, BorrarValor.length()-1));
+				}
+			}
+		});
+		btnBorrar.setFont(new Font("Calibri", Font.BOLD, 24));
+		btnBorrar.setBounds(462, 452, 100, 70);
+		contentenorFinPago.add(btnBorrar);
+		
+		textTotal = new JTextField();
+		textTotal.setText("Total");
+		textTotal.setHorizontalAlignment(SwingConstants.CENTER);
+		textTotal.setForeground(Color.BLUE);
+		textTotal.setFont(new Font("Tahoma", Font.BOLD, 16));
+		textTotal.setEditable(false);
+		textTotal.setColumns(10);
+		textTotal.setBackground(Color.WHITE);
+		textTotal.setBounds(222, 27, 230, 20);
+		contentenorFinPago.add(textTotal);
+		
+		displayTotal = new JTextField();
+		displayTotal.setHorizontalAlignment(SwingConstants.RIGHT);
+		displayTotal.setForeground(Color.BLUE);
+		displayTotal.setFont(new Font("Calibri", Font.BOLD, 40));
+		displayTotal.setEditable(false);
+		displayTotal.setColumns(10);
+		displayTotal.setBackground(Color.WHITE);
+		displayTotal.setBounds(222, 46, 230, 61);
+		contentenorFinPago.add(displayTotal);
 	}
 	private class SwingAction extends AbstractAction {
 		public SwingAction() {
