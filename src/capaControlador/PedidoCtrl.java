@@ -10,10 +10,15 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import capaDAO.DetallePedidoDAO;
+import capaDAO.PedidoDAO;
 import capaDAO.PedidoPixelDAO;
+import capaDAO.PreguntaDAO;
 import capaModelo.Cliente;
+import capaModelo.DetallePedido;
 import capaModelo.DetallePedidoPixel;
 import capaModelo.EstadoPedidoTienda;
+import capaModelo.Pregunta;
 import capaModelo.RespuestaPedidoPixel;
 
 public class PedidoCtrl {
@@ -61,6 +66,31 @@ public class PedidoCtrl {
 		
 		return listJSON.toJSONString();
 		
+	}
+	
+	public ArrayList<Pregunta> obtenerPreguntaProducto(int idProducto)
+	{
+		ArrayList<Pregunta> preguntaProducto = PreguntaDAO.obtenerPreguntaProducto(idProducto);
+		return(preguntaProducto);
+	}
+	
+	
+	public int InsertarEncabezadoPedido(int idtienda, int idcliente, String fechaPedido, String user)
+	{
+		int idPedidoNuevo = PedidoDAO.InsertarEncabezadoPedido(idtienda, idcliente, fechaPedido, user);
+		return(idPedidoNuevo);
+	}
+	
+	public int insertarDetallePedido(DetallePedido detPedido)
+	{
+		int idDetalleoNuevo = DetallePedidoDAO.insertarDetallePedido(detPedido);
+		return(idDetalleoNuevo);
+	}
+	
+	public boolean eliminarDetallePedido(int idDetallePedido)
+	{
+		boolean respuesta = DetallePedidoDAO.eliminarDetallePedido(idDetallePedido);
+		return(respuesta);
 	}
 
 }

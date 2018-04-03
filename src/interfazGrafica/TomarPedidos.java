@@ -10,17 +10,23 @@ import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.StringTokenizer;
 import java.awt.event.ActionEvent;
 import javax.swing.table.DefaultTableModel;
 
 import capaControlador.MenuCtrl;
 import capaControlador.ParametrosProductoCtrl;
+import capaControlador.PedidoCtrl;
 import capaModelo.ConfiguracionMenu;
+import capaModelo.DetallePedido;
+import capaModelo.Pregunta;
 import capaModelo.Producto;
 
 import javax.swing.border.CompoundBorder;
@@ -32,6 +38,8 @@ import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.URL;
+import java.sql.Date;
+import javax.swing.JTextField;
 
 public class TomarPedidos extends JFrame {
 
@@ -44,9 +52,16 @@ public class TomarPedidos extends JFrame {
 	private Object[][] botones;
 	//Parámetros que se tendrán en Tomador Pedidos para la selección de clientes
 	public static int idCliente = 0;
+	public static int idPedido = 0;
+	public static int idTienda = 0;
+	public static double totalPedido = 0;
+	public static String usuario = "";
 	public static String nombreCliente = "";
+	public static ArrayList<DetallePedido> detallesPedido = new ArrayList();
 	JLabel lblIdCliente;
 	JLabel lblNombreCliente;
+	private JTable tableDetallePedido;
+	private JTextField txtValorPedido;
 	/**
 	 * Launch the application.
 	 */
@@ -95,18 +110,53 @@ public class TomarPedidos extends JFrame {
 		table.setBounds(10, 272, 205, -260);
 		panelPedido.add(table);
 		
-		JTextPane textPane = new JTextPane();
-		textPane.setEditable(false);
-		textPane.setBounds(103, 236, 112, 20);
-		panelPedido.add(textPane);
-		
 		JLabel lblValorTotal = new JLabel("Valor Total ");
 		lblValorTotal.setBounds(10, 236, 83, 14);
 		panelPedido.add(lblValorTotal);
 		
 		JButton btnAnularItem = new JButton("Anular Item");
+		btnAnularItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int filaSeleccionada = tableDetallePedido.getSelectedRow();
+				if(filaSeleccionada == -1)
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún item del pedido para Eliminar " , "No ha Seleccionado item para Eliminar ", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				int idDetalleEliminar = (int)tableDetallePedido.getValueAt(filaSeleccionada, 0);
+				PedidoCtrl pedCtrl = new PedidoCtrl();
+				boolean respEliminar = pedCtrl.eliminarDetallePedido(idDetalleEliminar);
+				if(!respEliminar)
+				{
+					JOptionPane.showMessageDialog(null, "No fue posible Eliminar el item de pedido " , "Error al Eliminar", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				for(int j = 0; j < detallesPedido.size(); j++)
+				{
+					DetallePedido detCadaPedido = detallesPedido.get(j);
+					if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar)
+					{
+						detallesPedido.remove(j);
+						totalPedido = totalPedido - detCadaPedido.getValorTotal();
+						txtValorPedido.setText(Double.toString(totalPedido));
+						break;
+					}
+				}
+				pintarDetallePedido();
+				
+			}
+		});
 		btnAnularItem.setBounds(51, 265, 112, 36);
 		panelPedido.add(btnAnularItem);
+		
+		tableDetallePedido = new JTable();
+		tableDetallePedido.setBounds(10, 11, 205, 214);
+		panelPedido.add(tableDetallePedido);
+		
+		txtValorPedido = new JTextField();
+		txtValorPedido.setBounds(77, 233, 118, 20);
+		panelPedido.add(txtValorPedido);
+		txtValorPedido.setColumns(10);
 		
 		JPanel panelMenu = new JPanel();
 		panelMenu.setBorder(new LineBorder(new Color(0, 0, 0), 3));
@@ -244,20 +294,38 @@ public class TomarPedidos extends JFrame {
 				cliente.setVisible(true);
 			}
 		});
-		btnAsignarCliente.setBounds(263, 11, 116, 47);
+		btnAsignarCliente.setBounds(172, 11, 140, 47);
 		panelAcciones.add(btnAsignarCliente);
 		
 		JButton btnNewButton_1 = new JButton("Anular Pedido");
-		btnNewButton_1.setBounds(389, 11, 106, 47);
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				int resp = JOptionPane.showConfirmDialog(null, "¿Está seguro que desea Eliminar el Pedido que se está tomando?");
+				if (resp == 0)
+				{
+					idCliente = 0;
+					idPedido = 0;
+					idTienda = 0;
+					totalPedido = 0;
+					usuario = "";
+					nombreCliente = "";
+					detallesPedido = new ArrayList();
+					pintarDetallePedido();
+					txtValorPedido.setText("0");
+				}
+			}
+		});
+		btnNewButton_1.setBounds(333, 11, 140, 47);
 		panelAcciones.add(btnNewButton_1);
 		
 		JButton btnDescuento = new JButton("Descuento");
 		
-		btnDescuento.setBounds(505, 11, 97, 47);
+		btnDescuento.setBounds(505, 11, 140, 47);
 		panelAcciones.add(btnDescuento);
 		
 		JButton btnFinalizarPedido = new JButton("Finalizar Pedido");
-		btnFinalizarPedido.setBounds(612, 11, 89, 47);
+		btnFinalizarPedido.setBounds(668, 11, 140, 47);
 		panelAcciones.add(btnFinalizarPedido);
 		
 		JPanel panel = new JPanel();
@@ -327,7 +395,8 @@ public class TomarPedidos extends JFrame {
 					objConfMenu = (ConfiguracionMenu) objGenerico;
 					ParametrosProductoCtrl parPro = new ParametrosProductoCtrl();
 					Producto prodBoton = parPro.obtenerProducto(objConfMenu.getIdProducto());
-					btn = new JButton(prodBoton.getIdProducto() + " - " + prodBoton.getDescripcion());
+					btn = new JButton();
+					btn.setText("<html><center>"+ prodBoton.getIdProducto() + "- <br> " + prodBoton.getDescripcion()+"</center></html>");
 				}
 				if (noMenu)
 				{
@@ -336,6 +405,16 @@ public class TomarPedidos extends JFrame {
 				{
 					botones[i][j] = btn;
 				}
+				//Adicionamos para que tenga accion al dar dobleclick
+				btn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						
+						
+						capturarPreguntas(arg0.getSource());
+						
+					}
+				});
+				
 				numBoton++;
 			}
 		}
@@ -344,5 +423,85 @@ public class TomarPedidos extends JFrame {
 				"col1", "col2", "col3", "col4", "col5", "col6"
 			},botones);
 		tableMenu.setModel(model);
+	}
+	
+	public void capturarPreguntas(Object fuente)
+	{
+		
+		JButton boton = (JButton) fuente;
+		String texto = boton.getText();
+		texto = texto.replaceAll("<html>", "");
+		texto = texto.replaceAll("</html>", "");
+		texto = texto.replaceAll("<center>", "");
+		texto = texto.replaceAll("</center>", "");
+		texto = texto.replaceAll("<br>", "");
+		texto = texto.trim();
+		StringTokenizer StrTokenProducto = new StringTokenizer(texto,"-");
+		String strIdProducto = StrTokenProducto.nextToken();
+		int idProducto = Integer.parseInt(strIdProducto);
+		PedidoCtrl pedCtrl = new PedidoCtrl();
+		ArrayList<Pregunta> preguntasProducto = pedCtrl.obtenerPreguntaProducto(idProducto);
+		//Si el producto no tiene preguntas forzadas se podrá facturar inmediatamente
+		// Si es cierto lo anterior no se ha creado el pedido, por lo tanto deberemos de crear el pedido
+		if (idPedido == 0)
+		{
+			crearEncabezadoPedido();
+		}
+		//Esto significa que la elección no tiene preguntas Forzadas por lo tanto la adición del producto es directa
+		if (preguntasProducto.size() == 0)
+		{
+			ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
+			double precioProducto = parProducto.obtenerPrecioPilaProducto(idProducto);
+			double cantidad = 1;
+			DetallePedido detPedido = new DetallePedido(0,idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "");
+			//Capturamos el detalle pedido creado, validaremos si fue exitoso para agregarlo al contenedor y pantalla
+			int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
+			detPedido.setIdDetallePedido(idDetalle);
+			if(idDetalle > 0)
+			{
+				detallesPedido.add(detPedido);
+				totalPedido = totalPedido + detPedido.getValorTotal();
+				txtValorPedido.setText(Double.toString(totalPedido));
+				pintarDetallePedido();
+				
+			}
+		}
+		else
+		{
+			VentEleccionForzada ElForzada = new VentEleccionForzada(preguntasProducto);
+			ElForzada.setVisible(true);
+		}
+	}
+	
+	public void pintarDetallePedido()
+	{
+		//Clareamos el jtable
+		DefaultTableModel tb = (DefaultTableModel) tableDetallePedido.getModel();
+		tb.setRowCount(0);
+		//Recorremos el ArrayList de DetallePedido para agregarlo al Jtable
+		DefaultTableModel modeloDetalle = new DefaultTableModel();
+		tableDetallePedido.setModel(modeloDetalle);
+		modeloDetalle.setColumnIdentifiers(new Object [] {"idDetalle", "Descripción", "Cantidad ", "Valor"});
+		tableDetallePedido.getColumnModel().getColumn(0).setMaxWidth(0);
+		tableDetallePedido.getColumnModel().getColumn(0).setMinWidth(0);
+		tableDetallePedido.getTableHeader().getColumnModel().getColumn(0).setMaxWidth(0);
+		tableDetallePedido.getTableHeader().getColumnModel().getColumn(0).setMinWidth(0);
+		ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
+		for(int i = 0; i < detallesPedido.size();i++)
+		{
+			DetallePedido det = detallesPedido.get(i);
+			Producto proDet = parProducto.obtenerProducto(det.getIdProducto());
+			Object [] object = new Object[]{det.getIdDetallePedido(),proDet.getDescripcion(),det.getCantidad(),det.getValorTotal()};
+			modeloDetalle.addRow(object);
+		}
+	}
+	
+	public void crearEncabezadoPedido()
+	{
+		PedidoCtrl pedCtrl = new PedidoCtrl();
+		java.util.Date fechaActual = new java.util.Date();
+		Calendar hoy = Calendar.getInstance();
+		String fechaPedido = Integer.toString(hoy.get(Calendar.DAY_OF_MONTH)) + "/" + Integer.toString(hoy.get(Calendar.MONTH)) + "/" + Integer.toString(hoy.get(Calendar.YEAR));
+		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, usuario);
 	}
 }

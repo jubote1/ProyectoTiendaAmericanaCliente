@@ -71,7 +71,7 @@ public class VentanaPrincipal extends JFrame {
 		JButton btnEleccionForzada = new JButton("Eleccion Forzada");
 		btnEleccionForzada.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCRUDEleccionForzada EleccionForzada = new VentCRUDEleccionForzada();
+				VentCRUDPregunta EleccionForzada = new VentCRUDPregunta();
 				EleccionForzada.setVisible(true);
 			}
 		});

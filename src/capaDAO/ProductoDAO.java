@@ -66,6 +66,46 @@ public class ProductoDAO {
 		
 	}
 	
+	/**
+	 * Método en capa de acceso a datos que se encarga de retornar el precio de pila de un producto determinado
+	 * @param idProducto Se recibe como parámetro el idProducto al cual se le desea consultar el precio de pila
+	 * @return se retorna un valor double con precio.
+	 */
+	public static double obtenerPrecioPilaProducto(int idProducto)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double precioRetorno = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select precio1 from producto where idproducto = " + idProducto;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				
+				precioRetorno = rs.getDouble("precio1");
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(precioRetorno);
+		
+	}
+	
+	
 	public static Producto obtenerProducto(int idProducto)
 	{
 		Logger logger = Logger.getLogger("log_file");

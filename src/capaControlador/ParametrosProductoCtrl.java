@@ -256,6 +256,12 @@ public class ParametrosProductoCtrl {
 		 * y se retorna
 		 * @return se retorna un objeto de clase producto.
 		 */
+		public double obtenerPrecioPilaProducto(int idProducto)
+		{
+			double precioProducto = ProductoDAO.obtenerPrecioPilaProducto(idProducto);
+			return(precioProducto);
+		}
+		
 		public Producto obtenerProducto(int idProducto)
 		{
 			Producto producto = ProductoDAO.obtenerProducto(idProducto);
@@ -297,8 +303,17 @@ public class ParametrosProductoCtrl {
 			return(eleccionesForzadas);
 		}
 		
-		
-		
+		/**
+		 * Método de la capa controladora que se encarga de retornar las elecciones forzadas dada una pregunta  y el retorno
+		 * se realiza en un arrayList de objetos tipo Eleccion Forzada
+		 * @param idPreConsulta se recibe como parámetro el idPregunta con base en el cual se realiza el retorno de la información.
+		 * @return Se retorna un ArrayList 
+		 */
+		public ArrayList<EleccionForzada> obtEleccionesForzadas(int idPreConsulta)
+		{
+			ArrayList<EleccionForzada>  eleccionesForzadas = EleccionForzadaDAO.obtEleccionesForzadas(idPreConsulta);
+			return(eleccionesForzadas);
+		}
 		
 		
 		/**

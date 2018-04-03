@@ -3,7 +3,9 @@ package capaControlador;
 import java.util.ArrayList;
 
 import capaDAO.MunicipioDAO;
+import capaDAO.NomenclaturaDAO;
 import capaModelo.Municipio;
+import capaModelo.NomenclaturaDireccion;
 
 public class ParametrosDireccionCtrl {
 	
@@ -17,11 +19,26 @@ public class ParametrosDireccionCtrl {
 		return(municipios);
 	}
 	
-	
+	/**
+	 * Método de la capa controladora que se encarga de retornar los municipios dentro de un ArrayList de objetos
+	 * tipo Municipio
+	 * @return Un ArrayList con objetos tipo Municipio
+	 */
 	public ArrayList<Municipio> obtenerMunicipiosObjeto()
 	{
 		ArrayList<Municipio>  municipios = MunicipioDAO.obtenerMunicipiosObjeto();
 		return(municipios);
+	}
+	
+	/**
+	 * Método de la capa controladora que se encarga de retornar las Nomenclaturas de dirección dentro de un ArrayList de objetos
+	 * tipo NomenclaturaDireccion
+	 * @return Un ArrayList con objetos tipo NomenclaturaDireccion
+	 */
+	public ArrayList<NomenclaturaDireccion> obtenerNomenclaturas()
+	{
+		ArrayList<NomenclaturaDireccion>  nomen = NomenclaturaDAO.obtenerNomenclaturaDireccion();
+		return(nomen);
 	}
 	
 	/**

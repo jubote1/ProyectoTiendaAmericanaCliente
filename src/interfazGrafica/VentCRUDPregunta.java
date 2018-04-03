@@ -37,7 +37,7 @@ import javax.swing.JComboBox;
 import javax.swing.JScrollBar;
 import javax.swing.JCheckBox;
 
-public class VentCRUDEleccionForzada extends JFrame {
+public class VentCRUDPregunta extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField textIdPregunta;
@@ -62,7 +62,7 @@ public class VentCRUDEleccionForzada extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCRUDEleccionForzada frame = new VentCRUDEleccionForzada();
+					VentCRUDPregunta frame = new VentCRUDPregunta();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -133,7 +133,7 @@ public class VentCRUDEleccionForzada extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de impuestor.
 	 */
-	public VentCRUDEleccionForzada() {
+	public VentCRUDPregunta() {
 		setTitle("MAESTRO ELECCI\u00D3N FORZADA");
 		idPregunta = 0;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -328,7 +328,7 @@ public class VentCRUDEleccionForzada extends JFrame {
 				{
 					idProducto = Integer.parseInt(strIdProducto);
 				}
-				EleccionForzada eleccionFor = new EleccionForzada(0, idProducto, idPregunta, precio,estado);
+				EleccionForzada eleccionFor = new EleccionForzada(0, idProducto, "", idPregunta, precio,estado);
 				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
 				parCtrl.insertarEleccionForzada(eleccionFor);
 				DefaultTableModel modeloEleccion = pintarEleccionesForzadas();

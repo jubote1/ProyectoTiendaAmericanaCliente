@@ -66,6 +66,49 @@ public class EleccionForzadaDAO {
 		
 	}
 	
+	public static ArrayList<EleccionForzada> obtEleccionesForzadas(int idPreConsulta)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<EleccionForzada> eleccionesForzadas = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.ideleccion_forzada, a.idpregunta, a.idproducto, b.descripcion, a.precio, a.estado from eleccion_forzada a , producto b  where a.idproducto = b.idproducto and  a.idpregunta = " + idPreConsulta;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			int idEleccionForzada,idPregunta,idProducto,estado;
+			String descripcion, precio;
+			while(rs.next()){
+				idEleccionForzada = rs.getInt("ideleccion_forzada");
+				idPregunta = rs.getInt("idpregunta");
+				idProducto = rs.getInt("idproducto");
+				estado = rs.getInt("estado");
+				descripcion = rs.getString("descripcion");
+				precio = rs.getString("precio");
+				EleccionForzada eleFor = new EleccionForzada(idEleccionForzada, idProducto, descripcion, idPregunta, precio,estado);
+				eleccionesForzadas.add(eleFor);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(eleccionesForzadas);
+		
+	}
+	
 	/**
 	 * Método de la capa DAO que se encarga de insertar una eleccion_forzadao.
 	 * @param Recibe un objeto de eleccion_forzada del cual se extrae la información para la inserción.

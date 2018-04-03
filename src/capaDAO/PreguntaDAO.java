@@ -215,4 +215,61 @@ public class PreguntaDAO {
 		}
 		return(true);
 	}
+	
+	/**
+	 * Método de la capa DAO que se encarga de retornar las preguntas que tiene asociadas uno producto con el fin de completar el pedido
+	 * y realizar la facturación de productos
+	 * @param idProducto Se recibe como parámetro el id productoy y por intermedio de unions se realiza la consulta, lo
+	 * anterior debido a que las 5 posibles preguntas están dentro de un mismo registro en la tabla producto.
+	 * @return
+	 */
+	public static ArrayList<Pregunta> obtenerPreguntaProducto(int idProducto)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ArrayList<Pregunta> preguntaProducto = new ArrayList();
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada1 and  b.idproducto = " + idProducto + " union "
+					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada2 and  b.idproducto = " + idProducto + " union "
+					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada3 and  b.idproducto = " + idProducto + " union "
+					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada4 and  b.idproducto = " + idProducto + " union "
+					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada5 and  b.idproducto = " + idProducto;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			
+			String tituloPregunta, descripcion;
+			int idPregunta, obligaEleccion, numeroMaximoEleccion, estado, permiteDividir;
+			Pregunta pregunta;
+			while(rs.next()){
+				idPregunta = rs.getInt("idpregunta");
+				tituloPregunta = rs.getString("titulopregunta");
+				obligaEleccion = rs.getInt("obliga_eleccion");
+				numeroMaximoEleccion = rs.getInt("numero_maximo_eleccion");
+				estado = rs.getInt("estado");
+				permiteDividir = rs.getInt("permite_dividir");
+				descripcion = rs.getString("descripcion");
+				pregunta = new Pregunta(idPregunta, tituloPregunta, obligaEleccion, numeroMaximoEleccion, estado, permiteDividir, descripcion);
+				preguntaProducto.add(pregunta);
+			}
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(preguntaProducto);
+	}
+	
+	
 }

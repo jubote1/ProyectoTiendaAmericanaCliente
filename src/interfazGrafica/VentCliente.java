@@ -12,6 +12,7 @@ import capaControlador.ClienteCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaModelo.Cliente;
 import capaModelo.Municipio;
+import capaModelo.NomenclaturaDireccion;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -227,13 +228,13 @@ public class VentCliente extends JFrame {
 			}
 		});
 		initComboBoxMunicipios();
+		initcomboNomenclatura();
 		if (idCliente == 0)
 		{
 			
 		}
 		else
 		{
-			System.out.println("Se llamo pantalla con parámetro de idCliente " + idCliente );
 			ClienteCtrl cliCtrl = new ClienteCtrl();
 			Cliente clienteConsultado =  cliCtrl.obtenerClientePorId(idCliente);
 			textIdCliente.setText(Integer.toString(clienteConsultado.getIdcliente()));
@@ -247,11 +248,19 @@ public class VentCliente extends JFrame {
 			textZona.setText(clienteConsultado.getZonaDireccion());
 			textObservacion.setText(clienteConsultado.getObservacion());
 			String munClienteEditar =  clienteConsultado.getMunicipio();
-
+			int idNomencla = clienteConsultado.getIdnomenclatura();
+			//Conectar selección para municipio
 			for (int i = 0; i < comboMunicipio.getModel().getSize(); i++) {
 				Municipio object = (Municipio)comboMunicipio.getModel().getElementAt(i);
 				if(object.toString().equals(munClienteEditar)){
 					comboMunicipio.setSelectedItem(object);
+				}
+			}
+			//Conectar selección para Nomenclatura
+			for (int i = 0; i < comboNomenclatura.getModel().getSize(); i++) {
+				NomenclaturaDireccion object = (NomenclaturaDireccion)comboNomenclatura.getModel().getElementAt(i);
+				if(object.getIdnomemclatura() == idNomencla){
+					comboNomenclatura.setSelectedItem(object);
 				}
 			}
 		}
@@ -268,5 +277,16 @@ public class VentCliente extends JFrame {
 		}
 	}
 	
+	
+	public void initcomboNomenclatura()
+	{
+		ParametrosDireccionCtrl parCtrl = new ParametrosDireccionCtrl();
+		ArrayList<NomenclaturaDireccion> nomen = parCtrl.obtenerNomenclaturas();
+		for(int i = 0; i<nomen.size();i++)
+		{
+			NomenclaturaDireccion fila = (NomenclaturaDireccion)  nomen.get(i);
+			comboNomenclatura.addItem(fila);
+		}
+	}
 	
 }

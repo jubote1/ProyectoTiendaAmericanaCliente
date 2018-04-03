@@ -4,6 +4,7 @@ public class EleccionForzada {
 	
 	private int idEleccionForzada;
 	private int idProducto;
+	private String descripcion;
 	private int idPregunta;
 	private String precio;
 	private int estado;
@@ -28,6 +29,12 @@ public class EleccionForzada {
 
 	
 	
+	public String getDescripcion() {
+		return descripcion;
+	}
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
 	public String getPrecio() {
 		return precio;
 	}
@@ -40,14 +47,18 @@ public class EleccionForzada {
 	public void setEstado(int estado) {
 		this.estado = estado;
 	}
-	public EleccionForzada(int idEleccionForzada, int idProducto, int idPregunta, String precio, int estado) {
+	public EleccionForzada(int idEleccionForzada, int idProducto, String descripcion, int idPregunta, String precio,
+			int estado) {
 		super();
 		this.idEleccionForzada = idEleccionForzada;
 		this.idProducto = idProducto;
+		this.descripcion = descripcion;
 		this.idPregunta = idPregunta;
 		this.precio = precio;
 		this.estado = estado;
 	}
+	
+	
 	
 	
 	
