@@ -46,11 +46,11 @@ public class TomarPedidos extends JFrame {
 	private JPanel contentPane;
 	private JTable table;
 	private JTable tableMenu;
-	//Creamos una variable Arreglo Global que contendrá la Configuración Menú
+	//Creamos una variable Arreglo Global que contendrï¿½ la Configuraciï¿½n Menï¿½
 	private ConfiguracionMenu[][] confiMenu;
-	// El arreglo con los botones del menú activo se manejará como variable global
+	// El arreglo con los botones del menï¿½ activo se manejarï¿½ como variable global
 	private Object[][] botones;
-	//Parámetros que se tendrán en Tomador Pedidos para la selección de clientes
+	//Parï¿½metros que se tendrï¿½n en Tomador Pedidos para la selecciï¿½n de clientes
 	public static int idCliente = 0;
 	public static int idPedido = 0;
 	public static int idTienda = 0;
@@ -172,6 +172,7 @@ public class TomarPedidos extends JFrame {
 		tableMenu.setDefaultRenderer(Object.class, new ButtonRenderer());
 		tableMenu.setCellEditor(new ButtonEditor());
 		tableMenu.setRowHeight(46);
+		tableMenu.setOpaque(false);
 		JButton btn;
 			
 		botones = new Object[6][6];
@@ -288,13 +289,13 @@ public class TomarPedidos extends JFrame {
 		JButton btnAsignarCliente = new JButton("Asignar Cliente");
 		btnAsignarCliente.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//Se debería crear una nueva ventana para la asignación y creación de clientes
-				//Al momento de instanciar VentCliente se le pasará como parámetro el idCliente del pedido
+				//Se deberï¿½a crear una nueva ventana para la asignaciï¿½n y creaciï¿½n de clientes
+				//Al momento de instanciar VentCliente se le pasarï¿½ como parï¿½metro el idCliente del pedido
 				VentCliente cliente = new VentCliente(idCliente);
 				cliente.setVisible(true);
 			}
 		});
-		btnAsignarCliente.setBounds(172, 11, 140, 47);
+		btnAsignarCliente.setBounds(108, 11, 140, 47);
 		panelAcciones.add(btnAsignarCliente);
 		
 		JButton btnNewButton_1 = new JButton("Anular Pedido");
@@ -316,16 +317,25 @@ public class TomarPedidos extends JFrame {
 				}
 			}
 		});
-		btnNewButton_1.setBounds(333, 11, 140, 47);
+		btnNewButton_1.setBounds(281, 11, 140, 47);
 		panelAcciones.add(btnNewButton_1);
 		
 		JButton btnDescuento = new JButton("Descuento");
 		
-		btnDescuento.setBounds(505, 11, 140, 47);
+		btnDescuento.setBounds(445, 11, 140, 47);
 		panelAcciones.add(btnDescuento);
 		
 		JButton btnFinalizarPedido = new JButton("Finalizar Pedido");
-		btnFinalizarPedido.setBounds(668, 11, 140, 47);
+
+		btnFinalizarPedido.setBounds(595, 11, 106, 47);
+
+		btnFinalizarPedido.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				FinPago Finalizar = new FinPago();
+				Finalizar.setVisible(true);
+			}
+		});
+		btnFinalizarPedido.setBounds(612, 11, 89, 47);
 		panelAcciones.add(btnFinalizarPedido);
 		
 		JPanel panel = new JPanel();
@@ -373,7 +383,7 @@ public class TomarPedidos extends JFrame {
 //		int intMultimenu = Integer.parseInt(StrMulti.nextToken().trim());
 		MenuCtrl menuCtrl = new MenuCtrl();
 		confiMenu = menuCtrl.obtenerConfMenu(intMultimenu);
-		//Aqui debería pintarse el menú
+		//Aqui deberï¿½a pintarse el menï¿½
 		JButton btn = new JButton();
 		ConfiguracionMenu objConfMenu;
 		Object objGenerico;
@@ -386,9 +396,12 @@ public class TomarPedidos extends JFrame {
 				boolean noMenu = false;
 				if (objGenerico == null)
 				{
-					//btn = new JButton("Menú " + numBoton);
+					//btn = new JButton("Menï¿½ " + numBoton);
 					btn = new JButton("");
 					noMenu = true;
+					btn.setOpaque(false);
+					btn.setBorderPainted(false);
+					btn.setContentAreaFilled(false);
 				}
 				else
 				{
@@ -424,6 +437,7 @@ public class TomarPedidos extends JFrame {
 			},botones);
 		tableMenu.setModel(model);
 	}
+
 	
 	public void capturarPreguntas(Object fuente)
 	{
@@ -504,4 +518,5 @@ public class TomarPedidos extends JFrame {
 		String fechaPedido = Integer.toString(hoy.get(Calendar.DAY_OF_MONTH)) + "/" + Integer.toString(hoy.get(Calendar.MONTH)) + "/" + Integer.toString(hoy.get(Calendar.YEAR));
 		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, usuario);
 	}
+
 }
