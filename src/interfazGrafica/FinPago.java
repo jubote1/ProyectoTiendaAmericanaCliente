@@ -32,8 +32,9 @@ public class FinPago extends JFrame {
 	private JTextField displayPago;
 	private JTextField txtCantidadAdeudada;
 	
-	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0  ;
+	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = 100000/*TomarPedidos.totalPedido*/ ;
 	private JTable tablePago;
+	private JTextField displayTotal;
 	
 		
 	/**
@@ -159,25 +160,25 @@ public class FinPago extends JFrame {
 		btnNum_6.setBounds(382, 292, 70, 70);
 		contentenorFinPago.add(btnNum_6);
 		
-		JButton butNum_7 = new JButton("7");
-		butNum_7.addActionListener(new ActionListener() {
+		JButton btnNum_7 = new JButton("7");
+		btnNum_7.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				displayPago.setText(displayPago.getText()+"7");
 			}
 		});
-		butNum_7.setFont(new Font("Calibri", Font.BOLD, 24));
-		butNum_7.setBounds(222, 211, 70, 70);
-		contentenorFinPago.add(butNum_7);
+		btnNum_7.setFont(new Font("Calibri", Font.BOLD, 24));
+		btnNum_7.setBounds(222, 211, 70, 70);
+		contentenorFinPago.add(btnNum_7);
 		
-		JButton butNum_8 = new JButton("8");
-		butNum_8.addActionListener(new ActionListener() {
+		JButton btnNum_8 = new JButton("8");
+		btnNum_8.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				displayPago.setText(displayPago.getText()+"8");
 			}
 		});
-		butNum_8.setFont(new Font("Calibri", Font.BOLD, 24));
-		butNum_8.setBounds(302, 211, 70, 70);
-		contentenorFinPago.add(butNum_8);
+		btnNum_8.setFont(new Font("Calibri", Font.BOLD, 24));
+		btnNum_8.setBounds(302, 211, 70, 70);
+		contentenorFinPago.add(btnNum_8);
 		
 		JButton btnNum_9 = new JButton("9");
 		btnNum_9.addActionListener(new ActionListener() {
@@ -236,20 +237,10 @@ public class FinPago extends JFrame {
 		contentenorFinPago.add(displayPago);
 		displayPago.setColumns(10);
 		
-		JButton Efectivo = new JButton("Efectivo");
-		Efectivo.setFont(new Font("Calibri", Font.BOLD, 40));
-		Efectivo.setBounds(606, 235, 202, 70);
-		contentenorFinPago.add(Efectivo);
-		
-		JButton Tarjeta = new JButton("Tarjeta");
-		Tarjeta.setFont(new Font("Calibri", Font.BOLD, 40));
-		Tarjeta.setBounds(606, 316, 202, 70);
-		contentenorFinPago.add(Tarjeta);
-		
-		JButton Finalizar = new JButton("Finalizar");
-		Finalizar.setFont(new Font("Calibri", Font.BOLD, 40));
-		Finalizar.setBounds(733, 495, 202, 70);
-		contentenorFinPago.add(Finalizar);
+		JButton btnFinalizar = new JButton("Finalizar");
+		btnFinalizar.setFont(new Font("Calibri", Font.BOLD, 40));
+		btnFinalizar.setBounds(733, 495, 202, 70);
+		contentenorFinPago.add(btnFinalizar);
 		
 		txtCantidadAdeudada = new JTextField();
 		txtCantidadAdeudada.setFont(new Font("Tahoma", Font.BOLD, 16));
@@ -276,19 +267,44 @@ public class FinPago extends JFrame {
 		contentenorFinPago.add(btnBorrar);
 		
 		JButton btnAplicar = new JButton("Aplicar");
-		btnAplicar.setFont(new Font("Calibri", Font.BOLD, 30));
+		btnAplicar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnAplicar.setText("Aplicar");
+			}
+		});
+		btnAplicar.setFont(new Font("Calibri", Font.BOLD, 24));
 		btnAplicar.setBounds(606, 394, 202, 70);
 		contentenorFinPago.add(btnAplicar);
+		
+		JButton btnEfectivo = new JButton("Efectivo");
+		btnEfectivo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnAplicar.setText(btnAplicar.getText()+" "+btnEfectivo.getText());
+			}
+		});
+		btnEfectivo.setFont(new Font("Calibri", Font.BOLD, 40));
+		btnEfectivo.setBounds(606, 211, 202, 70);
+		contentenorFinPago.add(btnEfectivo);
+		
+		JButton btnTarjeta = new JButton("Tarjeta");
+		btnTarjeta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnAplicar.setText(btnAplicar.getText()+" "+btnTarjeta.getText());
+			}
+		});
+		btnTarjeta.setFont(new Font("Calibri", Font.BOLD, 40));
+		btnTarjeta.setBounds(606, 292, 202, 70);
+		contentenorFinPago.add(btnTarjeta);
 		
 		tablePago = new JTable();
 		tablePago.setEnabled(false);
 		tablePago.setFont(new Font("Calibri", Font.PLAIN, 20));
 		tablePago.setModel(new DefaultTableModel(
 			new Object[][] {
-				{"Total", Formato(TomarPedidos.totalPedido)},
-				{"Efectivo", null},
-				{"Tarjeta", null},
-				{"Cambio", null},
+				{"Total", Formato(Total)},
+				{"Efectivo", Formato(Efectivo)},
+				{"Tarjeta", Formato(Tarjeta)},
+				{"Cambio", Formato(Cambio)},
 			},
 			new String[] {
 				"New column", "New column"
@@ -296,6 +312,18 @@ public class FinPago extends JFrame {
 		));
 		tablePago.setBounds(10, 366, 202, 156);
 		contentenorFinPago.add(tablePago);
+		
+		displayTotal = new JTextField();
+		displayTotal.setHorizontalAlignment(SwingConstants.RIGHT);
+		displayTotal.setForeground(Color.BLUE);
+		displayTotal.setFont(new Font("Calibri", Font.BOLD, 32));
+		displayTotal.setEditable(false);
+		displayTotal.setColumns(10);
+		displayTotal.setBackground(Color.WHITE);
+		displayTotal.setBounds(222, 50, 230, 50);
+		contentenorFinPago.add(displayTotal);
+		displayTotal.setText(Formato(Total));
+		
 	}
 	private class SwingAction extends AbstractAction {
 		public SwingAction() {
