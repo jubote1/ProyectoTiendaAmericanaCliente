@@ -24,6 +24,8 @@ import javax.swing.JTextField;
 import java.awt.event.KeyAdapter;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import java.awt.GridLayout;
+import javax.swing.border.LineBorder;
 
 public class FinPago extends JFrame {
 
@@ -32,7 +34,8 @@ public class FinPago extends JFrame {
 	private JTextField displayPago;
 	private JTextField txtCantidadAdeudada;
 	
-	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = 100000/*TomarPedidos.totalPedido*/ ;
+	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = 36000/*TomarPedidos.totalPedido*/,Deuda = Total ;
+	public static boolean boolEfectivo = false, boolTarjeta = false; 
 	private JTable tablePago;
 	private JTextField displayTotal;
 	
@@ -238,6 +241,11 @@ public class FinPago extends JFrame {
 		displayPago.setColumns(10);
 		
 		JButton btnFinalizar = new JButton("Finalizar");
+		btnFinalizar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
+		btnFinalizar.setEnabled(false);
 		btnFinalizar.setFont(new Font("Calibri", Font.BOLD, 40));
 		btnFinalizar.setBounds(733, 495, 202, 70);
 		contentenorFinPago.add(btnFinalizar);
@@ -249,7 +257,7 @@ public class FinPago extends JFrame {
 		txtCantidadAdeudada.setHorizontalAlignment(SwingConstants.CENTER);
 		txtCantidadAdeudada.setEditable(false);
 		txtCantidadAdeudada.setText("Cantidad Adeudada");
-		txtCantidadAdeudada.setBounds(222, 119, 230, 20);
+		txtCantidadAdeudada.setBounds(222, 66, 230, 20);
 		contentenorFinPago.add(txtCantidadAdeudada);
 		txtCantidadAdeudada.setColumns(10);
 		
@@ -267,36 +275,16 @@ public class FinPago extends JFrame {
 		contentenorFinPago.add(btnBorrar);
 		
 		JButton btnAplicar = new JButton("Aplicar");
-		btnAplicar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				btnAplicar.setText("Aplicar");
-			}
-		});
 		btnAplicar.setFont(new Font("Calibri", Font.BOLD, 24));
 		btnAplicar.setBounds(606, 394, 202, 70);
 		contentenorFinPago.add(btnAplicar);
-		
-		JButton btnEfectivo = new JButton("Efectivo");
-		btnEfectivo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				btnAplicar.setText(btnAplicar.getText()+" "+btnEfectivo.getText());
-			}
-		});
-		btnEfectivo.setFont(new Font("Calibri", Font.BOLD, 40));
-		btnEfectivo.setBounds(606, 211, 202, 70);
-		contentenorFinPago.add(btnEfectivo);
-		
-		JButton btnTarjeta = new JButton("Tarjeta");
-		btnTarjeta.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				btnAplicar.setText(btnAplicar.getText()+" "+btnTarjeta.getText());
-			}
-		});
-		btnTarjeta.setFont(new Font("Calibri", Font.BOLD, 40));
-		btnTarjeta.setBounds(606, 292, 202, 70);
-		contentenorFinPago.add(btnTarjeta);
+		btnAplicar.setEnabled(false);
 		
 		tablePago = new JTable();
+		tablePago.setShowGrid(false);
+		tablePago.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		tablePago.setShowHorizontalLines(false);
+		tablePago.setShowVerticalLines(false);
 		tablePago.setEnabled(false);
 		tablePago.setFont(new Font("Calibri", Font.PLAIN, 20));
 		tablePago.setModel(new DefaultTableModel(
@@ -310,8 +298,9 @@ public class FinPago extends JFrame {
 				"New column", "New column"
 			}
 		));
-		tablePago.setBounds(10, 366, 202, 156);
+		tablePago.setBounds(10, 366, 202, 120);
 		contentenorFinPago.add(tablePago);
+		tablePago.setRowHeight(30);
 		
 		displayTotal = new JTextField();
 		displayTotal.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -320,9 +309,78 @@ public class FinPago extends JFrame {
 		displayTotal.setEditable(false);
 		displayTotal.setColumns(10);
 		displayTotal.setBackground(Color.WHITE);
-		displayTotal.setBounds(222, 50, 230, 50);
+		displayTotal.setBounds(222, 87, 230, 50);
 		contentenorFinPago.add(displayTotal);
-		displayTotal.setText(Formato(Total));
+		displayTotal.setText(Formato(Deuda));
+		
+		JPanel panelMetodosPagos = new JPanel();
+		panelMetodosPagos.setBounds(606, 178, 204, 205);
+		contentenorFinPago.add(panelMetodosPagos);
+		panelMetodosPagos.setLayout(new GridLayout(2, 1, 0, 0));
+		
+		JButton btnEfectivo = new JButton("Efectivo");
+		panelMetodosPagos.add(btnEfectivo);
+		btnEfectivo.setBackground(new Color(230,230,230));
+		
+		btnEfectivo.setFont(new Font("Calibri", Font.BOLD, 40));
+		
+		JButton btnTarjeta = new JButton("Tarjeta");
+		panelMetodosPagos.add(btnTarjeta);
+		btnTarjeta.setBackground(new Color(230,230,230));
+		btnTarjeta.setFont(new Font("Calibri", Font.BOLD, 40));
+		
+		btnEfectivo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnAplicar.setText("Aplicar "+btnEfectivo.getText());
+				btnEfectivo.setBackground(new Color(86,106,187));
+				btnTarjeta.setBackground(new Color(230,230,230));
+				btnAplicar.setEnabled(true);
+				boolEfectivo = true;
+				boolTarjeta = false;
+			}
+		});
+		
+		btnTarjeta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnAplicar.setText("Aplicar "+btnTarjeta.getText());
+				btnTarjeta.setBackground(new Color(86,106,187));
+				btnEfectivo.setBackground(new Color(230,230,230));
+				btnAplicar.setEnabled(true);
+				boolEfectivo = false;
+				boolTarjeta = true;
+			}
+		});
+		
+		btnAplicar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnAplicar.setText("Aplicar");
+				if (boolEfectivo) {
+					Deuda -= Double.parseDouble(displayPago.getText());
+					Efectivo += Double.parseDouble(displayPago.getText()); 
+					displayPago.setText("");
+					tablePago.setValueAt(Formato(Efectivo), 1, 1);
+					if (Total < Efectivo + Tarjeta) {
+						Cambio = Deuda * - 1;
+						tablePago.setValueAt(Formato(Cambio), 3, 1);
+						Deuda = 0;
+					}
+				}else if (boolTarjeta) {
+					Deuda -= Double.parseDouble(displayPago.getText());
+					Tarjeta += Double.parseDouble(displayPago.getText());
+					displayPago.setText("");
+					tablePago.setValueAt(Formato(Tarjeta), 2, 1);
+					if (Total < Efectivo + Tarjeta) {
+						Cambio = Deuda * - 1;
+						tablePago.setValueAt(Formato(Cambio), 3, 1);
+						Deuda = 0;
+					}
+				}
+				displayTotal.setText(Formato(Deuda));
+				if (Deuda == 0) {
+					btnFinalizar.setEnabled(true);
+				}
+			}
+		});
 		
 	}
 	private class SwingAction extends AbstractAction {
