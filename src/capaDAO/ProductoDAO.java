@@ -105,6 +105,40 @@ public class ProductoDAO {
 		
 	}
 	
+	public static double obtenerPrecioProducto(String precio, int idProducto)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double precioRetorno = 0;
+		String consulta = "";
+		try
+		{
+			Statement stm = con1.createStatement();
+			consulta = "select " + precio + " from producto where idproducto = " + idProducto;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				
+				precioRetorno = rs.getDouble("precio1");
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString() + consulta);
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(precioRetorno);
+		
+	}
 	
 	public static Producto obtenerProducto(int idProducto)
 	{

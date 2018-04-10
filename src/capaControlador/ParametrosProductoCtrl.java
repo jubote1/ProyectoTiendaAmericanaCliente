@@ -262,6 +262,51 @@ public class ParametrosProductoCtrl {
 			return(precioProducto);
 		}
 		
+		
+		/**
+		 * Método de la clase controlador que se encarga de dados unas elecciones y idproducto, verificar este producto
+		 * que precio tiene para las elecciones y retornarlo como un valor double
+		 * @param elecciones ArrayList con las elecciones disponibles
+		 * @param idProducto del cual se quiere retornar el valor el precio
+		 * @return Se retorna valor double con el valor del precio encontrado para el producto en el listado de EleccionesForzadas.
+		 */
+		public double obtenerPrecioEleccion(ArrayList<EleccionForzada> elecciones, int idProducto)
+		{
+			double  douPrecio = 0;
+			EleccionForzada EleForzadaRet;
+			String strPrecio = "";
+			for(int i = 0 ; i < elecciones.size(); i++ )
+			{
+				EleForzadaRet = elecciones.get(i);
+				if(EleForzadaRet.getIdProducto() == idProducto)
+				{
+					strPrecio = EleForzadaRet.getPrecio();
+					douPrecio = obtenerPrecioProducto(strPrecio, idProducto);
+					break;
+				}
+				
+			}
+			return(douPrecio);
+		}
+		
+		/**
+		 * Método que se encarga de retonar el precio de un preoducto de acuerdo  a lo parámetros enviado
+		 * @param precio se recibe como un string el precio que se desea retornar.
+		 * @param idProducto Se recibe el idProducto del cual se desea realizar la consulta
+		 * @return Se retorna un valor double con el precio retornado en la consulta
+		 */
+		public double obtenerPrecioProducto(String precio, int idProducto)
+		{
+			double precioProducto = ProductoDAO.obtenerPrecioProducto(precio, idProducto);
+			return(precioProducto);
+		}
+		
+		/**
+		 * Método que encarga en la capa controladora de retornar la consulta de un producto con base en el parámetro
+		 * ingresado
+		 * @param idProducto con en el cual se realiza la consulta del producto
+		 * @return un objeto de la clase Producto con la inforación del producto
+		 */
 		public Producto obtenerProducto(int idProducto)
 		{
 			Producto producto = ProductoDAO.obtenerProducto(idProducto);

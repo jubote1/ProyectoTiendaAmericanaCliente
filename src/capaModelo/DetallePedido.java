@@ -10,6 +10,7 @@ public class DetallePedido {
 	private double valorUnitario;
 	private double valorTotal;
 	private String observacion;
+	private int idDetallePedidoMaster;
 	public int getIdDetallePedido() {
 		return idDetallePedido;
 	}
@@ -52,8 +53,16 @@ public class DetallePedido {
 	public void setObservacion(String observacion) {
 		this.observacion = observacion;
 	}
+	
+	
+	public int getIdDetallePedidoMaster() {
+		return idDetallePedidoMaster;
+	}
+	public void setIdDetallePedidoMaster(int idDetallePedidoMaster) {
+		this.idDetallePedidoMaster = idDetallePedidoMaster;
+	}
 	public DetallePedido(int idDetallePedido, int idPedidoTienda, int idProducto, double cantidad, double valorUnitario,
-			double valorTotal, String observacion) {
+			double valorTotal, String observacion, int idDetallePedidoMaster) {
 		super();
 		this.idDetallePedido = idDetallePedido;
 		this.idPedidoTienda = idPedidoTienda;
@@ -62,7 +71,9 @@ public class DetallePedido {
 		this.valorUnitario = valorUnitario;
 		this.valorTotal = valorTotal;
 		this.observacion = observacion;
+		this.idDetallePedidoMaster = idDetallePedidoMaster;
 	}
+
 	
 	
 	

@@ -92,5 +92,11 @@ public class PedidoCtrl {
 		boolean respuesta = DetallePedidoDAO.eliminarDetallePedido(idDetallePedido);
 		return(respuesta);
 	}
+	
+	public boolean validarDetalleMaster(int idDetallePedido)
+	{
+		boolean respuesta = DetallePedidoDAO.validarDetalleMaster(idDetallePedido);
+		return(respuesta);
+	}
 
 }

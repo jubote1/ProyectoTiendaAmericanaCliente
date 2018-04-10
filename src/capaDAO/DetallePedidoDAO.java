@@ -24,7 +24,7 @@ public class DetallePedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into detalle_pedido (idpedidotienda,idproducto,cantidad, valorunitario,valortotal,observacion) values (" + detPedido.getIdPedidoTienda() + ", " + detPedido.getIdProducto() + ", " + detPedido.getCantidad() + " , " + detPedido.getValorUnitario() + " , " + detPedido.getValorTotal() + " , '" + detPedido.getObservacion() + "')"; 
+			String insert = "insert into detalle_pedido (idpedidotienda,idproducto,cantidad, valorunitario,valortotal,observacion, iddetalle_pedido_master) values (" + detPedido.getIdPedidoTienda() + ", " + detPedido.getIdProducto() + ", " + detPedido.getCantidad() + " , " + detPedido.getValorUnitario() + " , " + detPedido.getValorTotal() + " , '" + detPedido.getObservacion() + "' , " + detPedido.getIdDetallePedidoMaster() + ")"; 
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
@@ -62,6 +62,9 @@ public class DetallePedidoDAO {
 			String delete = "delete from detalle_pedido  where iddetalle_pedido = " + idDetallePedido ;
 			logger.info(delete);
 			stm.executeUpdate(delete);
+			delete = "delete from detalle_pedido  where iddetalle_pedido_master = " + idDetallePedido;
+			logger.info(delete);
+			stm.executeUpdate(delete);
 			stm.close();
 			con1.close();
 			return(true);
@@ -76,6 +79,51 @@ public class DetallePedidoDAO {
 			}
 			return(false);
 		}
+		
+		
+	}
+	
+	public static boolean validarDetalleMaster(int idDetallePedido)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select iddetalle_pedido from detalle_pedido  where iddetalle_pedido_master = " + idDetallePedido ;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while (rs.next())
+			{
+				respuesta = true;
+				break;
+			}
+			consulta = "select iddetalle_pedido from detalle_pedido  where iddetalle_pedido = " + idDetallePedido + " and iddetalle_pedido_master =  0";
+			logger.info(consulta);
+			rs = stm.executeQuery(consulta);
+			while (rs.next())
+			{
+				respuesta = true;
+				break;
+			}
+			stm.close();
+			con1.close();
+			
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
 		
 	}
 	
