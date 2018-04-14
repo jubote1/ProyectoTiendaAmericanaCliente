@@ -7,6 +7,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.parser.ParserDelegator;
+
+import capaControlador.PedidoCtrl;
+
 import javax.swing.JTextPane;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
@@ -34,7 +37,7 @@ public class FinPago extends JFrame {
 	private JTextField displayPago;
 	private JTextField txtCantidadAdeudada;
 	
-	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = 36000/*TomarPedidos.totalPedido*/,Deuda = Total ;
+	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = TomarPedidos.totalPedido/*36000*/,Deuda = Total ;
 	public static boolean boolEfectivo = true, boolTarjeta = false; 
 	private JTable tablePago;
 	private JTextField displayTotal;
@@ -267,6 +270,19 @@ public class FinPago extends JFrame {
 		JButton btnFinalizar = new JButton("Finalizar");
 		btnFinalizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				//Tomamos la información para insertar la forma de pago
+				PedidoCtrl pedCtrl = new PedidoCtrl();
+				// Se envían datos para la inserción de la forma de pago.
+				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, TomarPedidos.idPedido);
+				if(resFormaPago)
+				{
+					// En este punto finalizamos el pedido
+					boolean resFinPedido = pedCtrl.finalizarPedido(TomarPedidos.idPedido, 30/*tiempoPedido*/);
+					if (resFinPedido)
+					{
+						dispose();
+					}
+				}
 			}
 		});
 		btnFinalizar.setEnabled(false);

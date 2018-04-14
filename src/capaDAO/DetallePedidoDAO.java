@@ -83,6 +83,37 @@ public class DetallePedidoDAO {
 		
 	}
 	
+	public static boolean eliminarDetallesPedido(int idPedido)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		int idDetalleInsertado = 0;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String delete = "delete from detalle_pedido  where idpedidotienda = " + idPedido ;
+			logger.info(delete);
+			stm.executeUpdate(delete);
+			stm.close();
+			con1.close();
+			return(true);
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		
+		
+	}
+	
 	public static boolean validarDetalleMaster(int idDetallePedido)
 	{
 		Logger logger = Logger.getLogger("log_file");

@@ -12,12 +12,14 @@ import org.json.simple.parser.JSONParser;
 
 import capaDAO.DetallePedidoDAO;
 import capaDAO.PedidoDAO;
+import capaDAO.PedidoFormaPagoDAO;
 import capaDAO.PedidoPixelDAO;
 import capaDAO.PreguntaDAO;
 import capaModelo.Cliente;
 import capaModelo.DetallePedido;
 import capaModelo.DetallePedidoPixel;
 import capaModelo.EstadoPedidoTienda;
+import capaModelo.PedidoFormaPago;
 import capaModelo.Pregunta;
 import capaModelo.RespuestaPedidoPixel;
 
@@ -97,6 +99,49 @@ public class PedidoCtrl {
 	{
 		boolean respuesta = DetallePedidoDAO.validarDetalleMaster(idDetallePedido);
 		return(respuesta);
+	}
+	
+	public boolean insertarPedidoFormaPago(double efectivo, double tarjeta, double valorTotal, double cambio, int idPedidoTienda)
+	{
+		int resIdEfe = 0, resIdTar = 0;
+		if(efectivo > 0)
+		{
+			PedidoFormaPago forEfectivo = new PedidoFormaPago(0,idPedidoTienda,1,valorTotal,efectivo);
+			resIdEfe = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forEfectivo);
+		}
+		if(tarjeta > 0)
+		{
+			PedidoFormaPago forTarjeta = new PedidoFormaPago(0,idPedidoTienda,2,valorTotal,tarjeta);
+			resIdTar = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forTarjeta);
+		}
+		if(resIdEfe > 0 || resIdTar > 0)
+		{
+			return(true);
+		}else
+		{
+			return(false);
+		}
+		
+	}
+	
+	public boolean finalizarPedido(int idPedido, double tiempoPedido)
+	{
+		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido);
+		return(respuesta);
+	}
+	
+	public boolean anularPedidoEliminar(int idPedido)
+	{
+		boolean respuesta = DetallePedidoDAO.eliminarDetallesPedido(idPedido);
+		if(respuesta)
+		{
+			respuesta = PedidoDAO.eliminarPedido(idPedido);
+		}
+		if(respuesta)
+		{
+			return(true);
+		}
+		return(false);
 	}
 
 }

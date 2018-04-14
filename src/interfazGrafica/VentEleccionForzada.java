@@ -348,75 +348,75 @@ public class VentEleccionForzada extends JFrame {
 	}
 	
 	
-	public void AdicionarTomarPedidos()
-	{
-		for(int m = 0; m < arregloBotPan1Final.size(); m++)
+		public void AdicionarTomarPedidos()
 		{
-			JButton jButTemp= arregloBotPan1Final.get(m);
-			Color colSelButton = jButTemp.getBackground();
-			if(colSelButton.equals(Color.YELLOW))
+			for(int m = 0; m < arregloBotPan1Final.size(); m++)
 			{
-				
-					double precioProducto = 0, cantidad = 0;
-					int idProducto = 0;
-					PedidoCtrl pedCtrl = new PedidoCtrl();
-					//Recorremos el arreglo con las elecciones para recuperar la cantidad y el precio
-					for(int i = 0 ; i < eleccionesTemporales.size(); i++)
-					{
-						EleccionForzadaTemporal elTemp = eleccionesTemporales.get(i);
-						if(elTemp.getBoton().equals(jButTemp))
+				JButton jButTemp= arregloBotPan1Final.get(m);
+				Color colSelButton = jButTemp.getBackground();
+				if(colSelButton.equals(Color.YELLOW))
+				{
+					
+						double precioProducto = 0, cantidad = 0;
+						int idProducto = 0;
+						PedidoCtrl pedCtrl = new PedidoCtrl();
+						//Recorremos el arreglo con las elecciones para recuperar la cantidad y el precio
+						for(int i = 0 ; i < eleccionesTemporales.size(); i++)
 						{
-							precioProducto = elTemp.getPrecioProducto();
-							cantidad = elTemp.getCantidad();
-							idProducto = elTemp.getIdProducto();
+							EleccionForzadaTemporal elTemp = eleccionesTemporales.get(i);
+							if(elTemp.getBoton().equals(jButTemp))
+							{
+								precioProducto = elTemp.getPrecioProducto();
+								cantidad = elTemp.getCantidad();
+								idProducto = elTemp.getIdProducto();
+							}
 						}
-					}
-					DetallePedido detPedido = new DetallePedido(0,TomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", TomarPedidos.idDetallePedidoMaster);
-					int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
-					detPedido.setIdDetallePedido(idDetalle);
-					if(idDetalle > 0)
-					{
-						TomarPedidos.detallesPedido.add(detPedido);
-						TomarPedidos.totalPedido = TomarPedidos.totalPedido + detPedido.getValorTotal();
-						//Para pintar la nueva adición de producto y fijar el nuevo valor se ejecutará cuando se active la ventana
-					}
+						DetallePedido detPedido = new DetallePedido(0,TomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", TomarPedidos.idDetallePedidoMaster);
+						int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
+						detPedido.setIdDetallePedido(idDetalle);
+						if(idDetalle > 0)
+						{
+							TomarPedidos.detallesPedido.add(detPedido);
+							TomarPedidos.totalPedido = TomarPedidos.totalPedido + detPedido.getValorTotal();
+							//Para pintar la nueva adición de producto y fijar el nuevo valor se ejecutará cuando se active la ventana
+						}
+					
+				}
 				
 			}
 			
-		}
-		
-		for(int m = 0; m < arregloBotPan2Final.size(); m++)
-		{
-			JButton jButTemp= arregloBotPan2Final.get(m);
-			Color colSelButton = jButTemp.getBackground();
-			if(colSelButton.equals(Color.YELLOW))
+			for(int m = 0; m < arregloBotPan2Final.size(); m++)
 			{
-					double precioProducto = 0, cantidad = 0;
-					int idProducto = 0;
-					PedidoCtrl pedCtrl = new PedidoCtrl();
-					//Recorremos el arreglo con las elecciones para recuperar la cantidad y el precio
-					for(int i = 0 ; i < eleccionesTemporales.size(); i++)
-					{
-						EleccionForzadaTemporal elTemp = eleccionesTemporales.get(i);
-						if(elTemp.getBoton().equals(jButTemp))
+				JButton jButTemp= arregloBotPan2Final.get(m);
+				Color colSelButton = jButTemp.getBackground();
+				if(colSelButton.equals(Color.YELLOW))
+				{
+						double precioProducto = 0, cantidad = 0;
+						int idProducto = 0;
+						PedidoCtrl pedCtrl = new PedidoCtrl();
+						//Recorremos el arreglo con las elecciones para recuperar la cantidad y el precio
+						for(int i = 0 ; i < eleccionesTemporales.size(); i++)
 						{
-							precioProducto = elTemp.getPrecioProducto();
-							cantidad = elTemp.getCantidad();
-							idProducto = elTemp.getIdProducto();
+							EleccionForzadaTemporal elTemp = eleccionesTemporales.get(i);
+							if(elTemp.getBoton().equals(jButTemp))
+							{
+								precioProducto = elTemp.getPrecioProducto();
+								cantidad = elTemp.getCantidad();
+								idProducto = elTemp.getIdProducto();
+							}
+						}
+						DetallePedido detPedido = new DetallePedido(0,TomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", TomarPedidos.idDetallePedidoMaster);
+						int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
+						detPedido.setIdDetallePedido(idDetalle);
+						if(idDetalle > 0)
+						{
+							TomarPedidos.detallesPedido.add(detPedido);
+							TomarPedidos.totalPedido = TomarPedidos.totalPedido + detPedido.getValorTotal();
+							//Para pintar la nueva adición de producto y fijar el nuevo valor se ejecutará cuando se active la ventana
 						}
 					}
-					DetallePedido detPedido = new DetallePedido(0,TomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", TomarPedidos.idDetallePedidoMaster);
-					int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
-					detPedido.setIdDetallePedido(idDetalle);
-					if(idDetalle > 0)
-					{
-						TomarPedidos.detallesPedido.add(detPedido);
-						TomarPedidos.totalPedido = TomarPedidos.totalPedido + detPedido.getValorTotal();
-						//Para pintar la nueva adición de producto y fijar el nuevo valor se ejecutará cuando se active la ventana
-					}
-				}
+			}
 		}
-	}
 	
 	/**
 	 * Método que se encargará de la adición de los productos seleccionados dentro de la metología de preguntas forzadas.

@@ -316,7 +316,7 @@ public class TomarPedidos extends JFrame {
 				cliente.setVisible(true);
 			}
 		});
-		btnAsignarCliente.setBounds(108, 11, 140, 47);
+		btnAsignarCliente.setBounds(145, 11, 140, 47);
 		panelAcciones.add(btnAsignarCliente);
 		
 		JButton btnAnularPedido = new JButton("Anular Pedido");
@@ -326,19 +326,29 @@ public class TomarPedidos extends JFrame {
 				int resp = JOptionPane.showConfirmDialog(null, "¿Está seguro que desea Eliminar el Pedido que se está tomando?");
 				if (resp == 0)
 				{
-					idCliente = 0;
-					idPedido = 0;
-					idTienda = 0;
-					totalPedido = 0;
-					usuario = "";
-					nombreCliente = "";
-					detallesPedido = new ArrayList();
-					pintarDetallePedido();
-					txtValorPedido.setText("0");
+					PedidoCtrl pedCtrl = new PedidoCtrl();
+					boolean eliPedido = pedCtrl.anularPedidoEliminar(idPedido);
+					if(eliPedido)
+					{
+						idCliente = 0;
+						idPedido = 0;
+						idTienda = 0;
+						totalPedido = 0;
+						usuario = "";
+						nombreCliente = "";
+						detallesPedido = new ArrayList();
+						pintarDetallePedido();
+						txtValorPedido.setText("0");
+					}
+					else
+					{
+						
+					}
+					
 				}
 			}
 		});
-		btnAnularPedido.setBounds(281, 11, 140, 47);
+		btnAnularPedido.setBounds(295, 11, 140, 47);
 		panelAcciones.add(btnAnularPedido);
 		
 		JButton btnDescuento = new JButton("Descuento");
@@ -348,7 +358,7 @@ public class TomarPedidos extends JFrame {
 		
 		JButton btnFinalizarPedido = new JButton("Finalizar Pedido");
 
-		btnFinalizarPedido.setBounds(612, 11, 152, 47);
+		btnFinalizarPedido.setBounds(595, 11, 140, 47);
 
 		btnFinalizarPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -356,8 +366,12 @@ public class TomarPedidos extends JFrame {
 				Finalizar.setVisible(true);
 			}
 		});
-		btnFinalizarPedido.setBounds(612, 11, 89, 47);
+		
 		panelAcciones.add(btnFinalizarPedido);
+		
+		JButton btnMaestroPedidos = new JButton("Maestro Pedidos");
+		btnMaestroPedidos.setBounds(745, 11, 140, 47);
+		panelAcciones.add(btnMaestroPedidos);
 		
 		JPanel panel = new JPanel();
 		panel.setBounds(0, 317, 225, 62);
@@ -555,5 +569,4 @@ public class TomarPedidos extends JFrame {
 		String fechaPedido = Integer.toString(hoy.get(Calendar.DAY_OF_MONTH)) + "/" + Integer.toString(hoy.get(Calendar.MONTH)) + "/" + Integer.toString(hoy.get(Calendar.YEAR));
 		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, usuario);
 	}
-
 }
