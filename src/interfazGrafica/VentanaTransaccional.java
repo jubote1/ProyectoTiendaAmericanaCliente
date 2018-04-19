@@ -20,10 +20,13 @@ import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
 public class VentanaTransaccional extends JFrame {
 
 	private JPanel contentPane;
+	private JTable table;
 
 	/**
 	 * Launch the application.
@@ -90,22 +93,34 @@ public class VentanaTransaccional extends JFrame {
 		JButton btnNewButton_3 = new JButton("New button");
 		panel_2.add(btnNewButton_3);
 		
-		JPanel panel_3 = new JPanel();
-		panel_3.setBounds(10, 11, 760, 346);
-		contentPane.add(panel_3);
-		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBounds(10, 368, 978, 250);
 		contentPane.add(tabbedPane);
 		
-		JPanel panel_1 = new JPanel();
-		tabbedPane.addTab("New tab", null, panel_1, null);
+		JPanel panelDetallePedido = new JPanel();
+		tabbedPane.addTab("Detalle del pedido", null, panelDetallePedido, null);
 		
 		JPanel panel_4 = new JPanel();
-		tabbedPane.addTab("New tab", null, panel_4, null);
+		tabbedPane.addTab("Estado del pedido", null, panel_4, null);
 		panel_4.setLayout(null);
 		
 		JPanel panel_5 = new JPanel();
 		tabbedPane.addTab("New tab", null, panel_5, null);
+		
+		table = new JTable();
+		table.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+			},
+			new String[] {
+				"New column", "New column", "New column", "New column", "New column"
+			}
+		));
+		table.setBounds(10, 11, 760, 346);
+		contentPane.add(table);
 	}
 }
