@@ -22,6 +22,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import java.awt.Font;
 
 public class VentanaTransaccional extends JFrame {
 
@@ -60,14 +61,14 @@ public class VentanaTransaccional extends JFrame {
 		contentPane.add(panel);
 		panel.setLayout(new GridLayout(0, 4, 0, 0));
 		
-		JButton btnNewButton = new JButton("New button");
-		panel.add(btnNewButton);
+		JButton btnBuscar = new JButton("Buscar");
+		panel.add(btnBuscar);
 		
-		JButton btnNewButton_1 = new JButton("New button");
-		panel.add(btnNewButton_1);
+		JButton btnCambioFactura = new JButton("Cambiar Factura");
+		panel.add(btnCambioFactura);
 		
-		JButton btnNewButton_2 = new JButton("New button");
-		panel.add(btnNewButton_2);
+		JButton btnReimpresion = new JButton("Reimprimir Factura");
+		panel.add(btnReimpresion);
 		
 		JButton btnSalir = new JButton("Salir");
 		btnSalir.addActionListener(new ActionListener() {
@@ -81,19 +82,20 @@ public class VentanaTransaccional extends JFrame {
 		contentPane.add(panel_2);
 		panel_2.setLayout(new GridLayout(4, 1, 0, 0));
 		
-		JButton btnNewButton_4 = new JButton("New button");
-		panel_2.add(btnNewButton_4);
+		JButton btnPuntoDeVenta = new JButton("Punto de venta");
+		panel_2.add(btnPuntoDeVenta);
 		
-		JButton btnNewButton_5 = new JButton("New button");
-		panel_2.add(btnNewButton_5);
+		JButton btnDomicilio = new JButton("Domicilio");
+		panel_2.add(btnDomicilio);
 		
-		JButton btnNewButton_6 = new JButton("New button");
-		panel_2.add(btnNewButton_6);
+		JButton btnParaLlevar = new JButton("Para Llevar");
+		panel_2.add(btnParaLlevar);
 		
-		JButton btnNewButton_3 = new JButton("New button");
-		panel_2.add(btnNewButton_3);
+		JButton btnTotal = new JButton("Total");
+		panel_2.add(btnTotal);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setFont(new Font("Calibri", Font.PLAIN, 15));
 		tabbedPane.setBounds(10, 368, 978, 250);
 		contentPane.add(tabbedPane);
 		
@@ -107,9 +109,34 @@ public class VentanaTransaccional extends JFrame {
 		JPanel panel_5 = new JPanel();
 		tabbedPane.addTab("New tab", null, panel_5, null);
 		
-		table = new JTable();
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 11, 762, 346);
+		contentPane.add(scrollPane);
+		
+		table =   new JTable();
+		table.setEnabled(false);
 		table.setModel(new DefaultTableModel(
 			new Object[][] {
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
+				{null, null, null, null, null},
 				{null, null, null, null, null},
 				{null, null, null, null, null},
 				{null, null, null, null, null},
@@ -120,7 +147,6 @@ public class VentanaTransaccional extends JFrame {
 				"New column", "New column", "New column", "New column", "New column"
 			}
 		));
-		table.setBounds(10, 11, 760, 346);
-		contentPane.add(table);
+		scrollPane.setViewportView(table);
 	}
 }
