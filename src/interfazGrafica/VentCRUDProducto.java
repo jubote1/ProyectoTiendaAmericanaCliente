@@ -504,7 +504,6 @@ public class VentCRUDProducto extends JFrame {
 		btnAgregarImpuesto.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String seleccionImpuesto = (String) comboBoxImpuesto.getSelectedItem();
-				System.out.println(seleccionImpuesto);
 				//Tratamos de extraer el idImpuesto
 				StringTokenizer StrTokenImpuesto = new StringTokenizer(seleccionImpuesto,"-");
 				String strIdImpuesto = StrTokenImpuesto.nextToken();

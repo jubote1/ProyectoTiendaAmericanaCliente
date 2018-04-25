@@ -9,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.parser.ParserDelegator;
 
 import capaControlador.PedidoCtrl;
+import capaModelo.TipoPedido;
 
 import javax.swing.JTextPane;
 import javax.swing.JButton;
@@ -42,6 +43,15 @@ public class FinPago extends JFrame {
 	private JTable tablePago;
 	private JTextField displayTotal;
 	
+	
+	public static void clarearVarEstaticas()
+	{
+		Efectivo = 0;
+		Tarjeta = 0;
+		Cambio = 0;
+		boolEfectivo = true;
+		boolTarjeta = false;
+	}
 		
 	/**
 	 * Launch the application.
@@ -276,10 +286,25 @@ public class FinPago extends JFrame {
 				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, TomarPedidos.idPedido);
 				if(resFormaPago)
 				{
+					//Ingresamos lógica para tomar el tipo de pedido 
+					int idTipoPedido;
+					try
+					{
+						TipoPedido tipPedido = TomarPedidos.tiposPedidos.get(TomarPedidos.numTipoPedidoAct -1);
+						idTipoPedido = tipPedido.getIdTipoPedido();
+					}catch(Exception e)
+					{
+						idTipoPedido = 0;
+					}
+					
 					// En este punto finalizamos el pedido
-					boolean resFinPedido = pedCtrl.finalizarPedido(TomarPedidos.idPedido, 30/*tiempoPedido*/);
+					boolean resFinPedido = pedCtrl.finalizarPedido(TomarPedidos.idPedido, 30/*tiempoPedido*/, idTipoPedido);
 					if (resFinPedido)
 					{
+						//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
+						//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
+						clarearVarEstaticas();
+						TomarPedidos.clarearVarEstaticas();
 						dispose();
 					}
 				}

@@ -11,17 +11,25 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import capaDAO.DetallePedidoDAO;
+import capaDAO.EstadoAnteriorDAO;
+import capaDAO.EstadoDAO;
+import capaDAO.EstadoPosteriorDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.PedidoFormaPagoDAO;
 import capaDAO.PedidoPixelDAO;
 import capaDAO.PreguntaDAO;
+import capaDAO.TipoPedidoDAO;
 import capaModelo.Cliente;
 import capaModelo.DetallePedido;
 import capaModelo.DetallePedidoPixel;
+import capaModelo.Estado;
+import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPedidoTienda;
+import capaModelo.EstadoPosterior;
 import capaModelo.PedidoFormaPago;
 import capaModelo.Pregunta;
 import capaModelo.RespuestaPedidoPixel;
+import capaModelo.TipoPedido;
 
 public class PedidoCtrl {
 	
@@ -124,9 +132,9 @@ public class PedidoCtrl {
 		
 	}
 	
-	public boolean finalizarPedido(int idPedido, double tiempoPedido)
+	public boolean finalizarPedido(int idPedido, double tiempoPedido, int idTipoPedido)
 	{
-		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido);
+		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido, idTipoPedido);
 		return(respuesta);
 	}
 	
@@ -143,5 +151,174 @@ public class PedidoCtrl {
 		}
 		return(false);
 	}
+	
+	
+	//ESTADOS
+	
+	public  ArrayList obtenerEstado()
+	{
+		ArrayList estados = EstadoDAO.obtenerEstado();
+		return(estados);
+	}
+	
+	public Estado obtenerEstado(int idEstado)
+	{
+		Estado estado = EstadoDAO.obtenerEstado(idEstado);
+		return(estado);
+	}
+	
+	public static int insertarEstado(Estado estado)
+	{
+		int idEstadoIns = EstadoDAO.insertarEstado(estado);
+		return(idEstadoIns);
+	}
+	
+	public boolean eliminarEstado(int idestado)
+	{
+		boolean respuesta = EstadoDAO.eliminarEstado(idestado);
+		return(respuesta);
+	}
+	
+	public boolean editarEstado(Estado estado)
+	{
+		boolean respuesta = EstadoDAO.editarEstado(estado);
+		return(respuesta);
+	}
+	
+	//ESTADOS ANTERIORES
+	
+	public ArrayList<EstadoAnterior> obtenerEstadosAnteriores(int idEstado)
+	{
+		ArrayList<EstadoAnterior> estadosAnt = EstadoAnteriorDAO.obtenerEstadosAnteriores(idEstado);
+		return(estadosAnt);
+	}
+	
+	public boolean insertarEstadoAnterior(EstadoAnterior estadoAnt)
+	{
+		boolean respuesta = EstadoAnteriorDAO.insertarEstadoAnterior(estadoAnt);
+		return(respuesta);
+	}
+	
+	public boolean eliminarEstadoAnterior(EstadoAnterior estadoAnt)
+	{
+		boolean respuesta = EstadoAnteriorDAO.eliminarEstadoAnterior(estadoAnt);
+		return(respuesta);
+	}
+	
+	public ArrayList<Estado> obtenerEstadosAnterioresFaltantes(int idEstado)
+	{
+		ArrayList<EstadoAnterior> estadosAnt = EstadoAnteriorDAO.obtenerEstadosAnteriores(idEstado);
+		ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado();
+		ArrayList<Estado> estadosFaltantes = new ArrayList();
+		for(int i = 0; i < estados.size(); i++)
+		{
+			boolean encontrado = false;
+			Estado estadoTemp = estados.get(i);
+			for(int j = 0; j < estadosAnt.size(); j++)
+			{
+				EstadoAnterior estAntTemp = estadosAnt.get(j);
+				if(estAntTemp.getIdEstadoAnterior() == estadoTemp.getIdestado() || idEstado == estadoTemp.getIdestado())
+				{
+					encontrado = true;
+					break;
+				}
+			}
+			if (!encontrado)
+			{
+				estadosFaltantes.add(estadoTemp);
+			}
+		}
+		return(estadosFaltantes);
+	}
 
+	
+	//ESTADOS POSTERIORES
+	
+		public ArrayList<EstadoPosterior> obtenerEstadosPosteriores(int idEstado)
+		{
+			ArrayList<EstadoPosterior> estadosPos = EstadoPosteriorDAO.obtenerEstadosPos(idEstado);
+			return(estadosPos);
+		}
+		
+		public boolean insertarEstadoPosterior(EstadoPosterior estadoPos)
+		{
+			boolean respuesta = EstadoPosteriorDAO.insertarEstado(estadoPos);
+			return(respuesta);
+		}
+		
+		public boolean eliminarEstadoPosterior(EstadoPosterior estadoPos)
+		{
+			boolean respuesta = EstadoPosteriorDAO.eliminarEstadoPosterior(estadoPos);
+			return(respuesta);
+		}
+		
+		public ArrayList<Estado> obtenerEstadosPosterioresFaltantes(int idEstado)
+		{
+			ArrayList<EstadoPosterior> estadosPos = EstadoPosteriorDAO.obtenerEstadosPos(idEstado);
+			ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado();
+			ArrayList<Estado> estadosFaltantes = new ArrayList();
+			for(int i = 0; i < estados.size(); i++)
+			{
+				boolean encontrado = false;
+				Estado estadoTemp = estados.get(i);
+				for(int j = 0; j < estadosPos.size(); j++)
+				{
+					EstadoPosterior estPosTemp = estadosPos.get(j);
+					if(estPosTemp.getIdEstadoPosterior() == estadoTemp.getIdestado() || idEstado == estadoTemp.getIdestado())
+					{
+						encontrado = true;
+						break;
+					}
+				}
+				if (!encontrado)
+				{
+					estadosFaltantes.add(estadoTemp);
+				}
+			}
+			return(estadosFaltantes);
+		}
+		
+		//TIPOS PEDIDO
+		
+		public  ArrayList obtenerTiposPedido()
+		{
+			ArrayList tiposPedido = TipoPedidoDAO.obtenerTiposPedido();
+			return(tiposPedido);
+		}
+		
+		public int insertarTipoPedido(TipoPedido tipPed)
+		{
+			int idTipoIns = TipoPedidoDAO.insertarTipoPedido(tipPed);
+			return(idTipoIns);
+		}
+		
+		public  boolean eliminarTipoPedido(int idTipoPedido)
+		{
+			boolean respuesta = TipoPedidoDAO.eliminarTipoPedido(idTipoPedido);
+			return(respuesta);
+		}
+		
+		public  boolean EditarTipoPedido(TipoPedido tipPedidoEditar)
+		{
+			boolean respuesta = TipoPedidoDAO.EditarTipoPedido(tipPedidoEditar);
+			return(respuesta);
+		}
+		public TipoPedido obtenerTipoPedido(int idTipoPedido)
+		{
+			TipoPedido tipPedCon = TipoPedidoDAO.obtenerTipoPedido(idTipoPedido);
+			return(tipPedCon);
+		}
+		
+		public ArrayList<TipoPedido> obtenerTiposPedidoNat()
+		{
+			ArrayList<TipoPedido> tiposPedidoNat = TipoPedidoDAO.obtenerTiposPedidoNat();
+			return(tiposPedidoNat);
+		}
+		
+		public ArrayList obtenerPedidosTable(String fechaPedido)
+		{
+			ArrayList pedidos = PedidoDAO.obtenerPedidosTable(fechaPedido);
+			return(pedidos);
+		}
+	
 }

@@ -22,12 +22,15 @@ import java.awt.event.ActionEvent;
 import javax.swing.table.DefaultTableModel;
 
 import capaControlador.MenuCtrl;
+import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ParametrosProductoCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.ConfiguracionMenu;
 import capaModelo.DetallePedido;
+import capaModelo.Municipio;
 import capaModelo.Pregunta;
 import capaModelo.Producto;
+import capaModelo.TipoPedido;
 
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
@@ -40,6 +43,7 @@ import java.awt.event.WindowEvent;
 import java.net.URL;
 import java.sql.Date;
 import javax.swing.JTextField;
+import javax.swing.JComboBox;
 
 public class TomarPedidos extends JFrame {
 
@@ -63,9 +67,24 @@ public class TomarPedidos extends JFrame {
 	JLabel lblNombreCliente;
 	private JTable tableDetallePedido;
 	private JTextField txtValorPedido;
+	static int numTipoPedido = 0;
+	static int numTipoPedidoAct = 0;
+	static ArrayList<TipoPedido> tiposPedidos;
 	/**
 	 * Launch the application.
 	 */
+	public static void clarearVarEstaticas()
+	{
+		idCliente = 0;
+		idPedido = 0;
+		idTienda = 0;
+		totalPedido = 0;
+		usuario = "";
+		nombreCliente = "";
+		idDetallePedidoMaster = 0;
+		detallesPedido = new ArrayList();
+	}
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -383,13 +402,23 @@ public class TomarPedidos extends JFrame {
 		lblTipoPedido.setBounds(76, 0, 71, 14);
 		panel.add(lblTipoPedido);
 		
-		JRadioButton rdbtnPuntoDeVenta = new JRadioButton("Punto de Venta");
-		rdbtnPuntoDeVenta.setBounds(16, 17, 148, 23);
-		panel.add(rdbtnPuntoDeVenta);
-		
-		JRadioButton rdbtnDomicilio = new JRadioButton("Domicilio");
-		rdbtnDomicilio.setBounds(16, 39, 109, 23);
-		panel.add(rdbtnDomicilio);
+		JButton btnTipoPedido = new JButton("");
+		btnTipoPedido.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				//Acciones relacionadas con el botón de tipo de pedido
+				
+				if(numTipoPedidoAct == numTipoPedido)
+				{
+					numTipoPedidoAct = 0;
+				}
+				TipoPedido tipoPed = tiposPedidos.get(numTipoPedidoAct);
+				btnTipoPedido.setText(tipoPed.getDescripcion());
+				numTipoPedidoAct++;
+			}
+		});
+		btnTipoPedido.setBounds(23, 28, 172, 23);
+		panel.add(btnTipoPedido);
 		
 		lblIdCliente = new JLabel("Id Cliente");
 		lblIdCliente.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -402,6 +431,15 @@ public class TomarPedidos extends JFrame {
 		contentPane.add(lblNombreCliente);
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
+		
+		//Acciones relacionadas con el botón de tipo de pedido
+		PedidoCtrl pedCtrl = new PedidoCtrl();
+		tiposPedidos = pedCtrl.obtenerTiposPedidoNat();
+		numTipoPedido = tiposPedidos.size();
+		//Inicializamos el botón con el tipo de pedido inicial
+		TipoPedido tipoPed = tiposPedidos.get(numTipoPedidoAct);
+		btnTipoPedido.setText(tipoPed.getDescripcion());
+		numTipoPedidoAct++;
 	}
 	
 	public void fijarCliente()
@@ -569,4 +607,6 @@ public class TomarPedidos extends JFrame {
 		String fechaPedido = Integer.toString(hoy.get(Calendar.DAY_OF_MONTH)) + "/" + Integer.toString(hoy.get(Calendar.MONTH)) + "/" + Integer.toString(hoy.get(Calendar.YEAR));
 		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, usuario);
 	}
+	
+	
 }

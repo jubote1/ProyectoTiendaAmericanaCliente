@@ -18,6 +18,15 @@ public class Pedido {
 	private String fechainsercion;
 	private String usuariopedido;
 	private int tiempopedido;
+	private int idTipoPedido;
+	
+	
+	public int getIdTipoPedido() {
+		return idTipoPedido;
+	}
+	public void setIdTipoPedido(int idTipoPedido) {
+		this.idTipoPedido = idTipoPedido;
+	}
 	public int getIdpedidotienda() {
 		return idpedidotienda;
 	}
@@ -85,7 +94,7 @@ public class Pedido {
 		this.tiempopedido = tiempopedido;
 	}
 	public Pedido(int idpedidotienda, int idtienda, double valorbruto, double impuesto, double valorneto, int idcliente,
-			String fechapedido, int idpedidocontact, String fechainsercion, String usuariopedido, int tiempopedido) {
+			String fechapedido, int idpedidocontact, String fechainsercion, String usuariopedido, int tiempopedido, int idTipoPedido) {
 		super();
 		this.idpedidotienda = idpedidotienda;
 		this.idtienda = idtienda;
@@ -98,6 +107,7 @@ public class Pedido {
 		this.fechainsercion = fechainsercion;
 		this.usuariopedido = usuariopedido;
 		this.tiempopedido = tiempopedido;
+		this.idTipoPedido = idTipoPedido;
 	}
 	
 	
