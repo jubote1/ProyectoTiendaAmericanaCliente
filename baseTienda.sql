@@ -18,6 +18,18 @@ INSERT INTO `agrupador_menu` (`idmenuagrupador`, `menu_agrupador`, `descripcion`
 	(6, 'FDSSDF', 'FDFSF');
 /*!40000 ALTER TABLE `agrupador_menu` ENABLE KEYS */;
 
+CREATE TABLE IF NOT EXISTS `cambios_estado_pedido` (
+  `idcambioestado` int(11) NOT NULL AUTO_INCREMENT,
+  `idpedidotienda` int(11) NOT NULL,
+  `idestadoanterior` int(11) NOT NULL,
+  `idestadoposterior` int(11) NOT NULL,
+  `fechacambio` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`idcambioestado`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tabla que almacena los cambios de estado de cada uno de los pedido del sistema';
+
+/*!40000 ALTER TABLE `cambios_estado_pedido` DISABLE KEYS */;
+/*!40000 ALTER TABLE `cambios_estado_pedido` ENABLE KEYS */;
+
 CREATE TABLE IF NOT EXISTS `cliente` (
   `idcliente` int(11) NOT NULL AUTO_INCREMENT,
   `idtienda` int(11) NOT NULL,
@@ -42,6 +54,7 @@ CREATE TABLE IF NOT EXISTS `cliente` (
 
 /*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
 INSERT INTO `cliente` (`idcliente`, `idtienda`, `nombre`, `apellido`, `nombrecompania`, `direccion`, `idnomenclatura`, `num_nomencla1`, `num_nomencla2`, `num3`, `idmunicipio`, `latitud`, `longitud`, `zona`, `telefono`, `observacion`, `memcode`) VALUES
+	(0, 1, 'CLIENTE TIENDA', NULL, NULL, 'Punto Venta', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '0', NULL, 0),
 	(43, 1, 'JUAN', 'BOTERO', 'BANCOLO', 'CALLE 56 # 45 - 54', 2, NULL, NULL, NULL, 2, NULL, NULL, 'CENTRO', '2548831', 'BUENA ZONA', 0);
 /*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
 
@@ -75,7 +88,7 @@ CREATE TABLE IF NOT EXISTS `detalle_pedido` (
   `observacion` varchar(50) NOT NULL DEFAULT '0',
   `iddetalle_pedido_master` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`iddetalle_pedido`)
-) ENGINE=InnoDB AUTO_INCREMENT=242 DEFAULT CHARSET=utf8 COMMENT='Tabla donde se almacenará el detalle de los pedidos, con los productos a incluir y la cantidad.\r\n';
+) ENGINE=InnoDB AUTO_INCREMENT=258 DEFAULT CHARSET=utf8 COMMENT='Tabla donde se almacenará el detalle de los pedidos, con los productos a incluir y la cantidad.\r\n';
 
 /*!40000 ALTER TABLE `detalle_pedido` DISABLE KEYS */;
 INSERT INTO `detalle_pedido` (`iddetalle_pedido`, `idpedidotienda`, `idproducto`, `cantidad`, `valorunitario`, `valortotal`, `observacion`, `iddetalle_pedido_master`) VALUES
@@ -132,7 +145,22 @@ INSERT INTO `detalle_pedido` (`iddetalle_pedido`, `idpedidotienda`, `idproducto`
 	(238, 83, 1, 1, 12000, 12000, '', 0),
 	(239, 83, 2, 1, 0, 0, '', 0),
 	(240, 83, 3, 0.5, 31000, 15500, '', 239),
-	(241, 83, 6, 0.5, 31000, 15500, '', 239);
+	(241, 83, 6, 0.5, 31000, 15500, '', 239),
+	(242, 84, 1, 1, 12000, 12000, '', 0),
+	(243, 84, 4, 1, 31000, 31000, '', 0),
+	(244, 85, 1, 1, 12000, 12000, '', 0),
+	(245, 85, 2, 1, 0, 0, '', 0),
+	(246, 85, 9, 0.5, 31000, 15500, '', 245),
+	(247, 85, 4, 0.5, 31000, 15500, '', 245),
+	(248, 86, 1, 1, 12000, 12000, '', 0),
+	(249, 86, 1, 1, 12000, 12000, '', 0),
+	(250, 86, 2, 1, 0, 0, '', 0),
+	(251, 86, 4, 0.5, 31000, 15500, '', 250),
+	(252, 86, 12, 0.5, 31000, 15500, '', 250),
+	(253, 87, 1, 1, 12000, 12000, '', 0),
+	(255, 87, 2, 1, 0, 0, '', 0),
+	(256, 87, 4, 0.5, 31000, 15500, '', 255),
+	(257, 87, 5, 0.5, 31000, 15500, '', 255);
 /*!40000 ALTER TABLE `detalle_pedido` ENABLE KEYS */;
 
 CREATE TABLE IF NOT EXISTS `eleccion_forzada` (
@@ -361,7 +389,7 @@ CREATE TABLE IF NOT EXISTS `pedido` (
   `tiempopedido` int(3) NOT NULL DEFAULT '0',
   `idtipopedido` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`idpedidotienda`)
-) ENGINE=InnoDB AUTO_INCREMENT=84 DEFAULT CHARSET=utf8 COMMENT='Tabla que define el encabezado de un pedido con los datos agrupadores de este.';
+) ENGINE=InnoDB AUTO_INCREMENT=88 DEFAULT CHARSET=utf8 COMMENT='Tabla que define el encabezado de un pedido con los datos agrupadores de este.';
 
 /*!40000 ALTER TABLE `pedido` DISABLE KEYS */;
 INSERT INTO `pedido` (`idpedidotienda`, `idtienda`, `total_bruto`, `impuesto`, `total_neto`, `idcliente`, `fechapedido`, `idpedidocontact`, `fechainsercion`, `usuariopedido`, `tiempopedido`, `idtipopedido`) VALUES
@@ -433,7 +461,11 @@ INSERT INTO `pedido` (`idpedidotienda`, `idtienda`, `total_bruto`, `impuesto`, `
 	(80, 0, 0, 0, 0, 0, '2018-03-13', 0, '2018-04-13 17:56:26', '', 0, 0),
 	(81, 0, 52440, 4560, 57000, 0, '2018-03-13', 0, '2018-04-13 19:01:19', '', 0, 0),
 	(82, 0, 41400, 3600, 45000, 0, '2018-03-23', 0, '2018-04-23 06:25:30', '', 0, 2),
-	(83, 0, 50600, 4400, 55000, 0, '2018-03-24', 0, '2018-04-24 12:56:17', '', 0, 2);
+	(83, 0, 50600, 4400, 55000, 0, '2018-03-24', 0, '2018-04-24 12:56:17', '', 0, 2),
+	(84, 0, 39560, 3440, 43000, 0, '2018-04-25', 0, '2018-04-25 20:16:47', '', 0, 2),
+	(85, 0, 39560, 3440, 43000, 0, '2018-04-25', 0, '2018-04-25 20:19:18', '', 0, 2),
+	(86, 0, 50600, 4400, 55000, 43, '2018-04-25', 0, '2018-04-25 22:26:16', '', 0, 1),
+	(87, 0, 39560, 3440, 43000, 43, '2018-03-26', 0, '2018-04-26 12:35:54', '', 0, 1);
 /*!40000 ALTER TABLE `pedido` ENABLE KEYS */;
 
 CREATE TABLE IF NOT EXISTS `pedido_forma_pago` (
@@ -443,14 +475,18 @@ CREATE TABLE IF NOT EXISTS `pedido_forma_pago` (
   `valortotal` double NOT NULL,
   `valorformapago` double NOT NULL,
   PRIMARY KEY (`idpedido_forma_pago`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='Tabla que permite definir las forma o formas de pago para un pedido.';
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COMMENT='Tabla que permite definir las forma o formas de pago para un pedido.';
 
 /*!40000 ALTER TABLE `pedido_forma_pago` DISABLE KEYS */;
 INSERT INTO `pedido_forma_pago` (`idpedido_forma_pago`, `idpedidotienda`, `idforma_pago`, `valortotal`, `valorformapago`) VALUES
 	(1, 79, 1, 12000, 12000),
 	(2, 81, 1, 57000, 57000),
 	(3, 82, 1, 45000, 45000),
-	(4, 83, 1, 55000, 55000);
+	(4, 83, 1, 55000, 55000),
+	(5, 84, 1, 43000, 43000),
+	(6, 85, 1, 43000, 43000),
+	(7, 86, 1, 55000, 55000),
+	(8, 87, 1, 43000, 43000);
 /*!40000 ALTER TABLE `pedido_forma_pago` ENABLE KEYS */;
 
 CREATE TABLE IF NOT EXISTS `pregunta` (
@@ -531,12 +567,14 @@ CREATE TABLE IF NOT EXISTS `tienda` (
   `idtienda` int(11) NOT NULL,
   `nombretienda` varchar(50) NOT NULL,
   `urlcontact` varchar(100) NOT NULL,
+  `fecha_apertura` date DEFAULT NULL,
+  `fecha_ultimo_cierre` date DEFAULT NULL,
   PRIMARY KEY (`idtienda`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*!40000 ALTER TABLE `tienda` DISABLE KEYS */;
-INSERT INTO `tienda` (`idtienda`, `nombretienda`, `urlcontact`) VALUES
-	(1, 'Manrique', 'http://localhost:8080/ProyectoPizzaAmericana/');
+INSERT INTO `tienda` (`idtienda`, `nombretienda`, `urlcontact`, `fecha_apertura`, `fecha_ultimo_cierre`) VALUES
+	(1, 'Manrique', 'http://localhost:8080/ProyectoPizzaAmericana/', '2018-04-25', '2018-04-24');
 /*!40000 ALTER TABLE `tienda` ENABLE KEYS */;
 
 CREATE TABLE IF NOT EXISTS `tipo_pedido` (
@@ -544,7 +582,7 @@ CREATE TABLE IF NOT EXISTS `tipo_pedido` (
   `descripcion` varchar(100) NOT NULL DEFAULT '',
   `valordefecto` binary(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`idtipopedido`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='Tabla que contiene los tipos de pedidos disponibles en el sistema';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COMMENT='Tabla que contiene los tipos de pedidos disponibles en el sistema';
 
 /*!40000 ALTER TABLE `tipo_pedido` DISABLE KEYS */;
 INSERT INTO `tipo_pedido` (`idtipopedido`, `descripcion`, `valordefecto`) VALUES

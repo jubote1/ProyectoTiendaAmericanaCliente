@@ -149,7 +149,55 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fecha_pedido, b.nombre + b.apellido as nombres, c.descripcion as tipopedido from pedido a, cliente b, tipo_pedido c  where a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fecha_pedido = " + fechaPedido;
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, b.direccion from pedido a, cliente b, tipo_pedido c  where a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "'";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
+	/**
+	 * Método que permite retornar los pedidos del sistema de acuerdo a los parámetros de tipo de pedido y fecha
+	 * @param idTipoPedido valor para filtrar ciertos tipos de pedido dentro de la consulta
+	 * @param fechaPedido fecha de apertura para la cual se realiza el pedido
+	 * @return Se retornar un ArrayList con todos los pedidos que cumplen las condiciones indicadas
+	 */
+	public static ArrayList obtenerPedidosPorTipo(int idTipoPedido, String fechaPedido)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, b.direccion from pedido a, cliente b, tipo_pedido c  where a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idtipopedido = " + idTipoPedido + " and fechapedido = '" + fechaPedido + "'";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();

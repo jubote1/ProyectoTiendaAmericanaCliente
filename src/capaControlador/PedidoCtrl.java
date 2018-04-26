@@ -18,6 +18,7 @@ import capaDAO.PedidoDAO;
 import capaDAO.PedidoFormaPagoDAO;
 import capaDAO.PedidoPixelDAO;
 import capaDAO.PreguntaDAO;
+import capaDAO.TiendaDAO;
 import capaDAO.TipoPedidoDAO;
 import capaModelo.Cliente;
 import capaModelo.DetallePedido;
@@ -26,6 +27,7 @@ import capaModelo.Estado;
 import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPedidoTienda;
 import capaModelo.EstadoPosterior;
+import capaModelo.FechaSistema;
 import capaModelo.PedidoFormaPago;
 import capaModelo.Pregunta;
 import capaModelo.RespuestaPedidoPixel;
@@ -315,10 +317,38 @@ public class PedidoCtrl {
 			return(tiposPedidoNat);
 		}
 		
-		public ArrayList obtenerPedidosTable(String fechaPedido)
+		public ArrayList obtenerPedidosPorTipo(int idTipoPedido)
 		{
-			ArrayList pedidos = PedidoDAO.obtenerPedidosTable(fechaPedido);
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				pedidos = PedidoDAO.obtenerPedidosPorTipo(idTipoPedido, fechaSistema.getFechaApertura());
+				
+			}
 			return(pedidos);
+		}
+		
+		public ArrayList obtenerPedidosTable()
+		{
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				pedidos = PedidoDAO.obtenerPedidosTable(fechaSistema.getFechaApertura());
+				
+			}
+			return(pedidos);
+		}
+		
+		public boolean sePuedeFacturar(FechaSistema fechaSistema)
+		{
+			
+			if(fechaSistema.getFechaApertura() == "" || fechaSistema.getFechaApertura() == null)
+			{
+				return(false);
+			}
+			return(true);
 		}
 	
 }

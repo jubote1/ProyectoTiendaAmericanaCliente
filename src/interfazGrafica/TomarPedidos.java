@@ -389,6 +389,12 @@ public class TomarPedidos extends JFrame {
 		panelAcciones.add(btnFinalizarPedido);
 		
 		JButton btnMaestroPedidos = new JButton("Maestro Pedidos");
+		btnMaestroPedidos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentanaTransaccional transacciones = new VentanaTransaccional();
+				transacciones.setVisible(true);
+			}
+		});
 		btnMaestroPedidos.setBounds(745, 11, 140, 47);
 		panelAcciones.add(btnMaestroPedidos);
 		

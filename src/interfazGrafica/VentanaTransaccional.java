@@ -1,6 +1,7 @@
 package interfazGrafica;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -10,16 +11,21 @@ import java.awt.GridLayout;
 import java.awt.FlowLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JLayeredPane;
 import javax.swing.JButton;
 import javax.swing.JDesktopPane;
 import javax.swing.BoxLayout;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import capaControlador.PedidoCtrl;
+
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import java.awt.Font;
@@ -27,7 +33,8 @@ import java.awt.Font;
 public class VentanaTransaccional extends JFrame {
 
 	private JPanel contentPane;
-	private JTable table;
+	private JTable tblMaestroPedidos;
+	private static int idTipoPedido = 0;
 
 	/**
 	 * Launch the application.
@@ -83,16 +90,67 @@ public class VentanaTransaccional extends JFrame {
 		panel_2.setLayout(new GridLayout(4, 1, 0, 0));
 		
 		JButton btnPuntoDeVenta = new JButton("Punto de venta");
+		
 		panel_2.add(btnPuntoDeVenta);
 		
 		JButton btnDomicilio = new JButton("Domicilio");
+		
 		panel_2.add(btnDomicilio);
 		
 		JButton btnParaLlevar = new JButton("Para Llevar");
+		
 		panel_2.add(btnParaLlevar);
 		
 		JButton btnTotal = new JButton("Total");
+		btnTotal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				idTipoPedido = 0;
+				DefaultTableModel modelo = pintarPedidos();
+				tblMaestroPedidos.setModel(modelo);
+				btnTotal.setBackground(Color.YELLOW);
+				btnParaLlevar.setBackground(new Color(240,240,240));
+				btnDomicilio.setBackground(new Color(240,240,240));
+				btnPuntoDeVenta.setBackground(new Color(240,240,240));
+			}
+		});
+		btnTotal.setBackground(Color.YELLOW);
 		panel_2.add(btnTotal);
+		
+		btnParaLlevar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				idTipoPedido = 3;
+				DefaultTableModel modelo = pintarPedidos();
+				tblMaestroPedidos.setModel(modelo);
+				btnTotal.setBackground(new Color(240,240,240));
+				btnParaLlevar.setBackground(Color.YELLOW);
+				btnDomicilio.setBackground(new Color(240,240,240));
+				btnPuntoDeVenta.setBackground(new Color(240,240,240));
+			}
+		});
+		
+		btnDomicilio.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				idTipoPedido = 1;
+				DefaultTableModel modelo = pintarPedidos();
+				tblMaestroPedidos.setModel(modelo);
+				btnTotal.setBackground(new Color(240,240,240));
+				btnParaLlevar.setBackground(new Color(240,240,240));
+				btnDomicilio.setBackground(Color.YELLOW);
+				btnPuntoDeVenta.setBackground(new Color(240,240,240));
+			}
+		});
+		
+		btnPuntoDeVenta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				idTipoPedido = 2;
+				DefaultTableModel modelo = pintarPedidos();
+				tblMaestroPedidos.setModel(modelo);
+				btnTotal.setBackground(new Color(240,240,240));
+				btnParaLlevar.setBackground(new Color(240,240,240));
+				btnDomicilio.setBackground(new Color(240,240,240));
+				btnPuntoDeVenta.setBackground(Color.YELLOW);
+			}
+		});
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setFont(new Font("Calibri", Font.PLAIN, 15));
@@ -110,43 +168,76 @@ public class VentanaTransaccional extends JFrame {
 		tabbedPane.addTab("New tab", null, panel_5, null);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 11, 762, 346);
+		scrollPane.setBounds(10, 11, 762, 314);
 		contentPane.add(scrollPane);
 		
-		table =   new JTable();
-		table.setEnabled(false);
-		table.setModel(new DefaultTableModel(
-			new Object[][] {
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-				{null, null, null, null, null},
-			},
-			new String[] {
-				"New column", "New column", "New column", "New column", "New column"
+		tblMaestroPedidos =   new JTable();
+		tblMaestroPedidos.setEnabled(true);
+		DefaultTableModel modelo = pintarPedidos();
+		tblMaestroPedidos.setModel(modelo);
+		scrollPane.setViewportView(tblMaestroPedidos);
+		
+		JButton btnAvanzarEstado = new JButton("Avanzar Estado");
+		btnAvanzarEstado.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+				if(filaSeleccionada == -1)
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún pedido para Avanzar Estado " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				// Se captura el valor del idDetalle que se desea eliminar
+				int idPedidoAvanzar= (int)tblMaestroPedidos.getValueAt(filaSeleccionada, 0);
 			}
-		));
-		scrollPane.setViewportView(table);
+		});
+		btnAvanzarEstado.setBounds(425, 336, 180, 23);
+		contentPane.add(btnAvanzarEstado);
+		
+		JButton btnRetrocederEstado = new JButton("Devolver Estado");
+		btnRetrocederEstado.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+				if(filaSeleccionada == -1)
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún pedido para Devolver Estado " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				// Se captura el valor del idDetalle que se desea eliminar
+				int idPedidoDevolver = (int)tblMaestroPedidos.getValueAt(filaSeleccionada, 0);
+			}
+		});
+		btnRetrocederEstado.setBounds(164, 334, 180, 23);
+		contentPane.add(btnRetrocederEstado);
+	}
+	
+	public DefaultTableModel pintarPedidos()
+	{
+		Object[] columnsName = new Object[5];
+        
+        columnsName[0] = "Id Pedido Tienda";
+        columnsName[1] = "Fecha Pedido";
+        columnsName[2] = "Nombres";
+        columnsName[3] = "Tipo Pedido";
+        columnsName[4] = "Dirección";
+        PedidoCtrl pedCtrl = new  PedidoCtrl();
+        ArrayList<Object> pedidos = new ArrayList();
+        if(idTipoPedido == 0)
+        {
+        	pedidos = pedCtrl.obtenerPedidosTable();
+        }
+        else
+        {
+        	pedidos = pedCtrl.obtenerPedidosPorTipo(idTipoPedido);
+        }
+		DefaultTableModel modelo = new DefaultTableModel();
+		modelo.setColumnIdentifiers(columnsName);
+		for(int y = 0; y < pedidos.size();y++)
+		{
+			String[] fila =(String[]) pedidos.get(y);
+			modelo.addRow(fila);
+		}
+		return(modelo);
+		
 	}
 }

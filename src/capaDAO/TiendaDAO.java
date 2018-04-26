@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
+import capaModelo.FechaSistema;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;
 /**
@@ -54,6 +55,43 @@ public class TiendaDAO {
 		return(tien);
 		
 	}
+	
+	public static FechaSistema obtenerFechasSistema()
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		FechaSistema fechaSistema = new FechaSistema();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select fecha_apertura, fecha_ultimo_cierre from tienda";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			String fechaApertura = "";
+			String fechaUltimoCierre = "";
+			while(rs.next()){
+				
+				fechaApertura = rs.getString("fecha_apertura");
+				fechaUltimoCierre = rs.getString("fecha_ultimo_cierre");
+				
+			}
+			fechaSistema = new FechaSistema(fechaApertura, fechaUltimoCierre);
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(fechaSistema);
+	}
+	
 	
 	
 }
