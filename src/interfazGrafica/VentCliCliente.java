@@ -26,7 +26,7 @@ import javax.swing.JDesktopPane;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
-public class VentCliente extends JFrame {
+public class VentCliCliente extends JFrame {
 
 	private JPanel PanelContenedor;
 	private JTextField textIdCliente;
@@ -48,7 +48,7 @@ public class VentCliente extends JFrame {
 	private JTextField textObservacion;
 	private JButton btnBuscar;
 	private JButton btnSeleccionar;
-	private VentBuscarCliente ventBusCliente;
+	private VentCliBuscarCliente ventBusCliente;
 	private int  idCliente = 0;
 
 	/**
@@ -58,7 +58,7 @@ public class VentCliente extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCliente frame = new VentCliente(0);
+					VentCliCliente frame = new VentCliCliente(0);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -70,7 +70,7 @@ public class VentCliente extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentCliente(int idClien) {
+	public VentCliCliente(int idClien) {
 		
 		idCliente = idClien;
 		setTitle("VENTANA DE CLIENTES");
@@ -198,7 +198,7 @@ public class VentCliente extends JFrame {
 		btnSeleccionar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//En este botón seleccionar se instanciará un objeto de la ventana tomador de pedidos y se fijarán los valores de los parámetros de cliente
-				TomarPedidos ventFijarParCliente = new TomarPedidos();
+				VentPedTomarPedidos ventFijarParCliente = new VentPedTomarPedidos();
 				ventFijarParCliente.idCliente = Integer.parseInt(textIdCliente.getText());
 				ventFijarParCliente.nombreCliente = textNombre.getText() + " " + textApellido.getText();
 				ventFijarParCliente.dispose();
@@ -222,7 +222,7 @@ public class VentCliente extends JFrame {
 					JOptionPane.showMessageDialog(null, "Se debe de ingresar información el campo teléfono para poder realizar la búsqueda " , "Búsqueda por teléfono", JOptionPane.OK_OPTION);
 					return;
 				}
-				ventBusCliente = new VentBuscarCliente(telefono);
+				ventBusCliente = new VentCliBuscarCliente(telefono);
 				ventBusCliente.setVisible(true);
 				dispose();
 			}

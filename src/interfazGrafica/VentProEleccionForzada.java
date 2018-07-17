@@ -30,7 +30,7 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-public class VentEleccionForzada extends JFrame {
+public class VentProEleccionForzada extends JFrame {
 
 	private JPanel contenedorPrincipal;
 	JLabel lblDescripcionPregunta;
@@ -81,7 +81,7 @@ public class VentEleccionForzada extends JFrame {
 	 * @param preguntas se recibe un ArrayList con las preguntas forzadas que se van a controlar
 	 * @param idProducto se recibe el producto al cual se le están aplicando la Elección Forzada.
 	 */
-	public VentEleccionForzada(ArrayList<Pregunta> preguntas, int idProducto) {
+	public VentProEleccionForzada(ArrayList<Pregunta> preguntas, int idProducto) {
 		setTitle("ELECCI\u00D3N");
 		numPreguntas = preguntas.size();
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -371,13 +371,13 @@ public class VentEleccionForzada extends JFrame {
 								idProducto = elTemp.getIdProducto();
 							}
 						}
-						DetallePedido detPedido = new DetallePedido(0,TomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", TomarPedidos.idDetallePedidoMaster);
+						DetallePedido detPedido = new DetallePedido(0,VentPedTomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", VentPedTomarPedidos.idDetallePedidoMaster);
 						int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
 						detPedido.setIdDetallePedido(idDetalle);
 						if(idDetalle > 0)
 						{
-							TomarPedidos.detallesPedido.add(detPedido);
-							TomarPedidos.totalPedido = TomarPedidos.totalPedido + detPedido.getValorTotal();
+							VentPedTomarPedidos.detallesPedido.add(detPedido);
+							VentPedTomarPedidos.totalPedido = VentPedTomarPedidos.totalPedido + detPedido.getValorTotal();
 							//Para pintar la nueva adición de producto y fijar el nuevo valor se ejecutará cuando se active la ventana
 						}
 					
@@ -405,13 +405,13 @@ public class VentEleccionForzada extends JFrame {
 								idProducto = elTemp.getIdProducto();
 							}
 						}
-						DetallePedido detPedido = new DetallePedido(0,TomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", TomarPedidos.idDetallePedidoMaster);
+						DetallePedido detPedido = new DetallePedido(0,VentPedTomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", VentPedTomarPedidos.idDetallePedidoMaster);
 						int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
 						detPedido.setIdDetallePedido(idDetalle);
 						if(idDetalle > 0)
 						{
-							TomarPedidos.detallesPedido.add(detPedido);
-							TomarPedidos.totalPedido = TomarPedidos.totalPedido + detPedido.getValorTotal();
+							VentPedTomarPedidos.detallesPedido.add(detPedido);
+							VentPedTomarPedidos.totalPedido = VentPedTomarPedidos.totalPedido + detPedido.getValorTotal();
 							//Para pintar la nueva adición de producto y fijar el nuevo valor se ejecutará cuando se active la ventana
 						}
 					}

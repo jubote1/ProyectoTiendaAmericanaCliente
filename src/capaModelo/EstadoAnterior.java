@@ -31,6 +31,9 @@ public class EstadoAnterior {
 		this.descEstadoAnterior = descEstadoAnterior;
 	}
 	
-	
+	public String toString()
+	{
+		return(descEstadoAnterior);
+	}
 	
 }

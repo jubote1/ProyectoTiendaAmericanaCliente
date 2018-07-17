@@ -23,6 +23,9 @@ public class Producto {
 	private double precio9;
 	private double precio10;
 	private String impresionComanda;
+	private String tipoProducto;
+	private String tamano;
+	
 	public int getIdProducto() {
 		return idProducto;
 	}
@@ -155,10 +158,27 @@ public class Producto {
 		
 	}
 	
+	
+	
+	public String getTipoProducto() {
+		return tipoProducto;
+	}
+	public void setTipoProducto(String tipoProducto) {
+		this.tipoProducto = tipoProducto;
+	}
+	
+	
+	public String getTamano() {
+		return tamano;
+	}
+	public void setTamano(String tamano) {
+		this.tamano = tamano;
+	}
+	
 	public Producto(int idProducto, String descripcion, String impresion, String textoBoton, String colorBoton,
 			int idPreguntaForzada1, int idPreguntaForzada2, int idPreguntaForzada3, int idPreguntaForzada4,
 			int idPreguntaForzada5, double precio1, double precio2, double precio3, double precio4, double precio5,
-			double precio6, double precio7, double precio8, double precio9, double precio10, String impresionComanda) {
+			double precio6, double precio7, double precio8, double precio9, double precio10, String impresionComanda, String tipoProducto, String tamano) {
 		super();
 		this.idProducto = idProducto;
 		this.descripcion = descripcion;
@@ -181,6 +201,8 @@ public class Producto {
 		this.precio9 = precio9;
 		this.precio10 = precio10;
 		this.impresionComanda = impresionComanda;
+		this.tipoProducto = tipoProducto;
+		this.tamano = tamano;
 	}
 	
 	

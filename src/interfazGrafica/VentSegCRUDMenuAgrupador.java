@@ -24,8 +24,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.JScrollBar;
 
-public class CRUDMenuAgrupador extends JFrame {
+public class VentSegCRUDMenuAgrupador extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField jTextIDAgrupador;
@@ -41,7 +42,7 @@ public class CRUDMenuAgrupador extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					CRUDMenuAgrupador frame = new CRUDMenuAgrupador();
+					VentSegCRUDMenuAgrupador frame = new VentSegCRUDMenuAgrupador();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -79,7 +80,7 @@ public class CRUDMenuAgrupador extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de menú Agrupador.
 	 */
-	public CRUDMenuAgrupador() {
+	public VentSegCRUDMenuAgrupador() {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
@@ -149,15 +150,7 @@ public class CRUDMenuAgrupador extends JFrame {
 		panelJtable.setBounds(20, 147, 701, 167);
 		contentPane.add(panelJtable);
 		panelJtable.setLayout(null);
-		// Instanciamos el jtable
-		jTableMenuAgrupador = new JTable();
-		jTableMenuAgrupador.setForeground(Color.black);
-		jTableMenuAgrupador.setBounds(52, 25, 512, 58);
-		panelJtable.add(jTableMenuAgrupador);
-		jTableMenuAgrupador.setBorder(new LineBorder(new Color(0, 0, 0)));
-		jTableMenuAgrupador.setBackground(Color.WHITE);
 		DefaultTableModel modelo = pintarMenuAgrupador();
-		this.jTableMenuAgrupador.setModel(modelo);
 		//Adicionar manejo para el evento de seleccion
 		
 		
@@ -189,8 +182,8 @@ public class CRUDMenuAgrupador extends JFrame {
 				DefaultTableModel modelo = pintarMenuAgrupador();
 				jTableMenuAgrupador.setModel(modelo);
 				//Limpiamos el contenido de los campos
-				
-			
+				jTextMenu.setText("");
+				jTextDescripcion.setText("");
 			}
 		});
 		btnInsertar.setBounds(52, 133, 89, 23);
@@ -224,6 +217,17 @@ public class CRUDMenuAgrupador extends JFrame {
 		btnGrabarEdicion.setBounds(427, 133, 123, 23);
 		panelJtable.add(btnGrabarEdicion);
 		btnGrabarEdicion.setEnabled(false);
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
+		scrollPane_1.setBounds(62, 33, 518, 77);
+		panelJtable.add(scrollPane_1);
+		// Instanciamos el jtable
+		jTableMenuAgrupador = new JTable();
+		scrollPane_1.setViewportView(jTableMenuAgrupador);
+		jTableMenuAgrupador.setForeground(Color.black);
+		jTableMenuAgrupador.setBorder(new LineBorder(new Color(0, 0, 0)));
+		jTableMenuAgrupador.setBackground(Color.WHITE);
+		this.jTableMenuAgrupador.setModel(modelo);
 		jTextMenu.setText("");
 		jTextDescripcion.setText("");
 		
@@ -290,5 +294,4 @@ public boolean validarDatos()
 	
 	return(true);
 }
-
 }

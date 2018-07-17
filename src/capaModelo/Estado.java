@@ -6,12 +6,32 @@ public class Estado {
 	private String descripcion;
 	private String descripcionCorta;
 	private int idTipoPedido;
-	public Estado(int idestado, String descripcion, String descripcionCorta, int idTipoPedido) {
-		super();
-		this.idestado = idestado;
-		this.descripcion = descripcion;
-		this.descripcionCorta = descripcionCorta;
-		this.idTipoPedido = idTipoPedido;
+	private String tipoPedido;
+	private boolean estadoInicial;
+	private boolean estadoFinal;
+	private int colorr;
+	private int colorg;
+	private int colorb;
+	
+	
+	
+	public int getColorr() {
+		return colorr;
+	}
+	public void setColorr(int colorr) {
+		this.colorr = colorr;
+	}
+	public int getColorg() {
+		return colorg;
+	}
+	public void setColorg(int colorg) {
+		this.colorg = colorg;
+	}
+	public int getColorb() {
+		return colorb;
+	}
+	public void setColorb(int colorb) {
+		this.colorb = colorb;
 	}
 	public int getIdestado() {
 		return idestado;
@@ -34,6 +54,26 @@ public class Estado {
 	
 	
 	
+	
+	
+	public boolean isEstadoInicial() {
+		return estadoInicial;
+	}
+	public void setEstadoInicial(boolean estadoInicial) {
+		this.estadoInicial = estadoInicial;
+	}
+	public boolean isEstadoFinal() {
+		return estadoFinal;
+	}
+	public void setEstadoFinal(boolean estadoFinal) {
+		this.estadoFinal = estadoFinal;
+	}
+	public String getTipoPedido() {
+		return tipoPedido;
+	}
+	public void setTipoPedido(String tipoPedido) {
+		this.tipoPedido = tipoPedido;
+	}
 	public int getIdTipoPedido() {
 		return idTipoPedido;
 	}
@@ -44,5 +84,21 @@ public class Estado {
 	{
 		
 	}
+	public Estado(int idestado, String descripcion, String descripcionCorta, int idTipoPedido, String tipoPedido,
+			boolean estadoInicial, boolean estadoFinal, int colorr, int colorg, int colorb) {
+		super();
+		this.idestado = idestado;
+		this.descripcion = descripcion;
+		this.descripcionCorta = descripcionCorta;
+		this.idTipoPedido = idTipoPedido;
+		this.tipoPedido = tipoPedido;
+		this.estadoInicial = estadoInicial;
+		this.estadoFinal = estadoFinal;
+		this.colorr = colorr;
+		this.colorg = colorg;
+		this.colorb = colorb;
+	}
 
+	
+	
 }

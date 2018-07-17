@@ -66,6 +66,195 @@ public class ItemInventarioDAO {
 		
 	}
 	
+	public static ArrayList obtenerItemInventarioResumen(String fecha)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInventarioResumen = new ArrayList();
+		
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iditem, a.nombre_item, ifnull((select b.cantidad from item_inventario_historico b "
+					+ "where b.iditem = a.iditem),0)as inicio, ifnull( (select sum(c.cantidad) from retiro_inventario d, "
+					+ "retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem  "
+					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
+					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
+					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
+					+ "from item_inventario_consumo g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo from item_inventario a";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInventarioResumen.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(itemsInventarioResumen);
+		
+	}
+	
+	public static ArrayList obtenerItemInventarioVarianza(String fecha)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInventarioResumen = new ArrayList();
+		
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iditem, a.nombre_item, ifnull((select b.cantidad from item_inventario_historico b "
+					+ "where b.iditem = a.iditem),0)as inicio, ifnull( (select sum(c.cantidad) from retiro_inventario d, "
+					+ "retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem  "
+					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
+					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
+					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
+					+ "from item_inventario_consumo g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, a.cantidad, a.cantidad from item_inventario a";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInventarioResumen.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(itemsInventarioResumen);
+		
+	}
+	
+	
+	public static ArrayList<ItemInventario> obtenerItemInventarioObj()
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<ItemInventario> itemsInventario = new ArrayList();
+		int idItem;
+		String nombreItem,unidadMedida,manejaCanastas,cantidadCanasta,nombreContenedor;
+		double cantidad;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from item_inventario";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				idItem = rs.getInt("iditem");
+				nombreItem = rs.getString("nombre_item");
+				unidadMedida = rs.getString("unidad_medida");
+				cantidad = rs.getDouble("cantidad");
+				manejaCanastas = rs.getString("manejacanastas");
+				cantidadCanasta = rs.getString("cantidadxcanasta");
+				nombreContenedor = rs.getString("nombrecontenedor");
+				ItemInventario itemTemp = new ItemInventario(idItem, nombreItem, unidadMedida,cantidad, manejaCanastas, cantidadCanasta, nombreContenedor);
+				itemsInventario.add(itemTemp);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(itemsInventario);
+		
+	}
+	
+	public static ArrayList obtenerItemInventarioIngresar()
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInventario = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select iditem,nombre_item,unidad_medida,cantidadxcanasta,nombrecontenedor,0 from item_inventario";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInventario.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(itemsInventario);
+		
+	}
+	
+	
 	/**
 	 * Método de la capa DAO que se encarga de insertar una entidad item inventario.
 	 * @param impuesto Recibe un objeto de tipo item inventario del cual se extrae la información para la inserción.
@@ -80,7 +269,7 @@ public class ItemInventarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into item_inventario (nombre_item, unidad_medida) values ('" + item.getNombreItem() + "', '" + item.getUnidadMedida() + "')"; 
+			String insert = "insert into item_inventario (nombre_item, unidad_medida,manejacanastas,cantidadxcanasta,nombrecontenedor) values ('" + item.getNombreItem() + "', '" + item.getUnidadMedida() + "' , '" + item.getManejaCanastas() + "' , " + item.getCantidadCanasta() + " , '" + item.getNombreContenedor() + "')"; 
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
@@ -154,7 +343,7 @@ public class ItemInventarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update item_inventario set nombre_item = '" + item.getNombreItem() + "' , unidad_medida = '" + item.getUnidadMedida() + "' where iditem = " + item.getIdItem() ; 
+			String update = "update item_inventario set nombre_item = '" + item.getNombreItem() + "' , unidad_medida = '" + item.getUnidadMedida() + " ' , manejacanastas = '" + item.getManejaCanastas() + "' , cantidadxcanasta =" + item.getCantidadCanasta() + " , nombrecontenedor = '" + item.getNombreContenedor()  + "' where iditem = " + item.getIdItem() ; 
 			logger.info(update);
 			stm.executeUpdate(update);
 			

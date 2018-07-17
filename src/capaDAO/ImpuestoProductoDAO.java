@@ -66,6 +66,48 @@ public class ImpuestoProductoDAO {
 		
 	}
 	
+	
+	public static ArrayList<ImpuestoProducto> obtenerImpuestosProductoObj(int idProducto)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<ImpuestoProducto> impuestosProducto = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from impuesto_x_producto a where  a.idproducto = " + idProducto;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			int idImpuestoProducto = 0;
+			int idImpuesto = 0;
+			while(rs.next()){
+				idImpuestoProducto = rs.getInt("idimpuesto_producto");
+				idImpuesto = rs.getInt("idimpuesto");
+				ImpuestoProducto impProducto = new ImpuestoProducto(idImpuestoProducto, idProducto, idImpuesto);
+				impuestosProducto.add(impProducto);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(impuestosProducto);
+		
+	}
+	
 	/**
 	 * Método de la capa DAO que se encarga de insertar una entidad impuesto por producto.
 	 * @param impuesto Recibe un objeto de tipo impuesto del cual se extrae la información para la inserción.

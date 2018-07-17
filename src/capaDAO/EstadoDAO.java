@@ -67,6 +67,88 @@ public class EstadoDAO {
 		
 	}
 	
+	//Realizamos modificación para detectar si el pedido está en un estado final o no, para de esta manera
+	//tomar unas u otras decisiones al momento del despliegue de los tiempos de un pedido.
+	public static ArrayList obtenerHistoriaEstadoPedido(int idPedido)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList historiaEstados = new ArrayList();
+		int idEstado = 0;
+		try
+		{
+			Estado estadoPedido = PedidoDAO.obtenerEstadoPedido(idPedido);
+			//En este punto ya obtenenido el idEstado, nos disponemos a verificar si es un estado final o no.
+			boolean esEstFinal = EstadoDAO.esEstadoFinal(estadoPedido.getIdestado());
+			System.out.println(idPedido + " " + esEstFinal);
+			Statement stm = con1.createStatement();
+			String consulta = "select a.fechacambio, IFNULL(b.descripcion, 'Tomando Pedido'), IFNULL(c.descripcion, 'Tomando Pedido')  from cambios_estado_pedido a left outer join  estado b on a.idestadoanterior = b.idestado left outer join estado c on a.idestadoposterior = c.idestado where a.idpedidotienda = " + idPedido + " order by fechacambio asc";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount() ;
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas + 1];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				fila[numeroColumnas] = Boolean.toString(esEstFinal);
+				historiaEstados.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(historiaEstados);
+		
+	}
+	
+	public static boolean esEstadoFinal(int idEstado)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = false;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from estado where estado_final = 1 and  idestado = " + idEstado; 
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next())
+			{
+				respuesta = true;
+			}
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+				respuesta = false;
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
 	public static ArrayList<Estado> obtenerTodosEstado()
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -82,13 +164,29 @@ public class EstadoDAO {
 			ResultSet rs = stm.executeQuery(consulta);
 			int idestado, idTipoPedido;
 			String descripcion, descripcionCorta;
-			
+			boolean estInicial = false;
+			boolean estFinal = false;
+			int intEstInicial, intEstFinal;
+			int colorr=0, colorg=0, colorb=0;
 			while(rs.next()){
 				idestado = rs.getInt("idestado");
 				descripcion = rs.getString("descripcion");
 				descripcionCorta = rs.getString("descripcion_corta");
 				idTipoPedido = rs.getInt("idtipopedido");
-				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido);
+				intEstInicial = rs.getInt("estado_inicial");
+				intEstFinal = rs.getInt("estado_final");
+				colorr = rs.getInt("colorr");
+				colorg = rs.getInt("colorg");
+				colorb = rs.getInt("colorb");
+				if(intEstInicial == 1)
+				{
+					estInicial = true;
+				}
+				if(intEstFinal == 1)
+				{
+					estFinal = true;
+				}
+				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido, "", estInicial, estFinal, colorr, colorg, colorb);
 				estados.add(est);
 				
 			}
@@ -126,12 +224,28 @@ public class EstadoDAO {
 			int idTipoPedido = 0;
 			String descripcion = "";
 			String descripcionCorta = "";
-						
+			boolean estInicial = false;
+			boolean estFinal = false;
+			int intEstInicial, intEstFinal;	
+			int colorr=0, colorg=0, colorb=0;
 			while(rs.next()){
 				idTipoPedido = rs.getInt("idtipopedido");
 				descripcion = rs.getString("descripcion");
 				descripcionCorta = rs.getString("descripcion_corta");
-				estado = new Estado(idEstado, descripcion, descripcionCorta,idTipoPedido);
+				intEstInicial = rs.getInt("estado_inicial");
+				intEstFinal = rs.getInt("estado_final");
+				colorr = rs.getInt("colorr");
+				colorg = rs.getInt("colorg");
+				colorb = rs.getInt("colorb");
+				if(intEstInicial == 1)
+				{
+					estInicial = true;
+				}
+				if(intEstFinal == 1)
+				{
+					estFinal = true;
+				}
+				estado = new Estado(idEstado, descripcion, descripcionCorta,idTipoPedido, "", estInicial, estFinal,colorr,colorg,colorb);
 			}
 			rs.close();
 			stm.close();
@@ -160,7 +274,18 @@ public class EstadoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into estado (descripcion, descripcion_corta) values('" + estado.getDescripcion() + "' , '" + estado.getDescripcionCorta() + "')";
+			int estadoInicial = 0;
+			int estadoFinal = 0;
+			if(estado.isEstadoFinal())
+			{
+				estadoFinal = 1;
+			}
+			if(estado.isEstadoInicial())
+			{
+				estadoInicial= 1;
+			}
+			String insert = "insert into estado (descripcion, descripcion_corta, estado_inicial, estado_final, colorr, colorg, colorb, idtipopedido) values('" + estado.getDescripcion() + "' , '" + estado.getDescripcionCorta() + "', "+ estadoInicial + " ," + estadoFinal + " , " + estado.getColorr() + " , " + estado.getColorg() + " , " + estado.getColorb() + ", " + estado.getIdTipoPedido() +")";
+			System.out.println(insert);
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
@@ -224,8 +349,18 @@ public class EstadoDAO {
 		Connection con1 = con.obtenerConexionBDLocal();
 		try
 		{
+			int estadoInicial = 0;
+			int estadoFinal = 0;
+			if(estado.isEstadoFinal())
+			{
+				estadoFinal = 1;
+			}
+			if(estado.isEstadoInicial())
+			{
+				estadoInicial= 1;
+			}
 			Statement stm = con1.createStatement();
-			String update = "update estado set descripcion = '" + estado.getDescripcion() + "' , descripcion_corta = '" + estado.getDescripcionCorta() + "' " + "where idEstado = " + estado.getIdestado();  
+			String update = "update estado set descripcion = '" + estado.getDescripcion() + "' , descripcion_corta = '" + estado.getDescripcionCorta() + "' , estado_inicial =" + estadoInicial + " , estado_final = " + estadoFinal + ", colorr =  " + estado.getColorr() + " , colorg =" + estado.getColorg() + " , colorb = " + estado.getColorb() +  " where idEstado = " + estado.getIdestado();  
 			logger.info(update);
 			stm.executeUpdate(update);
 			
@@ -243,5 +378,226 @@ public class EstadoDAO {
 			return(false);
 		}
 		return(true);
+	}
+	
+	public static boolean tieneEstadoInicial( int idTipoPedido, int idEstado)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from estado a where estado_inicial = 1 and a.idtipopedido = " + idTipoPedido + " and a.idestado != " + idEstado;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+						
+			while(rs.next()){
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(respuesta);
+		
+	}
+	
+	
+	public static boolean tieneEstadoFinal( int idTipoPedido, int idEstado)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from estado a where estado_final = 1 and a.idtipopedido = " + idTipoPedido + " and a.idestado != " + idEstado;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+						
+			while(rs.next()){
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(respuesta);
+		
+	}
+	
+	public static int obtenerEstadoFinal( int idTipoPedido)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int estadoFinal = 0;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select idestado from estado  where estado_final = 1 and idtipopedido = " + idTipoPedido;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+						
+			while(rs.next()){
+				estadoFinal = rs.getInt("idestado");
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(estadoFinal);
+		
+	}
+	
+	public static int obtenerEstadoInicial( int idTipoPedido)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int estadoInicial = 0;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select idestado from estado  where estado_inicial = 1 and idtipopedido = " + idTipoPedido;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+						
+			while(rs.next()){
+				estadoInicial = rs.getInt("idestado");
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(estadoInicial);
+		
+	}
+	
+	/**
+	 * Método que se encarga dado un tipo de pedido y un estado determinar si dicho pedido es o no inicial
+	 * @param idTipoPedido el tipo de pedido del cual se desea confirmar la información
+	 * @param idEstado idEstado del cual se desea confirmar la información de si es un estado inicial
+	 * @return Se retorna un valor booleano que indica si la combinación de estado y tipo de pedido corresponde a un estado inicial
+	 */
+	public static boolean esEstadoInicial(int idTipoPedido, int idEstado)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from estado where idtipopedido =" + idTipoPedido + " and idestado = " + idEstado + " and estado_inicial = 1";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(respuesta);
+		
+	}
+	
+	/**
+	 * Método que se encarga dado un tipo de pedido y un estado determinar si dicho pedido es o no inicial
+	 * @param idTipoPedido el tipo de pedido del cual se desea confirmar la información
+	 * @param idEstado idEstado del cual se desea confirmar la información de si es un estado inicial
+	 * @return Se retorna un valor booleano que indica si la combinación de estado y tipo de pedido corresponde a un estado inicial
+	 */
+	public static boolean esEstadoFinal(int idTipoPedido, int idEstado)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from estado where idtipopedido =" + idTipoPedido + " and idestado = " + idEstado + " and estado_final = 1";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(respuesta);
+		
 	}
 }

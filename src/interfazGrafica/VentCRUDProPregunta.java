@@ -37,7 +37,7 @@ import javax.swing.JComboBox;
 import javax.swing.JScrollBar;
 import javax.swing.JCheckBox;
 
-public class VentCRUDPregunta extends JFrame {
+public class VentCRUDProPregunta extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField textIdPregunta;
@@ -62,7 +62,7 @@ public class VentCRUDPregunta extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCRUDPregunta frame = new VentCRUDPregunta();
+					VentCRUDProPregunta frame = new VentCRUDProPregunta();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -133,7 +133,7 @@ public class VentCRUDPregunta extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de impuestor.
 	 */
-	public VentCRUDPregunta() {
+	public VentCRUDProPregunta() {
 		setTitle("MAESTRO ELECCI\u00D3N FORZADA");
 		idPregunta = 0;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

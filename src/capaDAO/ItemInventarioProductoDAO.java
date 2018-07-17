@@ -11,6 +11,7 @@ import capaModelo.Impuesto;
 import capaModelo.ImpuestoProducto;
 import capaModelo.ItemInventarioProducto;
 import capaModelo.MenuAgrupador;
+import capaModelo.ModificadorInventario;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;
 import com.mysql.jdbc.ResultSetMetaData;
@@ -64,6 +65,49 @@ public class ItemInventarioProductoDAO {
 			}
 		}
 		return(itemsProducto);
+		
+	}
+	
+	/**
+	 * Método que se encarga de retornar un ArrayList con modificaodres de producto asociados a un idproducto determinado y una cantidad
+	 * @param idProducto
+	 * @return
+	 */
+	public static ArrayList<ModificadorInventario> obtenerItemsInventarioProducto(int idProducto, double cantidad)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<ModificadorInventario> modInvProducto = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iditem,  a.cantidad from item_inventario_x_producto a where a.idproducto = " + idProducto;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			int idItem = 0;
+			double cantidadItem = 0;
+			while(rs.next()){
+				idItem = rs.getInt("iditem");
+				cantidadItem = rs.getDouble("cantidad");
+				ModificadorInventario modInv = new ModificadorInventario(idItem, cantidadItem*cantidad);
+				modInvProducto.add(modInv);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(modInvProducto);
 		
 	}
 	

@@ -36,7 +36,7 @@ public class EstadoAnteriorDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idestado, a.idestado_anterior, b.descripcion_corta descripcion from estado_anterior a , estado b where a.idestado =" + idEstado + " and a.idestado_anterior = b.idestado";
+			String consulta = "select a.idestado, a.idestado_anterior, b.descripcion descripcion from estado_anterior a , estado b where a.idestado =" + idEstado + " and a.idestado_anterior = b.idestado";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			int idEstadoAnterior;

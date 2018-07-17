@@ -32,7 +32,10 @@ public class EstadoPosterior {
 		this.descEstadoPosterior = descEstadoPosterior;
 	}
 	
-	
+	public String toString()
+	{
+		return(descEstadoPosterior);
+	}
 	
 	
 

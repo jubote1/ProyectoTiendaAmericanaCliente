@@ -56,6 +56,60 @@ public class TiendaDAO {
 		
 	}
 	
+	public static boolean ActualizarFechaSistemaApertura(String fecha)
+	{
+		boolean respuesta = false;
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update tienda set fecha_apertura = '" +fecha +"'";
+			logger.info(update);
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+				return false;
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(true);
+	}
+	
+	public static boolean actualizarFechaUltimoCierre()
+	{
+		boolean respuesta = false;
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update tienda set fecha_ultimo_cierre = DATE_ADD(fecha_ultimo_cierre, INTERVAL 1 DAY)";
+			logger.info(update);
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+				return false;
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(true);
+	}
+	
 	public static FechaSistema obtenerFechasSistema()
 	{
 		Logger logger = Logger.getLogger("log_file");

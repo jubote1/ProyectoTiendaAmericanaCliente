@@ -29,7 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTable;
 
-public class VentConfMenu extends JFrame {
+public class VentSegConfMenu extends JFrame {
 
 	private JPanel contentPane;
 	private JPanel panelBotonesMenu;
@@ -48,7 +48,7 @@ public class VentConfMenu extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentConfMenu frame = new VentConfMenu();
+					VentSegConfMenu frame = new VentSegConfMenu();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -60,7 +60,7 @@ public class VentConfMenu extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentConfMenu() {
+	public VentSegConfMenu() {
 		
 		setTitle("CONFIGURACI\u00D3N DE MEN\u00DAS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

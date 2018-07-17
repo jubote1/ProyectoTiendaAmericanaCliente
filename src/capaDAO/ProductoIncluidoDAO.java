@@ -67,6 +67,50 @@ public class ProductoIncluidoDAO {
 		
 	}
 	
+
+	public static ArrayList<ProductoIncluido> obtenerProductosIncluidos(int idProducto, double cantidad)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<ProductoIncluido> productoIncluidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select  a.idproductoincluido, cantidad*"+cantidad +"as cantidad, a.precio  from producto_incluido a where a.idproductoincluye = " + idProducto;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			int idProducto_Incluido;
+			int idProductoIncluido;
+			double cantidadIncluye;
+			String precio;
+			
+			while(rs.next()){
+				idProductoIncluido = rs.getInt("idproductoincluido");
+				cantidadIncluye = rs.getDouble("cantidad");
+				precio = rs.getString("precio");
+				ProductoIncluido fila = new ProductoIncluido(0, idProductoIncluido, idProducto, cantidadIncluye, precio);
+				productoIncluidos.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(productoIncluidos);
+		
+	}
+	
 	/**
 	 * Método de la capa DAO que se encarga de insertar una entidad Producto Incluido
 	 * @param productoIncluido Recibe un objeto de tipo Producto Incluido del cual se extrae la información para la inserción.

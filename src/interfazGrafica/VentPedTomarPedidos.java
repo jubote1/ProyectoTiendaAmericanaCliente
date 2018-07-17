@@ -9,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
+import javax.swing.SwingConstants;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
@@ -21,15 +22,18 @@ import java.util.StringTokenizer;
 import java.awt.event.ActionEvent;
 import javax.swing.table.DefaultTableModel;
 
+import capaControlador.InventarioCtrl;
 import capaControlador.MenuCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ParametrosProductoCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.ConfiguracionMenu;
 import capaModelo.DetallePedido;
+import capaModelo.FechaSistema;
 import capaModelo.Municipio;
 import capaModelo.Pregunta;
 import capaModelo.Producto;
+import capaModelo.ProductoIncluido;
 import capaModelo.TipoPedido;
 
 import javax.swing.border.CompoundBorder;
@@ -45,7 +49,7 @@ import java.sql.Date;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 
-public class TomarPedidos extends JFrame {
+public class VentPedTomarPedidos extends JFrame {
 
 	private JPanel contentPane;
 	private JTable table;
@@ -54,22 +58,35 @@ public class TomarPedidos extends JFrame {
 	private ConfiguracionMenu[][] confiMenu;
 	// El arreglo con los botones del menï¿½ activo se manejarï¿½ como variable global
 	private Object[][] botones;
+	static JButton btnFinalizarPedido;
+	static JButton btnDescuento;
+	private JTextField txtValorPedidoSD;
+	private JTextField txtDescuento;
+	private JTextField txtValorTotal;
+	private JTextField txtNroPedido;
+	private JButton btnTipoPedido;
+	JLabel lblIdCliente;
+	JLabel lblNombreCliente;
+	private JTable tableDetallePedido;
+	//TODAS LAS VARIABLES ESTÁTICAS DEL ESTE JFRAME
 	//Parï¿½metros que se tendrï¿½n en Tomador Pedidos para la selecciï¿½n de clientes
+	//VARIABLES ESTÁTICAS
 	public static int idCliente = 0;
 	public static int idPedido = 0;
 	public static int idTienda = 0;
 	public static double totalPedido = 0;
+	public static double descuento = 0;
 	public static String usuario = "";
 	public static String nombreCliente = "";
 	public static int idDetallePedidoMaster = 0;
 	public static ArrayList<DetallePedido> detallesPedido = new ArrayList();
-	JLabel lblIdCliente;
-	JLabel lblNombreCliente;
-	private JTable tableDetallePedido;
-	private JTextField txtValorPedido;
 	static int numTipoPedido = 0;
 	static int numTipoPedidoAct = 0;
 	static ArrayList<TipoPedido> tiposPedidos;
+	static boolean tieneFormaPago = false;
+	static boolean tieneDescuento = false;
+	
+	
 	/**
 	 * Launch the application.
 	 */
@@ -79,17 +96,24 @@ public class TomarPedidos extends JFrame {
 		idPedido = 0;
 		idTienda = 0;
 		totalPedido = 0;
+		descuento = 0;
 		usuario = "";
 		nombreCliente = "";
 		idDetallePedidoMaster = 0;
 		detallesPedido = new ArrayList();
+		numTipoPedido = 0;
+		numTipoPedidoAct = 0;
+		tieneFormaPago = false;
+		tieneDescuento = false;
+		btnFinalizarPedido.setBackground(Color.LIGHT_GRAY);
+		btnDescuento.setBackground(Color.LIGHT_GRAY);
 	}
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					TomarPedidos frame = new TomarPedidos();
+					VentPedTomarPedidos frame = new VentPedTomarPedidos();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -101,22 +125,13 @@ public class TomarPedidos extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public TomarPedidos() {
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowActivated(WindowEvent e) {
-				fijarCliente();
-				txtValorPedido.setText(Double.toString(totalPedido));
-				pintarDetallePedido();
-			}
-		});
-		
-		
+	public VentPedTomarPedidos() {
 		
 		
 		setTitle("TOMADOR DE PEDIDOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 1024, 770);
+		this.setExtendedState(MAXIMIZED_BOTH);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -132,9 +147,9 @@ public class TomarPedidos extends JFrame {
 		table.setBounds(10, 272, 205, -260);
 		panelPedido.add(table);
 		
-		JLabel lblValorTotal = new JLabel("Valor Total ");
-		lblValorTotal.setBounds(10, 236, 83, 14);
-		panelPedido.add(lblValorTotal);
+		JLabel lblValorTotalSD = new JLabel("Valor Total SD");
+		lblValorTotalSD.setBounds(10, 200, 83, 14);
+		panelPedido.add(lblValorTotalSD);
 		
 		JButton btnAnularItem = new JButton("Anular Item");
 		
@@ -159,7 +174,7 @@ public class TomarPedidos extends JFrame {
 					return;
 				}
 				//Este método borra el idDetalle y si es master le borra los detalles.
-				boolean respEliminar = pedCtrl.eliminarDetallePedido(idDetalleEliminar);
+				boolean respEliminar = pedCtrl.anularDetallePedido(idDetalleEliminar);
 				if(!respEliminar)
 				{
 					JOptionPane.showMessageDialog(null, "No fue posible Eliminar el item de pedido " , "Error al Eliminar", JOptionPane.ERROR_MESSAGE);
@@ -171,18 +186,22 @@ public class TomarPedidos extends JFrame {
 					// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
 					if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar || detCadaPedido.getIdDetallePedidoMaster() == idDetalleEliminar)
 					{
-						detallesPedido.remove(j);
+						detCadaPedido.setCantidad(detCadaPedido.getCantidad()*-1);
+						double valorItem = detCadaPedido.getValorTotal();
+						detCadaPedido.setValorTotal(detCadaPedido.getValorTotal()*-1);
+						detallesPedido.set(j, detCadaPedido);
 						// j se reduce en uno teniendo en cuenta que se eliminó un elemento
-						j--;
-						totalPedido = totalPedido - detCadaPedido.getValorTotal();
-						txtValorPedido.setText(Double.toString(totalPedido));
+						//j--;
+						totalPedido = totalPedido - valorItem;
+						txtValorPedidoSD.setText(Double.toString(totalPedido));
+						txtValorTotal.setText(Double.toString(totalPedido - descuento));
 					}
 				}
 				pintarDetallePedido();
 				
 			}
 		});
-		btnAnularItem.setBounds(51, 265, 112, 36);
+		btnAnularItem.setBounds(51, 272, 112, 36);
 		panelPedido.add(btnAnularItem);
 		
 		tableDetallePedido = new JTable();
@@ -190,13 +209,37 @@ public class TomarPedidos extends JFrame {
 		tableDetallePedido.setShowVerticalLines(false);
 		tableDetallePedido.setShowHorizontalLines(false);
 		tableDetallePedido.setShowGrid(false);
-		tableDetallePedido.setBounds(10, 11, 205, 214);
+		tableDetallePedido.setBounds(10, 11, 205, 178);
 		panelPedido.add(tableDetallePedido);
 		
-		txtValorPedido = new JTextField();
-		txtValorPedido.setBounds(77, 233, 118, 20);
-		panelPedido.add(txtValorPedido);
-		txtValorPedido.setColumns(10);
+		txtValorPedidoSD = new JTextField();
+		txtValorPedidoSD.setEditable(false);
+		txtValorPedidoSD.setBounds(97, 197, 118, 20);
+		panelPedido.add(txtValorPedidoSD);
+		txtValorPedidoSD.setColumns(10);
+		
+		JLabel lblDescuento = new JLabel("Descuento");
+		lblDescuento.setBounds(10, 225, 83, 14);
+		panelPedido.add(lblDescuento);
+		
+		txtDescuento = new JTextField();
+		txtDescuento.setEditable(false);
+		txtDescuento.setBounds(97, 222, 118, 20);
+		panelPedido.add(txtDescuento);
+		txtDescuento.setColumns(10);
+		
+		JLabel lblValorTotal = new JLabel("Valor Total");
+		lblValorTotal.setBounds(10, 250, 83, 14);
+		panelPedido.add(lblValorTotal);
+		
+		txtValorTotal = new JTextField();
+		txtValorTotal.setEditable(false);
+		txtValorTotal.setColumns(10);
+		txtValorTotal.setBounds(97, 250, 118, 20);
+		panelPedido.add(txtValorTotal);
+		
+		txtDescuento.setText(Double.toString(descuento));
+		txtValorTotal.setText(Double.toString(totalPedido - descuento));
 		
 		JPanel panelMenu = new JPanel();
 		panelMenu.setBorder(new LineBorder(new Color(0, 0, 0), 3));
@@ -322,7 +365,7 @@ public class TomarPedidos extends JFrame {
 		
 		JPanel panelAcciones = new JPanel();
 		panelAcciones.setBorder(new LineBorder(new Color(0, 0, 0), 3));
-		panelAcciones.setBounds(0, 394, 1004, 69);
+		panelAcciones.setBounds(0, 433, 1004, 69);
 		contentPane.add(panelAcciones);
 		panelAcciones.setLayout(null);
 		
@@ -331,11 +374,11 @@ public class TomarPedidos extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				//Se deberï¿½a crear una nueva ventana para la asignaciï¿½n y creaciï¿½n de clientes
 				//Al momento de instanciar VentCliente se le pasarï¿½ como parï¿½metro el idCliente del pedido
-				VentCliente cliente = new VentCliente(idCliente);
+				VentCliCliente cliente = new VentCliCliente(idCliente);
 				cliente.setVisible(true);
 			}
 		});
-		btnAsignarCliente.setBounds(145, 11, 140, 47);
+		btnAsignarCliente.setBounds(66, 11, 140, 47);
 		panelAcciones.add(btnAsignarCliente);
 		
 		JButton btnAnularPedido = new JButton("Anular Pedido");
@@ -346,18 +389,21 @@ public class TomarPedidos extends JFrame {
 				if (resp == 0)
 				{
 					PedidoCtrl pedCtrl = new PedidoCtrl();
-					boolean eliPedido = pedCtrl.anularPedidoEliminar(idPedido);
+					boolean eliPedido = pedCtrl.anularPedido(idPedido);
 					if(eliPedido)
 					{
-						idCliente = 0;
-						idPedido = 0;
-						idTienda = 0;
-						totalPedido = 0;
-						usuario = "";
-						nombreCliente = "";
-						detallesPedido = new ArrayList();
+						InventarioCtrl invCtrl = new InventarioCtrl();
+						boolean reintInv = invCtrl.reintegrarInventarioPedido(idPedido);
+						if(!reintInv)
+						{
+							JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el reintegro de los inventarios " , "Error en reintegro de Inventarios ", JOptionPane.ERROR_MESSAGE);
+						}
+						clarearVarEstaticas();
 						pintarDetallePedido();
-						txtValorPedido.setText("0");
+						txtValorPedidoSD.setText("0");
+						txtDescuento.setText("0");
+						txtValorTotal.setText("0");
+						txtNroPedido.setText("");
 					}
 					else
 					{
@@ -367,39 +413,222 @@ public class TomarPedidos extends JFrame {
 				}
 			}
 		});
-		btnAnularPedido.setBounds(295, 11, 140, 47);
+		btnAnularPedido.setBounds(216, 11, 140, 47);
 		panelAcciones.add(btnAnularPedido);
 		
-		JButton btnDescuento = new JButton("Descuento");
+		btnDescuento = new JButton("Descuento");
+		btnDescuento.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				PedidoCtrl pedCtrl = new PedidoCtrl();
+				if (idPedido > 0)
+				{
+					boolean hayDescuentos = pedCtrl.existePedidoDescuento(idPedido);
+					if (hayDescuentos)
+					{
+						int seleccion = JOptionPane.showOptionDialog(
+								null,
+								"El producto ya presenta descuentos, desea borrar el descuento actual e ingresar uno nuevo",
+								"Descuento ya Registrado",
+								JOptionPane.YES_NO_CANCEL_OPTION,
+								JOptionPane.QUESTION_MESSAGE,
+								null,
+								new Object[]{"Borrar e Ingresar Nuevo Descuento","Cancelar"},
+								"Borrar e Ingresar Nuevo Descuento");
+						if(seleccion == 0)
+						{
+							boolean respuesta = pedCtrl.eliminarPedidoDescuento(idPedido);
+							if(respuesta)
+							{
+								VentPedDescuento ventDescuento = new VentPedDescuento();
+								ventDescuento.setVisible(true);
+								descuento = 0;
+							}
+							else
+							{
+								JOptionPane.showMessageDialog(null, "Se presentó un inconveniente por favor contacte al administrador del sistema " , "Error Eliminando descuento ", JOptionPane.ERROR_MESSAGE);
+								return;
+							}
+						}
+					}
+					else
+					{
+						VentPedDescuento ventDescuento = new VentPedDescuento();
+						ventDescuento.setVisible(true);
+					}
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "No se ha agregado ningún item al pedido, no debe haber descuento " , "Error Agregando Descuento ", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				
+			}
+		});
 		
-		btnDescuento.setBounds(445, 11, 140, 47);
+		btnDescuento.setBounds(366, 11, 140, 47);
 		panelAcciones.add(btnDescuento);
 		
-		JButton btnFinalizarPedido = new JButton("Finalizar Pedido");
+		btnFinalizarPedido = new JButton("Finalizar Pedido");
 
-		btnFinalizarPedido.setBounds(595, 11, 140, 47);
+		btnFinalizarPedido.setBounds(516, 11, 140, 47);
 
 		btnFinalizarPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				FinPago Finalizar = new FinPago();
-				Finalizar.setVisible(true);
+				
+				PedidoCtrl pedCtrl = new PedidoCtrl();
+				if (idPedido > 0)
+				{
+					boolean hayFormaPago = pedCtrl.existeFormaPago(idPedido);
+					if (hayFormaPago)
+					{
+						int seleccion = JOptionPane.showOptionDialog(
+								null,
+								"El producto ya presenta Forma de Pago, desea borrar la Forma de Pago actual e ingresar uno nuevo",
+								"Forma Pago ya Registrado",
+								JOptionPane.YES_NO_CANCEL_OPTION,
+								JOptionPane.QUESTION_MESSAGE,
+								null,
+								new Object[]{"Borrar e Ingresar Nueva Forma de Pago","Cancelar"},
+								"Borrar e Ingresar Nueva Forma Pago");
+						if(seleccion == 0)
+						{
+							boolean respuesta = pedCtrl.eliminarPedidoFormaPago(idPedido);
+							if(respuesta)
+							{
+								VentPedFinPago Finalizar = new VentPedFinPago();
+								Finalizar.setVisible(true);
+							}
+							else
+							{
+								JOptionPane.showMessageDialog(null, "Se presentó un inconveniente por favor contacte al administrador del sistema " , "Error Eliminando Forma Pago ", JOptionPane.ERROR_MESSAGE);
+								return;
+							}
+						}
+					}
+					else
+					{
+						VentPedFinPago Finalizar = new VentPedFinPago();
+						Finalizar.setVisible(true);
+					}
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "No se ha agregado ningún item al pedido, no debe haber Forma de Pago " , "Error Agregando Forma Pago ", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
 			}
 		});
 		
 		panelAcciones.add(btnFinalizarPedido);
 		
+		
+		
 		JButton btnMaestroPedidos = new JButton("Maestro Pedidos");
 		btnMaestroPedidos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentanaTransaccional transacciones = new VentanaTransaccional();
-				transacciones.setVisible(true);
+				
+				if(idPedido == 0)
+				{
+					VentPedTransaccional transacciones = new VentPedTransaccional();
+					transacciones.setVisible(true);
+					dispose();
+				}
+				else
+				{
+					int seleccion = JOptionPane.showOptionDialog(
+							null,
+							"Actualmente se está tomando un pedido y no ha sido finalizado, desea anular el pedido e ir a la pantalla transaccional?",
+							"Pedido sin Finalizar",
+							JOptionPane.YES_NO_CANCEL_OPTION,
+							JOptionPane.QUESTION_MESSAGE,
+							null,
+							new Object[]{"Anular el Pedido e ir a pantalla transaccional","No Salir de esta Pantalla"},
+							"Anular el Pedido e ir a pantalla transaccional");
+					if(seleccion == 0)
+					{
+						PedidoCtrl pedCtrl = new PedidoCtrl();
+						boolean eliPedido = pedCtrl.anularPedido(idPedido);
+						if(eliPedido)
+						{
+							clarearVarEstaticas();
+							pintarDetallePedido();
+							txtValorPedidoSD.setText("0");
+							txtDescuento.setText("0");
+							txtValorTotal.setText("0");
+							txtNroPedido.setText("");
+						}
+						VentPedTransaccional transacciones = new VentPedTransaccional();
+						transacciones.setVisible(true);
+						dispose();
+					}
+				}
+				
 			}
 		});
-		btnMaestroPedidos.setBounds(745, 11, 140, 47);
+		btnMaestroPedidos.setBounds(666, 11, 140, 47);
 		panelAcciones.add(btnMaestroPedidos);
 		
+		JButton btnTerminarPedido = new JButton("Terminar Pedido");
+		btnTerminarPedido.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				PedidoCtrl pedCtrl = new PedidoCtrl();
+				//Ingresamos lógica para tomar el tipo de pedido 
+				int idTipoPedido;
+				try
+				{
+					TipoPedido tipPedido = VentPedTomarPedidos.tiposPedidos.get(numTipoPedidoAct);
+					idTipoPedido = tipPedido.getIdTipoPedido();
+					
+				}catch(Exception e1)
+				{
+					idTipoPedido = 0;
+					System.out.println(e1.toString());
+				}
+				
+				int confirmado = JOptionPane.showConfirmDialog(
+						   null,"<html><center><b>A continuación la informacion para Confirmación del Pedido.</b><br>"
+					                 + "<p>CLIENTE: "+ VentPedTomarPedidos.nombreCliente+" </p>" +
+								   "<p>Por un valor TOTAL: " + totalPedido  +"</p>" +
+								   "<p>Con un Descuento: " + VentPedTomarPedidos.descuento  +"</p>" +
+								   "<p>NÚMERO DE PEDIDO: " + VentPedTomarPedidos.idPedido +"</p>" 
+								   
+						   );
+				if (JOptionPane.OK_OPTION == confirmado)
+				{
+				
+					// En este punto finalizamos el pedido
+					//VentPedConfirmarPedido ventConfirmarPedido = new VentPedConfirmarPedido(nombreCliente, totalPedido, descuento, idPedido, new javax.swing.JFrame(), true);
+					//	ventConfirmarPedido.setVisible(true);
+					boolean resFinPedido = pedCtrl.finalizarPedido(idPedido, 30/*tiempoPedido*/, idTipoPedido);
+					if (resFinPedido)
+					{
+						//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
+						//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
+						InventarioCtrl invCtrl = new InventarioCtrl();
+						boolean reintInv = invCtrl.descontarInventarioPedido(idPedido);
+						if(!reintInv)
+						{
+							JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
+						}
+						clarearVarEstaticas();
+						txtValorPedidoSD.setText(Double.toString(totalPedido));
+						pintarDetallePedido();
+						txtDescuento.setText(Double.toString(descuento));
+						txtValorTotal.setText(Double.toString(totalPedido - descuento));
+						txtNroPedido.setText(Integer.toString(idPedido));
+					}
+				}
+			}
+		});
+		btnTerminarPedido.setBounds(816, 11, 140, 47);
+		panelAcciones.add(btnTerminarPedido);
+		
+		
+		
 		JPanel panel = new JPanel();
-		panel.setBounds(0, 317, 225, 62);
+		panel.setBounds(0, 317, 225, 116);
 		contentPane.add(panel);
 		panel.setLayout(null);
 		
@@ -408,32 +637,71 @@ public class TomarPedidos extends JFrame {
 		lblTipoPedido.setBounds(76, 0, 71, 14);
 		panel.add(lblTipoPedido);
 		
-		JButton btnTipoPedido = new JButton("");
+		btnTipoPedido = new JButton("");
 		btnTipoPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				//Acciones relacionadas con el botón de tipo de pedido
-				
+				numTipoPedidoAct++;
 				if(numTipoPedidoAct == numTipoPedido)
 				{
 					numTipoPedidoAct = 0;
 				}
 				TipoPedido tipoPed = tiposPedidos.get(numTipoPedidoAct);
 				btnTipoPedido.setText(tipoPed.getDescripcion());
-				numTipoPedidoAct++;
+				btnTipoPedido.setHorizontalAlignment(SwingConstants.TRAILING);
+				btnTipoPedido.setIcon(new ImageIcon(VentPedTomarPedidos.class.getResource("/icons/"+tipoPed.getIcono())));
+				
 			}
 		});
-		btnTipoPedido.setBounds(23, 28, 172, 23);
+		btnTipoPedido.setBounds(10, 21, 205, 56);
 		panel.add(btnTipoPedido);
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowActivated(WindowEvent e) {
+				fijarCliente();
+				txtValorPedidoSD.setText(Double.toString(totalPedido));
+				pintarDetallePedido();
+				txtDescuento.setText(Double.toString(descuento));
+				txtValorTotal.setText(Double.toString(totalPedido - descuento));
+				txtNroPedido.setText(Integer.toString(idPedido));
+				if(tieneFormaPago)
+				{
+					btnFinalizarPedido.setBackground(Color.YELLOW);
+				}
+				else
+				{
+					btnFinalizarPedido.setBackground(Color.LIGHT_GRAY);
+				}
+				if(tieneDescuento)
+				{
+					btnDescuento.setBackground(Color.YELLOW);
+				}
+				else
+				{
+					btnDescuento.setBackground(Color.LIGHT_GRAY);
+				}
+				if(numTipoPedidoAct == numTipoPedido)
+				{
+					numTipoPedidoAct = 0;
+				}
+				TipoPedido tipoPed = tiposPedidos.get(numTipoPedidoAct);
+				btnTipoPedido.setText(tipoPed.getDescripcion());
+				btnTipoPedido.setHorizontalAlignment(SwingConstants.TRAILING);
+				btnTipoPedido.setIcon(new ImageIcon(VentPedTomarPedidos.class.getResource("/icons/"+tipoPed.getIcono())));
+				
+			}
+		});
 		
 		lblIdCliente = new JLabel("Id Cliente");
 		lblIdCliente.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblIdCliente.setBounds(77, 471, 108, 20);
+		lblIdCliente.setBounds(77, 496, 108, 20);
 		contentPane.add(lblIdCliente);
 		
 		lblNombreCliente = new JLabel("Nombre Cliente");
 		lblNombreCliente.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblNombreCliente.setBounds(206, 474, 390, 17);
+		lblNombreCliente.setBounds(206, 499, 390, 17);
 		contentPane.add(lblNombreCliente);
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
@@ -445,7 +713,19 @@ public class TomarPedidos extends JFrame {
 		//Inicializamos el botón con el tipo de pedido inicial
 		TipoPedido tipoPed = tiposPedidos.get(numTipoPedidoAct);
 		btnTipoPedido.setText(tipoPed.getDescripcion());
-		numTipoPedidoAct++;
+		
+		JLabel lblNroPedido = new JLabel("NRO PEDIDO");
+		lblNroPedido.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblNroPedido.setBounds(10, 88, 80, 14);
+		panel.add(lblNroPedido);
+		
+		txtNroPedido = new JTextField();
+		txtNroPedido.setFont(new Font("Tahoma", Font.BOLD, 12));
+		txtNroPedido.setEditable(false);
+		txtNroPedido.setBounds(100, 85, 115, 20);
+		panel.add(txtNroPedido);
+		txtNroPedido.setColumns(10);
+		
 	}
 	
 	public void fijarCliente()
@@ -545,6 +825,9 @@ public class TomarPedidos extends JFrame {
 		double precioProducto = parProducto.obtenerPrecioPilaProducto(idProducto);
 		double cantidad = 1;
 		DetallePedido detPedido = new DetallePedido(0,idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "",0);
+		//En estepunto debemos de validar si el producto adicionado tiene productos incluidos
+		//Agrupamos esta información en proIncluido
+		ArrayList<ProductoIncluido> proIncluido = parProducto.obtenerProductosIncluidos(idProducto, cantidad);
 		//Capturamos el detalle pedido creado, validaremos si fue exitoso para agregarlo al contenedor y pantalla
 		int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
 		detPedido.setIdDetallePedido(idDetalle);
@@ -553,7 +836,19 @@ public class TomarPedidos extends JFrame {
 		{
 			detallesPedido.add(detPedido);
 			totalPedido = totalPedido + detPedido.getValorTotal();
-			txtValorPedido.setText(Double.toString(totalPedido));
+			//En esta parte del código realizamos el recorrido
+			for(int i = 0; i< proIncluido.size(); i++)
+			{
+				
+				ProductoIncluido proTem = proIncluido.get(i);
+				double precioProTem = parProducto.obtenerPrecioProducto(proTem.getIdproductoincluido(), proTem.getPrecio());
+				detPedido = new DetallePedido(0, idPedido, proTem.getIdproductoincluido(),proTem.getCantidad(),precioProTem,proTem.getCantidad()*precioProTem,"",idDetallePedidoMaster);
+				pedCtrl.insertarDetallePedido(detPedido);
+				totalPedido = totalPedido + detPedido.getValorTotal();
+				detallesPedido.add(detPedido);
+			}
+			txtValorPedidoSD.setText(Double.toString(totalPedido));
+			txtValorTotal.setText(Double.toString(totalPedido - descuento));
 			pintarDetallePedido();
 			
 		}
@@ -565,7 +860,7 @@ public class TomarPedidos extends JFrame {
 		else
 		{
 			
-			VentEleccionForzada ElForzada = new VentEleccionForzada(preguntasProducto, idProducto);
+			VentProEleccionForzada ElForzada = new VentProEleccionForzada(preguntasProducto, idProducto);
 			ElForzada.setVisible(true);
 		}
 	}
@@ -608,10 +903,20 @@ public class TomarPedidos extends JFrame {
 	public void crearEncabezadoPedido()
 	{
 		PedidoCtrl pedCtrl = new PedidoCtrl();
-		java.util.Date fechaActual = new java.util.Date();
-		Calendar hoy = Calendar.getInstance();
-		String fechaPedido = Integer.toString(hoy.get(Calendar.DAY_OF_MONTH)) + "/" + Integer.toString(hoy.get(Calendar.MONTH)) + "/" + Integer.toString(hoy.get(Calendar.YEAR));
-		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, usuario);
+		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
+		String fechaPedido = fecha.getFechaApertura();
+		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, Sesion.getUsuario());
+		if(idPedido == 0)
+		{
+			JOptionPane.showMessageDialog(null, "Error al insertar el encabezado de un pedido " , "Error Inserción Encabezado", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		txtNroPedido.setText(Integer.toString(idPedido));
+	}
+	
+	public void validarSalidaControlada()
+	{
+		
 	}
 	
 	

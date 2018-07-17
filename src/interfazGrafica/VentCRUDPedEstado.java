@@ -3,6 +3,7 @@ package interfazGrafica;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 import javax.swing.JFrame;
@@ -12,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ParametrosProductoCtrl;
@@ -23,6 +25,8 @@ import capaModelo.ImpuestoProducto;
 import capaModelo.Municipio;
 import capaModelo.Producto;
 import capaModelo.TipoPedido;
+import renderTable.CellRenderNormal;
+import renderTable.CellRenderTransaccional;
 
 import java.awt.Color;
 import javax.swing.JTable;
@@ -36,8 +40,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import java.awt.Font;
 
-public class VentCRUDEstado extends JFrame {
+public class VentCRUDPedEstado extends JFrame {
 
 	private JPanel panelGeneral;
 	private JTextField txtIdEstado;
@@ -45,6 +53,7 @@ public class VentCRUDEstado extends JFrame {
 	private JTextField txtDescCorta;
 	private JTable jTableEstados;
 	private int idEstado;
+	private JLabel lblColorEstado;
 	JList listEstAnteriores;
 	JList listEstados1;
 	JList listEstados2;
@@ -54,6 +63,11 @@ public class VentCRUDEstado extends JFrame {
 	EstadoPosteriorListModel modeloListaPosteriores = new EstadoPosteriorListModel();
 	EstadoAnteriorListModel modeloListaAnteriores = new EstadoAnteriorListModel();
 	JComboBox comboTipoPedido;
+	JCheckBox chckbxEstadoInicial;
+	JCheckBox chckbxEstadoFinal;
+	int colorr;
+	int colorg;
+	int colorb;
 	/**
 	 * Launch the application.
 	 */
@@ -61,7 +75,7 @@ public class VentCRUDEstado extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCRUDEstado frame = new VentCRUDEstado();
+					VentCRUDPedEstado frame = new VentCRUDPedEstado();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -73,7 +87,7 @@ public class VentCRUDEstado extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentCRUDEstado() {
+	public VentCRUDPedEstado() {
 		setTitle("MAESTRO DE ESTADOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 903, 617);
@@ -116,6 +130,9 @@ public class VentCRUDEstado extends JFrame {
 		panelGeneral.add(panelTable);
 		panelTable.setLayout(null);
 		
+		//Agregamos el JColorChooser
+		//final JColorChooser selColorEstado = new JColorChooser();
+		
 		JButton btnInsertar = new JButton("Insertar");
 		btnInsertar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -129,19 +146,27 @@ public class VentCRUDEstado extends JFrame {
 					return;
 				}
 				String descripcion, descripcionCorta;
+				boolean estFinal = false;
+				boolean estInicial = false;
 				if (idEstado == 0)
 				{
+					estInicial = chckbxEstadoInicial.isSelected();
+					estFinal = chckbxEstadoFinal.isSelected();
 					descripcion = txtDescripcion.getText();
 					descripcionCorta = txtDescCorta.getText();
+					capturarColor();
 					TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
-					Estado estInsertar = new Estado(0,descripcion, descripcionCorta, tipPedSel.getIdTipoPedido());
+					Estado estInsertar = new Estado(0,descripcion, descripcionCorta, tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb);
 					PedidoCtrl pedCtrl = new PedidoCtrl();
 					pedCtrl.insertarEstado(estInsertar);
 					DefaultTableModel modelo = pintarEstado();
 					jTableEstados.setModel(modelo);
+					setCellRender(jTableEstados);
 					txtDescripcion.setText("");
 					txtDescCorta.setText("");
 					txtIdEstado.setText("");
+					chckbxEstadoInicial.setSelected(false);
+					chckbxEstadoFinal.setSelected(false);
 				}
 				
 			}
@@ -162,9 +187,12 @@ public class VentCRUDEstado extends JFrame {
 				pedCtrl.eliminarEstado(idEstadoEl);
 				DefaultTableModel modelo = pintarEstado();
 				jTableEstados.setModel(modelo);
+				setCellRender(jTableEstados);
 				txtIdEstado.setText("");
 				txtDescripcion.setText("");
 				txtDescCorta.setText("");
+				chckbxEstadoInicial.setSelected(false);
+				chckbxEstadoFinal.setSelected(false);
 				idEstado = 0;
 			}
 		});
@@ -174,18 +202,24 @@ public class VentCRUDEstado extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				
 				boolean validar = validarDatos();
+				boolean estInicial;
+				boolean estFinal;
 				if (validar)
 				{
+					estInicial = chckbxEstadoInicial.isSelected();
+					estFinal = chckbxEstadoFinal.isSelected();
 					String descripcion = txtDescripcion.getText();
 					String descripcionCorta = txtDescCorta.getText();
+					capturarColor();
 					TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
-					Estado estadoEditado = new Estado(idEstado, descripcion, descripcionCorta,tipPedSel.getIdTipoPedido());
+					Estado estadoEditado = new Estado(idEstado, descripcion, descripcionCorta,tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb);
 					PedidoCtrl pedCtrl = new PedidoCtrl();
 					boolean respuesta = pedCtrl.editarEstado(estadoEditado);
 					if(respuesta)
 					{
 						JOptionPane.showMessageDialog(null, "Se ha editado correctamente el registro " , "Confirmación Edición", JOptionPane.OK_OPTION);
 						DefaultTableModel modelo = pintarEstado();
+						setCellRender(jTableEstados);
 						txtDescripcion.setText("");
 						txtDescCorta.setText("");
 						txtIdEstado.setText("");
@@ -195,6 +229,8 @@ public class VentCRUDEstado extends JFrame {
 						idEstado = 0;
 						jTableEstados.setModel(modelo);
 						limpiarElementosListas();
+						chckbxEstadoInicial.setSelected(false);
+						chckbxEstadoFinal.setSelected(false);
 					}
 				}
 			}
@@ -221,9 +257,21 @@ public class VentCRUDEstado extends JFrame {
 				txtIdEstado.setText((String)jTableEstados.getValueAt(filaSeleccionada, 0));
 				PedidoCtrl pedCtrl = new PedidoCtrl();
 				Estado estadoEditar = pedCtrl.obtenerEstado(idEstadoEdi);
+				colorr= estadoEditar.getColorr();
+				colorg= estadoEditar.getColorg();
+				colorb= estadoEditar.getColorb();
+				fijarColor();
 				//Obtenemos el idProducto y con este retornamos el valor recuperarmos el valor para editar.
 				txtDescripcion.setText(estadoEditar.getDescripcion());
 				txtDescCorta.setText(estadoEditar.getDescripcionCorta());
+				if(estadoEditar.isEstadoInicial())
+				{
+					chckbxEstadoInicial.setSelected(true);
+				}
+				if(estadoEditar.isEstadoFinal())
+				{
+					chckbxEstadoFinal.setSelected(true);
+				}
 				for (int i = 0; i < comboTipoPedido.getModel().getSize(); i++) {
 					TipoPedido object = (TipoPedido)comboTipoPedido.getModel().getElementAt(i);
 					if(object.getIdTipoPedido() == estadoEditar.getIdTipoPedido()){
@@ -243,23 +291,9 @@ public class VentCRUDEstado extends JFrame {
 		btnEditar.setBounds(489, 160, 127, 23);
 		panelTable.add(btnEditar);
 		
-		
-		
-		listEstAnteriores = new JList();
-		listEstAnteriores.setBorder(new LineBorder(new Color(0, 0, 0)));
-		listEstAnteriores.setBounds(40, 213, 139, 114);
-		listEstAnteriores.setModel(modeloListaAnteriores);
-		panelGeneral.add(listEstAnteriores);
-		
 		JLabel lblEstadosAnteriores = new JLabel("Estados Anteriores");
-		lblEstadosAnteriores.setBounds(68, 188, 97, 14);
+		lblEstadosAnteriores.setBounds(39, 188, 97, 14);
 		panelGeneral.add(lblEstadosAnteriores);
-		
-		listEstados1 = new JList();
-		listEstados1.setBorder(new LineBorder(new Color(0, 0, 0)));
-		listEstados1.setBounds(296, 213, 139, 114);
-		listEstados1.setModel(estListModel);
-		panelGeneral.add(listEstados1);
 		
 		JLabel lblEstados1 = new JLabel("Estados Anteriores Disponibles");
 		lblEstados1.setBounds(286, 188, 166, 14);
@@ -280,7 +314,7 @@ public class VentCRUDEstado extends JFrame {
 				     //Obtenemos el objeto estado seleccionado 
 					 EstadoAnterior p = modeloListaAnteriores.getEstadoAnterior(selection);
 					 //Creamos el estado anterior a insertar
-				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoAnterior(),p.getDescEstadoAnterior(), 0);
+				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoAnterior(),p.getDescEstadoAnterior(), 0,"", false, false, 0,0,0);
 				     PedidoCtrl pedCtrl = new PedidoCtrl();
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.eliminarEstadoAnterior(p);
@@ -303,12 +337,6 @@ public class VentCRUDEstado extends JFrame {
 		btnEliEstAnteriores.setBounds(200, 274, 72, 23);
 		panelGeneral.add(btnEliEstAnteriores);
 		
-		listEstPosteriores = new JList();
-		listEstPosteriores.setBorder(new LineBorder(new Color(0, 0, 0)));
-		listEstPosteriores.setBounds(490, 213, 139, 114);
-		listEstPosteriores.setModel(modeloListaPosteriores);
-		panelGeneral.add(listEstPosteriores);
-		
 		JButton btnAdiEstPosteriores = new JButton("<<<<<");
 		btnAdiEstPosteriores.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -319,7 +347,7 @@ public class VentCRUDEstado extends JFrame {
 				     //Obtenemos el objeto estado seleccionado 
 					 Estado p = estListModel2.getEstado(selection);
 					 //Creamos el estado anterior a insertar
-				     EstadoPosterior estPosAdi = new EstadoPosterior(idEstado, p.getIdestado(), p.getDescripcionCorta());
+				     EstadoPosterior estPosAdi = new EstadoPosterior(idEstado, p.getIdestado(), p.getDescripcion());
 				     PedidoCtrl pedCtrl = new PedidoCtrl();
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.insertarEstadoPosterior(estPosAdi);
@@ -352,7 +380,7 @@ public class VentCRUDEstado extends JFrame {
 				     //Obtenemos el objeto estado seleccionado 
 					 EstadoPosterior p = modeloListaPosteriores.getEstadoPosterior(selection);
 					 //Creamos el estado anterior a insertar
-				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoPosterior(),p.getDescEstadoPosterior(),0);
+				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoPosterior(),p.getDescEstadoPosterior(),0,"", false, false,0,0,0);
 				     PedidoCtrl pedCtrl = new PedidoCtrl();
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.eliminarEstadoPosterior(p);
@@ -375,12 +403,6 @@ public class VentCRUDEstado extends JFrame {
 		btnEliEstPosteriores.setBounds(647, 274, 72, 23);
 		panelGeneral.add(btnEliEstPosteriores);
 		
-		listEstados2 = new JList();
-		listEstados2.setBorder(new LineBorder(new Color(0, 0, 0)));
-		listEstados2.setBounds(735, 213, 139, 114);
-		listEstados2.setModel(estListModel2);
-		panelGeneral.add(listEstados2);
-		
 		JLabel lblEstadosPosterioresDisponibles = new JLabel("Estados Posteriores Disponibles");
 		lblEstadosPosterioresDisponibles.setBounds(728, 188, 159, 14);
 		panelGeneral.add(lblEstadosPosterioresDisponibles);
@@ -397,6 +419,7 @@ public class VentCRUDEstado extends JFrame {
 		jTableEstados = new JTable();
 		scrollPane.setViewportView(jTableEstados);
 		jTableEstados.setModel(modelo);
+		setCellRender(jTableEstados);
 		
 		JLabel lblTipoPedido = new JLabel("Tipo Pedido");
 		lblTipoPedido.setBounds(200, 139, 109, 14);
@@ -405,6 +428,100 @@ public class VentCRUDEstado extends JFrame {
 		comboTipoPedido = new JComboBox();
 		comboTipoPedido.setBounds(369, 136, 178, 20);
 		panelGeneral.add(comboTipoPedido);
+		
+		chckbxEstadoInicial = new JCheckBox("Estado Inicial");
+		chckbxEstadoInicial.setBounds(647, 108, 97, 23);
+		panelGeneral.add(chckbxEstadoInicial);
+		
+		chckbxEstadoFinal = new JCheckBox("Estado Final");
+		chckbxEstadoFinal.setBounds(647, 135, 97, 23);
+		panelGeneral.add(chckbxEstadoFinal);
+		
+		lblColorEstado = new JLabel("Color Estado");
+		lblColorEstado.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblColorEstado.setBounds(749, 152, 114, 14);
+		panelGeneral.add(lblColorEstado);
+		
+		
+		JButton btnColorEstado = new JButton("Color Estado");
+		btnColorEstado.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				Color nuevoColor = lblColorEstado.getForeground();
+				final JColorChooser selectorColor = new JColorChooser(nuevoColor);
+				
+				ActionListener escuchadorOk = new ActionListener()
+						{
+							@Override
+							public void actionPerformed(ActionEvent e)
+							{
+								Color colorSeleccionado = selectorColor.getColor();
+								if(colorSeleccionado.equals(lblColorEstado.getForeground()))
+								{
+									JOptionPane.showMessageDialog(selectorColor, "Este color ya está establecido como Color");
+								}
+								else
+								{
+									lblColorEstado.setForeground(colorSeleccionado);
+								}
+							}
+						};
+						
+						ActionListener escuchadorCancel = new ActionListener()
+						{
+							@Override
+							public void actionPerformed(ActionEvent e)
+							{
+								lblColorEstado.setForeground(Color.RED);
+							}
+						};
+						
+						final JDialog cuadroDialogo = JColorChooser.createDialog(panelGeneral, "Seleccione Color para el Estado y Tipo de Pedido", true, selectorColor, escuchadorOk, escuchadorCancel);
+						cuadroDialogo.setVisible(true);
+				
+			}
+		});
+		btnColorEstado.setBounds(750, 118, 124, 23);
+		panelGeneral.add(btnColorEstado);
+		
+		JScrollPane scrPanelEstAntDis = new JScrollPane();
+		scrPanelEstAntDis.setBounds(296, 213, 146, 114);
+		panelGeneral.add(scrPanelEstAntDis);
+		
+		listEstados1 = new JList();
+		scrPanelEstAntDis.setViewportView(listEstados1);
+		listEstados1.setBorder(new LineBorder(new Color(0, 0, 0)));
+		listEstados1.setModel(estListModel);
+		
+		JScrollPane scrPanelEstAnt = new JScrollPane();
+		scrPanelEstAnt.setBounds(10, 212, 162, 114);
+		panelGeneral.add(scrPanelEstAnt);
+		
+		
+		
+		listEstAnteriores = new JList();
+		scrPanelEstAnt.setViewportView(listEstAnteriores);
+		listEstAnteriores.setBorder(new LineBorder(new Color(0, 0, 0)));
+		listEstAnteriores.setModel(modeloListaAnteriores);
+		
+		JScrollPane scrPanelEstPos = new JScrollPane();
+		scrPanelEstPos.setBounds(483, 213, 139, 114);
+		panelGeneral.add(scrPanelEstPos);
+		
+		listEstPosteriores = new JList();
+		scrPanelEstPos.setViewportView(listEstPosteriores);
+		listEstPosteriores.setBorder(new LineBorder(new Color(0, 0, 0)));
+		listEstPosteriores.setModel(modeloListaPosteriores);
+		
+		JScrollPane scrPanelEstPosDis = new JScrollPane();
+		scrPanelEstPosDis.setBounds(738, 213, 149, 114);
+		panelGeneral.add(scrPanelEstPosDis);
+		
+		listEstados2 = new JList();
+		scrPanelEstPosDis.setViewportView(listEstados2);
+		listEstados2.setBorder(new LineBorder(new Color(0, 0, 0)));
+		listEstados2.setModel(estListModel2);
+		
 		
 		//Adición de las acciones de los botones para los estados
 		
@@ -418,7 +535,7 @@ public class VentCRUDEstado extends JFrame {
 				     //Obtenemos el objeto estado seleccionado 
 					 Estado p = estListModel.getEstado(selection);
 					 //Creamos el estado anterior a insertar
-				     EstadoAnterior estAntAdi = new EstadoAnterior(idEstado, p.getIdestado(), p.getDescripcionCorta());
+				     EstadoAnterior estAntAdi = new EstadoAnterior(idEstado, p.getIdestado(), p.getDescripcion());
 				     PedidoCtrl pedCtrl = new PedidoCtrl();
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.insertarEstadoAnterior(estAntAdi);
@@ -514,6 +631,37 @@ public class VentCRUDEstado extends JFrame {
 	{
 		String descripcion = txtDescripcion.getText();
 		String descripcionCorta = txtDescCorta.getText();
+		boolean estInicial = chckbxEstadoInicial.isSelected();
+		boolean estFinal = chckbxEstadoFinal.isSelected();
+		PedidoCtrl pedCtrl = new PedidoCtrl();
+		if(estInicial & estFinal)
+		{
+			JOptionPane.showMessageDialog(null, "Un estado no debería ser inicial y y final al mismo tiempo", "Información Incorrecto", JOptionPane.ERROR_MESSAGE);
+			return(false);
+		}
+		TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
+		if(estInicial)
+		{
+			
+			boolean hayEstadoInicial = pedCtrl.tieneEstadoInicial(tipPedSel.getIdTipoPedido(), idEstado);
+			if(hayEstadoInicial)
+			{
+				JOptionPane.showMessageDialog(null, "Ya hay un estado inicial para el tipo de pedido, debe deschequear la opción de estado inicial", "Información Incorrecto", JOptionPane.ERROR_MESSAGE);
+				return(false);
+			}
+		}
+		
+		if(estFinal)
+		{
+			
+			boolean hayEstadoFinal = pedCtrl.tieneEstadoFinal(tipPedSel.getIdTipoPedido(), idEstado);
+			if(hayEstadoFinal)
+			{
+				JOptionPane.showMessageDialog(null, "Ya hay un estado final para el tipo de pedido, debe deschequear la opción de estado inicial", "Información Incorrecto", JOptionPane.ERROR_MESSAGE);
+				return(false);
+			}
+		}
+		
 		if(descripcion == "")
 		{
 			JOptionPane.showMessageDialog(null, "Valor del campo DESCRIPCION es necesario", "Falta Información", JOptionPane.ERROR_MESSAGE);
@@ -566,4 +714,27 @@ public class VentCRUDEstado extends JFrame {
 			comboTipoPedido.addItem(fila);
 		}
 	}
+	
+	public void capturarColor()
+	{
+		Color colorSel = lblColorEstado.getForeground();
+		colorr = colorSel.getRed();
+		colorg = colorSel.getGreen();
+		colorb = colorSel.getBlue();
+	}
+	
+	public void fijarColor()
+	{
+		Color colorSel = new Color(colorr, colorg, colorb);
+		lblColorEstado.setForeground(colorSel);
+		
+	}
+	
+	public void setCellRender(JTable table) {
+        Enumeration<TableColumn> en = table.getColumnModel().getColumns();
+        while (en.hasMoreElements()) {
+            TableColumn tc = en.nextElement();
+            tc.setCellRenderer(new CellRenderNormal());
+        }
+    }
 }

@@ -4,10 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.parser.ParserDelegator;
 
+import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.TipoPedido;
 
@@ -30,21 +32,22 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.awt.GridLayout;
 import javax.swing.border.LineBorder;
+import javax.swing.ImageIcon;
 
-public class FinPago extends JFrame {
+public class VentPedFinPago extends JFrame {
 
 	private JPanel contentenorFinPago;
 	private final Action action = new SwingAction();
 	private JTextField displayPago;
 	private JTextField txtCantidadAdeudada;
 	
-	public static double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = TomarPedidos.totalPedido/*36000*/,Deuda = Total ;
-	public static boolean boolEfectivo = true, boolTarjeta = false; 
+	public double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = VentPedTomarPedidos.totalPedido - VentPedTomarPedidos.descuento ,Deuda = Total ;
+	public  boolean boolEfectivo = true, boolTarjeta = false; 
 	private JTable tablePago;
 	private JTextField displayTotal;
 	
 	
-	public static void clarearVarEstaticas()
+	public void clarearVarEstaticas()
 	{
 		Efectivo = 0;
 		Tarjeta = 0;
@@ -60,7 +63,7 @@ public class FinPago extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					FinPago frame = new FinPago();
+					VentPedFinPago frame = new VentPedFinPago();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -108,7 +111,7 @@ public class FinPago extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public FinPago() {
+	public VentPedFinPago() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 961, 636);
 		contentenorFinPago = new JPanel();
@@ -280,39 +283,58 @@ public class FinPago extends JFrame {
 		JButton btnFinalizar = new JButton("Finalizar");
 		btnFinalizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//Tomamos la información para insertar la forma de pago
-				PedidoCtrl pedCtrl = new PedidoCtrl();
-				// Se envían datos para la inserción de la forma de pago.
-				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, TomarPedidos.idPedido);
-				if(resFormaPago)
+				//REALIZAMOS CONFIRMACIÓN DEL PEDIDO
+				int confirmado = JOptionPane.showConfirmDialog(
+						   null,"<html><center><b>A continuación la informacion para Confirmación del Pedido.</b><br>"
+					                 + "<p>CLIENTE: "+ VentPedTomarPedidos.nombreCliente+" </p>" +
+								   "<p>Por un valor TOTAL: " + Total  +"</p>" +
+								   "<p>Con un Descuento: " + VentPedTomarPedidos.descuento  +"</p>" +
+								   "<p>NÚMERO DE PEDIDO: " + VentPedTomarPedidos.idPedido +"</p>" 
+								   
+						   );
+				if (JOptionPane.OK_OPTION == confirmado)
 				{
-					//Ingresamos lógica para tomar el tipo de pedido 
-					int idTipoPedido;
-					try
+					//Tomamos la información para insertar la forma de pago
+					PedidoCtrl pedCtrl = new PedidoCtrl();
+					// Se envían datos para la inserción de la forma de pago.
+					boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, VentPedTomarPedidos.idPedido);
+					if(resFormaPago)
 					{
-						TipoPedido tipPedido = TomarPedidos.tiposPedidos.get(TomarPedidos.numTipoPedidoAct -1);
-						idTipoPedido = tipPedido.getIdTipoPedido();
-					}catch(Exception e)
-					{
-						idTipoPedido = 0;
-					}
-					
-					// En este punto finalizamos el pedido
-					boolean resFinPedido = pedCtrl.finalizarPedido(TomarPedidos.idPedido, 30/*tiempoPedido*/, idTipoPedido);
-					if (resFinPedido)
-					{
-						//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
-						//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
-						clarearVarEstaticas();
-						TomarPedidos.clarearVarEstaticas();
-						dispose();
+						//Ingresamos lógica para tomar el tipo de pedido 
+						int idTipoPedido;
+						try
+						{
+							TipoPedido tipPedido = VentPedTomarPedidos.tiposPedidos.get(VentPedTomarPedidos.numTipoPedidoAct);
+							idTipoPedido = tipPedido.getIdTipoPedido();
+						}catch(Exception e)
+						{
+							idTipoPedido = 0;
+						}
+						
+						// En este punto finalizamos el pedido
+						boolean resFinPedido = pedCtrl.finalizarPedido(VentPedTomarPedidos.idPedido, 30/*tiempoPedido*/, idTipoPedido);
+						if (resFinPedido)
+						{
+							//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
+							//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
+							InventarioCtrl invCtrl = new InventarioCtrl();
+							boolean reintInv = invCtrl.descontarInventarioPedido(VentPedTomarPedidos.idPedido);
+							if(!reintInv)
+							{
+								JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
+							}
+							clarearVarEstaticas();
+							VentPedTomarPedidos.clarearVarEstaticas();
+							dispose();
+						}
 					}
 				}
+				
 			}
 		});
 		btnFinalizar.setEnabled(false);
-		btnFinalizar.setFont(new Font("Calibri", Font.BOLD, 40));
-		btnFinalizar.setBounds(733, 495, 202, 70);
+		btnFinalizar.setFont(new Font("Calibri", Font.BOLD, 35));
+		btnFinalizar.setBounds(753, 534, 182, 53);
 		contentenorFinPago.add(btnFinalizar);
 		
 		txtCantidadAdeudada = new JTextField();
@@ -385,16 +407,20 @@ public class FinPago extends JFrame {
 		panelMetodosPagos.setLayout(new GridLayout(2, 1, 0, 0));
 		
 		JButton btnEfectivo = new JButton("Efectivo");
+		btnEfectivo.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnEfectivo.setIcon(new ImageIcon(VentPedFinPago.class.getResource("/icons/efectivo.jpg")));
 		panelMetodosPagos.add(btnEfectivo);
 		btnEfectivo.setBackground(new Color(230,230,230));
 		btnEfectivo.setBackground(new Color(86,106,187));
 		btnEfectivo.setForeground(new Color(255,255,255));
-		btnEfectivo.setFont(new Font("Calibri", Font.BOLD, 40));
+		btnEfectivo.setFont(new Font("Calibri", Font.BOLD, 26));
 		
 		JButton btnTarjeta = new JButton("Tarjeta");
+		btnTarjeta.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnTarjeta.setIcon(new ImageIcon(VentPedFinPago.class.getResource("/icons/credito.jpg")));
 		panelMetodosPagos.add(btnTarjeta);
 		btnTarjeta.setBackground(new Color(230,230,230));
-		btnTarjeta.setFont(new Font("Calibri", Font.BOLD, 40));
+		btnTarjeta.setFont(new Font("Calibri", Font.BOLD, 26));
 		
 		JPanel panelPagoRapido = new JPanel();
 		panelPagoRapido.setBounds(462, 211, 247, 230);
@@ -464,6 +490,27 @@ public class FinPago extends JFrame {
 		btnPago1000.setFont(new Font("Calibri Light", Font.BOLD, 20));
 		panelPagoRapido.add(btnPago1000);
 		
+		JButton btnIngRetornar = new JButton("Ingresar y Retornar");
+		btnIngRetornar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				//Tomamos la información para insertar la forma de pago
+				PedidoCtrl pedCtrl = new PedidoCtrl();
+				// Se envían datos para la inserción de la forma de pago.
+				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, VentPedTomarPedidos.idPedido);
+				if(resFormaPago)
+				{
+					clarearVarEstaticas();
+					VentPedTomarPedidos.tieneFormaPago= true;
+					dispose();
+				}
+			}
+		});
+		btnIngRetornar.setEnabled(false);
+		btnIngRetornar.setFont(new Font("Calibri", Font.BOLD, 30));
+		btnIngRetornar.setBounds(432, 534, 311, 53);
+		contentenorFinPago.add(btnIngRetornar);
+		
 		btnEfectivo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnAplicar.setText("Aplicar "+btnEfectivo.getText());
@@ -529,6 +576,7 @@ public class FinPago extends JFrame {
 				displayTotal.setText(Formato(Deuda));
 				if (Deuda == 0) {
 					btnFinalizar.setEnabled(true);
+					btnIngRetornar.setEnabled(true);
 					btnEfectivo.setEnabled(false);
 					btnTarjeta.setEnabled(false);
 					btnAplicar.setEnabled(false);

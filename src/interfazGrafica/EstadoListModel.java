@@ -16,7 +16,7 @@ public class EstadoListModel extends AbstractListModel{
     @Override
     public Object getElementAt(int index) {
         Estado p = lista.get(index);
-        return p.getDescripcionCorta();
+        return p.getDescripcion();
     }
     public void addEstado(Estado p){
         lista.add(p);

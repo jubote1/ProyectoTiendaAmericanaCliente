@@ -25,7 +25,7 @@ import javax.swing.JTable;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
-public class VentCRUDTienda extends JFrame {
+public class VentCRUDProTienda extends JFrame {
 
 	private JPanel ContenedorPrincipal;
 	private JTextField txtIdTipoPedido;
@@ -40,7 +40,7 @@ public class VentCRUDTienda extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCRUDTienda frame = new VentCRUDTienda();
+					VentCRUDProTienda frame = new VentCRUDProTienda();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -52,7 +52,7 @@ public class VentCRUDTienda extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentCRUDTienda() {
+	public VentCRUDProTienda() {
 		setTitle("PARAMETROS TIENDA");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 517, 464);
@@ -112,7 +112,7 @@ public class VentCRUDTienda extends JFrame {
 					{
 						valDefecto = true;
 					}
-					TipoPedido tipPedido = new TipoPedido(0, descripcion, valDefecto);
+					TipoPedido tipPedido = new TipoPedido(0, descripcion, valDefecto,"");
 					PedidoCtrl pedCtrl = new PedidoCtrl();
 					int idTipInsertado = pedCtrl.insertarTipoPedido(tipPedido);
 					if (idTipInsertado > 0)
@@ -197,7 +197,7 @@ public class VentCRUDTienda extends JFrame {
 				if (validar)
 				{
 					boolean valDefecto = chValorDefecto.isSelected();
-					TipoPedido tipoPedidoEditado = new TipoPedido(idTipoPedido,txtDescripcion.getText(),valDefecto); 
+					TipoPedido tipoPedidoEditado = new TipoPedido(idTipoPedido,txtDescripcion.getText(),valDefecto,""); 
 					PedidoCtrl pedCtrl = new PedidoCtrl();
 					boolean respuesta = pedCtrl.EditarTipoPedido(tipoPedidoEditado);
 					if (respuesta)

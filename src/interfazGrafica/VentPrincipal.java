@@ -1,6 +1,7 @@
 package interfazGrafica;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -12,10 +13,23 @@ import javax.swing.JLabel;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+import java.awt.Font;
+import java.awt.GridLayout;
+import javax.swing.border.LineBorder;
 
-public class VentanaPrincipal extends JFrame {
+public class VentPrincipal extends JFrame {
 
-	private JPanel PanelPrincipal;
+	private JPanel PanelPrincipal = new JPanel();
+	private JPanel PanelFachada = new JPanel();
+	private JPanel PanelPedidos = new JPanel();
+	private JPanel PanelInventarios = new JPanel();
+	private JPanel PanelClientes = new JPanel();
+	private JPanel PanelProductos = new JPanel();
+	private JPanel PanelSeguridad = new JPanel();
+	CardLayout cl = new CardLayout();
+
 
 	/**
 	 * Launch the application.
@@ -24,7 +38,7 @@ public class VentanaPrincipal extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaPrincipal frame = new VentanaPrincipal();
+					VentPrincipal frame = new VentPrincipal();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -36,34 +50,44 @@ public class VentanaPrincipal extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentanaPrincipal() {
+	public VentPrincipal() {
 		setTitle("MEN\u00DA PRINCIPAL");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 775, 444);
-		PanelPrincipal = new JPanel();
-		PanelPrincipal.setBackground(Color.WHITE);
-		PanelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setBounds(100, 100, 800, 444);
+		this.setExtendedState(MAXIMIZED_BOTH);
+		//PanelPrincipal.setBackground(Color.WHITE);
+		PanelPrincipal.setBorder(new LineBorder(new Color(0, 0, 0), 2));
 		setContentPane(PanelPrincipal);
 		PanelPrincipal.setLayout(null);
+		PanelFachada.setBounds(0, 95, 774, 300);
+		PanelFachada.setLayout(cl);
+		PanelFachada.add(PanelPedidos,"1");
+		PanelPedidos.setLayout(new GridLayout(0, 2, 100, 0));
+		PanelFachada.add(PanelInventarios,"2");
+		PanelInventarios.setLayout(new GridLayout(0, 2, 100, 0));
+		PanelFachada.add(PanelClientes,"3");
+		PanelClientes.setLayout(new GridLayout(0, 2, 100, 0));
+		PanelFachada.add(PanelSeguridad,"4");
+		PanelSeguridad.setLayout(new GridLayout(0, 2, 100, 0));
+		PanelFachada.add(PanelProductos,"5");
+		PanelProductos.setLayout(new GridLayout(0, 2, 100, 0));
+		cl.show(PanelFachada, "1");
+		//Agregamos al panel al final - primero debemos agregar la Jtoolbar
+		
 		
 		JButton btnSeguridadMenAgrupador = new JButton("Seguridad Men\u00FA Agrupador");
 		btnSeguridadMenAgrupador.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				CRUDMenuAgrupador MenuAgrupa = new CRUDMenuAgrupador();
+				VentSegCRUDMenuAgrupador MenuAgrupa = new VentSegCRUDMenuAgrupador();
 				MenuAgrupa.setVisible(true);
 			}
 		});
 		btnSeguridadMenAgrupador.setBounds(24, 124, 180, 48);
-		PanelPrincipal.add(btnSeguridadMenAgrupador);
-		
-		JLabel lblSeguridad = new JLabel("Seguridad");
+		PanelSeguridad.add(btnSeguridadMenAgrupador);
 		ImageIcon icono = new ImageIcon("iconos\\seguridad.jpg");
-		lblSeguridad.setIcon(icono);
-		lblSeguridad.setBounds(734, 24, 15, 93);
-		PanelPrincipal.add(lblSeguridad);
 		
 		JLabel lblLogo = new JLabel("");
-		lblLogo.setBounds(10, 24, 134, 75);
+		lblLogo.setBounds(476, 67, 0, 0);
 		ImageIcon icono2 = new ImageIcon("iconos\\LogoPizzaAmericana.png");
 		lblLogo.setIcon(icono2);
 		PanelPrincipal.add(lblLogo);
@@ -71,12 +95,12 @@ public class VentanaPrincipal extends JFrame {
 		JButton btnEleccionForzada = new JButton("Eleccion Forzada");
 		btnEleccionForzada.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCRUDPregunta EleccionForzada = new VentCRUDPregunta();
+				VentCRUDProPregunta EleccionForzada = new VentCRUDProPregunta();
 				EleccionForzada.setVisible(true);
 			}
 		});
 		btnEleccionForzada.setBounds(276, 124, 188, 48);
-		PanelPrincipal.add(btnEleccionForzada);
+		PanelProductos.add(btnEleccionForzada);
 		
 		JButton btnImpuestos = new JButton("Impuestos");
 		btnImpuestos.addActionListener(new ActionListener() {
@@ -86,17 +110,17 @@ public class VentanaPrincipal extends JFrame {
 			}
 		});
 		btnImpuestos.setBounds(539, 124, 188, 48);
-		PanelPrincipal.add(btnImpuestos);
+		PanelProductos.add(btnImpuestos);
 		
 		JButton btnCreacionClientes = new JButton("Creacion Clientes");
 		btnCreacionClientes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCliente cliente  = new VentCliente(0);
+				VentCliCliente cliente  = new VentCliCliente(0);
 				cliente.setVisible(true);
 			}
 		});
 		btnCreacionClientes.setBounds(24, 197, 180, 48);
-		PanelPrincipal.add(btnCreacionClientes);
+		PanelClientes.add(btnCreacionClientes);
 		
 		JButton btnItemsInventario = new JButton("Items Inventario");
 		btnItemsInventario.addActionListener(new ActionListener() {
@@ -106,7 +130,16 @@ public class VentanaPrincipal extends JFrame {
 			}
 		});
 		btnItemsInventario.setBounds(275, 196, 189, 48);
-		PanelPrincipal.add(btnItemsInventario);
+		PanelInventarios.add(btnItemsInventario);
+		
+		JButton btnNewButton = new JButton("Administraci\u00F3n Inventarios");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentInvInventarios inv = new VentInvInventarios();
+				inv.setVisible(true);
+			}
+		});
+		PanelInventarios.add(btnNewButton);
 		
 		JButton btnProductos = new JButton("Productos");
 		btnProductos.addActionListener(new ActionListener() {
@@ -116,37 +149,123 @@ public class VentanaPrincipal extends JFrame {
 			}
 		});
 		btnProductos.setBounds(539, 195, 188, 48);
-		PanelPrincipal.add(btnProductos);
+		PanelProductos.add(btnProductos);
 		
 		JButton btnParmetrosDireccin = new JButton("Par\u00E1metros Direcci\u00F3n");
 		btnParmetrosDireccin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentParametrosDireccion parDir = new VentParametrosDireccion();
+				VentCRUDParametrosDireccion parDir = new VentCRUDParametrosDireccion();
 				parDir.setVisible(true);
 			}
 		});
 		btnParmetrosDireccin.setBounds(24, 269, 180, 48);
-		PanelPrincipal.add(btnParmetrosDireccin);
+		PanelClientes.add(btnParmetrosDireccin);
 		
 		JButton btnConfiguracionMenu = new JButton("Configuracion Menu");
 		btnConfiguracionMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentConfMenu confMenu = new VentConfMenu();
+				VentSegConfMenu confMenu = new VentSegConfMenu();
 				confMenu.setVisible(true);
 			}
 		});
 		btnConfiguracionMenu.setBounds(276, 269, 188, 48);
-		PanelPrincipal.add(btnConfiguracionMenu);
+		PanelPedidos.add(btnConfiguracionMenu);
+		
+		JButton btnFinalizarDa = new JButton("Finalizar D\u00EDa");
+		btnFinalizarDa.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentPedFinalizarDia finDia = new VentPedFinalizarDia();
+				finDia.setVisible(true);
+			}
+		});
 		
 		JButton btnTomaPedidos = new JButton("Toma Pedidos");
 		btnTomaPedidos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				TomarPedidos tomaPedido = new TomarPedidos();
+				VentPedTomarPedidos tomaPedido = new VentPedTomarPedidos();
 				tomaPedido.setVisible(true);
 			}
 		});
 		btnTomaPedidos.setBounds(539, 269, 188, 48);
-		PanelPrincipal.add(btnTomaPedidos);
+		PanelPedidos.add(btnTomaPedidos);
+		PanelPedidos.add(btnFinalizarDa);
+		
+		JButton btnMaestroPedidos = new JButton("Maestro Pedidos");
+		btnMaestroPedidos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				VentPedTransaccional pedTrans = new VentPedTransaccional();
+				pedTrans.setVisible(true);
+			}
+		});
+		PanelPedidos.add(btnMaestroPedidos);
+		
+		JToolBar toolBarModulos = new JToolBar();
+		toolBarModulos.setFloatable(false);
+		toolBarModulos.setBounds(10, 11, 773, 73);
+		PanelPrincipal.add(toolBarModulos);
+		
+		JButton btnPedidos = new JButton("PEDIDOS");
+		btnPedidos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				cl.show(PanelFachada, "1");
+			}
+		});
+		btnPedidos.setBackground(Color.WHITE);
+		btnPedidos.setFont(new Font("Tahoma", Font.BOLD, 13));
+		btnPedidos.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnPedidos.setIcon(new ImageIcon(VentPrincipal.class.getResource("/icons/pedido.jpg")));
+		toolBarModulos.add(btnPedidos);
+		
+		JButton btnInventarios = new JButton("INVENTARIOS");
+		btnInventarios.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				cl.show(PanelFachada, "2");
+			}
+		});
+		btnInventarios.setBackground(Color.WHITE);
+		btnInventarios.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnInventarios.setFont(new Font("Tahoma", Font.BOLD, 13));
+		btnInventarios.setIcon(new ImageIcon(VentPrincipal.class.getResource("/icons/inventario.jpg")));
+		toolBarModulos.add(btnInventarios);
+		
+		JButton btnClientes = new JButton("CLIENTES");
+		btnClientes.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cl.show(PanelFachada, "3");
+			}
+		});
+		btnClientes.setBackground(Color.WHITE);
+		btnClientes.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnClientes.setFont(new Font("Tahoma", Font.BOLD, 13));
+		btnClientes.setIcon(new ImageIcon(VentPrincipal.class.getResource("/icons/cliente.jpg")));
+		toolBarModulos.add(btnClientes);
+		
+		JButton btnSeguridad = new JButton("SEGURIDAD");
+		btnSeguridad.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				cl.show(PanelFachada, "4");
+			}
+		});
+		btnSeguridad.setBackground(Color.WHITE);
+		btnSeguridad.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnSeguridad.setIcon(new ImageIcon(VentPrincipal.class.getResource("/icons/seguridad.jpg")));
+		btnSeguridad.setFont(new Font("Tahoma", Font.BOLD, 14));
+		toolBarModulos.add(btnSeguridad);
+		
+		JButton btnProductos_1 = new JButton("PRODUCTOS");
+		btnProductos_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cl.show(PanelFachada, "5");
+			}
+		});
+		btnProductos_1.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnProductos_1.setBackground(Color.WHITE);
+		btnProductos_1.setFont(new Font("Tahoma", Font.BOLD, 14));
+		btnProductos_1.setIcon(new ImageIcon(VentPrincipal.class.getResource("/icons/producto.jpg")));
+		toolBarModulos.add(btnProductos_1);
+		//
+		PanelPrincipal.add(PanelFachada);
 	}
-
 }

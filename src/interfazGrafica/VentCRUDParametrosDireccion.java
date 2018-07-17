@@ -36,7 +36,7 @@ import java.awt.Font;
 import javax.swing.JComboBox;
 import javax.swing.JScrollBar;
 
-public class VentParametrosDireccion extends JFrame {
+public class VentCRUDParametrosDireccion extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField jTextIDMunicipio;
@@ -56,7 +56,7 @@ public class VentParametrosDireccion extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentParametrosDireccion frame = new VentParametrosDireccion();
+					VentCRUDParametrosDireccion frame = new VentCRUDParametrosDireccion();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -95,7 +95,7 @@ public class VentParametrosDireccion extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de impuestor.
 	 */
-	public VentParametrosDireccion() {
+	public VentCRUDParametrosDireccion() {
 		setTitle("PARAMETROS DIRECCION");
 		idMunicipio = 0;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

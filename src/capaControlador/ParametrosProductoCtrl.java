@@ -193,6 +193,13 @@ public class ParametrosProductoCtrl {
 		return(items);
 	}
 	
+	public ArrayList<ItemInventario> obtenerItemsInventariosObj()
+	{
+		ArrayList<ItemInventario>  items = ItemInventarioDAO.obtenerItemInventarioObj();
+		return(items);
+	}
+	
+	
 	/**
 	 * Método de capa controladora encargado de la inserción de un nuevo item inventario
 	 * @param impuesto Se recibe el objeto de la entidad item inventario con los datos para insertar
@@ -259,6 +266,12 @@ public class ParametrosProductoCtrl {
 		public double obtenerPrecioPilaProducto(int idProducto)
 		{
 			double precioProducto = ProductoDAO.obtenerPrecioPilaProducto(idProducto);
+			return(precioProducto);
+		}
+		
+		public double obtenerPrecioProducto(int idProducto, String precio)
+		{
+			double precioProducto = ProductoDAO.obtenerPrecioProducto(idProducto,precio);
 			return(precioProducto);
 		}
 		
@@ -451,4 +464,10 @@ public class ParametrosProductoCtrl {
 					return(respuesta);
 				}
 
+				public ArrayList<ProductoIncluido> obtenerProductosIncluidos(int idProducto, double cantidad)
+				{
+					ArrayList<ProductoIncluido> prodIncluidosPedido = ProductoIncluidoDAO.obtenerProductosIncluidos(idProducto, cantidad);
+					return(prodIncluidosPedido);
+							
+				}
 }

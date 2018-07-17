@@ -205,5 +205,7 @@ public class FormaPagoDAO {
 		return(formaspago);
 		
 	}
+	
+	
 
 }

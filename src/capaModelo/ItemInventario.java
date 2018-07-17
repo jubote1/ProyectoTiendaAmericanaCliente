@@ -2,15 +2,52 @@ package capaModelo;
 
 public class ItemInventario {
 	
-	public ItemInventario(int idItem, String nombreItem, String unidadMedida) {
+	
+	private int idItem;
+	private String nombreItem;
+	private String unidadMedida;
+	private double cantidad;
+	private String manejaCanastas;
+	private String cantidadCanasta;
+	private String nombreContenedor;
+	
+	
+	
+	public ItemInventario(int idItem, String nombreItem, String unidadMedida, double cantidad, String manejaCanastas,
+			String cantidadCanasta, String nombreContenedor) {
 		super();
 		this.idItem = idItem;
 		this.nombreItem = nombreItem;
 		this.unidadMedida = unidadMedida;
+		this.cantidad = cantidad;
+		this.manejaCanastas = manejaCanastas;
+		this.cantidadCanasta = cantidadCanasta;
+		this.nombreContenedor = nombreContenedor;
 	}
-	private int idItem;
-	private String nombreItem;
-	private String unidadMedida;
+	public double getCantidad() {
+		return cantidad;
+	}
+	public void setCantidad(double cantidad) {
+		this.cantidad = cantidad;
+	}
+	public String getManejaCanastas() {
+		return manejaCanastas;
+	}
+	public void setManejaCanastas(String manejaCanastas) {
+		this.manejaCanastas = manejaCanastas;
+	}
+	public String getCantidadCanasta() {
+		return cantidadCanasta;
+	}
+	public void setCantidadCanasta(String cantidadCanasta) {
+		this.cantidadCanasta = cantidadCanasta;
+	}
+	public String getNombreContenedor() {
+		return nombreContenedor;
+	}
+	public void setNombreContenedor(String nombreContenedor) {
+		this.nombreContenedor = nombreContenedor;
+	}
 	public int getIdItem() {
 		return idItem;
 	}
@@ -30,6 +67,10 @@ public class ItemInventario {
 		this.unidadMedida = unidadMedida;
 	}
 	
+	public String toString()
+	{
+		return(nombreItem);
+	}
 	
 
 }

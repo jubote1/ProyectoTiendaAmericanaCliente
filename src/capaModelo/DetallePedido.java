@@ -11,6 +11,12 @@ public class DetallePedido {
 	private double valorTotal;
 	private String observacion;
 	private int idDetallePedidoMaster;
+	private String descripcioProducto;
+	private String descCortaProducto;
+	private String tipoProducto;
+	private String tamano;
+	
+	
 	public int getIdDetallePedido() {
 		return idDetallePedido;
 	}
@@ -61,6 +67,36 @@ public class DetallePedido {
 	public void setIdDetallePedidoMaster(int idDetallePedidoMaster) {
 		this.idDetallePedidoMaster = idDetallePedidoMaster;
 	}
+	
+	
+	public String getDescripcioProducto() {
+		return descripcioProducto;
+	}
+	public void setDescripcioProducto(String descripcioProducto) {
+		this.descripcioProducto = descripcioProducto;
+	}
+	public String getTipoProducto() {
+		return tipoProducto;
+	}
+	public void setTipoProducto(String tipoProducto) {
+		this.tipoProducto = tipoProducto;
+	}
+	
+	public String getTamano() {
+		return tamano;
+	}
+	public void setTamano(String tamano) {
+		this.tamano = tamano;
+	}
+	
+	
+	
+	public String getDescCortaProducto() {
+		return descCortaProducto;
+	}
+	public void setDescCortaProducto(String descCortaProducto) {
+		this.descCortaProducto = descCortaProducto;
+	}
 	public DetallePedido(int idDetallePedido, int idPedidoTienda, int idProducto, double cantidad, double valorUnitario,
 			double valorTotal, String observacion, int idDetallePedidoMaster) {
 		super();
@@ -72,6 +108,23 @@ public class DetallePedido {
 		this.valorTotal = valorTotal;
 		this.observacion = observacion;
 		this.idDetallePedidoMaster = idDetallePedidoMaster;
+	}
+	public DetallePedido(int idDetallePedido, int idPedidoTienda, int idProducto, double cantidad, double valorUnitario,
+			double valorTotal, String observacion, int idDetallePedidoMaster, String descripcioProducto,
+			String tipoProducto, String tamano, String descCortaProducto) {
+		super();
+		this.idDetallePedido = idDetallePedido;
+		this.idPedidoTienda = idPedidoTienda;
+		this.idProducto = idProducto;
+		this.cantidad = cantidad;
+		this.valorUnitario = valorUnitario;
+		this.valorTotal = valorTotal;
+		this.observacion = observacion;
+		this.idDetallePedidoMaster = idDetallePedidoMaster;
+		this.descripcioProducto = descripcioProducto;
+		this.tipoProducto = tipoProducto;
+		this.tamano = tamano;
+		this.descCortaProducto = descCortaProducto;
 	}
 
 	

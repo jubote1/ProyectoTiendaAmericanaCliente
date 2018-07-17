@@ -23,9 +23,12 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import capaControlador.AutenticacionCtrl;
+import capaControlador.OperacionesTiendaCtrl;
+import capaControlador.PedidoCtrl;
+import capaModelo.FechaSistema;
 import capaModelo.Usuario;
 
-public class Principal extends JFrame {
+public class PrincipalLogueo extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField textUsuario;
@@ -39,7 +42,7 @@ public class Principal extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Principal frame = new Principal();
+					PrincipalLogueo frame = new PrincipalLogueo();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -51,7 +54,7 @@ public class Principal extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public Principal() {
+	public PrincipalLogueo() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -104,7 +107,37 @@ public class Principal extends JFrame {
 					if(resultado)
 					{
 						JOptionPane.showConfirmDialog(null,  "Bienvenido al Sistema " + objUsuario.getNombreLargo() , "Ingresaste al Sistema!!", JOptionPane.OK_OPTION);
-						VentanaPrincipal ventPrincipal = new VentanaPrincipal();
+						PedidoCtrl pedCtrl = new PedidoCtrl();
+						boolean estaAperturado = pedCtrl.isSistemaAperturado();
+						FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
+						if(!estaAperturado)
+						{
+							//Llamamos método para validar el estado de la fecha respecto a la última apertura.
+							OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl();
+							String fechaMayor = operCtrl.validarEstadoFechaSistema();
+							String fechaAumentada = operCtrl.aumentarFecha(fechasSistema.getFechaApertura());
+							Object seleccion = JOptionPane.showInputDialog(
+									   null,
+									   "¿El día no ha sido aperturado, desea abrirlo? Seleccione opcion",
+									   "Selector de opciones",
+									   JOptionPane.QUESTION_MESSAGE,
+									   null,  // null para icono defecto
+									   new Object[] { fechaAumentada,fechaMayor }, 
+									   fechaAumentada);
+							if(seleccion == null)
+							{
+								dispose();
+								return;
+							}
+							else
+							{
+								//Realizar cambio de la fecha
+								operCtrl.realizarAperturaDia(seleccion.toString());
+							}
+						}
+						//Fijamos el usuario que se está loguendo
+						Sesion.setUsuario(usuario);
+						VentPrincipal ventPrincipal = new VentPrincipal();
 						ventPrincipal.setVisible(true);
 						dispose();
 					}else

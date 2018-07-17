@@ -66,6 +66,46 @@ public class ImpuestoDAO {
 	}
 	
 	/**
+	 * Metodo que se encarga de retornar el valor del porcentaje de un impuesto dado un idImpuesto determinado.
+	 * @param idImpuesto
+	 * @return
+	 */
+	public static double obtenerImpuesto(int idImpuesto)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double porcImpuesto = 0;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select valorporcentaje from impuesto where idimpuesto = " + idImpuesto;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+						
+			while(rs.next()){
+				porcImpuesto = rs.getDouble("valorporcentaje");
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(porcImpuesto);
+		
+	}
+	
+	/**
 	 * Método de la capa DAO que se encarga de insertar una entidad impuesto.
 	 * @param impuesto Recibe un objeto de tipo impuesto del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el idimpuesto creado en la base de datos

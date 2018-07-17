@@ -354,4 +354,14 @@ public class Cliente {
 		// TODO Auto-generated constructor stub
 	}
 
+	public Cliente(int idcliente, String telefono, String nombres, String apellidos) {
+		super();
+		this.idcliente = idcliente;
+		this.telefono = telefono;
+		this.nombres = nombres;
+		this.apellidos = apellidos;
+	}
+	
+	
+
 }

@@ -19,7 +19,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
-public class VentBuscarCliente extends JFrame {
+public class VentCliBuscarCliente extends JFrame {
 	private JTable tableClienteBusqueda;
 	private int idCliente;
 	
@@ -35,7 +35,7 @@ public class VentBuscarCliente extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentBuscarCliente frame = new VentBuscarCliente("");
+					VentCliBuscarCliente frame = new VentCliBuscarCliente("");
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -47,7 +47,7 @@ public class VentBuscarCliente extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentBuscarCliente(String Telefono) {
+	public VentCliBuscarCliente(String Telefono) {
 		idCliente = 0;
 		setTitle("BUSCAR CLIENTE");
 		setBounds(100, 100, 450, 300);
@@ -63,7 +63,7 @@ public class VentBuscarCliente extends JFrame {
 		JButton btnRegresar = new JButton("Regresar");
 		btnRegresar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCliente ventCliente = new VentCliente(0);
+				VentCliCliente ventCliente = new VentCliCliente(0);
 				ventCliente.setVisible(true);
 				dispose();
 			}
@@ -92,7 +92,7 @@ public class VentBuscarCliente extends JFrame {
 				//Capturamos el idcliente seleccionado
 				int idClien =  Integer.parseInt((String)tableClienteBusqueda.getValueAt(filaSeleccionada, 0));
 				idCliente = idClien;
-				VentCliente ventCliente = new VentCliente(idClien);
+				VentCliCliente ventCliente = new VentCliCliente(idClien);
 				ventCliente.setVisible(true);
 				dispose();
 			}

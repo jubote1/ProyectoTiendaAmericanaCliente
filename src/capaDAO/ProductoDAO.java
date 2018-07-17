@@ -105,6 +105,40 @@ public class ProductoDAO {
 		
 	}
 	
+	public static double obtenerPrecioProducto(int idProducto, String precio)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double precioRetorno = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select "+ precio +" from producto where idproducto = " + idProducto;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				
+				precioRetorno = rs.getDouble(precio);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(precioRetorno);
+		
+	}
+	
 	public static double obtenerPrecioProducto(String precio, int idProducto)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -166,7 +200,8 @@ public class ProductoDAO {
 			int idPreguntaForzada5 = 0;
 			Double precio1,precio2,precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10;
 			String impresionComanda = "";
-			
+			String tipoProducto= "";
+			String tamano = "";
 			while(rs.next()){
 				
 				descripcion = rs.getString("descripcion");
@@ -189,7 +224,9 @@ public class ProductoDAO {
 				precio9 = rs.getDouble("precio9");
 				precio10 = rs.getDouble("precio10");
 				impresionComanda = rs.getString("impresion_comanda");
-				producto = new Producto(idProducto, descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2,  idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2,precio3,precio4,precio5,precio6,precio7,precio8,precio9,precio10, impresionComanda ); 
+				tipoProducto = rs.getString("tipo_producto");
+				tamano = rs.getString("tamano");
+				producto = new Producto(idProducto, descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2,  idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2,precio3,precio4,precio5,precio6,precio7,precio8,precio9,precio10, impresionComanda, tipoProducto, tamano ); 
 				
 			}
 			rs.close();
@@ -320,4 +357,6 @@ public class ProductoDAO {
 		}
 		return(true);
 	}
+	
+	
 }

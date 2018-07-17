@@ -6,6 +6,7 @@ public class TipoPedido {
 	private int idTipoPedido;
 	private String descripcion;
 	private boolean valorDefecto;
+	private String icono;
 	
 	
 	public boolean isValorDefecto() {
@@ -26,11 +27,19 @@ public class TipoPedido {
 	public void setDescripcion(String descripcion) {
 		this.descripcion = descripcion;
 	}
-	public TipoPedido(int idTipoPedido, String descripcion, boolean valorDefecto) {
+	
+	public String getIcono() {
+		return icono;
+	}
+	public void setIcono(String icono) {
+		this.icono = icono;
+	}
+	public TipoPedido(int idTipoPedido, String descripcion, boolean valorDefecto, String icono) {
 		super();
 		this.idTipoPedido = idTipoPedido;
 		this.descripcion = descripcion;
 		this.valorDefecto = valorDefecto;
+		this.icono = icono;
 	}
 	
 	public String toString()
