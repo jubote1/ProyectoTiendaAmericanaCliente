@@ -163,7 +163,7 @@ public class PrincipalLogueo extends JFrame {
 		Image imagen = icon.getImage();
 		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
 		lblImagen.setIcon(iconoEscalado);
-		contentPane.add(lblImagen);
+		contentPane.add(lblImagen); 
 	}
 	
 	

@@ -340,7 +340,7 @@ public class PedidoDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		Estado estadoPedido = new Estado(0, "", "", 0, "", false, false, 0, 0, 0);
+		Estado estadoPedido = new Estado(0, "", "", 0, "", false, false, 0, 0, 0, false);
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -357,7 +357,7 @@ public class PedidoDAO {
 				descEstado = rs.getString("descripcion");
 				descTipo = rs.getString("desc_tipo");
 			}
-			estadoPedido = new Estado(idEstado,descEstado, descEstado, idTipoPedido, "", false, false, 0, 0, 0);
+			estadoPedido = new Estado(idEstado,descEstado, descEstado, idTipoPedido, "", false, false, 0, 0, 0, false);
 			estadoPedido.setTipoPedido(descTipo);
 			rs.close();
 			stm.close();

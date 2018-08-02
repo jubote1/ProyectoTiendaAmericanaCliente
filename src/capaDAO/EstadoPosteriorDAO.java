@@ -37,15 +37,22 @@ public class EstadoPosteriorDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta =  "select a.idestado, a.idestado_posterior, b.descripcion descripcion from estado_posterior a , estado b where a.idestado =" + idEstado + " and a.idestado_posterior = b.idestado";;
+			String consulta =  "select a.idestado, a.idestado_posterior, b.descripcion descripcion, b.impresion from estado_posterior a , estado b where a.idestado =" + idEstado + " and a.idestado_posterior = b.idestado";;
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			int idEstadoPosterior;
+			int intImpresion;
+			boolean impresion = false;
 			String descripcion;
 			while(rs.next()){
 				idEstadoPosterior = rs.getInt("idestado_posterior");
 				descripcion = rs.getString("descripcion");
-				EstadoPosterior estAnt= new EstadoPosterior(idEstado, idEstadoPosterior, descripcion);
+				intImpresion = rs.getInt("impresion");
+				if(intImpresion == 1)
+				{
+					impresion = true;
+				}
+				EstadoPosterior estAnt= new EstadoPosterior(idEstado, idEstadoPosterior, descripcion, impresion);
 				estadosPosteriores.add(estAnt);
 				
 			}

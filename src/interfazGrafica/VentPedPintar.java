@@ -9,6 +9,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -26,20 +28,43 @@ import javax.swing.JScrollPane;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class VentPedPintar extends JDialog {
 
-	private final JPanel PanelPrincipal = new JPanel();
-	private final JScrollPane scrollPane = new JScrollPane();
-	private final int idPedido;
+	private JPanel PanelPrincipal;
+	private JScrollPane scrollPane;
+	private int idPedido;
 	private JTextField txtNumPedido;
-	JPanel panelPintar;
+	private JPanel panelPintar;
+	
+	//Definimos la consulta de los datos de manera global
+	ArrayList<DetallePedido> detPedidos;
 	/**
 	 * Launch the application.
 	 */
+	 private int oldVPos = 0;
+     private int oldHPos = 0;
+     
+	 AdjustmentListener adjustmentListener = new AdjustmentListener() {
+		 
+	        @Override
+	        public void adjustmentValueChanged(AdjustmentEvent e) {
+	            int vPos = scrollPane.getVerticalScrollBar().getValue();
+	                
+	 
+	            if (e.getSource().equals(scrollPane.getVerticalScrollBar()) 
+	                    && vPos != oldVPos) {
+	                oldVPos = vPos;
+	                repaint();
+	            }
+	        }
+	    };
+	
 	public static void main(String[] args) {
 		try {
-			VentPedPintar dialog = new VentPedPintar(151);
+			VentPedPintar dialog = new VentPedPintar(null, false, 151);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
 		} catch (Exception e) {
@@ -51,22 +76,34 @@ public class VentPedPintar extends JDialog {
 	 * Método general que recibe el idPedido con base se realizará el pintado del pedido
 	 * @param idPedido
 	 */
-	public VentPedPintar(int idPedido) {
+	public VentPedPintar(java.awt.Frame parent, boolean modal, int idPedido) {
+		super(parent, modal);
 		this.idPedido = idPedido;
 		setTitle("DETALLE DEL PEDIDO");
 		setBounds(100, 100, 532, 448);
 		getContentPane().setLayout(new BorderLayout());
-		PanelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
-		getContentPane().add(PanelPrincipal, BorderLayout.CENTER);
-		PanelPrincipal.setLayout(null);
-		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scrollPane.setBounds(20, 34, 486, 332);
-		scrollPane.getViewport().setPreferredSize(new Dimension(100, 100));
-		PanelPrincipal.add(scrollPane);
-		
+		//Se realiza el llenado del ArrayList una sola vez
+		//Instanciamos objeto de la capa controladora
+		PedidoCtrl pedCtrl = new PedidoCtrl ();
+		//Retornamos los detalles pedidos con la información que requerimos para pintar el pedido.
+		detPedidos = pedCtrl.obtenerDetallePedidoPintar(this.idPedido);
 		panelPintar = new JPanel();
+		panelPintar.setPreferredSize(new Dimension(200, 3050));
+		PanelPrincipal = new JPanel();
+		PanelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
+		PanelPrincipal.setLayout(null);
+		scrollPane = new JScrollPane(panelPintar);
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setBounds(20, 34, 486, 332);
+		scrollPane.getViewport().setPreferredSize(new Dimension(300, 3050));
+		scrollPane.getVerticalScrollBar().addAdjustmentListener(
+                adjustmentListener);
+        PanelPrincipal.add(scrollPane);
+		getContentPane().add(PanelPrincipal, BorderLayout.CENTER);
+		
 		scrollPane.setViewportView(panelPintar);
+		//scrollPane.add(panelPintar);
 		{
 			JLabel lblNmeroDePedido = new JLabel("N\u00DAMERO DE PEDIDO:");
 			lblNmeroDePedido.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -85,31 +122,30 @@ public class VentPedPintar extends JDialog {
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
-				JButton okButton = new JButton("OK");
-				okButton.setActionCommand("OK");
+				JButton okButton = new JButton("REGRESAR");
+				okButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						dispose();
+					}
+				});
+				okButton.setActionCommand("REGRESAR");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
 			}
-			{
-				JButton cancelButton = new JButton("Cancel");
-				cancelButton.setActionCommand("Cancel");
-				buttonPane.add(cancelButton);
-			}
+			
 		}
+		
 	}
 
 	public void paint(Graphics g) {
-		
+		//Agregando super.paint(g) se solucionaron la mayoría de problemas
+		super.paintComponents(g);
 		pintarPedido();
-//		Graphics2D g2d = (Graphics2D) scrollPane.getGraphics();
-//		g2d.setColor(Color.RED);
-//		g2d.fillOval(0, 0, 30, 30);
-//		g2d.drawOval(0, 50, 30, 30);		
-//		g2d.fillRect(50, 0, 30, 30);
-//		g2d.drawRect(50, 50, 30, 30);
+
 						
 	}
 	
+
 	public void pintarPedido()
 	{
 		//Fijamos el número de pedido en el encabezado gráfico
@@ -124,10 +160,6 @@ public class VentPedPintar extends JDialog {
 		g2d.setColor(Color.BLACK);
 		//Fijamos un ancho a las lineas 
 		g2d.setStroke( new BasicStroke( 2 ) );
-		//Instanciamos objeto de la capa controladora
-		PedidoCtrl pedCtrl = new PedidoCtrl ();
-		//Retornamos los detalles pedidos con la información que requerimos para pintar el pedido.
-		ArrayList<DetallePedido> detPedidos = pedCtrl.obtenerDetallePedidoPintar(this.idPedido);
 		//Con este tomamos el idDetallePedidoMaster del detalle que estamos procesando en el momento
 		int idMasterActual = 0;
 		//Con este tomamos el idDetallePedidoMaster del detalle que procesamos en el detalle anterior

@@ -12,9 +12,17 @@ public class Estado {
 	private int colorr;
 	private int colorg;
 	private int colorb;
+	private boolean impresion;
 	
 	
 	
+	
+	public boolean isImpresion() {
+		return impresion;
+	}
+	public void setImpresion(boolean impresion) {
+		this.impresion = impresion;
+	}
 	public int getColorr() {
 		return colorr;
 	}
@@ -85,7 +93,7 @@ public class Estado {
 		
 	}
 	public Estado(int idestado, String descripcion, String descripcionCorta, int idTipoPedido, String tipoPedido,
-			boolean estadoInicial, boolean estadoFinal, int colorr, int colorg, int colorb) {
+			boolean estadoInicial, boolean estadoFinal, int colorr, int colorg, int colorb, boolean impresion) {
 		super();
 		this.idestado = idestado;
 		this.descripcion = descripcion;
@@ -97,6 +105,7 @@ public class Estado {
 		this.colorr = colorr;
 		this.colorg = colorg;
 		this.colorb = colorb;
+		this.impresion = impresion;
 	}
 
 	

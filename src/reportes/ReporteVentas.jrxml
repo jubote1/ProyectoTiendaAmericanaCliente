@@ -22,12 +22,14 @@ from pedido a,
 	detalle_pedido b,
 	cliente c,
 	tipo_pedido d,
-	producto e
+	producto e,
+      tienda f
 where a.idpedidotienda = b.idpedidotienda and
  	a.idcliente = c.idcliente and
 	a.idtipopedido = d.idtipopedido and
 	b.idproducto = e.idproducto and
-	cantidad > 0]]>
+      b.cantidad > 0 and 
+      f.fecha_apertura = a.fechapedido]]>
 	</queryString>
 	<field name="idpedidotienda" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="idpedidotienda"/>

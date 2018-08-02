@@ -39,6 +39,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import capaControlador.PedidoCtrl;
+import capaControlador.ReportesCtrl;
 import capaModelo.Cliente;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
@@ -154,6 +155,23 @@ public class VentPedTransaccional extends JFrame {
 		panelBotones.add(btnReabrirFactura);
 		
 		JButton btnReimpresion = new JButton("Reimprimir Factura");
+		btnReimpresion.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//Acción para la generación de reporte general de ventas
+				int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+				if(filaSeleccionada == -1)
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar un pedido para Reimprimir la factura " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				else
+				{
+					int idPedido = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
+					ReportesCtrl repCtrl = new ReportesCtrl();
+					repCtrl.generarFactura(idPedido);
+				}
+			}
+		});
 		btnReimpresion.setFont(new Font("Tahoma", Font.BOLD, 11));
 		panelBotones.add(btnReimpresion);
 		
@@ -313,7 +331,7 @@ public class VentPedTransaccional extends JFrame {
 				}
 				else
 				{
-					VentCambioEstado cambioEstado = new VentCambioEstado(idPedidoAvanzar, false, true);
+					VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true);
 					cambioEstado.setVisible(true);
 					pintarPedidos();
 				}
@@ -346,7 +364,7 @@ public class VentPedTransaccional extends JFrame {
 				}
 				else
 				{
-					VentCambioEstado cambioEstado = new VentCambioEstado(idPedidoDevolver, true, false);
+					VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true);
 					cambioEstado.setVisible(true);
 					pintarPedidos();
 				}

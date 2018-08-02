@@ -166,7 +166,8 @@ public class EstadoDAO {
 			String descripcion, descripcionCorta;
 			boolean estInicial = false;
 			boolean estFinal = false;
-			int intEstInicial, intEstFinal;
+			boolean impresion = false;
+			int intEstInicial, intEstFinal, intImpresion;
 			int colorr=0, colorg=0, colorb=0;
 			while(rs.next()){
 				idestado = rs.getInt("idestado");
@@ -178,6 +179,11 @@ public class EstadoDAO {
 				colorr = rs.getInt("colorr");
 				colorg = rs.getInt("colorg");
 				colorb = rs.getInt("colorb");
+				intImpresion = rs.getInt("impresion");
+				if(intImpresion == 1)
+				{
+					impresion = true;
+				}
 				if(intEstInicial == 1)
 				{
 					estInicial = true;
@@ -186,7 +192,7 @@ public class EstadoDAO {
 				{
 					estFinal = true;
 				}
-				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido, "", estInicial, estFinal, colorr, colorg, colorb);
+				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido, "", estInicial, estFinal, colorr, colorg, colorb, impresion);
 				estados.add(est);
 				
 			}
@@ -226,7 +232,8 @@ public class EstadoDAO {
 			String descripcionCorta = "";
 			boolean estInicial = false;
 			boolean estFinal = false;
-			int intEstInicial, intEstFinal;	
+			boolean impresion = false;
+			int intEstInicial, intEstFinal, intImpresion;	
 			int colorr=0, colorg=0, colorb=0;
 			while(rs.next()){
 				idTipoPedido = rs.getInt("idtipopedido");
@@ -234,9 +241,14 @@ public class EstadoDAO {
 				descripcionCorta = rs.getString("descripcion_corta");
 				intEstInicial = rs.getInt("estado_inicial");
 				intEstFinal = rs.getInt("estado_final");
+				intImpresion = rs.getInt("impresion");
 				colorr = rs.getInt("colorr");
 				colorg = rs.getInt("colorg");
 				colorb = rs.getInt("colorb");
+				if(intImpresion == 1)
+				{
+					impresion = true;
+				}
 				if(intEstInicial == 1)
 				{
 					estInicial = true;
@@ -245,7 +257,7 @@ public class EstadoDAO {
 				{
 					estFinal = true;
 				}
-				estado = new Estado(idEstado, descripcion, descripcionCorta,idTipoPedido, "", estInicial, estFinal,colorr,colorg,colorb);
+				estado = new Estado(idEstado, descripcion, descripcionCorta,idTipoPedido, "", estInicial, estFinal,colorr,colorg,colorb, impresion);
 			}
 			rs.close();
 			stm.close();
@@ -276,6 +288,11 @@ public class EstadoDAO {
 			Statement stm = con1.createStatement();
 			int estadoInicial = 0;
 			int estadoFinal = 0;
+			int impresion = 0;
+			if(estado.isImpresion())
+			{
+				impresion = 1;
+			}
 			if(estado.isEstadoFinal())
 			{
 				estadoFinal = 1;
@@ -284,7 +301,7 @@ public class EstadoDAO {
 			{
 				estadoInicial= 1;
 			}
-			String insert = "insert into estado (descripcion, descripcion_corta, estado_inicial, estado_final, colorr, colorg, colorb, idtipopedido) values('" + estado.getDescripcion() + "' , '" + estado.getDescripcionCorta() + "', "+ estadoInicial + " ," + estadoFinal + " , " + estado.getColorr() + " , " + estado.getColorg() + " , " + estado.getColorb() + ", " + estado.getIdTipoPedido() +")";
+			String insert = "insert into estado (descripcion, descripcion_corta, estado_inicial, estado_final, colorr, colorg, colorb, idtipopedido, impresion) values('" + estado.getDescripcion() + "' , '" + estado.getDescripcionCorta() + "', "+ estadoInicial + " ," + estadoFinal + " , " + estado.getColorr() + " , " + estado.getColorg() + " , " + estado.getColorb() + ", " + estado.getIdTipoPedido() +", " + impresion +")";
 			System.out.println(insert);
 			logger.info(insert);
 			stm.executeUpdate(insert);
@@ -351,6 +368,11 @@ public class EstadoDAO {
 		{
 			int estadoInicial = 0;
 			int estadoFinal = 0;
+			int impresion = 0;
+			if(estado.isImpresion())
+			{
+				impresion = 1;
+			}
 			if(estado.isEstadoFinal())
 			{
 				estadoFinal = 1;
@@ -360,7 +382,7 @@ public class EstadoDAO {
 				estadoInicial= 1;
 			}
 			Statement stm = con1.createStatement();
-			String update = "update estado set descripcion = '" + estado.getDescripcion() + "' , descripcion_corta = '" + estado.getDescripcionCorta() + "' , estado_inicial =" + estadoInicial + " , estado_final = " + estadoFinal + ", colorr =  " + estado.getColorr() + " , colorg =" + estado.getColorg() + " , colorb = " + estado.getColorb() +  " where idEstado = " + estado.getIdestado();  
+			String update = "update estado set descripcion = '" + estado.getDescripcion() + "' , descripcion_corta = '" + estado.getDescripcionCorta() + "' , estado_inicial =" + estadoInicial + " , estado_final = " + estadoFinal + ", colorr =  " + estado.getColorr() + " , colorg =" + estado.getColorg() + " , colorb = " + estado.getColorb() + " , impresion =" + impresion + " where idEstado = " + estado.getIdestado();  
 			logger.info(update);
 			stm.executeUpdate(update);
 			

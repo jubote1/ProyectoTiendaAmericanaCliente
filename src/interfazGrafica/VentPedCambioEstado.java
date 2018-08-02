@@ -10,6 +10,7 @@ import javax.swing.border.EmptyBorder;
 
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.PedidoCtrl;
+import capaControlador.ReportesCtrl;
 import capaModelo.Estado;
 import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPosterior;
@@ -19,11 +20,12 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-public class VentCambioEstado extends JFrame {
+public class VentPedCambioEstado extends JDialog {
 
 	private JPanel panelPrincipal;
 	private JTextField txtIdPedido;
@@ -41,7 +43,7 @@ public class VentCambioEstado extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCambioEstado frame = new VentCambioEstado(0, false, false);
+					VentPedCambioEstado frame = new VentPedCambioEstado(0, false, false, null, true);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -53,7 +55,8 @@ public class VentCambioEstado extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentCambioEstado(int idPedido, boolean anterior, boolean posterior) {
+	public VentPedCambioEstado(int idPedido, boolean anterior, boolean posterior, java.awt.Frame parent, boolean modal ) {
+		super(parent, modal);
 		this.anterior = anterior;
 		this.posterior = posterior;
 		setTitle("CAMBIO ESTADO");
@@ -107,6 +110,11 @@ public class VentCambioEstado extends JFrame {
 				{
 					estPos = (EstadoPosterior) cmbEstadoObjetivo.getSelectedItem();
 					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior());
+					if(estPos.isImprimeEstPosterior())
+					{
+						ReportesCtrl repCtrl = new ReportesCtrl();
+						repCtrl.generarFactura(idPedido);
+					}
 				}
 				if(!respuesta)
 				{
@@ -115,7 +123,7 @@ public class VentCambioEstado extends JFrame {
 				dispose();
 			}
 		});
-		btnContinuar.setBounds(111, 235, 89, 23);
+		btnContinuar.setBounds(36, 233, 113, 33);
 		panelPrincipal.add(btnContinuar);
 		
 		JButton btnCancelar = new JButton("Cancelar");
@@ -124,7 +132,7 @@ public class VentCambioEstado extends JFrame {
 				dispose();
 			}
 		});
-		btnCancelar.setBounds(328, 235, 89, 23);
+		btnCancelar.setBounds(319, 235, 110, 32);
 		panelPrincipal.add(btnCancelar);
 		//Lógica para la inicialización
 		
@@ -133,7 +141,7 @@ public class VentCambioEstado extends JFrame {
 		lblTipoPedido.setBounds(136, 132, 100, 14);
 		panelPrincipal.add(lblTipoPedido);
 		
-		txtTipoPedido = new JTextField();
+		txtTipoPedido = new JTextField();	
 		txtTipoPedido.setEditable(false);
 		txtTipoPedido.setBounds(258, 129, 106, 20);
 		panelPrincipal.add(txtTipoPedido);
@@ -145,6 +153,16 @@ public class VentCambioEstado extends JFrame {
 		txtIdPedido.setText(Integer.toString(idPedidoTienda));
 		txtEstadoActual.setText(estadoPedido.getDescripcion());
 		txtTipoPedido.setText(estadoPedido.getTipoPedido());
+		
+		JButton btnVerPedido = new JButton("Ver Pedido");
+		btnVerPedido.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentPedPintar ventPedidoPintar = new VentPedPintar(null, true,idPedidoTienda);
+				ventPedidoPintar.setVisible(true);
+			}
+		});
+		btnVerPedido.setBounds(174, 234, 118, 32);
+		panelPrincipal.add(btnVerPedido);
 		ArrayList<EstadoAnterior> estadosAnt = new ArrayList();
 		ArrayList<EstadoPosterior> estadosPost = new ArrayList();
 		if(anterior)

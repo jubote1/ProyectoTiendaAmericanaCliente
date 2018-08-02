@@ -7,11 +7,13 @@ import org.json.simple.JSONObject;
 
 import capaDAO.FormaPagoDAO;
 import capaDAO.GeneralDAO;
+import capaDAO.ParametrosDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.TiempoPedidoDAO;
 import capaDAO.TiendaDAO;
 import capaModelo.Correo;
 import capaModelo.FormaPago;
+import capaModelo.Parametro;
 import capaModelo.Tienda;
 import utilidades.ControladorEnvioCorreo;
 
@@ -97,4 +99,33 @@ public class ParametrosCtrl {
 			return listJSON.toJSONString();
 		}
 	
+		public boolean EditarParametro(Parametro parametro)
+		{
+			boolean respuesta = ParametrosDAO.EditarParametro(parametro);
+			return(respuesta);
+		}
+		
+		public boolean eliminarParametro(String valorParametro)
+		{
+			boolean respuesta = ParametrosDAO.eliminarParametro(valorParametro);
+			return(respuesta);
+		}
+		
+		public boolean insertarParametro(Parametro parametro)
+		{
+			boolean respuesta = ParametrosDAO.insertarParametro(parametro);
+			return(respuesta);
+		}
+		
+		public Parametro obtenerParametro(String valorParametro)
+		{
+			Parametro parametro = ParametrosDAO.obtenerParametro(valorParametro);
+			return parametro;
+		}
+		
+		public ArrayList obtenerParametros()
+		{
+			ArrayList parametros = ParametrosDAO.obtenerParametros();
+			return parametros;
+		}
 }

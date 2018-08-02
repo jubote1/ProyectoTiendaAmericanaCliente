@@ -13,6 +13,7 @@ import capaConexion.ConexionBaseDatos;
 import capaControlador.InventarioCtrl;
 import capaControlador.OperacionesTiendaCtrl;
 import capaControlador.PedidoCtrl;
+import capaControlador.ReportesCtrl;
 import capaModelo.FechaSistema;
 import capaModelo.ModificadorInventario;
 import reportes.AbstractJasperReports;
@@ -136,12 +137,10 @@ public class VentPedFinalizarDia extends JFrame {
 		JButton btnReporteGeneralVentas = new JButton("Reporte General Ventas");
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
 				//Acción para la generación de reporte general de ventas
-				ConexionBaseDatos conexion = new ConexionBaseDatos();
-				AbstractJasperReports.createReport(conexion.obtenerConexionBDLocal(), "D:\\reportes\\ReporteVentas.jasper");
-				AbstractJasperReports.showViewer();
-				
+				ReportesCtrl repCtrl = new ReportesCtrl();
+				repCtrl.generarReporteVentasDiario();
+								
 			}
 		});
 		btnReporteGeneralVentas.setBounds(455, 33, 255, 23);

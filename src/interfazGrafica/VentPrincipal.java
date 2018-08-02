@@ -197,6 +197,15 @@ public class VentPrincipal extends JFrame {
 				pedTrans.setVisible(true);
 			}
 		});
+		
+		JButton btnParmetrosGenerales = new JButton("Par\u00E1metros Generales");
+		btnParmetrosGenerales.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentPedAdmParametros ventParametros = new VentPedAdmParametros(null, true);
+				ventParametros.setVisible(true);
+			}
+		});
+		PanelPedidos.add(btnParmetrosGenerales);
 		PanelPedidos.add(btnMaestroPedidos);
 		
 		JToolBar toolBarModulos = new JToolBar();
