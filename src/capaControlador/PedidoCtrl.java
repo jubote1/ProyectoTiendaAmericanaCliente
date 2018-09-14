@@ -23,8 +23,13 @@ import capaDAO.PedidoDescuentoDAO;
 import capaDAO.PedidoFormaPagoDAO;
 import capaDAO.PedidoPixelDAO;
 import capaDAO.PreguntaDAO;
+import capaDAO.ProductoDAO;
+import capaDAO.ProductoModificadorConDAO;
+import capaDAO.ProductoModificadorSinDAO;
 import capaDAO.TiendaDAO;
+import capaDAO.TipoEmpleadoEstadoDAO;
 import capaDAO.TipoPedidoDAO;
+import capaDAO.UsuarioDAO;
 import capaModelo.Cliente;
 import capaModelo.DetallePedido;
 import capaModelo.DetallePedidoPixel;
@@ -33,11 +38,18 @@ import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPedidoTienda;
 import capaModelo.EstadoPosterior;
 import capaModelo.FechaSistema;
+import capaModelo.Pedido;
 import capaModelo.PedidoDescuento;
 import capaModelo.PedidoFormaPago;
 import capaModelo.Pregunta;
+import capaModelo.Producto;
+import capaModelo.ProductoModificadorCon;
+import capaModelo.ProductoModificadorSin;
 import capaModelo.RespuestaPedidoPixel;
+import capaModelo.Tienda;
 import capaModelo.TipoPedido;
+import capaModelo.Usuario;
+import interfazGrafica.VentPedTomarPedidos;
 
 public class PedidoCtrl {
 	
@@ -537,12 +549,14 @@ public class PedidoCtrl {
 		public ArrayList<DetallePedido> obtenerDetallePedido(int idPedido)
 		{
 			ArrayList<DetallePedido> detPedidos = DetallePedidoDAO.obtenerDetallePedido(idPedido);
+			detPedidos = ordenarDetallePedido(detPedidos);
 			return(detPedidos);
 		}
 		
 		public ArrayList<DetallePedido> obtenerDetallePedidoPintar(int idPedido)
 		{
 			ArrayList<DetallePedido> detPedidos = DetallePedidoDAO.obtenerDetallePedidoPintar(idPedido);
+			detPedidos = ordenarDetallePedido(detPedidos);
 			return(detPedidos);
 		}
 		
@@ -681,4 +695,256 @@ public class PedidoCtrl {
 			ArrayList resumenTotTipoPedido = PedidoDAO.obtenerTotalesPedidosPorTipo(fechaPedido);
 			return(resumenTotTipoPedido);
 		}
+		
+		//Información relacionada con los estados para los tipos de empleados
+		
+		public ArrayList<Estado> obtenerEstFalTipoEmpleado(int idTipoEmpleado)
+		{
+			ArrayList<Estado> estadosTipEmpleado = TipoEmpleadoEstadoDAO.obtenerEstadosTipoEmpleado(idTipoEmpleado);
+			ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado();
+			ArrayList<Estado> estadosFaltantes = new ArrayList();
+			for(int i = 0; i < estados.size(); i++)
+			{
+				boolean encontrado = false;
+				Estado estadoTemp = estados.get(i);
+				for(int j = 0; j < estadosTipEmpleado.size(); j++)
+				{
+					Estado estTipEmp = estadosTipEmpleado.get(j);
+					if(estTipEmp.getIdestado() == estadoTemp.getIdestado())
+					{
+						encontrado = true;
+						break;
+					}
+				}
+				if (!encontrado)
+				{
+					estadosFaltantes.add(estadoTemp);
+				}
+			}
+			return(estadosFaltantes);
+		}
+		
+		public ArrayList<Estado> obtenerEstadosTipoEmpleado(int idTipoEmpleado)
+		{
+			ArrayList<Estado> estTipEmp = TipoEmpleadoEstadoDAO.obtenerEstadosTipoEmpleado(idTipoEmpleado);
+			return(estTipEmp);
+		}
+		
+		public boolean insertarTipoEmpleadoEstado(int idTipoEmpleado, int idEstado)
+		{
+			boolean respuesta = TipoEmpleadoEstadoDAO.insertarTipoEmpleadoEstado(idTipoEmpleado, idEstado);
+			return(respuesta);
+		}
+		
+		public boolean eliminarTipoEmpleadoEstado(int idTipoEmpleado, int idEstado)
+		{
+			boolean respuesta = TipoEmpleadoEstadoDAO.eliminarTipoEmpleadoEstado(idTipoEmpleado, idEstado);
+			return(respuesta);
+		}
+		
+		public ArrayList obtenerPedidosVentanaComanda(int idEmpleado)
+		{
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				//Obtenemos el tipo de Usuario del usuario logueado
+				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado);
+				int idTipoEmpActual = usuActual.getidTipoEmpleado();
+				pedidos = PedidoDAO.obtenerPedidosVentanaComanda(fechaSistema.getFechaApertura(), idTipoEmpActual );
+				int idPedido = 0;
+				for(int i = 0 ; i < pedidos.size(); i++)
+				{
+					String[]fila = (String[]) pedidos.get(i);
+					idPedido =Integer.parseInt(fila[0]);
+					String tiempoPedido = calcularTiempoPedido(idPedido);
+					fila[fila.length-1] = tiempoPedido;
+					pedidos.set(i, fila);
+				}
+			}
+			return(pedidos);
+		}
+		
+		public ArrayList obtenerPedidosVentanaComandaTipPed(int idEmpleado, int idTipoPedido)
+		{
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				//Obtenemos el tipo de Usuario del usuario logueado
+				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado);
+				int idTipoEmpActual = usuActual.getidTipoEmpleado();
+				pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), idTipoEmpActual, idTipoPedido );
+				int idPedido = 0;
+				for(int i = 0 ; i < pedidos.size(); i++)
+				{
+					String[]fila = (String[]) pedidos.get(i);
+					idPedido =Integer.parseInt(fila[0]);
+					String tiempoPedido = calcularTiempoPedido(idPedido);
+					fila[fila.length-1] = tiempoPedido;
+					pedidos.set(i, fila);
+				}
+			}
+			return(pedidos);
+		}
+		
+		public boolean tieneModificadorCon(int idProducto)
+		{
+			boolean respuesta = ProductoModificadorConDAO.tieneModificadorCon(idProducto);
+			return(respuesta);
+		}
+		
+		public boolean detalleTieneModificadorCon(int idDetalle)
+		{
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
+			boolean respuesta = ProductoModificadorConDAO.tieneModificadorCon(detPedido.getIdProducto());
+			return(respuesta);
+		}
+		
+		public boolean tieneModificadorSin(int idProducto)
+		{
+			boolean respuesta = ProductoModificadorSinDAO.tieneModificadorSin(idProducto);
+			return(respuesta);
+		}
+		
+		public boolean detalleTieneModificadorSin(int idDetalle)
+		{
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
+			boolean respuesta = ProductoModificadorSinDAO.tieneModificadorSin(detPedido.getIdProducto());
+			return(respuesta);
+		}
+		
+		//Métodos para retornar los modificadores dado un idDetallePedido
+		public ArrayList<ProductoModificadorCon> obtenerModificadoresCon(int idDetalle)
+		{
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
+			ArrayList<ProductoModificadorCon> prodMods = ProductoModificadorConDAO.obtenerProdModificadoresCon(detPedido.getIdProducto());
+			return(prodMods);
+		}
+		
+		public ArrayList<ProductoModificadorSin> obtenerModificadoresSin(int idDetalle)
+		{
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
+			ArrayList<ProductoModificadorSin> prodMods = ProductoModificadorSinDAO.obtenerProdModificadoresSin(detPedido.getIdProducto());
+			return(prodMods);
+		}
+		
+		public int obtenerMaxModificadorCon(int idDetalle)
+		{
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
+			Producto pro = ProductoDAO.obtenerProducto(detPedido.getIdProducto());
+			return(pro.getModificadorCon());
+		}
+		
+		public int obtenerMaxModificadorSin(int idDetalle)
+		{
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
+			Producto pro = ProductoDAO.obtenerProducto(detPedido.getIdProducto());
+			return(pro.getModificadorSin());
+		}
+		
+		public int obtenerIdDetalleMaster(int idDetallePedido)
+		{
+			int respuesta = DetallePedidoDAO.obtenerIdDetalleMaster(idDetallePedido);
+			return(respuesta);
+		}
+		
+		public ArrayList<DetallePedido> ordenarDetallePedido(ArrayList<DetallePedido> detallesPedido)
+		{
+			ArrayList<DetallePedido> ordenado = new ArrayList();
+            ArrayList<DetallePedido> paraOrdenar = (ArrayList) detallesPedido.clone();
+            ArrayList<DetallePedido>  mods =  new ArrayList();
+            boolean tieneMod = false;
+            for(int i = 0; i < paraOrdenar.size(); i++)
+            {
+            	DetallePedido eleBuscar = paraOrdenar.get(i);
+            	int idDetalleBuscarMod = eleBuscar.getIdDetallePedido();
+            	for(int j = i + 1;  j < paraOrdenar.size(); j++)
+            	{
+            		DetallePedido eleBuscarMod = paraOrdenar.get(j);
+            		if(eleBuscarMod.getIdDetalleModificador() == idDetalleBuscarMod)
+                    {
+            			tieneMod = true;
+            			mods.add(eleBuscarMod);
+            			paraOrdenar.remove(j);
+            			j--;
+                    }
+            	}
+            	ordenado.add(eleBuscar);
+            	if(tieneMod)
+            	{
+            		for(int k = 0; k < mods.size(); k++)
+            		{
+            			 ordenado.add(mods.get(k));
+            		}
+            		tieneMod = false;
+            		mods = new ArrayList();
+            	}
+            }
+            return(ordenado);
+		}
+		
+		public Pedido obtenerPedido(int idPedidoTienda)
+		{
+			Pedido pedCon = PedidoDAO.obtenerPedido(idPedidoTienda);
+			return(pedCon);
+		}
+		
+		public String generarStrImpresionFactura(int idPedido)
+		{
+			
+			//Obtenemos la tienda sobre la que estamos trabajando
+			Tienda tienda = TiendaDAO.obtenerTienda();
+			ArrayList<DetallePedido> detPedido = obtenerDetallePedidoPintar(idPedido);
+			DetallePedido detTemp;
+			String factura = " " + tienda.getNombretienda() +"\n"
+					+ tienda.getDireccion() +"\n"
+					+ "tel:"+tienda.getTelefono() +"\n"
+					+ tienda.getRazonSocial() +"\n"
+					+ tienda.getIdentificacion()+ "\n"
+					+ tienda.getTipoContribuyente() + "\n"
+					+ tienda.getResolucion() + "\n"
+					+ tienda.getFechaResolucion()+ "\n"
+					+ "    Desde P3 0 Hasta P3 50000\n"
+					+ tienda.getUbicacion() + "\n"
+					+ "    Mesa\n"
+					+ "    Factura de Venta:"+idPedido +"\n"
+		            + "    Usuario\n"
+		            + "    ======================================\n"
+		            + "      Cant    Descripcion            Costo   \n"
+		            + "    ======================================\n";
+			double cantidad;
+			for(int i = 0; i < detPedido.size(); i++)
+			{
+				detTemp = detPedido.get(i);
+				cantidad = detTemp.getValorTotal();
+				if ((cantidad - Math.floor(cantidad)) == 0) 
+				{
+					factura = factura + "  " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + "\n";
+				}
+				else
+				{
+					factura = factura + "  " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + detTemp.getValorTotal() + "\n";
+				}
+				
+			}
+			Pedido pedImpFac = obtenerPedido(idPedido);
+			factura = factura + "    ======================================\n";
+			factura = factura + "    TOTAL BRUTO:      " + pedImpFac.getValorbruto()+"\n";
+			factura = factura + "    IMPUESTO   :      " + pedImpFac.getImpuesto()+"\n";
+			factura = factura + "    ======================================\n";
+			factura = factura  + "   TOTAL : " + pedImpFac.getValorneto() + "\n";
+			factura = factura  + "   CAMBIO : " + "\n";
+			factura = factura  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
+			factura = factura  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
+			factura = factura  + "   !FELICITACIONES! HAZ COMPRADO LA MEJOR " + "\n";
+			factura = factura  + "   PIZZA DE LA CIUDAD " + "\n";
+			factura = factura  + "   PQRS - pizzaamericanacolombia@gmail.com " + "\n";
+			factura = factura  + "    GRACIAS POR SU COMPRA...\n"
+		            + "                ******::::::::*******"
+		            + "\n\n\n\n\n\n\n           "
+		            + "\n           ";
+			return(factura);
+		}
+		
 }

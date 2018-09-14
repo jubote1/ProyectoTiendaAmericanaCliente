@@ -21,8 +21,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.awt.event.ActionEvent;
 
 public class VentPedCambioEstado extends JDialog {
@@ -36,6 +41,8 @@ public class VentPedCambioEstado extends JDialog {
 	JComboBox cmbEstadoObjetivo;
 	private boolean anterior;
 	private boolean posterior;
+	private JLabel lblImgEstObj;
+	private JLabel lblImgEstActual;
 	/**
 	 * Launch the application.
 	 */
@@ -61,38 +68,38 @@ public class VentPedCambioEstado extends JDialog {
 		this.posterior = posterior;
 		setTitle("CAMBIO ESTADO");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 480, 375);
+		setBounds(100, 100, 544, 406);
 		panelPrincipal = new JPanel();
 		panelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(panelPrincipal);
 		panelPrincipal.setLayout(null);
 		
 		JLabel lblIdPedido = new JLabel("Id Pedido");
-		lblIdPedido.setBounds(136, 46, 85, 14);
+		lblIdPedido.setBounds(77, 50, 85, 14);
 		panelPrincipal.add(lblIdPedido);
 		
 		txtIdPedido = new JTextField();
 		txtIdPedido.setEditable(false);
-		txtIdPedido.setBounds(258, 43, 106, 20);
+		txtIdPedido.setBounds(199, 47, 106, 20);
 		panelPrincipal.add(txtIdPedido);
 		txtIdPedido.setColumns(10);
 		
 		JLabel lblEstadoActual = new JLabel("Estado Actual");
-		lblEstadoActual.setBounds(136, 96, 100, 14);
+		lblEstadoActual.setBounds(77, 138, 100, 14);
 		panelPrincipal.add(lblEstadoActual);
 		
 		txtEstadoActual = new JTextField();
 		txtEstadoActual.setEditable(false);
-		txtEstadoActual.setBounds(258, 93, 106, 20);
+		txtEstadoActual.setBounds(199, 135, 106, 20);
 		panelPrincipal.add(txtEstadoActual);
 		txtEstadoActual.setColumns(10);
 		
 		JLabel lblEstadoObjetivo = new JLabel("Estado Objetivo");
-		lblEstadoObjetivo.setBounds(136, 181, 100, 14);
+		lblEstadoObjetivo.setBounds(77, 220, 100, 14);
 		panelPrincipal.add(lblEstadoObjetivo);
 		
 		cmbEstadoObjetivo = new JComboBox();
-		cmbEstadoObjetivo.setBounds(258, 178, 106, 20);
+		cmbEstadoObjetivo.setBounds(199, 217, 106, 20);
 		panelPrincipal.add(cmbEstadoObjetivo);
 		
 		JButton btnContinuar = new JButton("Continuar");
@@ -112,8 +119,11 @@ public class VentPedCambioEstado extends JDialog {
 					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior());
 					if(estPos.isImprimeEstPosterior())
 					{
-						ReportesCtrl repCtrl = new ReportesCtrl();
-						repCtrl.generarFactura(idPedido);
+//						ReportesCtrl repCtrl = new ReportesCtrl();
+//						repCtrl.generarFactura(idPedido);
+						String strFactura = pedCtrl.generarStrImpresionFactura(idPedidoTienda);
+						Impresion imp = new Impresion();
+						imp.imprimirFactura(strFactura);
 					}
 				}
 				if(!respuesta)
@@ -123,7 +133,7 @@ public class VentPedCambioEstado extends JDialog {
 				dispose();
 			}
 		});
-		btnContinuar.setBounds(36, 233, 113, 33);
+		btnContinuar.setBounds(36, 287, 113, 33);
 		panelPrincipal.add(btnContinuar);
 		
 		JButton btnCancelar = new JButton("Cancelar");
@@ -132,18 +142,18 @@ public class VentPedCambioEstado extends JDialog {
 				dispose();
 			}
 		});
-		btnCancelar.setBounds(319, 235, 110, 32);
+		btnCancelar.setBounds(390, 287, 110, 32);
 		panelPrincipal.add(btnCancelar);
 		//Lógica para la inicialización
 		
 		
 		JLabel lblTipoPedido = new JLabel("Tipo Pedido");
-		lblTipoPedido.setBounds(136, 132, 100, 14);
+		lblTipoPedido.setBounds(77, 97, 100, 14);
 		panelPrincipal.add(lblTipoPedido);
 		
 		txtTipoPedido = new JTextField();	
 		txtTipoPedido.setEditable(false);
-		txtTipoPedido.setBounds(258, 129, 106, 20);
+		txtTipoPedido.setBounds(199, 94, 106, 20);
 		panelPrincipal.add(txtTipoPedido);
 		txtTipoPedido.setColumns(10);
 		
@@ -161,8 +171,16 @@ public class VentPedCambioEstado extends JDialog {
 				ventPedidoPintar.setVisible(true);
 			}
 		});
-		btnVerPedido.setBounds(174, 234, 118, 32);
+		btnVerPedido.setBounds(213, 287, 118, 32);
 		panelPrincipal.add(btnVerPedido);
+		
+		lblImgEstActual = new JLabel("");
+		lblImgEstActual.setBounds(341, 138, 75, 56);
+		panelPrincipal.add(lblImgEstActual);
+		
+		lblImgEstObj = new JLabel("");
+		lblImgEstObj.setBounds(341, 220, 75, 56);
+		panelPrincipal.add(lblImgEstObj);
 		ArrayList<EstadoAnterior> estadosAnt = new ArrayList();
 		ArrayList<EstadoPosterior> estadosPost = new ArrayList();
 		if(anterior)
@@ -176,7 +194,7 @@ public class VentPedCambioEstado extends JDialog {
 			estadosPost = pedCtrl.obtenerEstadosPosteriores(estadoPedido.getIdestado());
 			initComboBoxEstadosPost(estadosPost);
 		}
-		
+		initImagenesEstado();
 	}
 	
 	public void initComboBoxEstadosAnt(ArrayList<EstadoAnterior> estados)
@@ -195,6 +213,60 @@ public class VentPedCambioEstado extends JDialog {
 		{
 			EstadoPosterior fila = (EstadoPosterior)  estados.get(i);
 			cmbEstadoObjetivo.addItem(fila);
+		}
+	}
+	
+	public void initImagenesEstado()
+	{
+		PedidoCtrl pedCtrl = new PedidoCtrl();
+		BufferedImage image = null;
+		InputStream in = null;
+		ImageIcon imgi = null;
+		try
+		{
+			image = null;
+			in = new ByteArrayInputStream(estadoPedido.getImagen());
+			image = ImageIO.read(in);
+			imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+			lblImgEstActual.setIcon(imgi);
+		}catch(Exception e)
+		{
+			lblImgEstActual.setText("NO IMAGEN");
+		}
+		
+		if (anterior)
+		{
+			EstadoAnterior estAnt = (EstadoAnterior) cmbEstadoObjetivo.getSelectedItem();
+			Estado est = pedCtrl.obtenerEstado(estAnt.getIdEstadoAnterior());
+			try
+			{
+				image = null;
+				in = new ByteArrayInputStream(est.getImagen());
+				image = ImageIO.read(in);
+				imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+				lblImgEstObj.setIcon(imgi);
+			}catch(Exception e)
+			{
+				lblImgEstObj.setText("NO IMAGEN");
+			}
+			
+		}else if(posterior)
+		{
+			EstadoPosterior estPos = (EstadoPosterior) cmbEstadoObjetivo.getSelectedItem();
+			Estado est = pedCtrl.obtenerEstado(estPos.getIdEstadoPosterior());
+			try
+			{
+				image = null;
+				in = new ByteArrayInputStream(est.getImagen());
+				image = ImageIO.read(in);
+				imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+				lblImgEstObj.setIcon(imgi);
+			}catch(Exception e)
+			{
+				lblImgEstObj.setText("NO IMAGEN");
+			}
+			
+			
 		}
 	}
 }

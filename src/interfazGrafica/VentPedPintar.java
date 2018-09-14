@@ -8,11 +8,17 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Shape;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -20,8 +26,10 @@ import javax.swing.border.EmptyBorder;
 
 import com.sun.javafx.geom.Ellipse2D;
 
+import capaControlador.ParametrosProductoCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.DetallePedido;
+import capaModelo.Producto;
 
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -64,7 +72,7 @@ public class VentPedPintar extends JDialog {
 	
 	public static void main(String[] args) {
 		try {
-			VentPedPintar dialog = new VentPedPintar(null, false, 151);
+			VentPedPintar dialog = new VentPedPintar(null, false, 183);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
 		} catch (Exception e) {
@@ -175,11 +183,15 @@ public class VentPedPintar extends JDialog {
 		//Variable en la que se llevará el control del ancho actual del producto
 		int anchoActual = 0;
 		//Variable que controla los items pedidos a pintar.
-		int itemPintar = 0;
+		int itemPintar = 1;
 		//Por intermedio de este ciclo recorremos todos los detalles pedidos que vamos a pintar
 		//Variables donde almacenaremos los string de las adiciones de la pizza
 		String adicion1 = "";
 		String adicion2 = "";
+		String con1 = "";
+		String con2 = "";
+		String sin1 = "";
+		String sin2 = "";
 		for(int i = 0; i < detPedidos.size(); i++)
 		{
 			//Obtenemos el detalle pedido que estamos recorriendo.
@@ -197,7 +209,7 @@ public class VentPedPintar extends JDialog {
 			//Almacenamos el tamano del producto en caso de requerirse más adelante
 			tamano = detTem.getTamano();
 			//Comparamos si el Detalle Master actual es igual al anterior, significa qeu estamos procesando los detalles del pedido
-			if(idMasterActual == idMasterAnterior)
+			if((idMasterActual == idMasterAnterior)&&(!tipPro.equals(new String("O"))))
 			{
 				//Preguntamos si el tipo de producto es "D" Detalle en este punto vendría el sabor de la pizza
 				if(tipPro.trim().equals(new String("D")))
@@ -218,14 +230,14 @@ public class VentPedPintar extends JDialog {
 						//Pintamos el sabor en la primera parte PERO PARA SABER EL PUNTO ES IMPORTANTE SABER EL TAMAÑO
 						g2d.setFont( new Font( "Tahoma", Font.BOLD, 20 ) );
 						g2d.setColor(Color.BLACK);
-						g2d.drawString(detTem.getDescCortaProducto(), 220, (100*(itemPintar - 1)+40));
+						g2d.drawString(detTem.getDescCortaProducto(), 220, (200*(itemPintar - 1)+40));
 					}
 					else if(div1 & div2)
 					{
 						//Pintamos el sabor en la segunda parte
 						g2d.setFont( new Font( "Tahoma", Font.BOLD, 20 ) );
 						g2d.setColor(Color.BLACK);
-						g2d.drawString(detTem.getDescCortaProducto(), 220 + (anchoActual/2), (100*(itemPintar - 1)+40));
+						g2d.drawString(detTem.getDescCortaProducto(), 220 + (anchoActual/2), (200*(itemPintar - 1)+40));
 					}
 				}else if(tipPro.trim().equals(new String("A")))
 				{
@@ -241,16 +253,32 @@ public class VentPedPintar extends JDialog {
 						adicion2 = adicion2 + "+" + detTem.getDescCortaProducto();
 					}
 				}
-				else if(tipPro.trim().equals(new String("M")))
+				else if(tipPro.trim().equals(new String("MC")))
 				{
 					//DEBEMOS DE PINTAR EL MODIFICADOR
 					if(div1 & !div2)
 					{
-						//Pintamos el sabor en la primera parte
+						//Pintamos el modificador con en la primera parte
+						con1 = con1 + " " + detTem.getDescCortaProducto();
 					}
 					else if(div1 & div2)
 					{
-						//Pintamos el sabor en la segunda parte
+						//Pintamos el modificador con en la segunda parte
+						con2 = con2 + " " + detTem.getDescCortaProducto();
+					}
+				}
+				else if(tipPro.trim().equals(new String("MS")))
+				{
+					//DEBEMOS DE PINTAR EL MODIFICADOR
+					if(div1 & !div2)
+					{
+						//Pintamos el modificador sin en la primera parte
+						sin1 = sin1 + " " + detTem.getDescCortaProducto();
+					}
+					else if(div1 & div2)
+					{
+						//Pintamos el modificador sin en la  segunda parte
+						sin2 = sin2 + " " + detTem.getDescCortaProducto();
 					}
 				}
 				
@@ -259,18 +287,33 @@ public class VentPedPintar extends JDialog {
 			{
 				//Antes de hacer los cambios preguntamos si hay adiciones en cuyo caso las pintamos
 				// SI se cumple esta condición es porque hay una adición
-				if(!adicion1.equals(new String(""))||!adicion2.equals(new String("")))
+				if(!adicion1.equals(new String(""))||!adicion2.equals(new String(""))||!con1.equals(new String(""))||!con2.equals(new String(""))||!sin1.equals(new String(""))||!sin2.equals(new String("")))
 				{
 					//pintamos las adicines
 					g2d.setFont( new Font( "Tahoma", Font.BOLD, 10 ) );
 					g2d.setColor(Color.BLACK);
+					// Se dibujan las adiciones
 					g2d.drawString(adicion1, 220 , (100*(itemPintar - 1)+60));
 					g2d.drawString(adicion2, 220 + (anchoActual/2), (100*(itemPintar - 1)+60));
+					// Se dibujan los modificadores con
+					g2d.drawString(con1, 110 , (100*(itemPintar - 1)+80));
+					g2d.drawString(con2, 220 + (anchoActual/2), (100*(itemPintar - 1)+80));
+					// Se dibujan los modificadore sin
+					g2d.drawString(sin1, 50 , (100*(itemPintar - 1)+100));
+					g2d.drawString(sin2, 220 + (anchoActual/2), (100*(itemPintar - 1)+100));
 					adicion1="";
 					adicion2="";
+					sin1 = "";
+					sin2 = "";
+					con1 = "";
+					con2 = "";
 				}
-			
-				itemPintar++;
+				
+				if (div1 && div2)
+				{
+					itemPintar++;
+				}
+				
 				//Pintar la linea separadora del pedido
 //				g2d.setColor(Color.BLACK);
 //				g2d.drawLine(0, 200*(itemPintar-1), 500, 200*(itemPintar-1));
@@ -315,14 +358,56 @@ public class VentPedPintar extends JDialog {
 				}else if(tipPro.trim().equals(new String("O")))
 				{
 					//Pintamos con la imagen que tambien se almacenaría en base de datos
+					//Obtenemos el idProducto
+					int idProd = detTem.getIdProducto();
+					ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
+					Producto otroProd = parCtrl.obtenerProducto(idProd);
+					
+					try
+					{
+						Image image = null;
+						InputStream in = new ByteArrayInputStream(otroProd.getImagen());
+						image = ImageIO.read(in);
+						//ImageIcon imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+						g2d.drawImage(image,200, 200*(itemPintar-1) , null);
+					}catch(Exception e)
+					{
+						
+					}
+					itemPintar++;
 				}
 				//PINTAMOS LA CANTIDAD DEL PRODUCTO
 				g2d.setFont( new Font( "Tahoma", Font.BOLD, 15 ) );
 				g2d.setColor(Color.BLACK);
 				g2d.drawString("CANTIDAD " + Double.toString(detTem.getCantidad()), 50, (200*(itemPintar - 1)+70));
+				
 			}
 			//Independinete del camino debemos de tomar cual es  id Detalle Pedido Master anterior
 			idMasterAnterior = idMasterActual;
+		}
+		//MOD 29/08/2018
+		//Se realiza esta modificación para que si solo hubo un producto master al final se pinte las adiciones y los productos CON que se tienen
+		//Lo anterior debido a que como no hay cambio de producto master no se cumple la condición y no se está imprimiendo esta información
+		if(!adicion1.equals(new String(""))||!adicion2.equals(new String(""))||!con1.equals(new String(""))||!con2.equals(new String(""))||!sin1.equals(new String(""))||!sin2.equals(new String("")))
+		{
+			//pintamos las adicines
+			g2d.setFont( new Font( "Tahoma", Font.BOLD, 10 ) );
+			g2d.setColor(Color.BLACK);
+			// Se dibujan las adiciones
+			g2d.drawString(adicion1, 220 , (100*(itemPintar - 1)+60));
+			g2d.drawString(adicion2, 220 + (anchoActual/2), (100*(itemPintar - 1)+60));
+			// Se dibujan los modificadores con
+			g2d.drawString(con1, 50 , (100*(itemPintar - 1)+80));
+			g2d.drawString(con2, 220 + (anchoActual/2), (100*(itemPintar - 1)+80));
+			// Se dibujan los modificadore sin
+			g2d.drawString(sin1, 220 , (100*(itemPintar - 1)+100));
+			g2d.drawString(sin2, 220 + (anchoActual/2), (100*(itemPintar - 1)+100));
+			adicion1="";
+			adicion2="";
+			sin1 = "";
+			sin2 = "";
+			con1 = "";
+			con2 = "";
 		}
 	}
 }

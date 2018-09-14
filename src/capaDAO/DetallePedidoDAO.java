@@ -25,7 +25,7 @@ public class DetallePedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into detalle_pedido (idpedidotienda,idproducto,cantidad, valorunitario,valortotal,observacion, iddetalle_pedido_master) values (" + detPedido.getIdPedidoTienda() + ", " + detPedido.getIdProducto() + ", " + detPedido.getCantidad() + " , " + detPedido.getValorUnitario() + " , " + detPedido.getValorTotal() + " , '" + detPedido.getObservacion() + "' , " + detPedido.getIdDetallePedidoMaster() + ")"; 
+			String insert = "insert into detalle_pedido (idpedidotienda,idproducto,cantidad, valorunitario,valortotal,observacion, iddetalle_pedido_master, iddetalle_modificador) values (" + detPedido.getIdPedidoTienda() + ", " + detPedido.getIdProducto() + ", " + detPedido.getCantidad() + " , " + detPedido.getValorUnitario() + " , " + detPedido.getValorTotal() + " , '" + detPedido.getObservacion() + "' , " + detPedido.getIdDetallePedidoMaster() +" , " + detPedido.getIdDetalleModificador() + ")"; 
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
@@ -269,7 +269,7 @@ public class DetallePedidoDAO {
 			String consulta = "select * from detalle_pedido  where idpedidotienda = " + idPedido ;
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
-			int idDetallePedido,idProducto,idDetallePedidoMaster;
+			int idDetallePedido,idProducto,idDetallePedidoMaster, idDetalleModificador;
 			double cantidad,valorUnitario,valorTotal;
 			String observacion;
 			DetallePedido detPedTemp;
@@ -282,8 +282,10 @@ public class DetallePedidoDAO {
 				valorUnitario = rs.getDouble("valorunitario");
 				valorTotal = rs.getDouble("valortotal");
 				observacion = rs.getString("observacion");
+				idDetalleModificador = rs.getInt("iddetalle_modificador");
 				detPedTemp = new DetallePedido(idDetallePedido,  idPedido, idProducto, cantidad, valorUnitario,
 						valorTotal, observacion, idDetallePedidoMaster);
+				detPedTemp.setIdDetalleModificador(idDetalleModificador);
 				detallesPedido.add(detPedTemp);
 			}
 			
@@ -317,11 +319,11 @@ public class DetallePedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.iddetalle_pedido, a.idproducto, b.descripcion, b.tipo_producto , b.tamano, b.impresion,  a.iddetalle_pedido_master, a.cantidad, a.valorunitario, a.valortotal, a.observacion from detalle_pedido a, producto b where a.idproducto = b.idproducto and idpedidotienda = " + idPedido ;
+			String consulta = "select a.iddetalle_pedido, a.idproducto, b.descripcion, b.tipo_producto , b.tamano, b.impresion,  a.iddetalle_pedido_master, a.cantidad, a.valorunitario, a.valortotal, a.observacion, a.iddetalle_modificador from detalle_pedido a, producto b where a.idproducto = b.idproducto and a.idpedidotienda = " + idPedido ;
 			System.out.println(consulta);
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
-			int idDetallePedido,idProducto,idDetallePedidoMaster;
+			int idDetallePedido,idProducto,idDetallePedidoMaster, idDetalleModificador;
 			double cantidad,valorUnitario,valorTotal;
 			String observacion;
 			DetallePedido detPedTemp;
@@ -342,11 +344,12 @@ public class DetallePedidoDAO {
 				tipoProducto = rs.getString("tipo_producto");
 				tamano = rs.getString("tamano");
 				descCortaProducto = rs.getString("impresion");
+				idDetalleModificador = rs.getInt("iddetalle_modificador");
 				detPedTemp = new DetallePedido(idDetallePedido,  idPedido, idProducto, cantidad, valorUnitario,
 						valorTotal, observacion, idDetallePedidoMaster, descripcionProducto, tipoProducto, tamano, descCortaProducto);
+				detPedTemp.setIdDetalleModificador(idDetalleModificador);
 				detallesPedido.add(detPedTemp);
 			}
-			
 			rs.close();
 			stm.close();
 			con1.close();
@@ -367,5 +370,93 @@ public class DetallePedidoDAO {
 		
 	}
 	
+	public static DetallePedido obtenerUnDetallePedido(int idDetalle)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		DetallePedido detPedTemp = new DetallePedido();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from detalle_pedido  where iddetalle_pedido = " + idDetalle ;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			int idDetallePedido,idProducto,idDetallePedidoMaster;
+			double cantidad,valorUnitario,valorTotal;
+			String observacion;
+			int idPedido;
+			while (rs.next())
+			{
+				idPedido = rs.getInt("idpedidotienda");
+				idDetallePedido = rs.getInt("iddetalle_pedido");
+				idProducto = rs.getInt("idproducto");
+				idDetallePedidoMaster = rs.getInt("iddetalle_pedido_master");
+				cantidad = rs.getDouble("cantidad");
+				valorUnitario = rs.getDouble("valorunitario");
+				valorTotal = rs.getDouble("valortotal");
+				observacion = rs.getString("observacion");
+				detPedTemp = new DetallePedido(idDetallePedido,  idPedido, idProducto, cantidad, valorUnitario,
+						valorTotal, observacion, idDetallePedidoMaster);
+				break;
+			}
+			
+			rs.close();
+			stm.close();
+			con1.close();
+			
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(detPedTemp);
+		
+	}
+	
+	
+	public static int obtenerIdDetalleMaster(int idDetallePedido)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int idMaster = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select iddetalle_pedido_master from detalle_pedido  where iddetalle_pedido = " + idDetallePedido ;
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			while (rs.next())
+			{
+				idMaster = rs.getInt("iddetalle_pedido_master");
+				break;
+			}
+			
+			stm.close();
+			con1.close();
+			
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(idMaster);
+		
+	}
 	
 }

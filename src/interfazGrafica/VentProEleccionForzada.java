@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -29,9 +30,16 @@ import capaControlador.PedidoCtrl;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import javax.swing.ImageIcon;
 
-public class VentProEleccionForzada extends JFrame {
+public class VentProEleccionForzada extends JDialog {
 
+	//Variables estáticas
+	private static int numPreguntas;
+	private static int preguntaActual = 0;
+	//Otras variables
 	private JPanel contenedorPrincipal;
 	JLabel lblDescripcionPregunta;
 	private JPanel panelRespuestas1;
@@ -46,8 +54,6 @@ public class VentProEleccionForzada extends JFrame {
 	private ArrayList<JButton> arregloBotPan1Final = new ArrayList();
 	private ArrayList<JButton> arregloBotPan2;
 	private ArrayList<JButton> arregloBotPan2Final = new ArrayList();
-	private static int numPreguntas;
-	private static int preguntaActual = 0;
 	private ArrayList<EleccionForzada> elecciones;
 	private ArrayList<Pregunta> preguntasPantalla;
 	private ArrayList<EleccionForzadaTemporal> eleccionesTemporales = new ArrayList();
@@ -59,6 +65,7 @@ public class VentProEleccionForzada extends JFrame {
 	int selMitad1 = 0;
 	int selMitad2 = 0;
 	boolean permiteDividir = false;
+	private JButton btnRetornarPregunta;
 	/**
 	 * Launch the application.
 	 */
@@ -81,11 +88,35 @@ public class VentProEleccionForzada extends JFrame {
 	 * @param preguntas se recibe un ArrayList con las preguntas forzadas que se van a controlar
 	 * @param idProducto se recibe el producto al cual se le están aplicando la Elección Forzada.
 	 */
-	public VentProEleccionForzada(ArrayList<Pregunta> preguntas, int idProducto) {
+	public VentProEleccionForzada(java.awt.Frame parent, boolean modal,ArrayList<Pregunta> preguntas, int idProducto) {
+		super(parent, modal);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				//Trabajamos el evento de se cierre la ventan y no se haga la elección
+				//Con base en la pantalla de Toma pedidos del idDetallePedidoMaster realizamos la eliminación
+				PedidoCtrl pedCtrl = new PedidoCtrl();
+				pedCtrl.eliminarDetallePedido(VentPedTomarPedidos.idDetallePedidoMaster);
+				int idDetalleEliminar = VentPedTomarPedidos.idDetallePedidoMaster;
+				for(int j = 0; j < VentPedTomarPedidos.detallesPedido.size(); j++)
+				{
+					DetallePedido detCadaPedido = VentPedTomarPedidos.detallesPedido.get(j);
+					// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
+					if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar || detCadaPedido.getIdDetallePedidoMaster() == idDetalleEliminar)
+					{
+						double valorItem = detCadaPedido.getValorTotal();
+						VentPedTomarPedidos.detallesPedido.remove(j);
+						VentPedTomarPedidos.totalPedido = VentPedTomarPedidos.totalPedido - valorItem;
+					}
+				}
+				preguntaActual = 0;
+			}
+		});
 		setTitle("ELECCI\u00D3N");
 		numPreguntas = preguntas.size();
+		preguntaActual = 0;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 684, 610);
+		setBounds(100, 100, 900, 685);
 		contenedorPrincipal = new JPanel();
 		contenedorPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contenedorPrincipal);
@@ -94,20 +125,20 @@ public class VentProEleccionForzada extends JFrame {
 		arregloBotPan1 = new ArrayList();
 		panelRespuestas1 = new JPanel();
 		panelRespuestas1.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
-		panelRespuestas1.setBounds(25, 41, 621, 224);
+		panelRespuestas1.setBounds(25, 35, 849, 264);
 		contenedorPrincipal.add(panelRespuestas1);
-		panelRespuestas1.setLayout(new GridLayout(0, 4, 0, 0));
+		panelRespuestas1.setLayout(new GridLayout(0, 7, 0, 0));
 		
 		lblDescripcionPregunta = new JLabel("New label");
 		lblDescripcionPregunta.setFont(new Font("Tahoma", Font.BOLD, 15));
-		lblDescripcionPregunta.setBounds(10, 540, 318, 32);
+		lblDescripcionPregunta.setBounds(10, 594, 318, 32);
 		contenedorPrincipal.add(lblDescripcionPregunta);
 		
 		panelRespuestas2 = new JPanel();
 		panelRespuestas2.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
-		panelRespuestas2.setBounds(25, 299, 621, 241);
+		panelRespuestas2.setBounds(25, 335, 849, 264);
 		contenedorPrincipal.add(panelRespuestas2);
-		panelRespuestas2.setLayout(new GridLayout(0, 4, 0, 0));
+		panelRespuestas2.setLayout(new GridLayout(0, 7, 0, 0));
 		
 		lblRespuestas1 = new JLabel("New label");
 		lblRespuestas1.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -116,35 +147,76 @@ public class VentProEleccionForzada extends JFrame {
 		
 		lblRespuestas2 = new JLabel("New label");
 		lblRespuestas2.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblRespuestas2.setBounds(25, 274, 621, 14);
+		lblRespuestas2.setBounds(25, 310, 621, 14);
 		contenedorPrincipal.add(lblRespuestas2);
 		
-		JButton btnConfirmarPregunta = new JButton("Confirmar Pregunta");
+		JButton btnConfirmarPregunta = new JButton("");
+		btnConfirmarPregunta.setBackground(Color.BLACK);
+		btnConfirmarPregunta.setIcon(new ImageIcon(VentProEleccionForzada.class.getResource("/icons/preguntaSiguiente.jpg")));
 		btnConfirmarPregunta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(obligEleccion == true)
 				{
-					if((numMaxElecciones == selMitad1)&(numMaxElecciones == selMitad2))
+					if(permiteDividir)
 					{
-						
+						if((numMaxElecciones == selMitad1)&(numMaxElecciones == selMitad2))
+						{
+							
+						}
+						else
+						{
+							JOptionPane.showMessageDialog(null, "La pregunta obliga la selección de  " + numMaxElecciones + " por División, esto último no se está respetando." , " Falta Selección de Opciones", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(null, "La pregunta obliga la selección de  " + numMaxElecciones + " por División, esto último no se está respetando." , " Falta Selección de Opciones", JOptionPane.ERROR_MESSAGE);
-						return;
+						if((numMaxElecciones == selMitad1))
+						{
+							
+						}
+						else
+						{
+							JOptionPane.showMessageDialog(null, "La pregunta obliga la selección de  " + numMaxElecciones + " en la única división, esto último no se está respetando." , " Falta Selección de Opciones", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
 					}
 				}
 				incluirProductos();
 				if(preguntaActual == preguntasPantalla.size())
 				{
 					AdicionarTomarPedidos();
+					preguntaActual = 0;
 					dispose();
 				}
 				CargarEleccionForzada(preguntaActual);
 			}
 		});
-		btnConfirmarPregunta.setBounds(342, 547, 304, 23);
+		btnConfirmarPregunta.setBounds(627, 601, 147, 35);
 		contenedorPrincipal.add(btnConfirmarPregunta);
+		
+		btnRetornarPregunta = new JButton("");
+		btnRetornarPregunta.setBackground(Color.BLACK);
+		btnRetornarPregunta.setIcon(new ImageIcon(VentProEleccionForzada.class.getResource("/icons/preguntaAnterior.jpg")));
+		btnRetornarPregunta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Realizamos actividad para guardar la elección actual para cuando regresemos
+				incluirProductos();
+				//Lógica para retornar a la anterior pregunta forzada
+				int preguntaTemp = preguntaActual - 1;
+				if (preguntaTemp == 0)
+				{
+					
+				}
+				if (preguntaTemp > 0)
+				{
+					preguntaActual = preguntaActual -2;
+					CargarEleccionForzada(preguntaActual);
+				}
+			}
+		});
+		btnRetornarPregunta.setBounds(440, 601, 147, 35);
+		contenedorPrincipal.add(btnRetornarPregunta);
 		//Debemos de definir las cosas para el cargue de la primera pregunta
 		numPreguntas = preguntas.size();
 		preguntasPantalla = preguntas;
@@ -162,11 +234,15 @@ public class VentProEleccionForzada extends JFrame {
 		panelRespuestas1.repaint();
 		panelRespuestas2.removeAll();
 		panelRespuestas2.repaint();
+		//Es necesario clarear las selecciones mitad
+		selMitad1 = 0;
+		selMitad2 = 0;
 		//Realizamos modificaciones para adicionar al pedido
 		//En caso de cumplirse esto deberemos de pasar el pedido a la pantalla tomador de pedidos
 		if (preguntaActual == numPreguntas)
 		{
 			//el último paso a realizar es liberar el objeto
+			preguntaActual = 0;
 			dispose();
 			return;
 		}
@@ -244,14 +320,6 @@ public class VentProEleccionForzada extends JFrame {
 								selMitad1--;
 							}
 							
-//							if(antjButElecciones1 != null)
-//							{
-//								antjButElecciones1.setBackground(new Color(238, 238, 238));
-//							}
-//							antjButElecciones1 = selButton;
-//							selButton.setBackground(Color.YELLOW);
-//							selProducto1 = selButton.getText();
-							//Actividad cuando se selecciona la primera mitad;
 							
 						}
 					}
@@ -291,6 +359,44 @@ public class VentProEleccionForzada extends JFrame {
 						
 					}
 				});
+				//validar si el botón está seleccionado y con esto mirar para colocarle color .... y eliminarlo del temporal
+				for(int i = 0 ; i < eleccionesTemporales.size(); i++)
+				{
+					EleccionForzadaTemporal elTemp = eleccionesTemporales.get(i);
+					if((elTemp.getBoton().getText().equals(new String(jButElecciones1.getText()))) &&  (elTemp.getNumeroPregunta() == preguntaActual) && (elTemp.getNumeroMitad() ==1))
+					{
+						jButElecciones1.setBackground(Color.YELLOW);
+						selMitad1++;
+						//Buscamos para eliminar el botón adicionado
+						for(int m = 0; m < arregloBotPan1Final.size(); m++)
+						{
+							JButton jButTemp= arregloBotPan1Final.get(m);
+							if(jButTemp.getText().equals(new String(elTemp.getBoton().getText())))
+							{
+								arregloBotPan1Final.remove(m);
+								break;
+							}
+						}
+						break;
+					}
+					if((elTemp.getBoton().getText().equals(new String(jButElecciones2.getText()))) &&  (elTemp.getNumeroPregunta() == preguntaActual) && (elTemp.getNumeroMitad() ==2))
+					{
+						jButElecciones2.setBackground(Color.YELLOW);
+						selMitad2++;
+						//Buscamos para eliminar el botón adicionado
+						for(int m = 0; m < arregloBotPan2Final.size(); m++)
+						{
+							JButton jButTemp= arregloBotPan2Final.get(m);
+							if(jButTemp.getText().equals(new String(elTemp.getBoton().getText())))
+							{
+								arregloBotPan2Final.remove(m);
+								break;
+							}
+						}
+						break;
+					}
+					
+				}
 				panelRespuestas1.add(jButElecciones1);
 				panelRespuestas2.add(jButElecciones2);
 			}
@@ -425,7 +531,6 @@ public class VentProEleccionForzada extends JFrame {
 	{
 		//Realizamos validaciones para revisar las elecciones, se valida si idPregunta es diferente de cero dado qeu si es así se está pulsando el botón en elecciones, 
 		// en caso de preguntaActual sea igual a cero, es porque es la primera ejecución desde 
-		System.out.println(" valor de pregunta " + preguntaActual );
 		if(preguntaActual != 0)
 		{
 			//Realizamos adición de los productos, lo primero es validar si esta dividida
@@ -444,13 +549,14 @@ public class VentProEleccionForzada extends JFrame {
 						PedidoCtrl pedCtrl = new PedidoCtrl();
 						//Para obtener el precio deberíamos recorrer las elecciones de la pregunta y capturar el precio
 						double precioProducto = parProducto.obtenerPrecioEleccion(elecciones, idProducto);
-						System.out.println("precio producto " + idProducto + " " + precioProducto);
 						double cantidad = 1/(double)permDividir;
 						EleccionForzadaTemporal eleTemp = new EleccionForzadaTemporal();
 						eleTemp.setBoton(jButTemp);
 						eleTemp.setCantidad(cantidad);
 						eleTemp.setPrecioProducto(precioProducto);
 						eleTemp.setIdProducto(idProducto);
+						eleTemp.setNumeroPregunta(preguntaActual-1);
+						eleTemp.setNumeroMitad(1);
 						eleccionesTemporales.add(eleTemp);
 						arregloBotPan1Final.add(jButTemp);
 						arregloBotPan1.remove(m);
@@ -487,6 +593,7 @@ public class VentProEleccionForzada extends JFrame {
 							eleTemp.setCantidad(cantidad);
 							eleTemp.setPrecioProducto(precioProducto);
 							eleTemp.setIdProducto(idProducto);
+							eleTemp.setNumeroMitad(2);
 							eleccionesTemporales.add(eleTemp);
 							arregloBotPan2Final.add(jButTemp);
 							arregloBotPan2.remove(m);
@@ -505,4 +612,5 @@ public class VentProEleccionForzada extends JFrame {
 			}
 		}
 	}
-}
+	
+	}

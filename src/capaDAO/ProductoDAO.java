@@ -1,7 +1,7 @@
 package capaDAO;
 
 import java.sql.Connection;
-
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -202,6 +202,9 @@ public class ProductoDAO {
 			String impresionComanda = "";
 			String tipoProducto= "";
 			String tamano = "";
+			int modificadorCon;
+			int modificadorSin;
+			byte[] imagen = null;
 			while(rs.next()){
 				
 				descripcion = rs.getString("descripcion");
@@ -226,8 +229,20 @@ public class ProductoDAO {
 				impresionComanda = rs.getString("impresion_comanda");
 				tipoProducto = rs.getString("tipo_producto");
 				tamano = rs.getString("tamano");
+				modificadorCon = rs.getInt("modificadorcon");
+				modificadorSin = rs.getInt("modificadorsin");
+				try
+				{
+					imagen = rs.getBytes("imagen");
+				}catch(Exception e)
+				{
+					imagen = null;
+				}
 				producto = new Producto(idProducto, descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2,  idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2,precio3,precio4,precio5,precio6,precio7,precio8,precio9,precio10, impresionComanda, tipoProducto, tamano ); 
-				
+				producto.setImagen(imagen);
+				producto.setModificadorSin(modificadorSin);
+				producto.setModificadorCon(modificadorCon);
+				break;
 			}
 			rs.close();
 			stm.close();
@@ -260,8 +275,8 @@ public class ProductoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into producto (descripcion, impresion, textoboton, colorboton,idpreguntaforzada1,idpreguntaforzada2, idpreguntaforzada3,idpreguntaforzada4, idpreguntaforzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9 , precio10, impresion_comanda) values ('" + producto.getDescripcion() + "', '" + producto.getImpresion() + "', '" + producto.getTextoBoton() + "', '" + producto.getColorBoton() + "' , " + producto.getIdPreguntaForzada1() + " , " + producto.getIdPreguntaForzada2() + " , " + producto.getIdPreguntaForzada3() + " , " + producto.getIdPreguntaForzada4() + " , " + producto.getIdPreguntaForzada5() 
-			+ " , " + producto.getPrecio1() + " , " + producto.getPrecio2() + " , " + producto.getPrecio3() + " , " + producto.getPrecio4() + " , " + producto.getPrecio5() + " , " + producto.getPrecio6() + " , " + producto.getPrecio7() + " , " + producto.getPrecio7() + " , " + producto.getPrecio8() + " , " + producto.getPrecio9() + " , " + producto.getPrecio10() + " , '" + producto.getImpresionComanda() +"' )"; 
+			String insert = "insert into producto (descripcion, impresion, textoboton, colorboton,idpreguntaforzada1,idpreguntaforzada2, idpreguntaforzada3,idpreguntaforzada4, idpreguntaforzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9 , precio10, impresion_comanda, tipo_producto, tamano, imagen) values ('" + producto.getDescripcion() + "', '" + producto.getImpresion() + "', '" + producto.getTextoBoton() + "', '" + producto.getColorBoton() + "' , " + producto.getIdPreguntaForzada1() + " , " + producto.getIdPreguntaForzada2() + " , " + producto.getIdPreguntaForzada3() + " , " + producto.getIdPreguntaForzada4() + " , " + producto.getIdPreguntaForzada5() 
+			+ " , " + producto.getPrecio1() + " , " + producto.getPrecio2() + " , " + producto.getPrecio3() + " , " + producto.getPrecio4() + " , " + producto.getPrecio5() + " , " + producto.getPrecio6() + " , " + producto.getPrecio7() + " , "  + producto.getPrecio8() + " , " + producto.getPrecio9() + " , " + producto.getPrecio10() + " , '" + producto.getImpresionComanda() + "' , '" + producto.getTipoProducto() + "' , '" + producto.getTamano() + "' , " + producto.getImagen() +" )"; 
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
@@ -335,10 +350,42 @@ public class ProductoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update producto set descripcion = '" + producto.getDescripcion() + "' , impresion = '" + producto.getImpresion() + "' , textoboton = '" + producto.getTextoBoton() + "' , colorboton=" 
-			+ producto.getColorBoton() + " , idpreguntaforzada1 = " + producto.getIdPreguntaForzada1() + " , idpreguntaforzada2 = " + producto.getIdPreguntaForzada2() + " , idpreguntaforzada3 = " + producto.getIdPreguntaForzada3() + " , idpreguntaforzada4 =" + producto.getIdPreguntaForzada4() 
-			+  " , idpreguntaforzada5 =" + producto.getIdPreguntaForzada5() + " , precio1 = " + producto.getPrecio1() + " , precio2 = " + producto.getPrecio2() + " , precio3 =  " + producto.getPrecio3() + " , precio4 =  " + producto.getPrecio4()
-			+ " , precio5 = " + producto.getPrecio5() + " , precio6 =  " + producto.getPrecio6() + " , precio7 = " + producto.getPrecio7() + " , precio8 =  " + producto.getPrecio8() + " , precio9 =  " + producto.getPrecio9() + " , precio10 =  " + producto.getPrecio10() + " , impresion_comanda =  '" + producto.getImpresionComanda() +"' where idproducto = " + producto.getIdProducto() ; 
+			String update = "update producto set descripcion = '" + producto.getDescripcion() + "' , impresion = '" + producto.getImpresion() + "' , textoboton = '" + producto.getTextoBoton() + "' , colorboton = '" 
+			+ producto.getColorBoton() + "' , idpreguntaforzada1 = " + producto.getIdPreguntaForzada1() + " , idpreguntaforzada2 = " + producto.getIdPreguntaForzada2() + " , idpreguntaforzada3 = " + producto.getIdPreguntaForzada3() + " , idpreguntaforzada4 = " + producto.getIdPreguntaForzada4() 
+			+  " , idpreguntaforzada5 = " + producto.getIdPreguntaForzada5() + " , precio1 = " + producto.getPrecio1() + " , precio2 = " + producto.getPrecio2() + " , precio3 =  " + producto.getPrecio3() + " , precio4 =  " + producto.getPrecio4()
+			+ " , precio5 = " + producto.getPrecio5() + " , precio6 =  " + producto.getPrecio6() + " , precio7 = " + producto.getPrecio7() + " , precio8 =  " + producto.getPrecio8() + " , precio9 =  " + producto.getPrecio9() + " , precio10 =  " + producto.getPrecio10() + " , impresion_comanda =  '" + producto.getImpresionComanda() + "' , tipo_producto = '" +producto.getTipoProducto() + "' , tamano = '" + producto.getTamano() + "' , imagen = ? where idproducto = " + producto.getIdProducto() ; 
+			PreparedStatement actualiz = null;
+			actualiz = con1.prepareStatement(update);
+			actualiz.setBytes(1, producto.getImagen());
+			logger.info(update);
+			actualiz.executeUpdate();
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
+	public static boolean EditarCantProductoCon(int idProducto, int cantidad)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update producto set modificadorcon = " + cantidad + " where idproducto =" + idProducto ;
 			logger.info(update);
 			stm.executeUpdate(update);
 			
@@ -357,6 +404,37 @@ public class ProductoDAO {
 		}
 		return(true);
 	}
+	
+	public static boolean EditarCantProductoSin(int idProducto, int cantidad)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update producto set modificadorsin = " + cantidad + " where idproducto =" + idProducto ;
+			logger.info(update);
+			stm.executeUpdate(update);
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
+	
 	
 	
 }

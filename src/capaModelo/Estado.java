@@ -13,10 +13,16 @@ public class Estado {
 	private int colorg;
 	private int colorb;
 	private boolean impresion;
+	private byte[] imagen;
 	
 	
 	
-	
+	public byte[] getImagen() {
+		return imagen;
+	}
+	public void setImagen(byte[] imagen) {
+		this.imagen = imagen;
+	}
 	public boolean isImpresion() {
 		return impresion;
 	}

@@ -12,6 +12,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
@@ -30,22 +31,30 @@ import renderTable.CellRenderTransaccional;
 
 import java.awt.Color;
 import javax.swing.JTable;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JSpinner;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import java.awt.Font;
 
-public class VentCRUDPedEstado extends JFrame {
+public class VentProEstado extends JFrame {
 
 	private JPanel panelGeneral;
 	private JTextField txtIdEstado;
@@ -69,6 +78,9 @@ public class VentCRUDPedEstado extends JFrame {
 	int colorr;
 	int colorg;
 	int colorb;
+	private JTextField txtRuta;
+	private byte[] icono;
+	private JLabel lblImagen;
 	/**
 	 * Launch the application.
 	 */
@@ -76,7 +88,7 @@ public class VentCRUDPedEstado extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCRUDPedEstado frame = new VentCRUDPedEstado();
+					VentProEstado frame = new VentProEstado();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -88,7 +100,7 @@ public class VentCRUDPedEstado extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentCRUDPedEstado() {
+	public VentProEstado() {
 		setTitle("MAESTRO DE ESTADOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 903, 617);
@@ -98,30 +110,30 @@ public class VentCRUDPedEstado extends JFrame {
 		panelGeneral.setLayout(null);
 		
 		JLabel lblIdEstado = new JLabel("Id Estado");
-		lblIdEstado.setBounds(200, 27, 109, 14);
+		lblIdEstado.setBounds(90, 27, 109, 14);
 		panelGeneral.add(lblIdEstado);
 		
 		txtIdEstado = new JTextField();
 		txtIdEstado.setEditable(false);
-		txtIdEstado.setBounds(369, 24, 178, 20);
+		txtIdEstado.setBounds(220, 24, 178, 20);
 		panelGeneral.add(txtIdEstado);
 		txtIdEstado.setColumns(10);
 		
 		JLabel lblDescripcionEstado = new JLabel("Descripcion Estado");
-		lblDescripcionEstado.setBounds(200, 66, 146, 14);
+		lblDescripcionEstado.setBounds(90, 66, 146, 14);
 		panelGeneral.add(lblDescripcionEstado);
 		
 		txtDescripcion = new JTextField();
-		txtDescripcion.setBounds(368, 63, 351, 20);
+		txtDescripcion.setBounds(220, 63, 178, 20);
 		panelGeneral.add(txtDescripcion);
 		txtDescripcion.setColumns(10);
 		
 		JLabel lblDescripcionCorta = new JLabel("Descripcion Corta");
-		lblDescripcionCorta.setBounds(200, 102, 146, 14);
+		lblDescripcionCorta.setBounds(90, 102, 146, 14);
 		panelGeneral.add(lblDescripcionCorta);
 		
 		txtDescCorta = new JTextField();
-		txtDescCorta.setBounds(369, 99, 178, 20);
+		txtDescCorta.setBounds(220, 102, 178, 20);
 		panelGeneral.add(txtDescCorta);
 		txtDescCorta.setColumns(10);
 		
@@ -160,16 +172,13 @@ public class VentCRUDPedEstado extends JFrame {
 					capturarColor();
 					TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
 					Estado estInsertar = new Estado(0,descripcion, descripcionCorta, tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb, impresion);
+					estInsertar.setImagen(icono);
 					PedidoCtrl pedCtrl = new PedidoCtrl();
 					pedCtrl.insertarEstado(estInsertar);
 					DefaultTableModel modelo = pintarEstado();
 					jTableEstados.setModel(modelo);
 					setCellRender(jTableEstados);
-					txtDescripcion.setText("");
-					txtDescCorta.setText("");
-					txtIdEstado.setText("");
-					chckbxEstadoInicial.setSelected(false);
-					chckbxEstadoFinal.setSelected(false);
+					limpiarPantalla();
 				}
 				
 			}
@@ -218,6 +227,7 @@ public class VentCRUDPedEstado extends JFrame {
 					capturarColor();
 					TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
 					Estado estadoEditado = new Estado(idEstado, descripcion, descripcionCorta,tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb, impresion);
+					estadoEditado.setImagen(icono);
 					PedidoCtrl pedCtrl = new PedidoCtrl();
 					boolean respuesta = pedCtrl.editarEstado(estadoEditado);
 					if(respuesta)
@@ -236,6 +246,7 @@ public class VentCRUDPedEstado extends JFrame {
 						limpiarElementosListas();
 						chckbxEstadoInicial.setSelected(false);
 						chckbxEstadoFinal.setSelected(false);
+						limpiarPantalla();
 					}
 				}
 			}
@@ -269,6 +280,18 @@ public class VentCRUDPedEstado extends JFrame {
 				//Obtenemos el idProducto y con este retornamos el valor recuperarmos el valor para editar.
 				txtDescripcion.setText(estadoEditar.getDescripcion());
 				txtDescCorta.setText(estadoEditar.getDescripcionCorta());
+				try
+				{
+					BufferedImage image = null;
+					InputStream in = new ByteArrayInputStream(estadoEditar.getImagen());
+					image = ImageIO.read(in);
+					ImageIcon imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+					lblImagen.setIcon(imgi);
+					icono = estadoEditar.getImagen();
+				}catch(Exception exImagen)
+				{
+					lblImagen.setText("NO HAY IMAGEN");
+				}
 				if(estadoEditar.isEstadoInicial())
 				{
 					chckbxEstadoInicial.setSelected(true);
@@ -431,11 +454,11 @@ public class VentCRUDPedEstado extends JFrame {
 		setCellRender(jTableEstados);
 		
 		JLabel lblTipoPedido = new JLabel("Tipo Pedido");
-		lblTipoPedido.setBounds(200, 139, 109, 14);
+		lblTipoPedido.setBounds(90, 139, 109, 14);
 		panelGeneral.add(lblTipoPedido);
 		
 		comboTipoPedido = new JComboBox();
-		comboTipoPedido.setBounds(369, 136, 178, 20);
+		comboTipoPedido.setBounds(220, 136, 178, 20);
 		panelGeneral.add(comboTipoPedido);
 		
 		chckbxEstadoInicial = new JCheckBox("Estado Inicial");
@@ -534,6 +557,46 @@ public class VentCRUDPedEstado extends JFrame {
 		scrPanelEstPosDis.setViewportView(listEstados2);
 		listEstados2.setBorder(new LineBorder(new Color(0, 0, 0)));
 		listEstados2.setModel(estListModel2);
+		
+		lblImagen = new JLabel("");
+		lblImagen.setBounds(467, 11, 103, 83);
+		panelGeneral.add(lblImagen);
+		
+		JButton btnCargarImagen = new JButton("Cargar Imagen");
+		btnCargarImagen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser j = new JFileChooser();
+		        FileNameExtensionFilter fil = new FileNameExtensionFilter("JPG, PNG & GIF","jpg","png","gif");
+		        j.setFileFilter(fil);
+		        
+		        int s = j.showOpenDialog(null);
+		        if(s == JFileChooser.APPROVE_OPTION){
+		            String ruta = j.getSelectedFile().getAbsolutePath();
+		            txtRuta.setText(ruta);
+		            File rutaArchivo = new File(txtRuta.getText());
+		            try{
+		                icono = new byte[(int) rutaArchivo.length()];
+		                InputStream input = new FileInputStream(ruta);
+		                input.read(icono);
+		                BufferedImage image = null;
+		                InputStream in = new ByteArrayInputStream(icono);
+						image = ImageIO.read(in);
+						ImageIcon imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+						lblImagen.setIcon(imgi);
+		            }catch(Exception ex){
+		            	lblImagen.setText("NO IMAGEN");
+		            }
+		        }
+			}
+		});
+		btnCargarImagen.setBounds(467, 135, 104, 23);
+		panelGeneral.add(btnCargarImagen);
+		
+		txtRuta = new JTextField();
+		txtRuta.setEditable(false);
+		txtRuta.setBounds(427, 109, 214, 20);
+		panelGeneral.add(txtRuta);
+		txtRuta.setColumns(10);
 		
 		
 		
@@ -752,4 +815,15 @@ public class VentCRUDPedEstado extends JFrame {
             tc.setCellRenderer(new CellRenderNormal());
         }
     }
+	
+	public void limpiarPantalla()
+	{
+		txtDescripcion.setText("");
+		txtDescCorta.setText("");
+		txtIdEstado.setText("");
+		chckbxEstadoInicial.setSelected(false);
+		chckbxEstadoFinal.setSelected(false);
+		lblImagen.setText("");
+		lblImagen.setIcon(null);
+	}
 }

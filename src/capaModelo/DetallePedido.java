@@ -15,6 +15,7 @@ public class DetallePedido {
 	private String descCortaProducto;
 	private String tipoProducto;
 	private String tamano;
+	private int idDetalleModificador;
 	
 	
 	public int getIdDetallePedido() {
@@ -97,6 +98,15 @@ public class DetallePedido {
 	public void setDescCortaProducto(String descCortaProducto) {
 		this.descCortaProducto = descCortaProducto;
 	}
+	
+	
+	public int getIdDetalleModificador() {
+		return idDetalleModificador;
+	}
+	public void setIdDetalleModificador(int idDetalleModificador) {
+		this.idDetalleModificador = idDetalleModificador;
+	}
+	
 	public DetallePedido(int idDetallePedido, int idPedidoTienda, int idProducto, double cantidad, double valorUnitario,
 			double valorTotal, String observacion, int idDetallePedidoMaster) {
 		super();
@@ -108,6 +118,7 @@ public class DetallePedido {
 		this.valorTotal = valorTotal;
 		this.observacion = observacion;
 		this.idDetallePedidoMaster = idDetallePedidoMaster;
+		this.idDetalleModificador = 0;
 	}
 	public DetallePedido(int idDetallePedido, int idPedidoTienda, int idProducto, double cantidad, double valorUnitario,
 			double valorTotal, String observacion, int idDetallePedidoMaster, String descripcioProducto,
@@ -125,9 +136,13 @@ public class DetallePedido {
 		this.tipoProducto = tipoProducto;
 		this.tamano = tamano;
 		this.descCortaProducto = descCortaProducto;
+		this.idDetalleModificador = 0;
 	}
 
-	
+	public DetallePedido()
+	{
+		
+	}
 	
 	
 

@@ -8,8 +8,23 @@ public class EleccionForzadaTemporal {
 	private double precioProducto;
 	private double cantidad;
 	private int idProducto;
+	private int numeroPregunta;
+	private int numeroMitad;
 	
 	
+	
+	public int getNumeroMitad() {
+		return numeroMitad;
+	}
+	public void setNumeroMitad(int numeroMitad) {
+		this.numeroMitad = numeroMitad;
+	}
+	public int getNumeroPregunta() {
+		return numeroPregunta;
+	}
+	public void setNumeroPregunta(int numeroPregunta) {
+		this.numeroPregunta = numeroPregunta;
+	}
 	public int getIdProducto() {
 		return idProducto;
 	}

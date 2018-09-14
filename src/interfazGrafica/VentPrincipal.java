@@ -84,6 +84,33 @@ public class VentPrincipal extends JFrame {
 		});
 		btnSeguridadMenAgrupador.setBounds(24, 124, 180, 48);
 		PanelSeguridad.add(btnSeguridadMenAgrupador);
+		
+		JButton btnSegEmpleado = new JButton("Definici\u00F3n de Empleados");
+		btnSegEmpleado.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentSegEmpleado emp = new VentSegEmpleado ();
+				emp.setVisible(true);
+			}
+		});
+		PanelSeguridad.add(btnSegEmpleado);
+		
+		JButton btnSegTipoEmpleado = new JButton("Definici\u00F3n Tipo Empleado");
+		btnSegTipoEmpleado.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentSegTipoEmpleado tipEmp = new VentSegTipoEmpleado();
+				tipEmp.setVisible(true);
+			}
+		});
+		PanelSeguridad.add(btnSegTipoEmpleado);
+		
+		JButton btnParametrosTienda = new JButton("Parametros de Tienda");
+		btnParametrosTienda.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				VentSegTienda seguridadTienda = new VentSegTienda(null, true);
+				seguridadTienda.setVisible(true);
+			}
+		});
+		PanelSeguridad.add(btnParametrosTienda);
 		ImageIcon icono = new ImageIcon("iconos\\seguridad.jpg");
 		
 		JLabel lblLogo = new JLabel("");
@@ -151,6 +178,15 @@ public class VentPrincipal extends JFrame {
 		btnProductos.setBounds(539, 195, 188, 48);
 		PanelProductos.add(btnProductos);
 		
+		JButton btnDefinicinEstadosDe = new JButton("Definici\u00F3n Estados de Productos");
+		btnDefinicinEstadosDe.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentProEstado ventEst = new VentProEstado();
+				ventEst.setVisible(true);
+			}
+		});
+		PanelProductos.add(btnDefinicinEstadosDe);
+		
 		JButton btnParmetrosDireccin = new JButton("Par\u00E1metros Direcci\u00F3n");
 		btnParmetrosDireccin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -207,6 +243,15 @@ public class VentPrincipal extends JFrame {
 		});
 		PanelPedidos.add(btnParmetrosGenerales);
 		PanelPedidos.add(btnMaestroPedidos);
+		
+		JButton btnComandaDePedidos = new JButton("Comanda de Pedidos");
+		btnComandaDePedidos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentPedComandaPedidos ventComPed = new VentPedComandaPedidos();
+				ventComPed.setVisible(true);
+			}
+		});
+		PanelPedidos.add(btnComandaDePedidos);
 		
 		JToolBar toolBarModulos = new JToolBar();
 		toolBarModulos.setFloatable(false);

@@ -124,6 +124,33 @@ public class ConfiguracionMenuDAO {
 		return(idConfMenuIns);
 	}
 	
+	public static boolean eliminarConfiguracionMenu(ConfiguracionMenu confMenu)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String delete = "delete from configuracion_menu where multimenu = " + confMenu.getMultimenu() + " and menu = " + confMenu.getMenu();
+			logger.info(delete);
+			stm.executeUpdate(delete);
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+		
+	}
 	
 	//Estos métodos se analizarán para saber si siguen o no.
 	/**

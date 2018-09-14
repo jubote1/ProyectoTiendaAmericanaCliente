@@ -9,6 +9,7 @@ import capaDAO.ItemInventarioHistoricoDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.TiendaDAO;
 import capaModelo.FechaSistema;
+import capaModelo.Tienda;
 
 public class OperacionesTiendaCtrl {
 	
@@ -118,5 +119,27 @@ public void realizarInventarioHistorico(String fecha)
 		return(respuesta);
 	}
 
+	public Tienda obtenerTienda()
+	{
+		Tienda tienda = TiendaDAO.obtenerTienda();
+		return(tienda);
+	}
+	
+	public boolean actualizarTienda(Tienda tienda)
+	{
+		boolean respuesta = TiendaDAO.actualizarTienda(tienda);
+		return(respuesta);
+	}
+	
+	public String actualizarNumResolucion(int numInicial, int numFinal)
+	{
+		//Validar si no hay numeración de facturas en el rango dado para la facturación
+		String respuesta = TiendaDAO.verificarNumResolucion( numInicial, numFinal);
+		if(respuesta.equals(new String("OK")))
+		{
+			respuesta = TiendaDAO.actualizarResolucionTienda(numInicial, numFinal);
+		}
+		return(respuesta);
+	}
 
 }

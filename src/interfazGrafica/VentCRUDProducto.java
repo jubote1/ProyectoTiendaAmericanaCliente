@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -18,6 +20,9 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 import capaControlador.ParametrosCtrl;
@@ -27,6 +32,8 @@ import capaModelo.ItemInventario;
 import capaModelo.ItemInventarioProducto;
 import capaModelo.Producto;
 import capaModelo.ProductoIncluido;
+import capaModelo.ProductoModificadorCon;
+import capaModelo.ProductoModificadorSin;
 import capaModelo.Tamano;
 import capaModelo.TipoProducto;
 
@@ -34,7 +41,17 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import java.awt.Font;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JScrollBar;
+import java.awt.event.InputMethodListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 public class VentCRUDProducto extends JFrame {
 
@@ -54,6 +71,7 @@ public class VentCRUDProducto extends JFrame {
 	private JTextField textPrecio8;
 	private JTextField textPrecio9;
 	private JTextField textPrecio10;
+	private JTextPane textTextoBoton;
 	private JTable tableImpuestos;
 	private JComboBox comboBoxImpuesto;
 	private JComboBox comboBoxItem;
@@ -73,6 +91,20 @@ public class VentCRUDProducto extends JFrame {
 	private JComboBox comboBoxPreForzada5;
 	private JComboBox comboBoxTipoProducto;
 	private JComboBox comboBoxTamano;
+	private JComboBox cmbProdDisCon;
+	private JComboBox cmbProdDisSin;
+	private JButton btnEliminar;
+	private JButton btnInsertar;
+	private JButton btnGrabarEdicion;
+	private JTextField txtCantModCon;
+	private JTextField txtCantModSin;
+	private JTable jtabProductoCon;
+	private JTable jtabProductoSin;
+	private boolean modProdCon = false;
+	private boolean modProdSin = false;
+	private JLabel lblImagen;
+	private JTextField txtRuta;
+	private byte[] icono;
 	/**
 	 * Launch the application.
 	 */
@@ -218,14 +250,14 @@ public class VentCRUDProducto extends JFrame {
 		
 		
 		//Adicionamos los botones para las acciones del GRID
-		JButton btnInsertar = new JButton("Insertar");
+		btnInsertar = new JButton("Insertar");
 		/**
 		 * Método que implementará la acción cuando se de click sobre el botón Insertar
 		 */
 		
 		btnInsertar.setBounds(52, 133, 89, 23);
 		panelJtable.add(btnInsertar);
-		JButton btnEliminar = new JButton("Eliminar");
+		btnEliminar = new JButton("Eliminar");
 		//Evento para definir las acciones para eliminar
 		btnEliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -252,7 +284,7 @@ public class VentCRUDProducto extends JFrame {
 		btnEditar.setBounds(298, 133, 89, 23);
 		panelJtable.add(btnEditar);
 		
-		JButton btnGrabarEdicion = new JButton("Grabar Edicion");
+		btnGrabarEdicion = new JButton("Grabar Edicion");
 		
 		btnGrabarEdicion.setBounds(427, 133, 123, 23);
 		panelJtable.add(btnGrabarEdicion);
@@ -273,252 +305,6 @@ public class VentCRUDProducto extends JFrame {
 		tabPanelProductos.setBorder(new LineBorder(new Color(0, 0, 0), 3));
 		tabPanelProductos.setBounds(20, 11, 771, 408);
 		contentPane.add(tabPanelProductos);
-		
-		
-		
-//		tableImpuestosProducto = new JTable();
-//		tableImpuestosProducto.setBounds(111, 259, 279, -58);
-//		JScrollPane barraTableImpuestos =  new JScrollPane(tableImpuestosProducto,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		
-		//PANEL DE IMPUESTOS
-		
-		JPanel panelImpuestos = new JPanel();
-		tabPanelProductos.addTab("Impuestos", null, panelImpuestos, null);
-		panelImpuestos.setLayout(null);
-		
-		comboBoxImpuesto = new JComboBox();
-		comboBoxImpuesto.setToolTipText("Selecciona el impuesto a aplicar al producto");
-		comboBoxImpuesto.setBounds(314, 41, 142, 20);
-		panelImpuestos.add(comboBoxImpuesto);
-		//Inicializar ComboBox
-		initComboBoxImpuesto();
-		
-		JLabel lblSeleccioneElImpuesto = new JLabel("Seleccione el Impuesto");
-		lblSeleccioneElImpuesto.setBounds(111, 44, 151, 14);
-		panelImpuestos.add(lblSeleccioneElImpuesto);
-		
-		JLabel lblImpuestosQueAplican = new JLabel("IMPUESTOS QUE APLICAN AL PRODUCTO");
-		lblImpuestosQueAplican.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblImpuestosQueAplican.setBounds(234, 111, 306, 14);
-		panelImpuestos.add(lblImpuestosQueAplican);
-		
-		tableImpuestos = new JTable();
-		tableImpuestos.setForeground(Color.black);
-		panelImpuestos.add(tableImpuestos);
-		tableImpuestos.setBounds(102, 179, 518, 100);
-		tableImpuestos.setBorder(new LineBorder(new Color(0, 0, 0)));
-		tableImpuestos.setBackground(Color.WHITE);
-		DefaultTableModel modeloImpuestos = pintarImpuestosProducto();
-		this.tableImpuestos.setModel(modeloImpuestos);
-		JButton btnAgregarImpuesto = new JButton("Agregar Impuesto");
-		
-		btnAgregarImpuesto.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				String seleccionImpuesto = (String) comboBoxImpuesto.getSelectedItem();
-				//Tratamos de extraer el idImpuesto
-				StringTokenizer StrTokenImpuesto = new StringTokenizer(seleccionImpuesto,"-");
-				String strIdImpuesto = StrTokenImpuesto.nextToken();
-				int idImpuesto = 0;
-				if (strIdImpuesto != "")
-				{
-					idImpuesto = Integer.parseInt(strIdImpuesto);
-				}
-				System.out.println("id impuesto a adicionar " + idImpuesto);
-				ImpuestoProducto impProdu = new ImpuestoProducto(0, idImpuesto, idProducto);
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				parCtrl.insertarImpuestoProducto(impProdu);
-				DefaultTableModel modeloImpuesto = pintarImpuestosProducto();
-				//tableImpuestos.setModel(modeloImpuesto);
-				tableImpuestos.setModel(modeloImpuesto);
-			}
-		});
-		btnAgregarImpuesto.setBounds(486, 40, 134, 23);
-		panelImpuestos.add(btnAgregarImpuesto);
-		
-		JButton btnEliminarImpuesto = new JButton("Eliminar Impuesto");
-		btnEliminarImpuesto.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-				int filaSeleccionada = tableImpuestos.getSelectedRow();
-				//Hacemos la validación para decidir si se elimina o no
-				String impuestoEliminar = (String) tableImpuestos.getValueAt(filaSeleccionada, 2) + (String) tableImpuestos.getValueAt(filaSeleccionada, 4);
-				int idImpuesto = Integer.parseInt((String)tableImpuestos.getValueAt(filaSeleccionada, 0));
-				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el impuesto " +  impuestoEliminar , "Eliminacion Impuesto de Producto ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarImpuestoProducto(idImpuesto);
-				DefaultTableModel modelo = pintarImpuestosProducto();
-				tableImpuestos.setModel(modelo);
-			}
-		});
-		btnEliminarImpuesto.setBounds(276, 340, 125, 23);
-		panelImpuestos.add(btnEliminarImpuesto);
-		
-		
-		initcomboTipoProducto();		
-		
-		//PANEL PRODUCTO INCLUIDO
-		
-		JPanel panelProductoIncluido = new JPanel();
-		tabPanelProductos.addTab("Productos Incluidos", null, panelProductoIncluido, null);
-		panelProductoIncluido.setLayout(null);
-		
-		JLabel lblProductoAIncluir = new JLabel("Producto a Incluir");
-		lblProductoAIncluir.setBounds(173, 66, 109, 14);
-		panelProductoIncluido.add(lblProductoAIncluir);
-		
-		comboProductoIncluir = new JComboBox();
-		comboProductoIncluir.setBounds(345, 63, 187, 20);
-		panelProductoIncluido.add(comboProductoIncluir);
-		
-		JLabel lblCantidad = new JLabel("Cantidad");
-		lblCantidad.setBounds(173, 124, 70, 14);
-		panelProductoIncluido.add(lblCantidad);
-		
-		textCantidadIncluir = new JTextField();
-		textCantidadIncluir.setBounds(345, 121, 187, 20);
-		panelProductoIncluido.add(textCantidadIncluir);
-		textCantidadIncluir.setColumns(10);
-		
-		JLabel lblPrecioAUtilizar = new JLabel("Precio a Utilizar");
-		lblPrecioAUtilizar.setBounds(173, 185, 109, 14);
-		panelProductoIncluido.add(lblPrecioAUtilizar);
-		
-		comboPrecioProductoIncluir = new JComboBox();
-		comboPrecioProductoIncluir.setBounds(346, 182, 186, 20);
-		panelProductoIncluido.add(comboPrecioProductoIncluir);
-		initComboProductoIncluir();
-		initCombosPreguntas();
-		
-		JButton btnAgregarProductoIncluido = new JButton("Agregar Producto Incluido");
-		btnAgregarProductoIncluido.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-				if(validarAgregarProductoIncluido())
-				{
-					
-				}else
-				{
-					JOptionPane.showMessageDialog(null, "No es posible insertar el Producto Incluido debido a que falta información  "  , "Error Adicionando Producto Incluido ", JOptionPane.OK_OPTION);
-				}
-				String seleccionProductoIncluido = (String) comboProductoIncluir.getSelectedItem();
-				String precioIncluir =  (String) comboPrecioProductoIncluir.getSelectedItem();
-				double cantidadIncluir= Double.parseDouble(textCantidadIncluir.getText());
-				//Tratamos de extraer el idImpuesto
-				StringTokenizer StrTokenProductoIncluido = new StringTokenizer(seleccionProductoIncluido,"-");
-				String strIdProductoIncluido =  StrTokenProductoIncluido.nextToken();
-				int idproducto_incluido = 0;
-				if (strIdProductoIncluido != "")
-				{
-					idproducto_incluido = Integer.parseInt(strIdProductoIncluido);
-				}
-				ProductoIncluido prodIncluido = new ProductoIncluido(0,idproducto_incluido,idProducto,cantidadIncluir, precioIncluir);
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				parCtrl.insertarProductoIncluido(prodIncluido);
-				DefaultTableModel modeloProductoIncluido = pintarProductosIncluidos();
-				tableProductoIncluir.setModel(modeloProductoIncluido);
-			}
-		});
-		btnAgregarProductoIncluido.setBounds(573, 181, 166, 23);
-		panelProductoIncluido.add(btnAgregarProductoIncluido);
-		
-		JButton btnEliminarProductoIncluido = new JButton("Eliminar Producto Incluido");
-		btnEliminarProductoIncluido.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				int filaSeleccionada = tableProductoIncluir.getSelectedRow();
-				//Hacemos la validación para decidir si se elimina o no
-				String productoIncluido = " Producto Incluye " +  (String) tableProductoIncluir.getValueAt(filaSeleccionada, 1) + " Producto Incluido " +(String) tableProductoIncluir.getValueAt(filaSeleccionada, 2);
-				int idproducto_incluido = Integer.parseInt((String)tableProductoIncluir.getValueAt(filaSeleccionada, 0));
-				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Producto Incluido " +  productoIncluido , "Eliminacion Impuesto de Producto ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarProductoIncluido(idproducto_incluido);
-				DefaultTableModel modeloProductoIncluido = pintarProductosIncluidos();
-				tableProductoIncluir.setModel(modeloProductoIncluido);
-			}
-		});
-		btnEliminarProductoIncluido.setBounds(278, 337, 196, 23);
-		panelProductoIncluido.add(btnEliminarProductoIncluido);
-		
-		JScrollPane scrollPaneProIncluidos = new JScrollPane();
-		scrollPaneProIncluidos.setBounds(125, 235, 521, 76);
-		panelProductoIncluido.add(scrollPaneProIncluidos);
-		tableProductoIncluir = new JTable();
-		scrollPaneProIncluidos.setViewportView(tableProductoIncluir);
-		
-		//PANEL PARA ITEM INVENTARIO PRODUCTO
-		JPanel panelItemsInventario = new JPanel();
-		tabPanelProductos.addTab("ITEMS INVENTARIO", null, panelItemsInventario, null);
-		panelItemsInventario.setLayout(null);
-		
-		tableItemsInventario = new JTable();
-		tableItemsInventario.setBorder(new LineBorder(new Color(0, 0, 0)));
-		tableItemsInventario.setBounds(75, 179, 611, 97);
-		panelItemsInventario.add(tableItemsInventario);
-		
-		JLabel lblItemInventario = new JLabel("Item Inventario");
-		lblItemInventario.setBounds(125, 39, 135, 14);
-		panelItemsInventario.add(lblItemInventario);
-		
-		comboBoxItem = new JComboBox();
-		comboBoxItem.setBounds(270, 36, 191, 20);
-		panelItemsInventario.add(comboBoxItem);
-		
-		JLabel lblCantidadItems = new JLabel("Cantidad Items Inventario");
-		lblCantidadItems.setBounds(124, 80, 136, 14);
-		panelItemsInventario.add(lblCantidadItems);
-		initComboBoxItems();
-		textCantidadItem = new JTextField();
-		textCantidadItem.setBounds(268, 77, 193, 20);
-		panelItemsInventario.add(textCantidadItem);
-		textCantidadItem.setColumns(10);
-		
-				
-		JButton btnAgregarItemInventario = new JButton("Agregar Item Inventario");
-		btnAgregarItemInventario.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String seleccionItem = (String) comboBoxItem.getSelectedItem();
-				String strCantidad = textCantidadItem.getText();
-				double cantidad = 0.0;
-				if(strCantidad == "")
-				{
-					
-				}
-				cantidad = Double.parseDouble(strCantidad);
-				//Tratamos de extraer el idImpuesto
-				StringTokenizer StrTokenItem = new StringTokenizer(seleccionItem,"-");
-				String strIdItem = StrTokenItem.nextToken();
-				int idItem = 0;
-				if (strIdItem != "")
-				{
-					idItem = Integer.parseInt(strIdItem);
-				}
-				ItemInventarioProducto impItemProducto = new ItemInventarioProducto(0, idItem, idProducto,cantidad);
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				parCtrl.insertarItemInventarioProducto(impItemProducto);
-				DefaultTableModel modeloItem = pintarItemsInventarioProducto();
-				//tableImpuestos.setModel(modeloImpuesto);
-				tableItemsInventario.setModel(modeloItem);
-			}
-		});
-		btnAgregarItemInventario.setBounds(269, 130, 173, 23);
-		panelItemsInventario.add(btnAgregarItemInventario);
-		
-		JButton btnEliminarItemInventario = new JButton("Eliminar Item Inventario");
-		btnEliminarItemInventario.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				int filaSeleccionada = tableItemsInventario.getSelectedRow();
-				//Hacemos la validación para decidir si se elimina o no
-				String itemsEliminar = (String) tableItemsInventario.getValueAt(filaSeleccionada, 2) + (String) tableItemsInventario.getValueAt(filaSeleccionada, 4);
-				int idItem = Integer.parseInt((String)tableItemsInventario.getValueAt(filaSeleccionada, 0));
-				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el item de Inventario " +  itemsEliminar , "Eliminacion Item de Inventario ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarItemInventarioProducto(idItem);
-				DefaultTableModel modelo = pintarItemsInventarioProducto();
-				tableItemsInventario.setModel(modelo);
-			}
-		});
-		btnEliminarItemInventario.setBounds(270, 317, 172, 23);
-		panelItemsInventario.add(btnEliminarItemInventario);
 		
 		JPanel panelProductos = new JPanel();
 		tabPanelProductos.addTab("Info General", null, panelProductos, null);
@@ -554,7 +340,7 @@ public class VentCRUDProducto extends JFrame {
 		jTextImpresion.setColumns(100);
 		jTextImpresion.setText("");
 		
-		JTextPane textTextoBoton = new JTextPane();
+		textTextoBoton = new JTextPane();
 		textTextoBoton.setBounds(45, 192, 93, 57);
 		panelProductos.add(textTextoBoton);
 		
@@ -738,6 +524,292 @@ public class VentCRUDProducto extends JFrame {
 		panel.setBounds(359, 0, 10, 10);
 		panelProductos.add(panel);
 		
+		lblImagen = new JLabel("");
+		lblImagen.setBounds(365, 205, 368, 69);
+		panelProductos.add(lblImagen);
+		
+		JButton btnCargarImagen = new JButton("Cargar Imagen");
+		btnCargarImagen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser j = new JFileChooser();
+		        FileNameExtensionFilter fil = new FileNameExtensionFilter("JPG, PNG & GIF","jpg","png","gif");
+		        j.setFileFilter(fil);
+		        
+		        int s = j.showOpenDialog(null);
+		        if(s == JFileChooser.APPROVE_OPTION){
+		            String ruta = j.getSelectedFile().getAbsolutePath();
+		            txtRuta.setText(ruta);
+		            File rutaArchivo = new File(txtRuta.getText());
+		            try{
+		                icono = new byte[(int) rutaArchivo.length()];
+		                InputStream input = new FileInputStream(ruta);
+		                input.read(icono);
+		                BufferedImage image = null;
+		                InputStream in = new ByteArrayInputStream(icono);
+						image = ImageIO.read(in);
+						ImageIcon imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+						lblImagen.setIcon(imgi);
+		            }catch(Exception ex){
+		            	lblImagen.setText("NO IMAGEN");
+		            }
+		        }
+			}
+		});
+		btnCargarImagen.setBounds(244, 216, 106, 23);
+		panelProductos.add(btnCargarImagen);
+		
+		txtRuta = new JTextField();
+		txtRuta.setEditable(false);
+		txtRuta.setBounds(209, 245, 140, 20);
+		panelProductos.add(txtRuta);
+		txtRuta.setColumns(10);
+		
+		
+		
+//		tableImpuestosProducto = new JTable();
+//		tableImpuestosProducto.setBounds(111, 259, 279, -58);
+//		JScrollPane barraTableImpuestos =  new JScrollPane(tableImpuestosProducto,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		//PANEL DE IMPUESTOS
+		
+		JPanel panelImpuestos = new JPanel();
+		tabPanelProductos.addTab("Impuestos", null, panelImpuestos, null);
+		panelImpuestos.setLayout(null);
+		
+		comboBoxImpuesto = new JComboBox();
+		comboBoxImpuesto.setToolTipText("Selecciona el impuesto a aplicar al producto");
+		comboBoxImpuesto.setBounds(314, 41, 142, 20);
+		panelImpuestos.add(comboBoxImpuesto);
+		//Inicializar ComboBox
+		initComboBoxImpuesto();
+		
+		JLabel lblSeleccioneElImpuesto = new JLabel("Seleccione el Impuesto");
+		lblSeleccioneElImpuesto.setBounds(111, 44, 151, 14);
+		panelImpuestos.add(lblSeleccioneElImpuesto);
+		
+		JLabel lblImpuestosQueAplican = new JLabel("IMPUESTOS QUE APLICAN AL PRODUCTO");
+		lblImpuestosQueAplican.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblImpuestosQueAplican.setBounds(234, 111, 306, 14);
+		panelImpuestos.add(lblImpuestosQueAplican);
+		
+		tableImpuestos = new JTable();
+		tableImpuestos.setForeground(Color.black);
+		panelImpuestos.add(tableImpuestos);
+		tableImpuestos.setBounds(102, 179, 518, 100);
+		tableImpuestos.setBorder(new LineBorder(new Color(0, 0, 0)));
+		tableImpuestos.setBackground(Color.WHITE);
+		DefaultTableModel modeloImpuestos = pintarImpuestosProducto();
+		this.tableImpuestos.setModel(modeloImpuestos);
+		JButton btnAgregarImpuesto = new JButton("Agregar Impuesto");
+		
+		btnAgregarImpuesto.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String seleccionImpuesto = (String) comboBoxImpuesto.getSelectedItem();
+				//Tratamos de extraer el idImpuesto
+				StringTokenizer StrTokenImpuesto = new StringTokenizer(seleccionImpuesto,"-");
+				String strIdImpuesto = StrTokenImpuesto.nextToken();
+				int idImpuesto = 0;
+				if (strIdImpuesto != "")
+				{
+					idImpuesto = Integer.parseInt(strIdImpuesto);
+				}
+				System.out.println("id impuesto a adicionar " + idImpuesto);
+				ImpuestoProducto impProdu = new ImpuestoProducto(0, idImpuesto, idProducto);
+				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
+				parCtrl.insertarImpuestoProducto(impProdu);
+				DefaultTableModel modeloImpuesto = pintarImpuestosProducto();
+				//tableImpuestos.setModel(modeloImpuesto);
+				tableImpuestos.setModel(modeloImpuesto);
+			}
+		});
+		btnAgregarImpuesto.setBounds(486, 40, 134, 23);
+		panelImpuestos.add(btnAgregarImpuesto);
+		
+		JButton btnEliminarImpuesto = new JButton("Eliminar Impuesto");
+		btnEliminarImpuesto.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				int filaSeleccionada = tableImpuestos.getSelectedRow();
+				//Hacemos la validación para decidir si se elimina o no
+				String impuestoEliminar = (String) tableImpuestos.getValueAt(filaSeleccionada, 2) + (String) tableImpuestos.getValueAt(filaSeleccionada, 4);
+				int idImpuesto = Integer.parseInt((String)tableImpuestos.getValueAt(filaSeleccionada, 0));
+				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el impuesto " +  impuestoEliminar , "Eliminacion Impuesto de Producto ", JOptionPane.YES_NO_OPTION);
+				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
+				parEliminar.eliminarImpuestoProducto(idImpuesto);
+				DefaultTableModel modelo = pintarImpuestosProducto();
+				tableImpuestos.setModel(modelo);
+			}
+		});
+		btnEliminarImpuesto.setBounds(276, 340, 125, 23);
+		panelImpuestos.add(btnEliminarImpuesto);
+		
+		
+				
+		
+		//PANEL PRODUCTO INCLUIDO
+		
+		JPanel panelProductoIncluido = new JPanel();
+		tabPanelProductos.addTab("Productos Incluidos", null, panelProductoIncluido, null);
+		panelProductoIncluido.setLayout(null);
+		
+		JLabel lblProductoAIncluir = new JLabel("Producto a Incluir");
+		lblProductoAIncluir.setBounds(173, 66, 109, 14);
+		panelProductoIncluido.add(lblProductoAIncluir);
+		
+		comboProductoIncluir = new JComboBox();
+		comboProductoIncluir.setBounds(345, 63, 187, 20);
+		panelProductoIncluido.add(comboProductoIncluir);
+		
+		JLabel lblCantidad = new JLabel("Cantidad");
+		lblCantidad.setBounds(173, 124, 70, 14);
+		panelProductoIncluido.add(lblCantidad);
+		
+		textCantidadIncluir = new JTextField();
+		textCantidadIncluir.setBounds(345, 121, 187, 20);
+		panelProductoIncluido.add(textCantidadIncluir);
+		textCantidadIncluir.setColumns(10);
+		
+		JLabel lblPrecioAUtilizar = new JLabel("Precio a Utilizar");
+		lblPrecioAUtilizar.setBounds(173, 185, 109, 14);
+		panelProductoIncluido.add(lblPrecioAUtilizar);
+		
+		comboPrecioProductoIncluir = new JComboBox();
+		comboPrecioProductoIncluir.setBounds(346, 182, 186, 20);
+		panelProductoIncluido.add(comboPrecioProductoIncluir);
+		initComboProductoIncluir();
+		
+		
+		JButton btnAgregarProductoIncluido = new JButton("Agregar Producto Incluido");
+		btnAgregarProductoIncluido.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				if(validarAgregarProductoIncluido())
+				{
+					
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "No es posible insertar el Producto Incluido debido a que falta información  "  , "Error Adicionando Producto Incluido ", JOptionPane.OK_OPTION);
+				}
+				String seleccionProductoIncluido = (String) comboProductoIncluir.getSelectedItem();
+				String precioIncluir =  (String) comboPrecioProductoIncluir.getSelectedItem();
+				double cantidadIncluir= Double.parseDouble(textCantidadIncluir.getText());
+				//Tratamos de extraer el idImpuesto
+				StringTokenizer StrTokenProductoIncluido = new StringTokenizer(seleccionProductoIncluido,"-");
+				String strIdProductoIncluido =  StrTokenProductoIncluido.nextToken();
+				int idproducto_incluido = 0;
+				if (strIdProductoIncluido != "")
+				{
+					idproducto_incluido = Integer.parseInt(strIdProductoIncluido);
+				}
+				ProductoIncluido prodIncluido = new ProductoIncluido(0,idproducto_incluido,idProducto,cantidadIncluir, precioIncluir);
+				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
+				parCtrl.insertarProductoIncluido(prodIncluido);
+				DefaultTableModel modeloProductoIncluido = pintarProductosIncluidos();
+				tableProductoIncluir.setModel(modeloProductoIncluido);
+			}
+		});
+		btnAgregarProductoIncluido.setBounds(573, 181, 166, 23);
+		panelProductoIncluido.add(btnAgregarProductoIncluido);
+		
+		JButton btnEliminarProductoIncluido = new JButton("Eliminar Producto Incluido");
+		btnEliminarProductoIncluido.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int filaSeleccionada = tableProductoIncluir.getSelectedRow();
+				//Hacemos la validación para decidir si se elimina o no
+				String productoIncluido = " Producto Incluye " +  (String) tableProductoIncluir.getValueAt(filaSeleccionada, 1) + " Producto Incluido " +(String) tableProductoIncluir.getValueAt(filaSeleccionada, 2);
+				int idproducto_incluido = Integer.parseInt((String)tableProductoIncluir.getValueAt(filaSeleccionada, 0));
+				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Producto Incluido " +  productoIncluido , "Eliminacion Impuesto de Producto ", JOptionPane.YES_NO_OPTION);
+				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
+				parEliminar.eliminarProductoIncluido(idproducto_incluido);
+				DefaultTableModel modeloProductoIncluido = pintarProductosIncluidos();
+				tableProductoIncluir.setModel(modeloProductoIncluido);
+			}
+		});
+		btnEliminarProductoIncluido.setBounds(278, 337, 196, 23);
+		panelProductoIncluido.add(btnEliminarProductoIncluido);
+		
+		JScrollPane scrollPaneProIncluidos = new JScrollPane();
+		scrollPaneProIncluidos.setBounds(125, 235, 521, 76);
+		panelProductoIncluido.add(scrollPaneProIncluidos);
+		tableProductoIncluir = new JTable();
+		scrollPaneProIncluidos.setViewportView(tableProductoIncluir);
+		
+		//PANEL PARA ITEM INVENTARIO PRODUCTO
+		JPanel panelItemsInventario = new JPanel();
+		tabPanelProductos.addTab("ITEMS INVENTARIO", null, panelItemsInventario, null);
+		panelItemsInventario.setLayout(null);
+		
+		tableItemsInventario = new JTable();
+		tableItemsInventario.setBorder(new LineBorder(new Color(0, 0, 0)));
+		tableItemsInventario.setBounds(75, 179, 611, 97);
+		panelItemsInventario.add(tableItemsInventario);
+		
+		JLabel lblItemInventario = new JLabel("Item Inventario");
+		lblItemInventario.setBounds(125, 39, 135, 14);
+		panelItemsInventario.add(lblItemInventario);
+		
+		comboBoxItem = new JComboBox();
+		comboBoxItem.setBounds(270, 36, 191, 20);
+		panelItemsInventario.add(comboBoxItem);
+		
+		JLabel lblCantidadItems = new JLabel("Cantidad Items Inventario");
+		lblCantidadItems.setBounds(124, 80, 136, 14);
+		panelItemsInventario.add(lblCantidadItems);
+		initComboBoxItems();
+		textCantidadItem = new JTextField();
+		textCantidadItem.setBounds(268, 77, 193, 20);
+		panelItemsInventario.add(textCantidadItem);
+		textCantidadItem.setColumns(10);
+		
+				
+		JButton btnAgregarItemInventario = new JButton("Agregar Item Inventario");
+		btnAgregarItemInventario.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String seleccionItem = (String) comboBoxItem.getSelectedItem();
+				String strCantidad = textCantidadItem.getText();
+				double cantidad = 0.0;
+				if(strCantidad == "")
+				{
+					
+				}
+				cantidad = Double.parseDouble(strCantidad);
+				//Tratamos de extraer el idImpuesto
+				StringTokenizer StrTokenItem = new StringTokenizer(seleccionItem,"-");
+				String strIdItem = StrTokenItem.nextToken();
+				int idItem = 0;
+				if (strIdItem != "")
+				{
+					idItem = Integer.parseInt(strIdItem);
+				}
+				ItemInventarioProducto impItemProducto = new ItemInventarioProducto(0, idItem, idProducto,cantidad);
+				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
+				parCtrl.insertarItemInventarioProducto(impItemProducto);
+				DefaultTableModel modeloItem = pintarItemsInventarioProducto();
+				//tableImpuestos.setModel(modeloImpuesto);
+				tableItemsInventario.setModel(modeloItem);
+			}
+		});
+		btnAgregarItemInventario.setBounds(269, 130, 173, 23);
+		panelItemsInventario.add(btnAgregarItemInventario);
+		
+		JButton btnEliminarItemInventario = new JButton("Eliminar Item Inventario");
+		btnEliminarItemInventario.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int filaSeleccionada = tableItemsInventario.getSelectedRow();
+				//Hacemos la validación para decidir si se elimina o no
+				String itemsEliminar = (String) tableItemsInventario.getValueAt(filaSeleccionada, 2) + (String) tableItemsInventario.getValueAt(filaSeleccionada, 4);
+				int idItem = Integer.parseInt((String)tableItemsInventario.getValueAt(filaSeleccionada, 0));
+				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el item de Inventario " +  itemsEliminar , "Eliminacion Item de Inventario ", JOptionPane.YES_NO_OPTION);
+				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
+				parEliminar.eliminarItemInventarioProducto(idItem);
+				DefaultTableModel modelo = pintarItemsInventarioProducto();
+				tableItemsInventario.setModel(modelo);
+			}
+		});
+		btnEliminarItemInventario.setBounds(270, 317, 172, 23);
+		panelItemsInventario.add(btnEliminarItemInventario);
+		
 		JPanel panelImagen = new JPanel();
 		panelImagen.setBackground(new Color(240, 240, 240));
 		tabPanelProductos.addTab("Imagen"
@@ -747,6 +819,212 @@ public class VentCRUDProducto extends JFrame {
 		JButton btnInsActImagen = new JButton("Insertar/Actualizar Imagen");
 		btnInsActImagen.setBounds(92, 200, 161, 23);
 		panelImagen.add(btnInsActImagen);
+		
+		JPanel panelModificadores = new JPanel();
+		tabPanelProductos.addTab("MODIFICADORES", null, panelModificadores, null);
+		panelModificadores.setLayout(null);
+		
+		JLabel lblModificadoresCon = new JLabel("MODIFICADORES CON");
+		lblModificadoresCon.setFont(new Font("Dialog", Font.BOLD, 14));
+		lblModificadoresCon.setBounds(122, 34, 164, 14);
+		panelModificadores.add(lblModificadoresCon);
+		
+		JLabel lblModificadorSin = new JLabel("MODIFICADORES SIN");
+		lblModificadorSin.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblModificadorSin.setBounds(527, 34, 164, 14);
+		panelModificadores.add(lblModificadorSin);
+		
+		txtCantModCon = new JTextField();
+		txtCantModCon.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				modProdCon = true;
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				modProdCon = true;
+			}
+		});
+		
+		
+		txtCantModCon.setBounds(227, 79, 86, 20);
+		panelModificadores.add(txtCantModCon);
+		txtCantModCon.setColumns(10);
+		
+		JLabel lblContModCon = new JLabel("Controla Cantidad Modificado Con");
+		lblContModCon.setBounds(41, 82, 164, 14);
+		panelModificadores.add(lblContModCon);
+		
+		txtCantModCon.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            	modProdCon = true;
+            }
+        });
+		
+		
+		txtCantModSin = new JTextField();
+		txtCantModSin.addInputMethodListener(new InputMethodListener() {
+			public void caretPositionChanged(InputMethodEvent event) {
+			}
+			public void inputMethodTextChanged(InputMethodEvent event) {
+				modProdSin = true;
+			}
+		});
+		
+		txtCantModSin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            	modProdSin = true;
+            }
+        });
+		
+		txtCantModSin.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				modProdSin = true;
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				modProdSin = true;
+			}
+		});
+		
+		txtCantModSin.setColumns(10);
+		txtCantModSin.setBounds(636, 79, 86, 20);
+		panelModificadores.add(txtCantModSin);
+		
+		JLabel lblContModSin = new JLabel("Controla Cantidad Modificado Sin");
+		lblContModSin.setBounds(456, 82, 164, 14);
+		panelModificadores.add(lblContModSin);
+		
+		cmbProdDisCon = new JComboBox();
+		cmbProdDisCon.setBounds(177, 141, 136, 20);
+		panelModificadores.add(cmbProdDisCon);
+		
+		cmbProdDisSin = new JComboBox();
+		cmbProdDisSin.setBounds(571, 141, 136, 20);
+		panelModificadores.add(cmbProdDisSin);
+		
+		JLabel lblProducosDisponiblesCon = new JLabel("Producos Disponibles Con");
+		lblProducosDisponiblesCon.setBounds(41, 144, 126, 14);
+		panelModificadores.add(lblProducosDisponiblesCon);
+		
+		JLabel lblProducosDisponiblesSin = new JLabel("Producos Disponibles Sin");
+		lblProducosDisponiblesSin.setBounds(420, 144, 126, 14);
+		panelModificadores.add(lblProducosDisponiblesSin);
+		
+		JScrollPane scrPanProductoCon = new JScrollPane();
+		scrPanProductoCon.setBounds(41, 223, 333, 108);
+		panelModificadores.add(scrPanProductoCon);
+		
+		jtabProductoCon = new JTable();
+		scrPanProductoCon.setViewportView(jtabProductoCon);
+		
+		JScrollPane scrPanProductoSin = new JScrollPane();
+		scrPanProductoSin.setBounds(396, 223, 326, 108);
+		panelModificadores.add(scrPanProductoSin);
+		
+		jtabProductoSin = new JTable();
+		scrPanProductoSin.setViewportView(jtabProductoSin);
+		
+		JButton btnAdicionarProductoCon = new JButton("Adicionar Producto Con");
+		btnAdicionarProductoCon.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				ParametrosProductoCtrl parProd = new ParametrosProductoCtrl();
+				if(idProducto != 0)
+				{
+					if(modProdCon)
+					{
+						String strCantModCon = txtCantModCon.getText();
+						int CantModCon = 0;
+						try
+						{
+							CantModCon = Integer.parseInt(strCantModCon);
+						}catch(Exception e)
+						{
+							CantModCon = 0;
+						}
+						parProd.EditarCantProductoCon(idProducto, CantModCon);
+						modProdCon = false;
+						txtCantModCon.setText("");
+						
+					}
+					Producto proSel = (Producto) cmbProdDisCon.getSelectedItem();
+					try
+					{
+						int idProductoCon =  proSel.getIdProducto();
+						ProductoModificadorCon prodMod = new ProductoModificadorCon(idProducto,idProductoCon);
+						parProd.insertarProdModificadoCon(prodMod);
+						inicializarProdModificadores();
+					}catch(NullPointerException e)
+					{
+						JOptionPane.showMessageDialog(null, "No hay un Modificador Con para Agregar" , "No ha Seleccionado Modificador Con ", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún Producto para editar, para hacer uso de esta funcionalidad" , "No ha Seleccionado para edición ", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			}
+		});
+		btnAdicionarProductoCon.setBounds(141, 184, 145, 23);
+		panelModificadores.add(btnAdicionarProductoCon);
+		
+		JButton btnAdicionarProductoSin = new JButton("Adicionar Producto Sin");
+		btnAdicionarProductoSin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				ParametrosProductoCtrl parProd = new ParametrosProductoCtrl();
+				if(idProducto != 0)
+				{
+					if(modProdSin)
+					{
+						String strCantModSin = txtCantModSin.getText();
+						int CantModSin = 0;
+						try
+						{
+							CantModSin = Integer.parseInt(strCantModSin);
+						}catch(Exception e)
+						{
+							CantModSin = 0;
+						}
+						parProd.EditarCantProductoSin(idProducto, CantModSin);
+						modProdSin = false;
+						txtCantModSin.setText("");
+						
+					}
+					Producto proSel = (Producto) cmbProdDisSin.getSelectedItem();
+					try
+					{
+						int idProductoSin =  proSel.getIdProducto();
+						ProductoModificadorSin prodMod = new ProductoModificadorSin(idProducto,idProductoSin);
+						parProd.insertarProdModificadoSin(prodMod);
+						inicializarProdModificadores();
+					}catch(NullPointerException e)
+					{
+						JOptionPane.showMessageDialog(null, "No hay un Modificador Sin para Agregar" , "No ha Seleccionado Modificador Sin ", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún Producto para editar, para hacer uso de esta funcionalidad" , "No ha Seleccionado para edición ", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			}
+		});
+		btnAdicionarProductoSin.setBounds(486, 184, 145, 23);
+		panelModificadores.add(btnAdicionarProductoSin);
+		
+		JButton btnEliminarProductoCon = new JButton("Eliminar Producto Con");
+		btnEliminarProductoCon.setBounds(141, 342, 145, 23);
+		panelModificadores.add(btnEliminarProductoCon);
+		
+		JButton btnEliminarProductoSin = new JButton("Eliminar Producto Sin");
+		btnEliminarProductoSin.setBounds(486, 342, 145, 23);
+		panelModificadores.add(btnEliminarProductoSin);
 		
 		
 		
@@ -782,7 +1060,20 @@ public class VentCRUDProducto extends JFrame {
 				textPrecio8.setText(Double.toString(productoEditar.getPrecio8()));
 				textPrecio9.setText(Double.toString(productoEditar.getPrecio9()));
 				textPrecio10.setText(Double.toString(productoEditar.getPrecio10()));
+				//Debemos de recuperar la imagen en jlabel de lblimagen
 				//Fijamos el tipo de producto del producto
+				try
+				{
+					BufferedImage image = null;
+					InputStream in = new ByteArrayInputStream(productoEditar.getImagen());
+					image = ImageIO.read(in);
+					ImageIcon imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+					lblImagen.setIcon(imgi);
+					icono = productoEditar.getImagen();
+				}catch(Exception exImagen)
+				{
+					lblImagen.setText("NO HAY IMAGEN");
+				}
 				String tipoProducto = productoEditar.getTipoProducto();
 				for (int i = 0; i < comboBoxTipoProducto.getModel().getSize(); i++) 
 				{
@@ -813,6 +1104,7 @@ public class VentCRUDProducto extends JFrame {
 				tableItemsInventario.setModel(modeloItems);
 				DefaultTableModel modeloProductoIncluido = pintarProductosIncluidos();
 				tableProductoIncluir.setModel(modeloProductoIncluido);
+				inicializarProdModificadores();
 			}
 		});
 		
@@ -904,30 +1196,16 @@ public class VentCRUDProducto extends JFrame {
 					String impresionComanda = ""; 
 					TipoProducto tipoProducto =(TipoProducto) comboBoxTipoProducto.getSelectedItem();
 					Tamano tamano = (Tamano) comboBoxTamano.getSelectedItem();
-					Producto productoEditar = new Producto(0,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano()); 
+					Producto productoEditar = new Producto(idProducto,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano()); 
+					productoEditar.setImagen(icono);
+					System.out.println("como va el icono " + icono);
 					ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
 					boolean respuesta = parCtrl.editarProducto(productoEditar);
 					if (respuesta)
 					{
 						JOptionPane.showMessageDialog(null, "Se ha editado correctamente el registro " , "Confirmación Edición", JOptionPane.OK_OPTION);
 						DefaultTableModel modelo = pintarProducto();
-						jTextDescripcion.setText("");
-						jTextImpresion.setText("");
-						jTextIDProducto.setText("");
-						textTextoBoton.setText("");
-						textPrecio1.setText("");
-						textPrecio2.setText("");
-						textPrecio3.setText("");
-						textPrecio4.setText("");
-						textPrecio5.setText("");
-						textPrecio6.setText("");
-						textPrecio7.setText("");
-						textPrecio8.setText("");
-						textPrecio9.setText("");
-						textPrecio10.setText("");
-						btnEliminar.setEnabled(true);
-						btnInsertar.setEnabled(true);
-						btnGrabarEdicion.setEnabled(false);
+						limpiarCampos();
 					}
 				}
 				
@@ -1030,8 +1308,14 @@ public class VentCRUDProducto extends JFrame {
 				TipoProducto tipoProducto =(TipoProducto) comboBoxTipoProducto.getSelectedItem();
 				Tamano tamano = (Tamano) comboBoxTamano.getSelectedItem();
 				Producto productoNuevo = new Producto(0,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano()); 
+				productoNuevo.setImagen(icono);
 				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				int idProducto = parCtrl.insertarProducto(productoNuevo);
+				int idProdu = parCtrl.insertarProducto(productoNuevo);
+				if(idProdu > 0)
+				{
+					JOptionPane.showMessageDialog(null, "Fue insertado el producto con idProducto  " + idProdu  , "Confirmación Inserción Registro ", JOptionPane.OK_OPTION);
+					limpiarCampos();
+				}
 				DefaultTableModel modelo = pintarProducto();
 				jTableProductos.setModel(modelo);
 				
@@ -1041,6 +1325,8 @@ public class VentCRUDProducto extends JFrame {
 			}
 		});
 		
+		initcomboTipoProducto();
+		initCombosPreguntas();
 	}
 	
 	
@@ -1129,7 +1415,9 @@ public void initcomboTipoProducto()
 	comboBoxTipoProducto.addItem(tipProducto);
 	tipProducto = new TipoProducto("A", "ADICION");
 	comboBoxTipoProducto.addItem(tipProducto);
-	tipProducto = new TipoProducto("M", "MODIFICADOR");
+	tipProducto = new TipoProducto("MC", "MODIFICADOR CON");
+	comboBoxTipoProducto.addItem(tipProducto);
+	tipProducto = new TipoProducto("MS", "MODIFICADOR SIN");
 	comboBoxTipoProducto.addItem(tipProducto);
 	tipProducto = new TipoProducto("O", "OTRO PRODUCTO");
 	comboBoxTipoProducto.addItem(tipProducto);
@@ -1165,9 +1453,87 @@ public boolean validarAgregarProductoIncluido()
 	return(true);
 }
 
+public void inicializarProdModificadores()
+{
+	//Debemos de limpiar los combos
+	cmbProdDisCon.removeAllItems();
+	cmbProdDisSin.removeAllItems();
+	ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
+	ArrayList modCon = parCtrl.obtenerProdModificadorCon(idProducto);
+	ArrayList modSin = parCtrl.obtenerProdModificadorSin(idProducto);
+	ArrayList<Producto> modPro = parCtrl.obtenerProdModificadorConFalta(idProducto);
+	for(int i = 0; i<modPro.size();i++)
+	{
+		Producto  fila =  modPro.get(i);
+		cmbProdDisCon.addItem(fila);
+	}
+	modPro = parCtrl.obtenerProdModificadorSinFalta(idProducto);
+	for(int i = 0; i<modPro.size();i++)
+	{
+		Producto  fila =  modPro.get(i);
+		cmbProdDisSin.addItem(fila);
+	}
+	
+	//Llenamos los modificadoresCon
+	Object[] columnsName = new Object[4];
+    columnsName[0] = "Id Producto";
+    columnsName[1] = "Producto";
+    columnsName[2] = "id Prod Mod Con";
+    columnsName[3] = "Producto Con";
+    DefaultTableModel modelo = new DefaultTableModel();
+	modelo.setColumnIdentifiers(columnsName);
+	for(int y = 0; y < modCon.size();y++)
+	{
+		String[] fila =(String[]) modCon.get(y);
+		modelo.addRow(fila);
+	}
+	jtabProductoCon.setModel(modelo);
+	//Llenamos los modificadoresSin
+	columnsName = new Object[4];
+    columnsName[0] = "Id Producto";
+    columnsName[1] = "Producto";
+    columnsName[2] = "id Prod Mod Sin";
+    columnsName[3] = "Producto Sin";
+    modelo = new DefaultTableModel();
+	modelo.setColumnIdentifiers(columnsName);
+	for(int y = 0; y < modSin.size();y++)
+	{
+		String[] fila =(String[]) modSin.get(y);
+		modelo.addRow(fila);
+	}
+	jtabProductoSin.setModel(modelo);
+	
+}
 
-
-
-
+public void limpiarCampos()
+{
+	jTextIDProducto.setText("");
+	jTextDescripcion.setText("");
+	jTextImpresion.setText("");
+	textTextoBoton.setText("");
+	comboBoxTipoProducto.setSelectedIndex(0);
+	comboBoxTamano.setSelectedIndex(0);
+	textPrecio1.setText("");
+	textPrecio2.setText("");
+	textPrecio3.setText("");
+	textPrecio4.setText("");
+	textPrecio5.setText("");
+	textPrecio6.setText("");
+	textPrecio7.setText("");
+	textPrecio8.setText("");
+	textPrecio9.setText("");
+	textPrecio10.setText("");
+	comboBoxPreForzada1.setSelectedIndex(0);
+	comboBoxPreForzada2.setSelectedIndex(0);
+	comboBoxPreForzada3.setSelectedIndex(0);
+	comboBoxPreForzada4.setSelectedIndex(0);
+	comboBoxPreForzada5.setSelectedIndex(0);
+	btnEliminar.setEnabled(true);
+	btnInsertar.setEnabled(true);
+	btnGrabarEdicion.setEnabled(false);
+	lblImagen.setText("");
+	lblImagen.setIcon(null);
+	
+}
 }
 

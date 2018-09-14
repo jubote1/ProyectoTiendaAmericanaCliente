@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import capaControlador.AutenticacionCtrl;
+import capaControlador.EmpleadoCtrl;
 import capaControlador.OperacionesTiendaCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
@@ -33,7 +34,10 @@ public class PrincipalLogueo extends JFrame {
 	private JPanel contentPane;
 	private JTextField textUsuario;
 	private JPasswordField jpassClave;
-	
+	static int idUsuario = 0;
+	private JTextField txtFechaSistema;
+	private JTextField txtFechaUltCierre;
+	private JTextField txtEstadoCierre;
 
 	/**
 	 * Launch the application.
@@ -56,7 +60,7 @@ public class PrincipalLogueo extends JFrame {
 	 */
 	public PrincipalLogueo() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 450, 329);
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -89,27 +93,30 @@ public class PrincipalLogueo extends JFrame {
 		contentPane.add(jpassClave);
 		
 		JButton btnAutenticar = new JButton("Autenticar");
+		PedidoCtrl pedCtrl = new PedidoCtrl();
+		FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
+		boolean estaAperturado = pedCtrl.isSistemaAperturado();
 		btnAutenticar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				char[] clave = jpassClave.getPassword();
 				String claveFinal = new String(clave);
 				String usuario = textUsuario.getText();
+				Usuario objUsuario;
 				if(usuario.equals(""))
 				{
 					JOptionPane.showMessageDialog(null, "Usuario en Blanco", "Debes Ingresar el nombre de Usuario", JOptionPane.ERROR_MESSAGE);
 				}else
 				{
 					AutenticacionCtrl aut = new AutenticacionCtrl();
-					Usuario objUsuario = new Usuario(usuario, claveFinal, "");
+					objUsuario = new Usuario(0,usuario, claveFinal, "", 0,"" , false);
 					boolean  resultado = aut.autenticarUsuario(objUsuario);
 					
 					if(resultado)
 					{
+						//Cuando se supera el logueo asignamos la variable estática de idUsuario.
+						idUsuario = objUsuario.getIdUsuario();
 						JOptionPane.showConfirmDialog(null,  "Bienvenido al Sistema " + objUsuario.getNombreLargo() , "Ingresaste al Sistema!!", JOptionPane.OK_OPTION);
-						PedidoCtrl pedCtrl = new PedidoCtrl();
-						boolean estaAperturado = pedCtrl.isSistemaAperturado();
-						FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
 						if(!estaAperturado)
 						{
 							//Llamamos método para validar el estado de la fecha respecto a la última apertura.
@@ -137,8 +144,19 @@ public class PrincipalLogueo extends JFrame {
 						}
 						//Fijamos el usuario que se está loguendo
 						Sesion.setUsuario(usuario);
-						VentPrincipal ventPrincipal = new VentPrincipal();
-						ventPrincipal.setVisible(true);
+						if(objUsuario.getTipoInicio().equals("Ventana Menús"))
+						{
+							VentPrincipal ventPrincipal = new VentPrincipal();
+							ventPrincipal.setVisible(true);
+						}else if(objUsuario.getTipoInicio().equals("Maestro Pedidos"))
+						{
+							VentPedTomarPedidos ventPrincipal = new VentPedTomarPedidos();
+							ventPrincipal.setVisible(true);
+						}else if(objUsuario.getTipoInicio().equals("Comanda Pedidos"))
+						{
+							VentPedComandaPedidos ventPrincipal = new VentPedComandaPedidos();
+							ventPrincipal.setVisible(true);
+						}
 						dispose();
 					}else
 					{
@@ -149,11 +167,11 @@ public class PrincipalLogueo extends JFrame {
 				}
 			}
 		});
-		btnAutenticar.setBounds(131, 190, 115, 24);
+		btnAutenticar.setBounds(68, 258, 115, 24);
 		contentPane.add(btnAutenticar);
 		
 		JButton btnCancelar = new JButton("Cancelar");
-		btnCancelar.setBounds(291, 191, 111, 23);
+		btnCancelar.setBounds(249, 259, 111, 23);
 		contentPane.add(btnCancelar);
 		
 		JLabel lblImagen = new JLabel("");
@@ -164,6 +182,42 @@ public class PrincipalLogueo extends JFrame {
 		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
 		lblImagen.setIcon(iconoEscalado);
 		contentPane.add(lblImagen); 
+		
+		JLabel lblFechaSistema = new JLabel("Fecha Sistema");
+		lblFechaSistema.setBounds(10, 202, 96, 14);
+		contentPane.add(lblFechaSistema);
+		
+		JLabel lblFechaUltCierre = new JLabel("Fecha Ult Cierre");
+		lblFechaUltCierre.setBounds(226, 202, 92, 14);
+		contentPane.add(lblFechaUltCierre);
+		
+		txtFechaSistema = new JTextField();
+		txtFechaSistema.setEditable(false);
+		txtFechaSistema.setBounds(112, 199, 104, 20);
+		contentPane.add(txtFechaSistema);
+		txtFechaSistema.setColumns(10);
+		txtFechaSistema.setText(fechasSistema.getFechaApertura());
+		
+		txtFechaUltCierre = new JTextField();
+		txtFechaUltCierre.setEditable(false);
+		txtFechaUltCierre.setColumns(10);
+		txtFechaUltCierre.setBounds(320, 199, 104, 20);
+		txtFechaUltCierre.setText(fechasSistema.getFechaUltimoCierre());
+		contentPane.add(txtFechaUltCierre);
+		
+		txtEstadoCierre = new JTextField();
+		txtEstadoCierre.setFont(new Font("Tahoma", Font.BOLD, 11));
+		txtEstadoCierre.setEditable(false);
+		txtEstadoCierre.setBounds(20, 227, 404, 20);
+		contentPane.add(txtEstadoCierre);
+		txtEstadoCierre.setColumns(10);
+		if(estaAperturado)
+		{
+			txtEstadoCierre.setText("El día en cuestión ya se encuentra abierto.");
+		}else
+		{
+			txtEstadoCierre.setText("El día en cuestión no se encuentra abierto.");
+		}
 	}
 	
 	

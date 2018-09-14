@@ -12,6 +12,13 @@ public class MenuCtrl {
 		
 	}
 	
+	public static boolean eliminarConfiguracionMenu(ConfiguracionMenu confMenu)
+	{
+		boolean respuesta = ConfiguracionMenuDAO.eliminarConfiguracionMenu(confMenu);
+		return(respuesta);
+		
+	}
+	
 	public static ConfiguracionMenu[][] obtenerConfMenu(int multimenu)
 	{
 		ConfiguracionMenu[][] confMenu = ConfiguracionMenuDAO.obtenerConfMenu(multimenu);

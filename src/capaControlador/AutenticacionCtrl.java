@@ -35,8 +35,14 @@ public class AutenticacionCtrl {
 	 * en al aplicación
 	 */
 	public boolean autenticarUsuario(Usuario usuario){
-		boolean resultado = UsuarioDAO.validarUsuario(usuario);
-		return(resultado);
+		int resultado = 0;
+		boolean respuesta = false;
+		resultado = UsuarioDAO.validarUsuario(usuario);
+		if(resultado > 0)
+		{
+			respuesta = true;
+		}
+		return(respuesta);
 	}
 	
 	/**

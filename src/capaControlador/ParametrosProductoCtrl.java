@@ -11,6 +11,8 @@ import capaDAO.MenuAgrupadorDAO;
 import capaDAO.PreguntaDAO;
 import capaDAO.ProductoDAO;
 import capaDAO.ProductoIncluidoDAO;
+import capaDAO.ProductoModificadorConDAO;
+import capaDAO.ProductoModificadorSinDAO;
 import capaModelo.EleccionForzada;
 import capaModelo.Impuesto;
 import capaModelo.ImpuestoProducto;
@@ -20,6 +22,8 @@ import capaModelo.MenuAgrupador;
 import capaModelo.Pregunta;
 import capaModelo.Producto;
 import capaModelo.ProductoIncluido;
+import capaModelo.ProductoModificadorCon;
+import capaModelo.ProductoModificadorSin;
 
 /**
  * Clase de la capa Controlador que busca agrupar desde la capa de Negocio el comportamiento de los objetos relacionados con los productos
@@ -469,5 +473,65 @@ public class ParametrosProductoCtrl {
 					ArrayList<ProductoIncluido> prodIncluidosPedido = ProductoIncluidoDAO.obtenerProductosIncluidos(idProducto, cantidad);
 					return(prodIncluidosPedido);
 							
+				}
+				
+				//Implementación de métodos para los modificadores de producto
+				
+				public ArrayList obtenerProdModificadorCon(int idProducto)
+				{
+					ArrayList modCon = ProductoModificadorConDAO.obtenerProdModificadorCon(idProducto);
+					return(modCon);
+				}
+				
+				public ArrayList<Producto> obtenerProdModificadorConFalta(int idProd)
+				{
+					ArrayList<Producto> modConFalta = ProductoModificadorConDAO.obtenerProdModificadorConFalta(idProd);
+					return(modConFalta);
+				}
+				
+				public void insertarProdModificadoCon(ProductoModificadorCon prodMod)
+				{
+					 ProductoModificadorConDAO.insertarProdModificadoCon(prodMod);
+				}
+				
+				public boolean eliminarProdModifidadorCon(ProductoModificadorCon prodConEli)
+				{
+					boolean respuesta = ProductoModificadorConDAO.eliminarProdModifidadorCon(prodConEli);
+					return(respuesta);
+				}
+				
+				public ArrayList obtenerProdModificadorSin(int idProducto)
+				{
+					ArrayList modSin = ProductoModificadorSinDAO.obtenerProdModificadorSin(idProducto);
+					return(modSin);
+				}
+				
+				public ArrayList<Producto> obtenerProdModificadorSinFalta(int idProd)
+				{
+					ArrayList<Producto> modSinFalta = ProductoModificadorSinDAO.obtenerProdModificadorSinFalta(idProd);
+					return(modSinFalta);
+				}
+				
+				public void insertarProdModificadoSin(ProductoModificadorSin prodMod)
+				{
+					 ProductoModificadorSinDAO.insertarProdModificadoSin(prodMod);
+				}
+				
+				public boolean eliminarProdModifidadorSin(ProductoModificadorSin prodSinEli)
+				{
+					boolean respuesta = ProductoModificadorSinDAO.eliminarProdModifidadorSin(prodSinEli);
+					return(respuesta);
+				}
+				
+				public boolean EditarCantProductoCon(int idProducto, int cantidad)
+				{
+					boolean respuesta = ProductoDAO.EditarCantProductoCon(idProducto, cantidad);
+					return(respuesta);
+				}
+				
+				public boolean EditarCantProductoSin(int idProducto, int cantidad)
+				{
+					boolean respuesta = ProductoDAO.EditarCantProductoSin(idProducto, cantidad);
+					return(respuesta);
 				}
 }

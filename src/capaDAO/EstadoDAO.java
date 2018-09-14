@@ -1,7 +1,7 @@
 package capaDAO;
 
 import java.sql.Connection;
-
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -213,7 +213,14 @@ public class EstadoDAO {
 		
 	}
 	
-		
+	/**
+	 * Método que se encarga de retornar los estados que tiene asignados un tipo de empleado para ver en la ventana de comanda de pedidos
+	 * @param idTipoPedido Se recibe como parámetro un valor entero con base
+	 * @return un Arraylist con objetos de tipo estado, de acuerdo al idtipoempleado.
+	 */
+	
+	
+	
 	public static Estado obtenerEstado(int idEstado)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -235,6 +242,7 @@ public class EstadoDAO {
 			boolean impresion = false;
 			int intEstInicial, intEstFinal, intImpresion;	
 			int colorr=0, colorg=0, colorb=0;
+			byte[] imagen = null;
 			while(rs.next()){
 				idTipoPedido = rs.getInt("idtipopedido");
 				descripcion = rs.getString("descripcion");
@@ -245,6 +253,7 @@ public class EstadoDAO {
 				colorr = rs.getInt("colorr");
 				colorg = rs.getInt("colorg");
 				colorb = rs.getInt("colorb");
+				imagen = rs.getBytes("imagen");
 				if(intImpresion == 1)
 				{
 					impresion = true;
@@ -258,6 +267,7 @@ public class EstadoDAO {
 					estFinal = true;
 				}
 				estado = new Estado(idEstado, descripcion, descripcionCorta,idTipoPedido, "", estInicial, estFinal,colorr,colorg,colorb, impresion);
+				estado.setImagen(imagen);
 			}
 			rs.close();
 			stm.close();
@@ -301,7 +311,7 @@ public class EstadoDAO {
 			{
 				estadoInicial= 1;
 			}
-			String insert = "insert into estado (descripcion, descripcion_corta, estado_inicial, estado_final, colorr, colorg, colorb, idtipopedido, impresion) values('" + estado.getDescripcion() + "' , '" + estado.getDescripcionCorta() + "', "+ estadoInicial + " ," + estadoFinal + " , " + estado.getColorr() + " , " + estado.getColorg() + " , " + estado.getColorb() + ", " + estado.getIdTipoPedido() +", " + impresion +")";
+			String insert = "insert into estado (descripcion, descripcion_corta, estado_inicial, estado_final, colorr, colorg, colorb, idtipopedido, impresion, imagen) values('" + estado.getDescripcion() + "' , '" + estado.getDescripcionCorta() + "', "+ estadoInicial + " ," + estadoFinal + " , " + estado.getColorr() + " , " + estado.getColorg() + " , " + estado.getColorb() + ", " + estado.getIdTipoPedido() +", " + impresion + " , " + estado.getImagen() +")";
 			System.out.println(insert);
 			logger.info(insert);
 			stm.executeUpdate(insert);
@@ -382,9 +392,12 @@ public class EstadoDAO {
 				estadoInicial= 1;
 			}
 			Statement stm = con1.createStatement();
-			String update = "update estado set descripcion = '" + estado.getDescripcion() + "' , descripcion_corta = '" + estado.getDescripcionCorta() + "' , estado_inicial =" + estadoInicial + " , estado_final = " + estadoFinal + ", colorr =  " + estado.getColorr() + " , colorg =" + estado.getColorg() + " , colorb = " + estado.getColorb() + " , impresion =" + impresion + " where idEstado = " + estado.getIdestado();  
+			String update = "update estado set descripcion = '" + estado.getDescripcion() + "' , descripcion_corta = '" + estado.getDescripcionCorta() + "' , estado_inicial =" + estadoInicial + " , estado_final = " + estadoFinal + ", colorr =  " + estado.getColorr() + " , colorg =" + estado.getColorg() + " , colorb = " + estado.getColorb() + " , impresion =" + impresion + " , imagen = ? where idEstado = " + estado.getIdestado();  
+			PreparedStatement actualiz = null;
+			actualiz = con1.prepareStatement(update);
+			actualiz.setBytes(1, estado.getImagen());
 			logger.info(update);
-			stm.executeUpdate(update);
+			actualiz.executeUpdate();
 			
 			stm.close();
 			con1.close();

@@ -18,9 +18,11 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.awt.event.ActionEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 import capaControlador.InventarioCtrl;
 import capaControlador.MenuCtrl;
@@ -35,6 +37,8 @@ import capaModelo.Pregunta;
 import capaModelo.Producto;
 import capaModelo.ProductoIncluido;
 import capaModelo.TipoPedido;
+import renderTable.CellRenderPedido;
+import renderTable.CellRenderTransaccional;
 
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
@@ -48,6 +52,9 @@ import java.net.URL;
 import java.sql.Date;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JScrollPane;
 
 public class VentPedTomarPedidos extends JFrame {
 
@@ -65,6 +72,8 @@ public class VentPedTomarPedidos extends JFrame {
 	private JTextField txtValorTotal;
 	private JTextField txtNroPedido;
 	private JButton btnTipoPedido;
+	JButton btnProductoCon;
+	JButton btnProductoSin;
 	JLabel lblIdCliente;
 	JLabel lblNombreCliente;
 	private JTable tableDetallePedido;
@@ -85,6 +94,7 @@ public class VentPedTomarPedidos extends JFrame {
 	static ArrayList<TipoPedido> tiposPedidos;
 	static boolean tieneFormaPago = false;
 	static boolean tieneDescuento = false;
+	public static int colorDetalle = 0;
 	
 	
 	/**
@@ -163,7 +173,7 @@ public class VentPedTomarPedidos extends JFrame {
 					return;
 				}
 				// Se captura el valor del idDetalle que se desea eliminar
-				int idDetalleEliminar = (int)tableDetallePedido.getValueAt(filaSeleccionada, 0);
+				int idDetalleEliminar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
 				PedidoCtrl pedCtrl = new PedidoCtrl();
 				//Se obtiene en un boolean si el idDetalle es maestro o no, sino lo es, no se puede eliminar, pues se debe
 				//eliminar el master
@@ -204,14 +214,6 @@ public class VentPedTomarPedidos extends JFrame {
 		btnAnularItem.setBounds(51, 272, 112, 36);
 		panelPedido.add(btnAnularItem);
 		
-		tableDetallePedido = new JTable();
-		tableDetallePedido.setBorder(new LineBorder(new Color(0, 0, 0), 2));
-		tableDetallePedido.setShowVerticalLines(false);
-		tableDetallePedido.setShowHorizontalLines(false);
-		tableDetallePedido.setShowGrid(false);
-		tableDetallePedido.setBounds(10, 11, 205, 178);
-		panelPedido.add(tableDetallePedido);
-		
 		txtValorPedidoSD = new JTextField();
 		txtValorPedidoSD.setEditable(false);
 		txtValorPedidoSD.setBounds(97, 197, 118, 20);
@@ -240,6 +242,47 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		txtDescuento.setText(Double.toString(descuento));
 		txtValorTotal.setText(Double.toString(totalPedido - descuento));
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 11, 205, 178);
+		panelPedido.add(scrollPane);
+		
+		
+		
+		tableDetallePedido = new JTable();
+		scrollPane.setViewportView(tableDetallePedido);
+		
+		tableDetallePedido.setBorder(new LineBorder(new Color(0, 0, 0), 2));
+		tableDetallePedido.setShowVerticalLines(false);
+		tableDetallePedido.setShowHorizontalLines(false);
+		tableDetallePedido.setShowGrid(false);
+		tableDetallePedido.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				int filaSeleccionada = tableDetallePedido.getSelectedRow();
+				int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
+				//Validaremos si el detallePedido tiene un producto que tiene productos con y sin.
+				PedidoCtrl pedCtrlCon = new PedidoCtrl();
+				boolean hayModCon = pedCtrlCon.detalleTieneModificadorCon(idDetalleTratar);
+				if(hayModCon)
+				{
+					btnProductoCon.setEnabled(true);
+				}
+				else
+				{
+					btnProductoCon.setEnabled(false);
+				}
+				boolean hayModSin = pedCtrlCon.detalleTieneModificadorSin(idDetalleTratar);
+				if(hayModSin)
+				{
+					btnProductoSin.setEnabled(true);
+				}
+				else
+				{
+					btnProductoSin.setEnabled(false);
+				}
+			}
+		});
 		
 		JPanel panelMenu = new JPanel();
 		panelMenu.setBorder(new LineBorder(new Color(0, 0, 0), 3));
@@ -726,6 +769,55 @@ public class VentPedTomarPedidos extends JFrame {
 		panel.add(txtNroPedido);
 		txtNroPedido.setColumns(10);
 		
+		JPanel panelModificadores = new JPanel();
+		panelModificadores.setBounds(235, 389, 769, 37);
+		contentPane.add(panelModificadores);
+		panelModificadores.setLayout(null);
+		
+		btnProductoCon = new JButton("PRODUCTO CON");
+		btnProductoCon.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				int filaSeleccionada = tableDetallePedido.getSelectedRow();
+				if(filaSeleccionada == -1)
+				{
+					
+				}else
+				{
+					int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
+					VentPedModificador ventMod = new VentPedModificador(null, true, idDetalleTratar, true, false);
+					ventMod.setVisible(true);
+				}
+				
+			}
+		});
+		btnProductoCon.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnProductoCon.setBounds(168, 0, 124, 37);
+		panelModificadores.add(btnProductoCon);
+		
+		btnProductoSin = new JButton("PRODUCTO SIN");
+		btnProductoSin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int filaSeleccionada = tableDetallePedido.getSelectedRow();
+				if(filaSeleccionada == -1)
+				{
+					
+				}else
+				{
+					int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
+					VentPedModificador ventMod = new VentPedModificador(null, true, idDetalleTratar, false, true);
+					ventMod.setVisible(true);
+				}
+			}
+		});
+		btnProductoSin.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnProductoSin.setBounds(371, 0, 124, 37);
+		panelModificadores.add(btnProductoSin);
+		//Deshabilitamos los botones de modificadores
+		btnProductoCon.setEnabled(false);
+		btnProductoSin.setEnabled(false);
+		
 	}
 	
 	public void fijarCliente()
@@ -832,6 +924,12 @@ public class VentPedTomarPedidos extends JFrame {
 		int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
 		detPedido.setIdDetallePedido(idDetalle);
 		idDetallePedidoMaster = idDetalle;
+		colorDetalle++;
+		if(colorDetalle == 4)
+		{
+			colorDetalle = 1;
+		}
+		
 		if(idDetalle > 0)
 		{
 			detallesPedido.add(detPedido);
@@ -843,7 +941,8 @@ public class VentPedTomarPedidos extends JFrame {
 				ProductoIncluido proTem = proIncluido.get(i);
 				double precioProTem = parProducto.obtenerPrecioProducto(proTem.getIdproductoincluido(), proTem.getPrecio());
 				detPedido = new DetallePedido(0, idPedido, proTem.getIdproductoincluido(),proTem.getCantidad(),precioProTem,proTem.getCantidad()*precioProTem,"",idDetallePedidoMaster);
-				pedCtrl.insertarDetallePedido(detPedido);
+				int idDetProInc = pedCtrl.insertarDetallePedido(detPedido);
+				detPedido.setIdDetallePedido(idDetProInc);
 				totalPedido = totalPedido + detPedido.getValorTotal();
 				detallesPedido.add(detPedido);
 			}
@@ -860,7 +959,7 @@ public class VentPedTomarPedidos extends JFrame {
 		else
 		{
 			
-			VentProEleccionForzada ElForzada = new VentProEleccionForzada(preguntasProducto, idProducto);
+			VentProEleccionForzada ElForzada = new VentProEleccionForzada(null, true,preguntasProducto, idProducto);
 			ElForzada.setVisible(true);
 		}
 	}
@@ -871,9 +970,15 @@ public class VentPedTomarPedidos extends JFrame {
 		DefaultTableModel tb = (DefaultTableModel) tableDetallePedido.getModel();
 		tb.setRowCount(0);
 		//Recorremos el ArrayList de DetallePedido para agregarlo al Jtable
-		DefaultTableModel modeloDetalle = new DefaultTableModel();
+		DefaultTableModel modeloDetalle = new DefaultTableModel(){
+       	    public boolean isCellEditable(int rowIndex,int columnIndex){
+       	    	return false;
+       	    }
+       	    
+       	    
+       	};
 		tableDetallePedido.setModel(modeloDetalle);
-		modeloDetalle.setColumnIdentifiers(new Object [] {"idDetalle", "Cantidad", "Descripción",  "Valor", "idDetalleMaster"});
+		modeloDetalle.setColumnIdentifiers(new Object [] {"idDetalle", "Cantidad", "Descripción",  "Valor", "idDetalleMaster","idDetalleModificador"});
 		tableDetallePedido.getColumnModel().getColumn(0).setMaxWidth(0);
 		tableDetallePedido.getColumnModel().getColumn(0).setMinWidth(0);
 		tableDetallePedido.getColumnModel().getColumn(1).setMaxWidth(20);
@@ -882,6 +987,8 @@ public class VentPedTomarPedidos extends JFrame {
 		tableDetallePedido.getColumnModel().getColumn(3).setMinWidth(50);
 		tableDetallePedido.getColumnModel().getColumn(4).setMaxWidth(0);
 		tableDetallePedido.getColumnModel().getColumn(4).setMinWidth(0);
+		tableDetallePedido.getColumnModel().getColumn(5).setMaxWidth(0);
+		tableDetallePedido.getColumnModel().getColumn(5).setMinWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(0).setMaxWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(0).setMinWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(20);
@@ -890,15 +997,28 @@ public class VentPedTomarPedidos extends JFrame {
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(3).setMinWidth(50);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(4).setMaxWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(4).setMinWidth(0);
+		tableDetallePedido.getTableHeader().getColumnModel().getColumn(5).setMaxWidth(0);
+		tableDetallePedido.getTableHeader().getColumnModel().getColumn(5).setMinWidth(0);
+		
 		ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
 		for(int i = 0; i < detallesPedido.size();i++)
 		{
 			DetallePedido det = detallesPedido.get(i);
 			Producto proDet = parProducto.obtenerProducto(det.getIdProducto());
-			Object [] object = new Object[]{det.getIdDetallePedido(),det.getCantidad(),proDet.getDescripcion(),det.getValorTotal(), det.getIdDetallePedidoMaster()};
+			String [] object = new String[]{Integer.toString(det.getIdDetallePedido()),Double.toString(det.getCantidad()),proDet.getDescripcion(),Double.toString(det.getValorTotal()), Integer.toString(det.getIdDetallePedidoMaster()), Integer.toString(det.getIdDetalleModificador())};
 			modeloDetalle.addRow(object);
 		}
+		CellRenderPedido.colorDeta = 0;
+		setCellRender(tableDetallePedido);
 	}
+	
+	public void setCellRender(JTable table) {
+        Enumeration<TableColumn> en = table.getColumnModel().getColumns();
+        while (en.hasMoreElements()) {
+            TableColumn tc = en.nextElement();
+            tc.setCellRenderer(new CellRenderPedido());
+        }
+    }
 	
 	public void crearEncabezadoPedido()
 	{
@@ -918,6 +1038,4 @@ public class VentPedTomarPedidos extends JFrame {
 	{
 		
 	}
-	
-	
 }

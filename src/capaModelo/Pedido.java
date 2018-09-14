@@ -13,14 +13,37 @@ public class Pedido {
 	private double impuesto;
 	private double valorneto;
 	private int idcliente;
+	private String nombreCliente;
+	private String dirCliente;
 	private String fechapedido;
 	private int idpedidocontact;
 	private String fechainsercion;
 	private String usuariopedido;
 	private int tiempopedido;
 	private int idTipoPedido;
+	private String tipoPedido;
 	
 	
+	
+	
+	public String getDirCliente() {
+		return dirCliente;
+	}
+	public void setDirCliente(String dirCliente) {
+		this.dirCliente = dirCliente;
+	}
+	public String getTipoPedido() {
+		return tipoPedido;
+	}
+	public void setTipoPedido(String tipoPedido) {
+		this.tipoPedido = tipoPedido;
+	}
+	public String getNombreCliente() {
+		return nombreCliente;
+	}
+	public void setNombreCliente(String nombreCliente) {
+		this.nombreCliente = nombreCliente;
+	}
 	public int getIdTipoPedido() {
 		return idTipoPedido;
 	}
@@ -108,6 +131,11 @@ public class Pedido {
 		this.usuariopedido = usuariopedido;
 		this.tiempopedido = tiempopedido;
 		this.idTipoPedido = idTipoPedido;
+	}
+	
+	public Pedido()
+	{
+		
 	}
 	
 	

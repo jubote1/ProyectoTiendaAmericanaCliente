@@ -25,7 +25,30 @@ public class Producto {
 	private String impresionComanda;
 	private String tipoProducto;
 	private String tamano;
+	private int modificadorCon;
+	private int modificadorSin;
+	private byte[] imagen;
 	
+	
+		
+	public byte[] getImagen() {
+		return imagen;
+	}
+	public void setImagen(byte[] imagen) {
+		this.imagen = imagen;
+	}
+	public int getModificadorCon() {
+		return modificadorCon;
+	}
+	public void setModificadorCon(int modificadorCon) {
+		this.modificadorCon = modificadorCon;
+	}
+	public int getModificadorSin() {
+		return modificadorSin;
+	}
+	public void setModificadorSin(int modificacorSin) {
+		this.modificadorSin = modificacorSin;
+	}
 	public int getIdProducto() {
 		return idProducto;
 	}
@@ -203,6 +226,16 @@ public class Producto {
 		this.impresionComanda = impresionComanda;
 		this.tipoProducto = tipoProducto;
 		this.tamano = tamano;
+	}
+	public Producto(int idProducto, String descripcion) {
+		super();
+		this.idProducto = idProducto;
+		this.descripcion = descripcion;
+	}
+	
+	public String toString()
+	{
+		return(descripcion);
 	}
 	
 	

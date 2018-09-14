@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTable;
+import java.awt.Font;
 
 public class VentSegConfMenu extends JFrame {
 
@@ -41,6 +42,7 @@ public class VentSegConfMenu extends JFrame {
 	private ConfiguracionMenu[][] confiMenu;
 	// El arreglo con los botones del menú activo se manejará como variable global
 	private Object[][] botones;
+	private JButton btnEliminarRelacinProducto;
 	/**
 	 * Launch the application.
 	 */
@@ -82,15 +84,15 @@ public class VentSegConfMenu extends JFrame {
 		panelComandos.setLayout(null);
 		
 		comboBoxProducto = new JComboBox();
-		comboBoxProducto.setBounds(10, 104, 180, 20);
+		comboBoxProducto.setBounds(10, 197, 180, 20);
 		panelComandos.add(comboBoxProducto);
 		
 		JLabel lblProducto = new JLabel("Producto");
-		lblProducto.setBounds(20, 79, 46, 14);
+		lblProducto.setBounds(20, 172, 46, 14);
 		panelComandos.add(lblProducto);
 		
 		comboBoxMenu = new JComboBox();
-		comboBoxMenu.setBounds(10, 172, 180, 20);
+		comboBoxMenu.setBounds(10, 122, 180, 20);
 		panelComandos.add(comboBoxMenu);
 		
 		comboBoxMultiMenu = new JComboBox();
@@ -131,7 +133,7 @@ public class VentSegConfMenu extends JFrame {
 		
 				
 		JLabel lblMen = new JLabel("Men\u00FA");
-		lblMen.setBounds(20, 147, 46, 14);
+		lblMen.setBounds(20, 97, 46, 14);
 		panelComandos.add(lblMen);
 		
 		JButton btnAsociarProductoMen = new JButton("Asociar Producto Men\u00FA");
@@ -177,12 +179,55 @@ public class VentSegConfMenu extends JFrame {
 				comboBoxMultiMenu.setSelectedIndex(0);
 			}
 		});
-		btnAsociarProductoMen.setBounds(26, 237, 143, 23);
+		btnAsociarProductoMen.setBounds(35, 240, 143, 23);
 		panelComandos.add(btnAsociarProductoMen);
 		
 		JLabel lblMultimen = new JLabel("Multimen\u00FA");
 		lblMultimen.setBounds(20, 23, 74, 14);
 		panelComandos.add(lblMultimen);
+		
+		btnEliminarRelacinProducto = new JButton("Eliminar Relaci\u00F3n Producto Men\u00FA");
+		btnEliminarRelacinProducto.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Obtenemos el multimenu
+				String multime = (String) comboBoxMultiMenu.getSelectedItem();
+				StringTokenizer StrMulti = new StringTokenizer(multime,"-");
+				StrMulti.nextToken();
+				int intMultimenu = Integer.parseInt(StrMulti.nextToken().trim());
+				String menu = (String) comboBoxMenu.getSelectedItem();
+				StringTokenizer StrMenu = new StringTokenizer(menu," ");
+				StrMenu.nextToken();
+				int intMenu = Integer.parseInt(StrMenu.nextToken().trim());
+				// Se requiere otro tratamiento para sacar la fila y la columna
+				int columna, fila;
+				int divisor = 6;
+				// Se deja lógica para ubicar los menús nuevos.
+				if((intMenu % divisor) == 0)
+				{
+					columna = divisor - 1;
+					fila = ((int) (intMenu / divisor)) - 1;
+				}
+				else
+				{
+					columna = (intMenu % divisor) -1;
+					fila = ((int) (intMenu / divisor));
+				}
+				
+				MenuCtrl menuCtrl = new MenuCtrl();
+				ConfiguracionMenu confMenuEli = new ConfiguracionMenu(0,intMultimenu,intMenu, fila, columna, 0);
+				boolean respuesta = menuCtrl.eliminarConfiguracionMenu(confMenuEli);
+				//Hacemos la modificación sobre los arreglos que se cargan y deben de tener esta información.
+				//sería Volver a llamar al método 
+				cargarConfiguracionMenu();
+				//
+				comboBoxProducto.setSelectedIndex(0);
+				comboBoxMenu.setSelectedIndex(0);
+				comboBoxMultiMenu.setSelectedIndex(0);
+			}
+		});
+		btnEliminarRelacinProducto.setFont(new Font("Tahoma", Font.BOLD, 8));
+		btnEliminarRelacinProducto.setBounds(20, 274, 170, 23);
+		panelComandos.add(btnEliminarRelacinProducto);
 		
 		
 //		for(int i = 1; i <= 20; i++)
