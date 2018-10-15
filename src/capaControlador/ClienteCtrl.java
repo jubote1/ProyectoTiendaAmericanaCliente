@@ -23,5 +23,11 @@ public class ClienteCtrl {
 		Cliente clienteCons = ClienteDAO.obtenerClienteporID(idCliente);
 		return(clienteCons);
 	}
+	
+	public int insertarCliente(Cliente clienteInsertar)
+	{
+		int idCliInser = ClienteDAO.insertarCliente(clienteInsertar);
+		return(idCliInser);
+	}
 
 }

@@ -21,6 +21,9 @@ import java.awt.Graphics;
 import java.awt.Panel;
 import java.awt.Color;
 import java.awt.event.ActionListener;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.awt.event.ActionEvent;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.EmpleadoCtrl;
@@ -29,7 +32,7 @@ import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
 import capaModelo.Usuario;
 
-public class PrincipalLogueo extends JFrame {
+public class PrincipalLogueo extends JFrame implements Runnable{
 
 	private JPanel contentPane;
 	private JTextField textUsuario;
@@ -38,6 +41,10 @@ public class PrincipalLogueo extends JFrame {
 	private JTextField txtFechaSistema;
 	private JTextField txtFechaUltCierre;
 	private JTextField txtEstadoCierre;
+	private JLabel lblHora;
+	String hora,minutos,segundos,ampm;
+	Calendar calendario;    
+	Thread h1;
 
 	/**
 	 * Launch the application.
@@ -60,7 +67,10 @@ public class PrincipalLogueo extends JFrame {
 	 */
 	public PrincipalLogueo() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 329);
+		setBounds(0,0, 450, 361);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 450, 361);
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -102,6 +112,13 @@ public class PrincipalLogueo extends JFrame {
 				char[] clave = jpassClave.getPassword();
 				String claveFinal = new String(clave);
 				String usuario = textUsuario.getText();
+				//Incluimos una validación de si el usuario y lave son vacíos se ingresa con un usuario genérico CAJA
+				if(usuario.equals(new String("")) && claveFinal.equals(new String("")))
+				{
+					//Se asignan las variables para poder ingresar y validar en la aplicación
+					usuario = "caja";
+					claveFinal = "caja";
+				}
 				Usuario objUsuario;
 				if(usuario.equals(""))
 				{
@@ -150,8 +167,8 @@ public class PrincipalLogueo extends JFrame {
 							ventPrincipal.setVisible(true);
 						}else if(objUsuario.getTipoInicio().equals("Maestro Pedidos"))
 						{
-							VentPedTomarPedidos ventPrincipal = new VentPedTomarPedidos();
-							ventPrincipal.setVisible(true);
+							VentPedTransaccional transacciones = new VentPedTransaccional();
+							transacciones.setVisible(true);
 						}else if(objUsuario.getTipoInicio().equals("Comanda Pedidos"))
 						{
 							VentPedComandaPedidos ventPrincipal = new VentPedComandaPedidos();
@@ -167,11 +184,11 @@ public class PrincipalLogueo extends JFrame {
 				}
 			}
 		});
-		btnAutenticar.setBounds(68, 258, 115, 24);
+		btnAutenticar.setBounds(64, 288, 115, 24);
 		contentPane.add(btnAutenticar);
 		
 		JButton btnCancelar = new JButton("Cancelar");
-		btnCancelar.setBounds(249, 259, 111, 23);
+		btnCancelar.setBounds(247, 289, 111, 23);
 		contentPane.add(btnCancelar);
 		
 		JLabel lblImagen = new JLabel("");
@@ -211,6 +228,11 @@ public class PrincipalLogueo extends JFrame {
 		txtEstadoCierre.setBounds(20, 227, 404, 20);
 		contentPane.add(txtEstadoCierre);
 		txtEstadoCierre.setColumns(10);
+		
+		lblHora = new JLabel("");
+		lblHora.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblHora.setBounds(133, 258, 153, 19);
+		contentPane.add(lblHora);
 		if(estaAperturado)
 		{
 			txtEstadoCierre.setText("El día en cuestión ya se encuentra abierto.");
@@ -218,8 +240,37 @@ public class PrincipalLogueo extends JFrame {
 		{
 			txtEstadoCierre.setText("El día en cuestión no se encuentra abierto.");
 		}
+		h1 = new Thread(this);
+		h1.start();
 	}
 	
+	public void run(){
+		 Thread ct = Thread.currentThread();
+		 while(ct == h1) {   
+		  calcula();
+		  lblHora.setText(hora + ":" + minutos + ":" + segundos + " "+ampm);
+		  try {
+		   Thread.sleep(1000);
+		  }catch(InterruptedException e) {}
+		 }
+		}
 	
+	public void calcula () {        
+			Calendar calendario = new GregorianCalendar();
+			Date fechaHoraActual = new Date();
+	
+	
+			calendario.setTime(fechaHoraActual);
+			ampm = calendario.get(Calendar.AM_PM)==Calendar.AM?"AM":"PM";
+	
+			if(ampm.equals("PM")){
+				int h = calendario.get(Calendar.HOUR_OF_DAY)-12;
+				hora = h>9?""+h:"0"+h;
+			}else{
+				hora = calendario.get(Calendar.HOUR_OF_DAY)>9?""+calendario.get(Calendar.HOUR_OF_DAY):"0"+calendario.get(Calendar.HOUR_OF_DAY);            
+			}
+			minutos = calendario.get(Calendar.MINUTE)>9?""+calendario.get(Calendar.MINUTE):"0"+calendario.get(Calendar.MINUTE);
+			segundos = calendario.get(Calendar.SECOND)>9?""+calendario.get(Calendar.SECOND):"0"+calendario.get(Calendar.SECOND); 
+		}
 }
 	

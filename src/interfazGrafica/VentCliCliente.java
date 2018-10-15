@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.MaskFormatter;
 
 import capaControlador.ClienteCtrl;
 import capaControlador.ParametrosDireccionCtrl;
@@ -23,11 +24,23 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JDesktopPane;
+import javax.swing.JFormattedTextField;
+
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import javax.swing.JTextArea;
 
+
+/**
+ * Clase que tiene como objetivo la fijación de un cliente existente o la creación de un nuevo.
+ * @author JuanDavid
+ *
+ */
 public class VentCliCliente extends JFrame {
 
+	/**
+	 * Definición de todas las variables globales.
+	 */
 	private JPanel PanelContenedor;
 	private JTextField textIdCliente;
 	private JTextField textNombre;
@@ -35,7 +48,7 @@ public class VentCliCliente extends JFrame {
 	private JTextField textCompania;
 	private JComboBox comboMunicipio;
 	private JLabel lblTelfono;
-	private JTextField textTelefono;
+	private JFormattedTextField textTelefono;
 	private JComboBox comboNomenclatura;
 	private JTextField textNumNomen1;
 	private JLabel label;
@@ -45,9 +58,9 @@ public class VentCliCliente extends JFrame {
 	private JLabel lblNewLzabel;
 	private JTextField textZona;
 	private JLabel lblObservacin;
-	private JTextField textObservacion;
 	private JButton btnBuscar;
 	private JButton btnSeleccionar;
+	private JTextArea textObservacion;
 	private VentCliBuscarCliente ventBusCliente;
 	private int  idCliente = 0;
 
@@ -67,15 +80,19 @@ public class VentCliCliente extends JFrame {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
+/**
+ * Método constructor de la clase que se encarga de cargar la información del cliente en la pantalla de Clientes
+ * @param idClien
+ */
 	public VentCliCliente(int idClien) {
 		
 		idCliente = idClien;
 		setTitle("VENTANA DE CLIENTES");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 692, 531);
+		setBounds(0,0, 692, 531);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 692, 531);
 		PanelContenedor = new JPanel();
 		
 		PanelContenedor.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -83,22 +100,12 @@ public class VentCliCliente extends JFrame {
 		PanelContenedor.setLayout(null);
 		
 		JTabbedPane tabbedPaneCliente = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPaneCliente.setBounds(62, 11, 529, 361);
+		tabbedPaneCliente.setBounds(62, 11, 529, 390);
 		PanelContenedor.add(tabbedPaneCliente);
 		
 		JPanel panelInfoBasica = new JPanel();
 		tabbedPaneCliente.addTab("Información Clientes", null, panelInfoBasica, null);
 		panelInfoBasica.setLayout(null);
-		
-		JLabel lblIdCliente = new JLabel("Id Cliente");
-		lblIdCliente.setBounds(38, 11, 116, 14);
-		panelInfoBasica.add(lblIdCliente);
-		
-		textIdCliente = new JTextField();
-		textIdCliente.setEditable(false);
-		textIdCliente.setBounds(167, 8, 205, 20);
-		panelInfoBasica.add(textIdCliente);
-		textIdCliente.setColumns(10);
 		
 		JLabel lblNombre = new JLabel("Nombre");
 		lblNombre.setBounds(38, 61, 116, 14);
@@ -107,7 +114,7 @@ public class VentCliCliente extends JFrame {
 		textNombre = new JTextField();
 		textNombre.setBounds(167, 58, 205, 20);
 		panelInfoBasica.add(textNombre);
-		textNombre.setColumns(10);
+		textNombre.setColumns(100);
 		
 		JLabel lblApellido = new JLabel("Apellido");
 		lblApellido.setBounds(38, 86, 116, 14);
@@ -116,7 +123,7 @@ public class VentCliCliente extends JFrame {
 		textApellido = new JTextField();
 		textApellido.setBounds(166, 83, 206, 20);
 		panelInfoBasica.add(textApellido);
-		textApellido.setColumns(10);
+		textApellido.setColumns(100);
 		
 		JLabel lblNombreCompania = new JLabel("Nombre Compa\u00F1ia");
 		lblNombreCompania.setBounds(38, 111, 116, 14);
@@ -125,7 +132,7 @@ public class VentCliCliente extends JFrame {
 		textCompania = new JTextField();
 		textCompania.setBounds(167, 108, 205, 20);
 		panelInfoBasica.add(textCompania);
-		textCompania.setColumns(10);
+		textCompania.setColumns(100);
 		
 		JLabel lblMunicipio = new JLabel("Municipio");
 		lblMunicipio.setBounds(38, 136, 46, 14);
@@ -139,11 +146,26 @@ public class VentCliCliente extends JFrame {
 		lblTelfono.setBounds(38, 36, 116, 14);
 		panelInfoBasica.add(lblTelfono);
 		
-		textTelefono = new JTextField();
+			
+		/**
+		 * Se realiza la creación del formato para el campo de teléfono
+		 */
+		MaskFormatter mascTel = new MaskFormatter();;
+		try
+		{
+		   mascTel = new MaskFormatter("##########");
+		   
+		}
+		catch (Exception e)
+		{
+		   
+		}
+		
+		textTelefono= new JFormattedTextField(mascTel);
 		textTelefono.setBounds(167, 33, 205, 20);
 		panelInfoBasica.add(textTelefono);
 		textTelefono.setColumns(10);
-		
+		   
 		comboNomenclatura = new JComboBox();
 		comboNomenclatura.setBounds(26, 185, 90, 20);
 		panelInfoBasica.add(comboNomenclatura);
@@ -178,21 +200,21 @@ public class VentCliCliente extends JFrame {
 		textZona = new JTextField();
 		textZona.setBounds(167, 249, 264, 20);
 		panelInfoBasica.add(textZona);
-		textZona.setColumns(10);
+		textZona.setColumns(100);
 		
 		lblObservacin = new JLabel("Observaci\u00F3n");
 		lblObservacin.setBounds(38, 294, 78, 14);
 		panelInfoBasica.add(lblObservacin);
 		
-		textObservacion = new JTextField();
-		textObservacion.setBounds(167, 291, 264, 20);
-		panelInfoBasica.add(textObservacion);
-		textObservacion.setColumns(10);
-		
 		btnBuscar = new JButton("Buscar");
 		
 		btnBuscar.setBounds(397, 32, 89, 23);
 		panelInfoBasica.add(btnBuscar);
+		
+		textObservacion = new JTextArea();
+		textObservacion.setLineWrap(true);
+		textObservacion.setBounds(167, 294, 264, 57);
+		panelInfoBasica.add(textObservacion);
 		
 		btnSeleccionar = new JButton("Seleccionar");
 		btnSeleccionar.addActionListener(new ActionListener() {
@@ -205,21 +227,75 @@ public class VentCliCliente extends JFrame {
 				dispose();
 			}
 		});
-		btnSeleccionar.setBounds(130, 420, 116, 23);
+		btnSeleccionar.setBounds(149, 423, 133, 29);
 		PanelContenedor.add(btnSeleccionar);
 		
-		//JDesktopPane desktopPaneCliente = new JDesktopPane();
-		//desktopPaneCliente.setBounds(0, 0, 666, 482);
-		//PanelContenedor.add(desktopPaneCliente);
+		JButton btnCrearCliente = new JButton("Crear Cliente");
+		btnCrearCliente.addActionListener(new ActionListener() {
+			/**
+			 * Método que define la acción para la creación de un cliente en el sistema
+			 */
+			public void actionPerformed(ActionEvent arg0) {
+				String telefono = textTelefono.getText();
+				String nombre = textNombre.getText();
+				String apellido = textApellido.getText();
+				String compania = textCompania.getText();
+				String numNomen1 = textNumNomen1.getText();
+				String numNomen2 = textNumNomen2.getText();
+				String num3 = textNum3.getText();
+				String zona = textZona.getText(); 
+				String observacion = textObservacion.getText();
+				observacion = observacion.substring(0, 200);
+				int idMunicipio = ((Municipio)comboMunicipio.getSelectedItem()).getIdmunicipio();
+				int idNomemclatura = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getIdnomemclatura();
+				Cliente crearCliente = new Cliente(0, telefono, nombre, apellido, compania, "", "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "");
+				ClienteCtrl clienteCtrl = new ClienteCtrl();
+				int idCliIns = clienteCtrl.insertarCliente(crearCliente);
+				if(idCliIns > 0)
+				{
+					JOptionPane.showMessageDialog(null, "El cliente fue ingresado correctamente " , "Ingreso de Cliente ", JOptionPane.OK_OPTION);
+//					textIdCliente.setText("");
+//					textTelefono.setText("");
+//					textNombre.setText("");
+//					textApellido.setText("");
+//					textCompania.setText("");
+//					textNumNomen1.setText("");
+//					textNumNomen2.setText("");
+//					textNum3.setText("");
+//					textZona.setText("");
+//					textObservacionon.setText("");
+//					comboMunicipio.setSelectedIndex(0);
+//					comboNomenclatura.setSelectedIndex(0);
+					idCliente = idCliIns;
+					textIdCliente.setText(Integer.toString(idCliIns));
+				}
+			}
+		});
+		btnCrearCliente.setBounds(337, 423, 133, 29);
+		PanelContenedor.add(btnCrearCliente);
+		
+		JLabel lblIdCliente = new JLabel("Id Cliente");
+		lblIdCliente.setBounds(10, 465, 67, 14);
+		PanelContenedor.add(lblIdCliente);
+		
+		textIdCliente = new JTextField();
+		textIdCliente.setBounds(62, 462, 67, 20);
+		PanelContenedor.add(textIdCliente);
+		textIdCliente.setEditable(false);
+		textIdCliente.setColumns(10);
 		
 		btnBuscar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
-				String telefono = textTelefono.getText().trim();
-				System.out.println(telefono + "esto fue");
-				if(telefono.equals(new String("")))
+				/**
+				 * Capturamos el valor del JTextField con formato
+				 */
+				String telefono;
+				try
 				{
-					JOptionPane.showMessageDialog(null, "Se debe de ingresar información el campo teléfono para poder realizar la búsqueda " , "Búsqueda por teléfono", JOptionPane.OK_OPTION);
+					telefono = textTelefono.getValue().toString();
+				}catch(Exception ex)
+				{
+					JOptionPane.showMessageDialog(null, "El campo telefono es númerico de 10 posiciones " , "Error en campo teléfono", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				ventBusCliente = new VentCliBuscarCliente(telefono);
@@ -229,12 +305,17 @@ public class VentCliCliente extends JFrame {
 		});
 		initComboBoxMunicipios();
 		initcomboNomenclatura();
+		/**
+		 * Se realiza la verificación con base en el idCliente recibido como parámetro en caso de recibirlo en cero,podemos
+		 * crear un nuevo cliente, sino es así, es porque estamos asignando y modificando uno
+		 */
 		if (idCliente == 0)
 		{
-			
+			btnCrearCliente.setEnabled(true);
 		}
 		else
 		{
+			btnCrearCliente.setEnabled(false);
 			ClienteCtrl cliCtrl = new ClienteCtrl();
 			Cliente clienteConsultado =  cliCtrl.obtenerClientePorId(idCliente);
 			textIdCliente.setText(Integer.toString(clienteConsultado.getIdcliente()));
@@ -266,6 +347,9 @@ public class VentCliCliente extends JFrame {
 		}
 	}
 	
+	/**
+	 * Método de capa gráfica que se encarga de la inicialización del combo con los municipios
+	 */
 	public void initComboBoxMunicipios()
 	{
 		ParametrosDireccionCtrl parCtrl = new ParametrosDireccionCtrl();
@@ -277,7 +361,9 @@ public class VentCliCliente extends JFrame {
 		}
 	}
 	
-	
+	/**
+	 * Método de capa gráfica que se encarga de la inicialización del combo de nomemclaturas de dirección
+	 */
 	public void initcomboNomenclatura()
 	{
 		ParametrosDireccionCtrl parCtrl = new ParametrosDireccionCtrl();
@@ -288,5 +374,4 @@ public class VentCliCliente extends JFrame {
 			comboNomenclatura.addItem(fila);
 		}
 	}
-	
 }

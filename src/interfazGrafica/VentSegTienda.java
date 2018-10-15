@@ -76,6 +76,11 @@ public class VentSegTienda extends JDialog {
 		setTitle("ADMINISTRACI\u00D3N DE PAR\u00C1METROS DE TIENDA");
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(0,0, 745, 526);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 745, 526);
+
 		setBounds(100, 100, 745, 526);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

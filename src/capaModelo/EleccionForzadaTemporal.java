@@ -10,9 +10,16 @@ public class EleccionForzadaTemporal {
 	private int idProducto;
 	private int numeroPregunta;
 	private int numeroMitad;
+	private String descProducto;
 	
 	
 	
+	public String getDescProducto() {
+		return descProducto;
+	}
+	public void setDescProducto(String descProducto) {
+		this.descProducto = descProducto;
+	}
 	public int getNumeroMitad() {
 		return numeroMitad;
 	}

@@ -2,30 +2,44 @@ package interfazGrafica;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.Image;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
+import renderTable.CellRenderIngInventario;
+import renderTable.CellRenderTransaccional;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.awt.event.ActionEvent;
+import javax.swing.JLabel;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-public class VentInvInventarios extends JFrame {
+public class VentInvInventarios extends JDialog {
 
 	private JPanel contentPaneInventario;
 	private JTable tableItemsInv;
 	private JButton btnIngresarInventario;
 	private JButton btnRealizarPedidoEspecial;
 	private JButton btnRealizarVarianzaCierre;
+	private JLabel lblImagen;
 
 	/**
 	 * Launch the application.
@@ -34,7 +48,7 @@ public class VentInvInventarios extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentInvInventarios frame = new VentInvInventarios();
+					VentInvInventarios frame = new VentInvInventarios(null, true);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -46,10 +60,32 @@ public class VentInvInventarios extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentInvInventarios() {
+	public VentInvInventarios(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
+		PedidoCtrl pedCtrl = new PedidoCtrl();
+		FechaSistema fechSistema = pedCtrl.obtenerFechasSistema();
+		String fecha = fechSistema.getFechaApertura();
+		/**
+		 * Define acciones para cuando se active de nuevo la ventana se refresque el contenido de inventarios
+		 */
+		addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				pintarResumenInventario(fecha);
+			}
+		});
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowActivated(WindowEvent arg0) {
+				pintarResumenInventario(fecha);
+			}
+		});
 		setTitle("VENTANA INVENTARIOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 774, 571);
+		setBounds(0,0, 774, 571);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 774, 571);
 		contentPaneInventario = new JPanel();
 		contentPaneInventario.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPaneInventario);
@@ -69,7 +105,7 @@ public class VentInvInventarios extends JFrame {
 		btnAdministrarItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				VentCRUDItemInventario itemInv = new VentCRUDItemInventario();
+				VentInvCRUDItemInventario itemInv = new VentInvCRUDItemInventario(null, true);
 				itemInv.setVisible(true);
 			}
 		});
@@ -79,7 +115,7 @@ public class VentInvInventarios extends JFrame {
 		btnIngresarInventario = new JButton("Ingresar Inventario");
 		btnIngresarInventario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentInvIngresarInventario ingInventario = new VentInvIngresarInventario();
+				VentInvIngresarInventario ingInventario = new VentInvIngresarInventario(null, true);
 				ingInventario.setVisible(true);
 			}
 		});
@@ -90,7 +126,7 @@ public class VentInvInventarios extends JFrame {
 		btnRetirarInventario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				VentInvRetirarInventario ingInventario = new VentInvRetirarInventario();
+				VentInvRetirarInventario ingInventario = new VentInvRetirarInventario(null, true);
 				ingInventario.setVisible(true);
 			}
 		});
@@ -100,7 +136,7 @@ public class VentInvInventarios extends JFrame {
 		btnRealizarPedidoEspecial = new JButton("Realizar Pedido Especial");
 		btnRealizarPedidoEspecial.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentInvPedidoEspecial pedEspecial = new VentInvPedidoEspecial();
+				VentInvPedidoEspecial pedEspecial = new VentInvPedidoEspecial(null, true);
 				pedEspecial.setVisible(true);
 			}
 		});
@@ -110,15 +146,20 @@ public class VentInvInventarios extends JFrame {
 		btnRealizarVarianzaCierre = new JButton("Realizar Varianza Cierre");
 		btnRealizarVarianzaCierre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentIngresarVarianza ingVarianza = new VentIngresarVarianza();
+				VentIngresarVarianza ingVarianza = new VentIngresarVarianza(null, true);
 				ingVarianza.setVisible(true);
 			}
 		});
 		btnRealizarVarianzaCierre.setBounds(10, 292, 191, 61);
 		contentPaneInventario.add(btnRealizarVarianzaCierre);
-		PedidoCtrl pedCtrl = new PedidoCtrl();
-		FechaSistema fechSistema = pedCtrl.obtenerFechasSistema();
-		String fecha = fechSistema.getFechaApertura();
+		
+		lblImagen = new JLabel("");
+		lblImagen.setBounds(328, 295, 198, 126);
+		ImageIcon icon = new ImageIcon(getClass().getResource("/imagenes/LogoPizzaAmericana.png"));
+		Image imagen = icon.getImage();
+		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
+		lblImagen.setIcon(iconoEscalado);
+		contentPaneInventario.add(lblImagen);
 		pintarResumenInventario(fecha);
 	}
 	
@@ -146,5 +187,14 @@ public class VentInvInventarios extends JFrame {
 			modeloItemResumen.addRow(fila);
 		}
 		tableItemsInv.setModel(modeloItemResumen);
+		setCellRender(tableItemsInv);
 	}
+	
+	public void setCellRender(JTable table) {
+        Enumeration<TableColumn> en = table.getColumnModel().getColumns();
+        while (en.hasMoreElements()) {
+            TableColumn tc = en.nextElement();
+            tc.setCellRenderer(new CellRenderIngInventario());
+        }
+    }
 }

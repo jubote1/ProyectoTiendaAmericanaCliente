@@ -25,6 +25,45 @@ public class ReportesDAO {
 		AbstractJasperReports.createReport(conexion.obtenerConexionBDLocal(), rutaReporte, parametro, true);
 		AbstractJasperReports.showViewer();
 	}
+	
+	public static void generarReporteInventarioCon(String rutaReporte, String fecha)
+	{
+		//Acción para la generación de reporte general de ventas
+		Map parametro = new HashMap();
+		parametro.put("fecha", fecha);
+		ConexionBaseDatos conexion = new ConexionBaseDatos();
+		AbstractJasperReports.createReport(conexion.obtenerConexionBDLocal(), rutaReporte, parametro, true);
+		AbstractJasperReports.showViewer();
+	}
 
+	public static void generarReporteInventarioAct(String rutaReporte)
+	{
+		//Acción para la generación de reporte general de ventas
+		Map parametro = new HashMap();
+		ConexionBaseDatos conexion = new ConexionBaseDatos();
+		AbstractJasperReports.createReport(conexion.obtenerConexionBDLocal(), rutaReporte, parametro, true);
+		AbstractJasperReports.showViewer();
+	}
+	
+	public static void generarReporteCaja(String rutaReporte, String fecha)
+	{
+		//Acción para la generación de reporte general de ventas
+		Map parametro = new HashMap();
+		parametro.put("fecha", fecha);
+		ConexionBaseDatos conexion = new ConexionBaseDatos();
+		AbstractJasperReports.createReport(conexion.obtenerConexionBDLocal(), rutaReporte, parametro, true);
+		AbstractJasperReports.showViewer();
+	}
 
+	public static void generarReporteCajaDetallado(String rutaReporte, String fecha)
+	{
+		//Acción para la generación de reporte general de ventas
+		Map parametro = new HashMap();
+		parametro.put("fecha", fecha);
+		ConexionBaseDatos conexion = new ConexionBaseDatos();
+		AbstractJasperReports.createReport(conexion.obtenerConexionBDLocal(), rutaReporte, parametro, true);
+		AbstractJasperReports.showViewer();
+	}
+
+	
 }

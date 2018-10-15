@@ -38,7 +38,10 @@ public class VentPedConfirmarPedido extends JDialog {
 	public VentPedConfirmarPedido(String nombreCliente, double totalPed, double totalDesc, int numeroPed, javax.swing.JFrame parent, boolean modal) {
 		super(parent, modal);
 		setTitle("CONFIRMAR PEDIDO");
-		setBounds(100, 100, 651, 418);
+		setBounds(0,0, 651, 418);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 651, 418);
 		getContentPane().setLayout(new BorderLayout());
 		panelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(panelPrincipal, BorderLayout.CENTER);

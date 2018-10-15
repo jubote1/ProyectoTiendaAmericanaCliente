@@ -50,11 +50,11 @@ public class VentCliBuscarCliente extends JFrame {
 	public VentCliBuscarCliente(String Telefono) {
 		idCliente = 0;
 		setTitle("BUSCAR CLIENTE");
-		setBounds(100, 100, 450, 300);
+		setBounds(0,0, 450, 300);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 450, 300);
 		getContentPane().setLayout(null);
-		
-		
-		
 		JButton btnSeleccionar = new JButton("Seleccionar");
 		
 		btnSeleccionar.setBounds(66, 176, 89, 23);

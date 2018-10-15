@@ -152,7 +152,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnItemsInventario = new JButton("Items Inventario");
 		btnItemsInventario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCRUDItemInventario itemInv = new VentCRUDItemInventario();
+				VentInvCRUDItemInventario itemInv = new VentInvCRUDItemInventario(null, true);
 				itemInv.setVisible(true);
 			}
 		});
@@ -162,7 +162,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnNewButton = new JButton("Administraci\u00F3n Inventarios");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentInvInventarios inv = new VentInvInventarios();
+				VentInvInventarios inv = new VentInvInventarios(null, true);
 				inv.setVisible(true);
 			}
 		});
@@ -210,7 +210,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnFinalizarDa = new JButton("Finalizar D\u00EDa");
 		btnFinalizarDa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentPedFinalizarDia finDia = new VentPedFinalizarDia();
+				VentPedFinalizarDia finDia = new VentPedFinalizarDia(null, true);
 				finDia.setVisible(true);
 			}
 		});
@@ -220,6 +220,7 @@ public class VentPrincipal extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				VentPedTomarPedidos tomaPedido = new VentPedTomarPedidos();
 				tomaPedido.setVisible(true);
+				dispose();
 			}
 		});
 		btnTomaPedidos.setBounds(539, 269, 188, 48);
@@ -231,6 +232,7 @@ public class VentPrincipal extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				VentPedTransaccional pedTrans = new VentPedTransaccional();
 				pedTrans.setVisible(true);
+				dispose();
 			}
 		});
 		
@@ -249,6 +251,7 @@ public class VentPrincipal extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				VentPedComandaPedidos ventComPed = new VentPedComandaPedidos();
 				ventComPed.setVisible(true);
+				dispose();
 			}
 		});
 		PanelPedidos.add(btnComandaDePedidos);

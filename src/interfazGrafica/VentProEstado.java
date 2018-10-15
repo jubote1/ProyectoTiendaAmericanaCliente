@@ -103,7 +103,10 @@ public class VentProEstado extends JFrame {
 	public VentProEstado() {
 		setTitle("MAESTRO DE ESTADOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 903, 617);
+		setBounds(0,0, 903, 617);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 903, 617);
 		panelGeneral = new JPanel();
 		panelGeneral.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(panelGeneral);

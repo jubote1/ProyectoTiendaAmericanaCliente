@@ -86,7 +86,7 @@ public class PedidoDAO {
 			double valorTotal = 0;
 			double valorImpuesto = 0;
 			Statement stm = con1.createStatement();
-			String consulta = "select sum(valorTotal), sum(valorimpuesto) from detalle_pedido where idpedidotienda = " + idpedido + " and cantidad >= 0 " ; 
+			String consulta = "select sum(valorTotal), sum(valorimpuesto) from detalle_pedido where idpedidotienda = " + idpedido + " and cantidad >= 0  and idmotivoanulacion IS NULL"; 
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
@@ -124,7 +124,7 @@ public class PedidoDAO {
 		{
 			
 			Statement stm = con1.createStatement();
-			String consulta = "select sum(valorTotal) from detalle_pedido where idpedidotienda = " + idpedido + " and cantidad >= 0 " ; 
+			String consulta = "select sum(valorTotal) from detalle_pedido where idpedidotienda = " + idpedido + " and cantidad >= 0 and idmotivoanulacion IS NULL" ; 
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
@@ -155,7 +155,7 @@ public class PedidoDAO {
 	 * @param idEstadoPosterior
 	 * @return
 	 */
-	public static boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior)
+	public static boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -164,7 +164,7 @@ public class PedidoDAO {
 		{
 			double valorTotal = 0;
 			Statement stm = con1.createStatement();
-			String insert = "insert into cambios_estado_pedido (idpedidotienda, idestadoanterior, idestadoposterior) values (" + idPedido + " , " + idEstadoAnterior + " , " + idEstadoPosterior + ")" ; 
+			String insert = "insert into cambios_estado_pedido (idpedidotienda, idestadoanterior, idestadoposterior, usuario) values (" + idPedido + " , " + idEstadoAnterior + " , " + idEstadoPosterior + " , '" + usuario + "')" ; 
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			String update = "update pedido set idestado =" + idEstadoPosterior + " where idpedidotienda= " + idPedido ;
@@ -217,7 +217,7 @@ public class PedidoDAO {
 		
 	}
 	
-	public static boolean anularPedido(int idPedido)
+	public static boolean anularPedido(int idPedido, int idMotivoAnulacion)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -226,7 +226,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update pedido set total_neto = total_neto*-1  where idpedidotienda = " + idPedido ;
+			String update = "update pedido set total_neto = 0 , idmotivoanulacion = " + idMotivoAnulacion + " where idpedidotienda = " + idPedido ;
 			logger.info(update);
 			stm.executeUpdate(update);
 			stm.close();
@@ -248,7 +248,13 @@ public class PedidoDAO {
 	}
 	
 	
-	public static ArrayList obtenerPedidosTable(String fechaPedido)
+	/**
+	 * Método de capa DAO que retorna un arrayList todos los pedidos dada una fecha determinada, con este método se tiene
+	 * la base para la pantalla transaccional, incluye los pedidos que están en un estado final.
+	 * @param fechaPedido Se recibe como parámetro la fecha para consultar los pedidos.
+	 * @return Se retorna un ArrayList con todos los pedidos del sistema para el parámetro de fecha.
+	 */
+	public static ArrayList obtenerPedidosTableConFinales(String fechaPedido)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -289,7 +295,54 @@ public class PedidoDAO {
 	}
 	
 	/**
-	 * Método que permite retornar los pedidos del sistema de acuerdo a los parámetros de tipo de pedido y fecha
+	 * Método de capa DAO que retorna un arrayList todos los pedidos dada una fecha determinada, con este método se tiene
+	 * la base para la pantalla transaccional, se extraen los pedidos que están en un estado final
+	 * @param fechaPedido Se recibe como parámetro la fecha para consultar los pedidos.
+	 * @return Se retorna un ArrayList con todos los pedidos del sistema para el parámetro de fecha.
+	 */
+	public static ArrayList obtenerPedidosTable(String fechaPedido)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and d.estado_final <> 1 and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' order by a.fechainsercion desc";
+			logger.info(consulta);
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
+	/**
+	 * Método que permite retornar los pedidos del sistema de acuerdo a los parámetros de tipo de pedido y fecha, se excluyen 
+	 * los pedido que están en estado final
 	 * @param idTipoPedido valor para filtrar ciertos tipos de pedido dentro de la consulta
 	 * @param fechaPedido fecha de apertura para la cual se realiza el pedido
 	 * @return Se retornar un ArrayList con todos los pedidos que cumplen las condiciones indicadas
@@ -304,7 +357,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idtipopedido = " + idTipoPedido + " and fechapedido = '" + fechaPedido + "' order by a.fechainsercion desc";
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and d.estado_final <> 1 and a.idtipopedido = c.idtipopedido and a.idtipopedido = " + idTipoPedido + " and fechapedido = '" + fechaPedido + "' order by a.fechainsercion desc";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
@@ -385,7 +438,7 @@ public class PedidoDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		Cliente cliente = new Cliente(0, "", "", "");
+		Cliente cliente = new Cliente();
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -401,7 +454,7 @@ public class PedidoDAO {
 				nombre = rs.getString("nombre");
 				apellido = rs.getString("apellido");
 				telefono = rs.getString("telefono");
-				cliente = new Cliente(idCliente, nombre, apellido, telefono);
+				cliente = new Cliente(idCliente, telefono,nombre, apellido);
 			}
 			rs.close();
 			stm.close();
@@ -454,6 +507,12 @@ public class PedidoDAO {
 		
 	}
 	
+	/**
+	 * Método que sirve para la validación si hay pedidos en estados no finales, este método en la condición de base de datos
+	 * también valida que el pedid este anulado, pues en este caso puede quedar en un estado que no sea intermedio.
+	 * @param fecha Recibe una fecha determinada dado que se corre como parte de validación del cierre.
+	 * @return un valor booleano que indica un true si hay pedidos pendientes o un false en caso de no ser así.
+	 */
 	public static boolean validarEstadosFinalesPedido(String fecha)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -463,7 +522,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda from pedido a where a.fechapedido = '" + fecha + "' " 
+			String consulta = "select a.idpedidotienda from pedido a where a.idmotivoanulacion IS NULL and a.fechapedido = '" + fecha + "' " 
 			+ "and a.idestado in(select b.idestado from estado b  where b.estado_final <> 1)" ;
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
@@ -489,6 +548,11 @@ public class PedidoDAO {
 		
 	}
 	
+	/**
+	 * Método que retorna los totales por tipo de pedido de acuerdo a las facturas, para informe antes de cierre.
+	 * @param fechaPedido Se recibe como parámetro la fecha del sistema.
+	 * @return se retornar un ArrayList con los totales por tipo de pedido
+	 */
 	public static ArrayList obtenerTotalesPedidosPorTipo(String fechaPedido)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -499,7 +563,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select b.descripcion, sum(a.total_neto) from pedido a , tipo_pedido b where a.idtipopedido = b.idtipopedido and fechapedido = '" + fechaPedido +"' group by b.descripcion ";
+			String consulta = "select b.descripcion, sum(a.total_neto) from pedido a , tipo_pedido b where a.idmotivoanulacion IS NULL and  a.idtipopedido = b.idtipopedido and fechapedido = '" + fechaPedido +"' group by b.descripcion ";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
@@ -531,6 +595,13 @@ public class PedidoDAO {
 		
 	}
 	
+	/**
+	 * Método que sirve como base para desplegar los pedidos qeu se ven en la comanda de pedidos, cabe destacar que 
+	 * se filtran los pedidos que estén eliminados, dado que estos en caso de que sean elimados no se deben de ver.
+	 * @param fechaPedido
+	 * @param idTipoEmpleado
+	 * @return
+	 */
 	public static ArrayList obtenerPedidosVentanaComanda(String fechaPedido, int idTipoEmpleado)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -541,7 +612,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
@@ -581,7 +652,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido + " and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido + " and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();

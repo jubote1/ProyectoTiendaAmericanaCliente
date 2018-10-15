@@ -231,7 +231,10 @@ public class VentCRUDProducto extends JFrame {
 		setTitle("MAESTRO DE ITEMS DE PRODUCTOS");
 		idProducto = 0;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 833, 646);
+		setBounds(0,0, 833, 646);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 833, 646);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -787,6 +790,8 @@ public class VentCRUDProducto extends JFrame {
 				parCtrl.insertarItemInventarioProducto(impItemProducto);
 				DefaultTableModel modeloItem = pintarItemsInventarioProducto();
 				//tableImpuestos.setModel(modeloImpuesto);
+				textCantidadItem.setText("");
+				comboBoxItem.setSelectedIndex(0);
 				tableItemsInventario.setModel(modeloItem);
 			}
 		});

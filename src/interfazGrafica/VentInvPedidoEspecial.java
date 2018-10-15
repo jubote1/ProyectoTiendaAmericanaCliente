@@ -23,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import java.awt.Font;
+import java.awt.Image;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JTextField;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -39,7 +42,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputMethodListener;
 import java.awt.event.InputMethodEvent;
 
-public class VentInvPedidoEspecial extends JFrame {
+public class VentInvPedidoEspecial extends JDialog {
 
 	private JPanel contentPanePrincipal;
 	private JTextField txtCantidad;
@@ -56,7 +59,7 @@ public class VentInvPedidoEspecial extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentInvPedidoEspecial frame = new VentInvPedidoEspecial();
+					VentInvPedidoEspecial frame = new VentInvPedidoEspecial(null, true);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -68,38 +71,42 @@ public class VentInvPedidoEspecial extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentInvPedidoEspecial() {
+	public VentInvPedidoEspecial(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("PEDIDOS ESPECIALES");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 800, 476);
+		setBounds(0,0, 800, 476);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 800, 476);
 		contentPanePrincipal = new JPanel();
 		contentPanePrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPanePrincipal);
 		contentPanePrincipal.setLayout(null);
 		
 		fechaSolPedido = new JDateChooser();
-		fechaSolPedido.setBounds(409, 53, 142, 20);
+		fechaSolPedido.setBounds(314, 49, 142, 20);
 		contentPanePrincipal.add(fechaSolPedido);
 		
 		JLabel lblFechaSolicitud = new JLabel("Fecha Solicitud");
 		lblFechaSolicitud.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblFechaSolicitud.setBounds(174, 59, 136, 14);
+		lblFechaSolicitud.setBounds(79, 55, 136, 14);
 		contentPanePrincipal.add(lblFechaSolicitud);
 		
 		JLabel lblItemInventario = new JLabel("Item Inventario");
-		lblItemInventario.setBounds(174, 101, 108, 14);
+		lblItemInventario.setBounds(79, 97, 108, 14);
 		contentPanePrincipal.add(lblItemInventario);
 		
 		comboBoxItemInv = new JComboBox();
-		comboBoxItemInv.setBounds(409, 98, 171, 20);
+		comboBoxItemInv.setBounds(314, 94, 171, 20);
 		contentPanePrincipal.add(comboBoxItemInv);
 		
 		JLabel lblCantidad = new JLabel("Cantidad");
-		lblCantidad.setBounds(174, 141, 125, 14);
+		lblCantidad.setBounds(79, 137, 125, 14);
 		contentPanePrincipal.add(lblCantidad);
 		
 		txtCantidad = new JTextField();
-		txtCantidad.setBounds(409, 141, 171, 20);
+		txtCantidad.setBounds(314, 137, 171, 20);
 		contentPanePrincipal.add(txtCantidad);
 		txtCantidad.setColumns(10);
 		
@@ -148,7 +155,7 @@ public class VentInvPedidoEspecial extends JFrame {
 				}
 			}
 		});
-		btnRealizarSolicitud.setBounds(302, 188, 171, 23);
+		btnRealizarSolicitud.setBounds(207, 184, 171, 23);
 		contentPanePrincipal.add(btnRealizarSolicitud);
 		
 		JScrollPane scrollPaneSolicitudes = new JScrollPane();
@@ -218,6 +225,14 @@ public class VentInvPedidoEspecial extends JFrame {
 		//Con la fecha sistema llenamos los valores de los campos fecha como campos sugeridos
 		fechaSolPedido.setDate(datFechaSistema);
 		fechaConsultaSolicitudes.setDate(datFechaSistema);
+		
+		JLabel lblImagen = new JLabel("");
+		lblImagen.setBounds(543, 43, 198, 126);
+		ImageIcon icon = new ImageIcon(getClass().getResource("/imagenes/LogoPizzaAmericana.png"));
+		Image imagen = icon.getImage();
+		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
+		lblImagen.setIcon(iconoEscalado);
+		contentPanePrincipal.add(lblImagen);
 		initComboBoxItemInv();
 		String formato = "yyyy/MM/dd";
 		SimpleDateFormat sdf = new SimpleDateFormat(formato);

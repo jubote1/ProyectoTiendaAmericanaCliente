@@ -3,20 +3,26 @@ package interfazGrafica;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
 import capaModelo.ModificadorInventario;
+import renderTable.CellRenderIngInventario;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.ScrollPaneConstants;
@@ -24,9 +30,11 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import java.awt.Font;
+import java.awt.Image;
+
 import javax.swing.JTextField;
 
-public class VentInvRetirarInventario extends JFrame {
+public class VentInvRetirarInventario extends JDialog {
 
 	private JPanel contentPanePrincipal;
 	private JTable tableRetInventarios;
@@ -40,7 +48,7 @@ public class VentInvRetirarInventario extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentInvRetirarInventario frame = new VentInvRetirarInventario();
+					VentInvRetirarInventario frame = new VentInvRetirarInventario(null, true);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -52,10 +60,14 @@ public class VentInvRetirarInventario extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentInvRetirarInventario() {
+	public VentInvRetirarInventario(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("RETIRAR INVENTARIOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 800, 450);
+		setBounds(0,0, 800, 470);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 800, 470);
 		contentPanePrincipal = new JPanel();
 		contentPanePrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPanePrincipal);
@@ -70,16 +82,37 @@ public class VentInvRetirarInventario extends JFrame {
 		tableRetInventarios = new JTable();
 		scrollPaneIngInventarios.setColumnHeaderView(tableRetInventarios);
 		scrollPaneIngInventarios.setViewportView(tableRetInventarios);
-		DefaultTableModel modelo = pintarItemsInventario();
-		tableRetInventarios.setModel(modelo);
+		pintarItemsInventario();
+		
 		
 		JButton btnConfirmarRetiro = new JButton("Confirmar Retiro");
 		btnConfirmarRetiro.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//Recorre el jtable para ver si se modifico
+				//Realizamos la desactivación de la edición del JTable
+				if(tableRetInventarios.isEditing())
+				{
+					tableRetInventarios.getCellEditor().stopCellEditing();
+				}
+				//Definición de variables necesarias para el proceso
 				int idItem;
-				double cantidad;
 				int controladorIngreso = 0;
+				//Se defienen las variables cantidad de tipo string y double para capturar el valor 
+				double cantidad;
+				String strCantidad;
+				//Realizamos validación de los datos para verificar que si son números
+				for(int i = 0; i < tableRetInventarios.getRowCount(); i++)
+				{
+					strCantidad = (String)tableRetInventarios.getValueAt(i, 5);
+					try
+					{
+						cantidad = Double.parseDouble(strCantidad);
+					}catch(Exception e)
+					{
+						//En caso que se dispare la excepción arrojamos el mensaje de error y retornamos, no confitunarmos con el procesamiento.
+						JOptionPane.showMessageDialog(null, "Alguna de las cantidades no cumple con las características de número por favor corrija " , "Error Validación Datos", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+				}
 				for(int i = 0; i < tableRetInventarios.getRowCount(); i++)
 				{
 					//Capturamos el idItem	
@@ -106,7 +139,7 @@ public class VentInvRetirarInventario extends JFrame {
 					if(idRetiro  > 0)
 					{
 						JOptionPane.showMessageDialog(null, "El inventario " + idRetiro  + " fue retiroado correctamente." , "Retiro de Inventario", JOptionPane.INFORMATION_MESSAGE);
-						
+						dispose();
 					}
 					else
 					{
@@ -121,7 +154,7 @@ public class VentInvRetirarInventario extends JFrame {
 				}
 			}
 		});
-		btnConfirmarRetiro.setBounds(121, 319, 152, 37);
+		btnConfirmarRetiro.setBounds(80, 319, 152, 37);
 		contentPanePrincipal.add(btnConfirmarRetiro);
 		
 		JButton btnCancelar = new JButton("Cancelar");
@@ -131,7 +164,7 @@ public class VentInvRetirarInventario extends JFrame {
 				dispose();
 			}
 		});
-		btnCancelar.setBounds(478, 319, 146, 37);
+		btnCancelar.setBounds(382, 319, 146, 37);
 		contentPanePrincipal.add(btnCancelar);
 		
 		JLabel lblFechaRetiroInventario = new JLabel("FECHA RETIRO INVENTARIO");
@@ -143,7 +176,7 @@ public class VentInvRetirarInventario extends JFrame {
 		txtFechaInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtFechaInventario.setEnabled(false);
 		txtFechaInventario.setEditable(false);
-		txtFechaInventario.setBounds(429, 384, 135, 20);
+		txtFechaInventario.setBounds(382, 384, 135, 20);
 		contentPanePrincipal.add(txtFechaInventario);
 		txtFechaInventario.setColumns(10);
 		
@@ -152,9 +185,17 @@ public class VentInvRetirarInventario extends JFrame {
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
 		fechaSis = fecha.getFechaApertura();
 		txtFechaInventario.setText(fechaSis);
+		
+		JLabel lblImagen = new JLabel("");
+		lblImagen.setBounds(574, 306, 198, 126);
+		ImageIcon icon = new ImageIcon(getClass().getResource("/imagenes/LogoPizzaAmericana.png"));
+		Image imagen = icon.getImage();
+		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
+		lblImagen.setIcon(iconoEscalado);
+		contentPanePrincipal.add(lblImagen);
 	}
 	
-	public DefaultTableModel pintarItemsInventario()
+	public void pintarItemsInventario()
 	{
 		Object[] columnsName = new Object[6];
         
@@ -182,7 +223,15 @@ public class VentInvRetirarInventario extends JFrame {
 			String[] fila =(String[]) itemsIng.get(y);
 			modelo.addRow(fila);
 		}
-		return(modelo);
-		
+		tableRetInventarios.setModel(modelo);
+		setCellRender(tableRetInventarios);
 	}
+	
+	public void setCellRender(JTable table) {
+        Enumeration<TableColumn> en = table.getColumnModel().getColumns();
+        while (en.hasMoreElements()) {
+            TableColumn tc = en.nextElement();
+            tc.setCellRenderer(new CellRenderIngInventario());
+        }
+    }
 }

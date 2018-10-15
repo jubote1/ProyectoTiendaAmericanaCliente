@@ -80,22 +80,29 @@ public class TipoPedidoDAO {
 			String consulta = "select * from tipo_pedido order by valordefecto desc";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
-			TipoPedido tipoPedidoRet = new TipoPedido(0, "", false, "");
+			TipoPedido tipoPedidoRet = new TipoPedido(0, "", false, "", false);
 			int valDef = 0;
 			String descripcion = "";
 			boolean valorDefecto = false;
 			int idTipoPedido = 0;
 			String icono = "";
+			boolean esDomicilio = false;
+			int intEsDomi;
 			while(rs.next()){
 				idTipoPedido = rs.getInt("idtipopedido");
 				descripcion = rs.getString("descripcion");
 				valDef = rs.getInt("valordefecto");
 				icono = rs.getString("icono");
+				intEsDomi = rs.getInt("esdomicilio");
+				if(intEsDomi == 1)
+				{
+					esDomicilio = true;
+				}
 				if(valDef == 1)
 				{
 					valorDefecto = true;
 				}
-				tipoPedidoRet= new TipoPedido(idTipoPedido, descripcion, valorDefecto, icono);
+				tipoPedidoRet= new TipoPedido(idTipoPedido, descripcion, valorDefecto, icono, esDomicilio);
 				tiposPedido.add(tipoPedidoRet);
 			}
 			rs.close();
@@ -120,7 +127,7 @@ public class TipoPedidoDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		TipoPedido TipoPedidoRet = new TipoPedido(0, "", false, "");
+		TipoPedido TipoPedidoRet = new TipoPedido(0, "", false, "", false);
 		
 		try
 		{
@@ -132,17 +139,24 @@ public class TipoPedidoDAO {
 			String descripcion = "";
 			boolean valorDefecto = false;
 			String icono = "";
+			boolean esDomicilio = false;
+			int intEsDomi;
 			while(rs.next()){
 				descripcion = rs.getString("descripcion");
 				valDef = rs.getInt("valordefecto");
 				icono = rs.getString("icono");
+				intEsDomi = rs.getInt("esdomicilio");
+				if(intEsDomi == 1)
+				{
+					esDomicilio = true;
+				}
 				if(valDef == 1)
 				{
 					valorDefecto = true;
 				}
 				
 			}
-			TipoPedidoRet= new TipoPedido(idTipoPedido, descripcion, valorDefecto, icono);
+			TipoPedidoRet= new TipoPedido(idTipoPedido, descripcion, valorDefecto, icono, esDomicilio);
 			rs.close();
 			stm.close();
 			con1.close();
@@ -173,13 +187,18 @@ public class TipoPedidoDAO {
 		Connection con1 = con.obtenerConexionBDLocal();
 		try
 		{
+			int esDomi = 0;
 			int valDef = 0;
 			if(tipPed.isValorDefecto())
 			{
 				valDef = 1;
 			}
+			if(tipPed.isEsDomicilio())
+			{
+				esDomi = 1;
+			}
 			Statement stm = con1.createStatement();
-			String insert = "insert into tipo_pedido (descripcion, valordefecto) values ('" + tipPed.getDescripcion() + "' ," + valDef + ")"; 
+			String insert = "insert into tipo_pedido (descripcion, valordefecto, esdomicilio) values ('" + tipPed.getDescripcion() + "' ," + valDef + ","+ esDomi +")"; 
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
@@ -253,12 +272,17 @@ public class TipoPedidoDAO {
 		try
 		{
 			int valDef = 0;
+			int esDomi = 0;
 			if(tipPedidoEditar.isValorDefecto())
 			{
 				valDef = 1;
 			}
+			if(tipPedidoEditar.isEsDomicilio())
+			{
+				esDomi = 1;
+			}
 			Statement stm = con1.createStatement();
-			String update = "update tipo_pedido set descripcion = '" + tipPedidoEditar.getDescripcion() + "' , valordefecto =" + valDef + "  where idtipopedido = " + tipPedidoEditar.getIdTipoPedido() ; 
+			String update = "update tipo_pedido set descripcion = '" + tipPedidoEditar.getDescripcion() + "' , valordefecto =" + valDef + " , esdomicilio = " + esDomi + " where idtipopedido = " + tipPedidoEditar.getIdTipoPedido() ; 
 			logger.info(update);
 			stm.executeUpdate(update);
 			

@@ -7,6 +7,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -42,6 +43,7 @@ import capaControlador.EmpleadoCtrl;
 import capaControlador.PedidoCtrl;
 import capaControlador.ReportesCtrl;
 import capaModelo.Cliente;
+import capaModelo.FechaSistema;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
 import renderTable.CellRenderTransaccional;
@@ -49,14 +51,19 @@ import renderTable.CellRenderTransaccional;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import java.awt.Font;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 
-public class VentPedComandaPedidos extends JFrame {
+public class VentPedComandaPedidos extends JFrame implements Runnable{
 
 	private JPanel contentPane;
 	private JTable tblMaestroPedidos;
 	private static int idTipoPedido = 0;
 	private static int idUsuario = 0;
-
+	Thread h1;
+	private JTextField txtFechaSistema;
+	private String fechaSis;
+	private PedidoCtrl pedCtrl = new PedidoCtrl();
 	/**
 	 * Launch the application.
 	 */
@@ -80,6 +87,8 @@ public class VentPedComandaPedidos extends JFrame {
 		setTitle("COMANDA PEDIDOS");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1014, 700);
+		setUndecorated(true);
+		getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 		this.setExtendedState(MAXIMIZED_BOTH);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -87,7 +96,7 @@ public class VentPedComandaPedidos extends JFrame {
 		contentPane.setLayout(null);
 		
 		JPanel panelFiltrosPedidos = new JPanel();
-		panelFiltrosPedidos.setBounds(780, 11, 208, 346);
+		panelFiltrosPedidos.setBounds(1087, 11, 208, 295);
 		contentPane.add(panelFiltrosPedidos);
 		panelFiltrosPedidos.setLayout(new GridLayout(4, 1, 0, 0));
 		
@@ -151,10 +160,14 @@ public class VentPedComandaPedidos extends JFrame {
 		});
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 11, 762, 346);
+		scrollPane.setBounds(10, 11, 1051, 616);
 		contentPane.add(scrollPane);
 		
 		tblMaestroPedidos =   new JTable();
+		//le cambiamos la fuente al jtable de pedidos para hacerla más grande y visible
+		tblMaestroPedidos.setFont(new java.awt.Font("Tahoma", 0, 14)); 
+		//Aumentamos el tamaño de las celdas para que quede más amplia la información
+		tblMaestroPedidos.setRowHeight(25);
 		tblMaestroPedidos.setEnabled(true);
 		pintarPedidos();
 		scrollPane.setViewportView(tblMaestroPedidos);
@@ -173,77 +186,71 @@ public class VentPedComandaPedidos extends JFrame {
 		    }
 		});
 		
+		//Manejamos el evento de cuando damos doble clic sobre el pedido para avanzar de estado o cuando damos 3 veces para retroceder de estado
+		tblMaestroPedidos.addMouseListener(new java.awt.event.MouseAdapter() {
+		      public void mouseClicked(java.awt.event.MouseEvent e) {
+		      if(e.getClickCount()==2){
+		    	  avanzarEstado();
+		        }
+		      if(e.getClickCount()==3){
+		    	  devolverEstado();
+		       }
+		 }
+		});
+		
 		JButton btnAvanzarEstado = new JButton("Avanzar Estado");
+		btnAvanzarEstado.setBounds(559, 656, 180, 44);
 		btnAvanzarEstado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
-				if(filaSeleccionada == -1)
-				{
-					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún pedido para Avanzar Estado " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				// Se captura el valor del idDetalle que se desea eliminar
-				int idPedidoAvanzar= Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
-				int idTipoPedido = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 6).toString());
-				int idEstado = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 7).toString());
-				PedidoCtrl pedCtrl = new PedidoCtrl();
-				boolean esEstadoFinal = pedCtrl.esEstadoFinal(idTipoPedido, idEstado);
-				if(esEstadoFinal)
-				{
-					JOptionPane.showMessageDialog(null, "El estado actual es un estado Final no se puede avanzar más" , "No hay estado posterior", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				else
-				{
-					VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true);
-					cambioEstado.setVisible(true);
-					pintarPedidos();
-				}
-				
+				avanzarEstado();
 			}
 		});
-		btnAvanzarEstado.setBounds(427, 368, 180, 23);
 		contentPane.add(btnAvanzarEstado);
 		
 		JButton btnRetrocederEstado = new JButton("Devolver Estado");
+		btnRetrocederEstado.setBounds(298, 654, 180, 46);
 		btnRetrocederEstado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
-				if(filaSeleccionada == -1)
-				{
-					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún pedido para Devolver Estado " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				// Se captura el valor del idDetalle que se desea eliminar
-				int idPedidoDevolver= Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
-				int idTipoPedido = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 6).toString());
-				int idEstado = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 7).toString());
-				PedidoCtrl pedCtrl = new PedidoCtrl();
-				boolean esEstadoInicial = pedCtrl.esEstadoInicial(idTipoPedido, idEstado);
-				if(esEstadoInicial)
-				{
-					JOptionPane.showMessageDialog(null, "El estado actual es un estado Inicial no se puede retroceder" , "No hay estado anterior", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				else
-				{
-					VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true);
-					cambioEstado.setVisible(true);
-					pintarPedidos();
-				}
+				devolverEstado();
 				
 			}
 		});
-		btnRetrocederEstado.setBounds(166, 366, 180, 25);
 		contentPane.add(btnRetrocederEstado);
 		
 		JButton btnSalir = new JButton("Salir");
-		btnSalir.setBounds(790, 368, 195, 73);
+		btnSalir.setBounds(1101, 656, 195, 44);
 		contentPane.add(btnSalir);
 		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 11));
+		
+		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
+		lblFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 16));
+		lblFechaSistema.setBounds(10, 656, 133, 29);
+		contentPane.add(lblFechaSistema);
+		
+		txtFechaSistema = new JTextField();
+		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
+		fechaSis = fecha.getFechaApertura();
+		txtFechaSistema.setForeground(Color.RED);
+		txtFechaSistema.setEditable(false);
+		txtFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 16));
+		txtFechaSistema.setBounds(157, 656, 120, 29);
+		contentPane.add(txtFechaSistema);
+		txtFechaSistema.setColumns(10);
+		txtFechaSistema.setText(fechaSis);
+		
+		JButton btnNewButton = new JButton("<html><center>Ver Ubicaci\u00F3n Domicilios</center></html>");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			   
+			}
+		});
+		btnNewButton.setBounds(840, 656, 164, 44);
+		contentPane.add(btnNewButton);
 		btnSalir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				VentPrincipal ventPrincipal = new VentPrincipal();
+				ventPrincipal.setVisible(true);
 				dispose();
 			}
 		});
@@ -258,6 +265,8 @@ public class VentPedComandaPedidos extends JFrame {
 		//la aplicación nos sacara
 		validarLogueo();
 		//Luego de pasada la validación del logueo realizamos el cargue de la página
+		h1 = new Thread(this);
+		h1.start();
 	}
 	
 	public void validarLogueo()
@@ -291,7 +300,6 @@ public class VentPedComandaPedidos extends JFrame {
         columnsName[6] = "id Tipo Pedido";
         columnsName[7] = "idestado";
         columnsName[8] = "Tiempo";
-        PedidoCtrl pedCtrl = new  PedidoCtrl();
         ArrayList<Object> pedidos = new ArrayList();
         if(idTipoPedido == 0)
         {
@@ -315,14 +323,49 @@ public class VentPedComandaPedidos extends JFrame {
 			modelo.addRow(fila);
 		}
 		tblMaestroPedidos.setModel(modelo);
+		tblMaestroPedidos.getColumnModel().getColumn(0).setMaxWidth(70);
+		tblMaestroPedidos.getColumnModel().getColumn(0).setMinWidth(70);
+		//Ocultamos la conlumna de FechaPedido, dado que es la misma dependiendo del día aperturado
+		tblMaestroPedidos.getColumnModel().getColumn(1).setMaxWidth(0);
+		tblMaestroPedidos.getColumnModel().getColumn(1).setMinWidth(0);
+		//Modificamos el ancho de la columna nombre
+		tblMaestroPedidos.getColumnModel().getColumn(2).setMinWidth(170);
+		tblMaestroPedidos.getColumnModel().getColumn(2).setMaxWidth(170);
+		//Modificamos ancho del tipo de pedido
+		tblMaestroPedidos.getColumnModel().getColumn(3).setMinWidth(110);
+		tblMaestroPedidos.getColumnModel().getColumn(3).setMaxWidth(110);
+		//Modificamos ancho del estado pedido
+		tblMaestroPedidos.getColumnModel().getColumn(4).setMinWidth(110);
+		tblMaestroPedidos.getColumnModel().getColumn(4).setMaxWidth(110);
 		tblMaestroPedidos.getColumnModel().getColumn(6).setMaxWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(6).setMinWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(7).setMaxWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(7).setMinWidth(0);
+		//Modificamos el ancho del la muestra del tiempo
+		tblMaestroPedidos.getColumnModel().getColumn(8).setMinWidth(180);
+		tblMaestroPedidos.getColumnModel().getColumn(8).setMaxWidth(180);
+		
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMaxWidth(70);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMinWidth(70);
+		//Ocultamos la conlumna de FechaPedido, dado que es la misma dependiendo del día aperturado
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(0);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(1).setMinWidth(0);
+		//Modificamos el ancho de la columna nombre
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMinWidth(170);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMaxWidth(170);
+		//Modificamos ancho del tipo de pedido
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(3).setMinWidth(110);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(110);
+		//Modificamos ancho del estado pedido
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(4).setMinWidth(110);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(4).setMaxWidth(110);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(6).setMaxWidth(0);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(6).setMinWidth(0);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(7).setMaxWidth(0);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(7).setMaxWidth(0);	
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(7).setMinWidth(0);
+		//Modificamos el ancho del la muestra del tiempo
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMinWidth(180);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(180);
 		setCellRender(tblMaestroPedidos);
 		
 	}
@@ -342,7 +385,6 @@ public class VentPedComandaPedidos extends JFrame {
         columnsName[0] = "Fecha Cambio Estado";
         columnsName[1] = "Estado Anterior";
         columnsName[2] = "Estado Posterior";
-        PedidoCtrl pedCtrl = new  PedidoCtrl();
         ArrayList<Object> estadosPedido = new ArrayList();
         estadosPedido = pedCtrl.obtenerHistoriaEstadoPedido(idPedido);
         DefaultTableModel modelo = new DefaultTableModel();
@@ -354,5 +396,72 @@ public class VentPedComandaPedidos extends JFrame {
 		}
 		return(modelo);
 		
+	}
+	
+	public void run(){
+		 Thread ct = Thread.currentThread();
+		 while(ct == h1) 
+		 {   
+			 //Ejecutamos el pintado de los pedidos en el JTable de la pantalla.
+			 pintarPedidos();
+		  //Realizamos la ejecución cada 30 segundos
+			 try {
+				 	Thread.sleep(30000);
+			 }catch(InterruptedException e) 
+			 {}
+		 }
+	}
+	
+	public void avanzarEstado()
+	{
+		int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+		if(filaSeleccionada == -1)
+		{
+			JOptionPane.showMessageDialog(null, "Debe Seleccionar algún pedido para Avanzar Estado " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		// Se captura el valor del idDetalle que se desea eliminar
+		int idPedidoAvanzar= Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
+		int idTipoPedido = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 6).toString());
+		int idEstado = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 7).toString());
+		boolean esEstadoFinal = pedCtrl.esEstadoFinal(idTipoPedido, idEstado);
+		if(esEstadoFinal)
+		{
+			JOptionPane.showMessageDialog(null, "El estado actual es un estado Final no se puede avanzar más" , "No hay estado posterior", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		else
+		{
+			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true);
+			cambioEstado.setVisible(true);
+			pintarPedidos();
+		}
+		
+	}
+	
+	public void devolverEstado()
+	{
+		int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+		if(filaSeleccionada == -1)
+		{
+			JOptionPane.showMessageDialog(null, "Debe Seleccionar algún pedido para Devolver Estado " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		// Se captura el valor del idDetalle que se desea eliminar
+		int idPedidoDevolver= Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
+		int idTipoPedido = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 6).toString());
+		int idEstado = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 7).toString());
+		boolean esEstadoInicial = pedCtrl.esEstadoInicial(idTipoPedido, idEstado);
+		if(esEstadoInicial)
+		{
+			JOptionPane.showMessageDialog(null, "El estado actual es un estado Inicial no se puede retroceder" , "No hay estado anterior", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		else
+		{
+			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true);
+			cambioEstado.setVisible(true);
+			pintarPedidos();
+		}
 	}
 }

@@ -36,7 +36,7 @@ public abstract class AbstractJasperReports {
 
 	public static void showViewer()
 	{
-		viewer = new JasperViewer(reportFilled);
+		viewer = new JasperViewer(reportFilled, false);
 		viewer.setVisible(true);
 	}
 	

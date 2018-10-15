@@ -21,6 +21,8 @@ import reportes.AbstractJasperReports;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.ScrollPaneConstants;
@@ -30,8 +32,11 @@ import javax.swing.JOptionPane;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.JTabbedPane;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 
-public class VentPedFinalizarDia extends JFrame {
+public class VentPedFinalizarDia extends JDialog {
 
 	private JPanel contentPanePrincipal;
 	private JTextField txtFechaInventario;
@@ -47,7 +52,7 @@ public class VentPedFinalizarDia extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentPedFinalizarDia frame = new VentPedFinalizarDia();
+					VentPedFinalizarDia frame = new VentPedFinalizarDia(null, true);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -59,11 +64,15 @@ public class VentPedFinalizarDia extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentPedFinalizarDia() {
+	public VentPedFinalizarDia(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		this.setAlwaysOnTop(true);
 		setTitle("FINALIZAR DIA");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 800, 450);
+		setBounds(0,0, 800, 450);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 800, 450);
 		contentPanePrincipal = new JPanel();
 		contentPanePrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPanePrincipal);
@@ -134,7 +143,92 @@ public class VentPedFinalizarDia extends JFrame {
 		contentPanePrincipal.add(txtTotalVendido);
 		txtTotalVendido.setColumns(10);
 		
+		JPanel panelReportes = new JPanel();
+		panelReportes.setBorder(new LineBorder(new Color(0, 0, 0), 5));
+		panelReportes.setBounds(341, 21, 400, 207);
+		contentPanePrincipal.add(panelReportes);
+		panelReportes.setLayout(null);
+		
 		JButton btnReporteGeneralVentas = new JButton("Reporte General Ventas");
+		btnReporteGeneralVentas.setBounds(10, 116, 182, 23);
+		panelReportes.add(btnReporteGeneralVentas);
+		
+		JButton btnReporteUsoInventario = new JButton("Reporte uso Inventario");
+		btnReporteUsoInventario.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				//Acción para la generación inventario consumido
+				ReportesCtrl repCtrl = new ReportesCtrl();
+				repCtrl.generarReporteInventarioCon();
+			}
+		});
+		btnReporteUsoInventario.setBounds(10, 45, 182, 23);
+		panelReportes.add(btnReporteUsoInventario);
+		
+		JButton btnCorteDeCaja = new JButton("Corte de Caja");
+		btnCorteDeCaja.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				//Acción para la generación de reporte de caja
+				ReportesCtrl repCtrl = new ReportesCtrl();
+				repCtrl.generarReporteCaja();
+			}
+		});
+		btnCorteDeCaja.setBounds(204, 45, 184, 23);
+		panelReportes.add(btnCorteDeCaja);
+		
+		JButton btnNewButton = new JButton("Corte de Caja Detallada");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				//Acción para la generación de reporte de caja detallado
+				ReportesCtrl repCtrl = new ReportesCtrl();
+				repCtrl.generarReporteCajaDet();
+			}
+		});
+		btnNewButton.setBounds(204, 79, 184, 23);
+		panelReportes.add(btnNewButton);
+		
+		JButton btnNewButton_1 = new JButton("Inventario Actual");
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				//Acción para la generación de reporte inventario actual
+				ReportesCtrl repCtrl = new ReportesCtrl();
+				repCtrl.generarReporteInventarioAct();
+			}
+		});
+		btnNewButton_1.setBounds(10, 79, 182, 23);
+		panelReportes.add(btnNewButton_1);
+		
+		JLabel lblInventario = new JLabel("REPORTE INVENTARIOS");
+		lblInventario.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblInventario.setBounds(12, 11, 133, 14);
+		panelReportes.add(lblInventario);
+		
+		JLabel lblReporteVentas = new JLabel("REPORTE VENTAS");
+		lblReporteVentas.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblReporteVentas.setBounds(204, 11, 110, 14);
+		panelReportes.add(lblReporteVentas);
+		
+		JButton btnValidarCierre = new JButton("Validar Cierre");
+		btnValidarCierre.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl();
+				String resp = operTienda.validacionesPreCierre(fechaSis);
+				if(resp.equals(new String("")))
+				{
+					JOptionPane.showMessageDialog(null, "El cierre ha superado las prevalidaciones" , "Puede iniciar el cierre", JOptionPane.INFORMATION_MESSAGE);
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "El cierre presenta inconvenientes, se deben de validar temas adicionales" , "El cierre NO puede Iniciar.", JOptionPane.ERROR_MESSAGE);
+				}
+				txtPaneResCierre.setText(resp);
+			}
+		});
+		btnValidarCierre.setBounds(110, 168, 152, 37);
+		contentPanePrincipal.add(btnValidarCierre);
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Acción para la generación de reporte general de ventas
@@ -143,8 +237,6 @@ public class VentPedFinalizarDia extends JFrame {
 								
 			}
 		});
-		btnReporteGeneralVentas.setBounds(455, 33, 255, 23);
-		contentPanePrincipal.add(btnReporteGeneralVentas);
 		btnCierreDia.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				

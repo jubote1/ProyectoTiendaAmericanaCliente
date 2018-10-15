@@ -113,7 +113,10 @@ public class VentPedDescuento extends JFrame {
 	public VentPedDescuento() {
 		setTitle("APLICAR DESCUENTOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 961, 636);
+		setBounds(0,0, 961, 636);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 961, 636);
 		contentenorDescuento = new JPanel();
 		contentenorDescuento.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentenorDescuento);

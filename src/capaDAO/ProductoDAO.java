@@ -154,7 +154,7 @@ public class ProductoDAO {
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				
-				precioRetorno = rs.getDouble("precio1");
+				precioRetorno = rs.getDouble(precio);
 				
 			}
 			rs.close();

@@ -109,6 +109,11 @@ public class VentSegTipoEmpleado extends JFrame {
 		});
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(0,0, 703, 457);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 703, 457);
+
 		setBounds(100, 100, 703, 457);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

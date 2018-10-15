@@ -1,4 +1,8 @@
 eclipse.preferences.version=1
+encoding//src/reportes/ConsumoInventario.jrxml=UTF-8
 encoding//src/reportes/EncabezadoFactura.jrxml=UTF-8
 encoding//src/reportes/Factura.jrxml=UTF-8
+encoding//src/reportes/InventarioActual.jrxml=UTF-8
+encoding//src/reportes/ReporteCaja.jrxml=UTF-8
+encoding//src/reportes/ReporteCajaDetallado.jrxml=UTF-8
 encoding//src/reportes/ReporteVentas.jrxml=UTF-8

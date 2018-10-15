@@ -22,10 +22,17 @@ public class Pedido {
 	private int tiempopedido;
 	private int idTipoPedido;
 	private String tipoPedido;
+	private int idMotivoAnulacion;
 	
 	
+		
 	
-	
+	public int getIdMotivoAnulacion() {
+		return idMotivoAnulacion;
+	}
+	public void setIdMotivoAnulacion(int idMotivoAnulacion) {
+		this.idMotivoAnulacion = idMotivoAnulacion;
+	}
 	public String getDirCliente() {
 		return dirCliente;
 	}

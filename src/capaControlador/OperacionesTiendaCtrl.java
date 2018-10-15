@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import capaDAO.ItemInventarioHistoricoDAO;
+import capaDAO.ModificadorInventarioDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.TiendaDAO;
 import capaModelo.FechaSistema;
@@ -83,11 +84,12 @@ public void realizarInventarioHistorico(String fecha)
 //FINALIZAR EL DÍA
 
 /**
- * Método principal en la capa de Negocio que se encarga de coordinar el cierre de día para un día determinado.
- * @param fecha Se recibe la fecha a partir de la cual se realizará el cierre.
- * @return se recibe un String con el resultado del proceso.
+ * Método que se encargará de realizar las validaciones para determinar si se cumplen o no todas las condiciones para realizar
+ * cierre de la fecha determinada
+ * @param fecha Se recibe como parámetro la fecha indicada del cierre
+ * @return Se retornar un mensaje indicando si el proceso es o no satisfactorio en cuanto a las validaciones
  */
-	public String finalizarDia(String fecha)
+	public String validacionesPreCierre(String fecha)
 	{
 		String respuesta = "";
 		boolean respValEstPed = PedidoDAO.validarEstadosFinalesPedido(fecha);
@@ -95,6 +97,22 @@ public void realizarInventarioHistorico(String fecha)
 		{
 			respuesta = respuesta + "RESULTADO NO EXITOSO DEL PROCESO  Se tienen pedidos con estados no finales.";
 		}
+		boolean respInvVarianza = ModificadorInventarioDAO.seIngresoVarianza(fecha);
+		if (!respInvVarianza)
+		{
+			respuesta = respuesta + "NO SE HA INGRESADO LA VARIANZA para el día en cuestión.";
+		}
+		return(respuesta);
+	}
+
+/**
+ * Método principal en la capa de Negocio que se encarga de coordinar el cierre de día para un día determinado.
+ * @param fecha Se recibe la fecha a partir de la cual se realizará el cierre.
+ * @return se recibe un String con el resultado del proceso.
+ */
+	public String finalizarDia(String fecha)
+	{
+		String respuesta = validacionesPreCierre(fecha);
 		if(respuesta.equals(new String("")))
 		{
 			//Avanzar en uno el último día de cierre

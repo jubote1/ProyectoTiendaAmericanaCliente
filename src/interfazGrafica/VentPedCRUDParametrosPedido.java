@@ -99,7 +99,10 @@ public class VentPedCRUDParametrosPedido extends JFrame {
 		setTitle("PAR\u00C1METROS PEDIDO");
 		idMunicipio = 0;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 617, 474);
+		setBounds(0,0, 617, 474);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 617, 474);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);

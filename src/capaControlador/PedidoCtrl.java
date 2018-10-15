@@ -18,6 +18,7 @@ import capaDAO.DetallePedidoImpuestoDAO;
 import capaDAO.EstadoAnteriorDAO;
 import capaDAO.EstadoDAO;
 import capaDAO.EstadoPosteriorDAO;
+import capaDAO.MotivoAnulacionPedidoDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.PedidoDescuentoDAO;
 import capaDAO.PedidoFormaPagoDAO;
@@ -38,6 +39,7 @@ import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPedidoTienda;
 import capaModelo.EstadoPosterior;
 import capaModelo.FechaSistema;
+import capaModelo.MotivoAnulacionPedido;
 import capaModelo.Pedido;
 import capaModelo.PedidoDescuento;
 import capaModelo.PedidoFormaPago;
@@ -49,6 +51,7 @@ import capaModelo.RespuestaPedidoPixel;
 import capaModelo.Tienda;
 import capaModelo.TipoPedido;
 import capaModelo.Usuario;
+import interfazGrafica.Sesion;
 import interfazGrafica.VentPedTomarPedidos;
 
 public class PedidoCtrl {
@@ -116,7 +119,7 @@ public class PedidoCtrl {
 	{
 		int idPedidoNuevo = PedidoDAO.InsertarEncabezadoPedido(idtienda, idcliente, fechaPedido, user);
 		//El estado cero se tiene la convención q
-		PedidoDAO.ActualizarEstadoPedido(idPedidoNuevo, 0, 0);
+		PedidoDAO.ActualizarEstadoPedido(idPedidoNuevo, 0, 0,Sesion.getUsuario());
 		return(idPedidoNuevo);
 		
 	}
@@ -133,9 +136,9 @@ public class PedidoCtrl {
 		return(respuesta);
 	}
 	
-	public boolean anularDetallePedido(int idDetallePedido)
+	public boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion)
 	{
-		boolean respuesta = DetallePedidoDAO.anularDetallePedido(idDetallePedido);
+		boolean respuesta = DetallePedidoDAO.anularDetallePedido(idDetallePedido, idMotivoAnulacion);
 		return(respuesta);
 	}
 	
@@ -191,19 +194,26 @@ public class PedidoCtrl {
 		impCtrl.liquidarImpuestosPedido(idPedido);
 		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido, idTipoPedido);
 		int idEstadoPostIni = EstadoDAO.obtenerEstadoInicial(idTipoPedido);
-		PedidoDAO.ActualizarEstadoPedido(idPedido, 0 , idEstadoPostIni);
+		PedidoDAO.ActualizarEstadoPedido(idPedido, 0 , idEstadoPostIni,Sesion.getUsuario());
 		return(respuesta);
 	}
 	
-	public boolean anularPedido(int idPedido)
+	public boolean anularPedido(int idPedido, int idMotivoAnulacion)
 	{
-		boolean respuesta = DetallePedidoDAO.AnularDetallesPedido(idPedido);
+		//boolean respuesta = DetallePedidoDAO.AnularDetallesPedido(idPedido);
+		boolean respuesta = true;
 		if(respuesta)
 		{
-			respuesta = PedidoDAO.anularPedido(idPedido);
+			respuesta = PedidoDAO.anularPedido(idPedido, idMotivoAnulacion);
 		}
 		if(respuesta)
 		{
+			//Debemos anular todos los detalles pedidos
+			ArrayList<DetallePedido> detPedido = DetallePedidoDAO.obtenerDetallePedido(idPedido);
+			for(int i = 0; i < detPedido.size(); i++)
+			{
+				DetallePedidoDAO.anularDetallePedido(detPedido.get(i).getIdDetallePedido(), idMotivoAnulacion);
+			}
 			return(true);
 		}
 		return(false);
@@ -424,13 +434,37 @@ public class PedidoCtrl {
 			return(pedidos);
 		}
 		
-		public ArrayList obtenerPedidosTable()
+		public ArrayList obtenerPedidosTableSinFinales()
 		{
 			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
 			ArrayList pedidos = new ArrayList();
 			if(sePuedeFacturar(fechaSistema))
 			{
 				pedidos = PedidoDAO.obtenerPedidosTable(fechaSistema.getFechaApertura());
+				int idPedido = 0;
+				for(int i = 0 ; i < pedidos.size(); i++)
+				{
+					String[]fila = (String[]) pedidos.get(i);
+					idPedido =Integer.parseInt(fila[0]);
+					String tiempoPedido = calcularTiempoPedido(idPedido);
+					fila[fila.length-1] = tiempoPedido;
+					pedidos.set(i, fila);
+				}
+			}
+			return(pedidos);
+		}
+		
+		/**
+		 * Método que se encargará de retornar todos los pedidos a una fecha determinada incluyendo los estados finales
+		 * @return
+		 */
+		public ArrayList obtenerPedidosTableConFinales()
+		{
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				pedidos = PedidoDAO.obtenerPedidosTableConFinales(fechaSistema.getFechaApertura());
 				int idPedido = 0;
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
@@ -465,9 +499,9 @@ public class PedidoCtrl {
 			return(estadoPedido);
 		}
 		
-		public boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior)
+		public boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario)
 		{
-			boolean respuesta = PedidoDAO.ActualizarEstadoPedido(idPedido, idEstadoAnterior, idEstadoPosterior);
+			boolean respuesta = PedidoDAO.ActualizarEstadoPedido(idPedido, idEstadoAnterior, idEstadoPosterior, usuario);
 			return(respuesta);
 		}
 		
@@ -579,6 +613,12 @@ public class PedidoCtrl {
 			
 		}
 		
+		/**
+		 * Método que se encarga de calcular el tiempo del pedido y traerlo como un String para mostrarlos en los maestros
+		 * de pedidos
+		 * @param idPedido
+		 * @return
+		 */
 		public String calcularTiempoPedido(int idPedido)
 		{
 			String respuesta = "";
@@ -945,6 +985,12 @@ public class PedidoCtrl {
 		            + "\n\n\n\n\n\n\n           "
 		            + "\n           ";
 			return(factura);
+		}
+		
+		public ArrayList<MotivoAnulacionPedido> obtenerMotivosAnulacion()
+		{
+			ArrayList<MotivoAnulacionPedido> motAnu = MotivoAnulacionPedidoDAO.obtenerMotivosAnulacion();
+			return(motAnu);
 		}
 		
 }

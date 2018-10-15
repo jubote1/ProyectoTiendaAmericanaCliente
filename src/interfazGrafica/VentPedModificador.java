@@ -33,8 +33,17 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+/**
+ * Clase de la capa IntefazGrafica que se encarga de la presentacón de los modificadores de producto de CON y SIN en caso
+ * de que a un producto le apliquen o no.
+ * @author Juan David Botero Duque
+ *
+ */
 public class VentPedModificador extends JDialog {
 
+	/**
+	 * Se definen las variables de presentación como variables privadas
+	 */
 	private JPanel contenedorPrincipal;
 	private JPanel panelModificadores;
 	JButton jButElecciones1;
@@ -42,12 +51,15 @@ public class VentPedModificador extends JDialog {
 	private String selProducto1;
 	private ArrayList<JButton> arregloBotPan1;
 	private ArrayList<JButton> arregloBotPan1Final = new ArrayList();
-	//Item importante para los Modificadores
+	/**
+	 * Variables importantes y públicas para el manejo y la coumunicación de los modificadores
+	 */
 	int idDetallePedido = 0;
 	int maxSelecciones = 0;
 	int seleccion = 0;
 	boolean modCon = false;
 	boolean modSin = false;
+	private int contadorDetallePedido;
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -68,8 +80,9 @@ public class VentPedModificador extends JDialog {
 	 * @param preguntas se recibe un ArrayList con las preguntas forzadas que se van a controlar
 	 * @param idProducto se recibe el producto al cual se le están aplicando la Elección Forzada.
 	 */
-	public VentPedModificador(java.awt.Frame parent, boolean modal, int idDetPedido, boolean modificadorCon, boolean modificadorSin) {
+	public VentPedModificador(java.awt.Frame parent, boolean modal, int idDetPedido, boolean modificadorCon, boolean modificadorSin, int contadorDetPedido) {
 		super(parent, modal);
+		contadorDetallePedido = contadorDetPedido;
 		if(modificadorCon)
 		{
 			setTitle("SELECCIÓN MODIFICADORES CON");
@@ -79,7 +92,10 @@ public class VentPedModificador extends JDialog {
 		}
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 684, 610);
+		setBounds(0,0, 684, 610);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 684, 610);
 		contenedorPrincipal = new JPanel();
 		contenedorPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contenedorPrincipal);
@@ -91,7 +107,7 @@ public class VentPedModificador extends JDialog {
 		contenedorPrincipal.add(panelModificadores);
 		panelModificadores.setLayout(new GridLayout(0, 4, 0, 0));
 		
-		lblModificador = new JLabel("New label");
+		lblModificador = new JLabel("Modificadores Producto");
 		lblModificador.setFont(new Font("Tahoma", Font.BOLD, 14));
 		lblModificador.setBounds(25, 11, 621, 14);
 		contenedorPrincipal.add(lblModificador);
@@ -114,10 +130,16 @@ public class VentPedModificador extends JDialog {
 		
 	}
 	
+	/**
+	 * Método que se encargará de obtener los modificadores sea CON o SIN que el aplican al producto en cuestión
+	 * y con base en esto se encargará de adicionarlos para l aacción en el panel del presentación.
+	 */
 	public void cargarModificadores()
 	{
+		//Iniciamos limpiando todo lo que se pueda tener en el panel de modificadores.
 		panelModificadores.removeAll();
 		panelModificadores.repaint();
+		//Definimos las variables necesarias para el proceso
 		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<ProductoModificadorCon> prodModificadores;
 		ArrayList<ProductoModificadorSin> prodModificadoresSin;
@@ -128,7 +150,8 @@ public class VentPedModificador extends JDialog {
 			for(int i = 0; i < prodModificadores.size(); i++)
 			{
 				ProductoModificadorCon modTemp = prodModificadores.get(i);
-				jButElecciones1 = new JButton(modTemp.getIdProductoCon()+ "-"+ modTemp.getNombreProductoCon());
+				jButElecciones1 = new JButton("<html><center>" + modTemp.getNombreProductoCon() + "</center></html>");
+				jButElecciones1.setActionCommand(Integer.toString(modTemp.getIdProductoCon()));
 				arregloBotPan1.add(jButElecciones1);
 				jButElecciones1.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
@@ -191,7 +214,8 @@ public class VentPedModificador extends JDialog {
 			for(int i = 0; i < prodModificadoresSin.size(); i++)
 			{
 				ProductoModificadorSin modTemp = prodModificadoresSin.get(i);
-				jButElecciones1 = new JButton(modTemp.getIdProductoSin()+ modTemp.getNombreProductoSin());
+				jButElecciones1 = new JButton("<html><center>" + modTemp.getNombreProductoSin() + "</center></html>");
+				jButElecciones1.setActionCommand(Integer.toString(modTemp.getIdProductoSin()));
 				arregloBotPan1.add(jButElecciones1);
 				jButElecciones1.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
@@ -268,17 +292,17 @@ public class VentPedModificador extends JDialog {
 				if(colSelButton.equals(Color.YELLOW))
 				{
 					
-						String txtJBut = jButTemp.getText();
-						StringTokenizer StrTokenProducto = new StringTokenizer(txtJBut,"-");
-						String strIdProducto = StrTokenProducto.nextToken();
-						int idProducto = Integer.parseInt(strIdProducto);
+						String txtJBut = jButTemp.getActionCommand();
+//						StringTokenizer StrTokenProducto = new StringTokenizer(txtJBut,"-");
+//						String strIdProducto = StrTokenProducto.nextToken();
+						int idProducto = Integer.parseInt(txtJBut);
 						ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
 						//Para obtener el precio deberíamos recorrer las elecciones de la pregunta y capturar el precio
 						double precioProducto = parProducto.obtenerPrecioPilaProducto(idProducto);
 						double cantidad = 0.5;
 						//OJO ACA SERÁ NECEASARIO INTERVENCIÓN
 						int idDetalleMaster = pedCtrl.obtenerIdDetalleMaster(idDetallePedido);
-						DetallePedido detPedido = new DetallePedido(0,VentPedTomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", idDetalleMaster);
+						DetallePedido detPedido = new DetallePedido(0,VentPedTomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", idDetalleMaster,"N","",contadorDetallePedido);
 						detPedido.setIdDetalleModificador(idDetallePedido);
 						int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
 						detPedido.setIdDetallePedido(idDetalle);

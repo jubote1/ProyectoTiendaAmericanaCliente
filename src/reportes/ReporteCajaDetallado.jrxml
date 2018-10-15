@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ReporteCajaDetallado" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="874432f7-324d-43f8-b079-6b60a2130bee">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="BDTienda2"/>
+	<parameter name="fecha" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{fecha}]]></defaultValueExpression>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[select a.total_neto, d.usuario, a.idpedidotienda from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 1 and a.fechapedido = $P{fecha} 
+union
+select a.total_neto, 'CAJA', a.idpedidotienda from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 0 and a.fechapedido = $P{fecha}]]>
+	</queryString>
+	<field name="total_neto" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="total_neto"/>
+	</field>
+	<field name="usuario" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="usuario"/>
+	</field>
+	<field name="idpedidotienda" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="idpedidotienda"/>
+	</field>
+	<variable name="Variable_1" class="java.lang.String"/>
+	<variable name="total_neto1" class="java.lang.Double" resetType="Group" resetGroup="USUARIO" calculation="Sum">
+		<variableExpression><![CDATA[$F{total_neto}]]></variableExpression>
+	</variable>
+	<group name="USUARIO">
+		<groupExpression><![CDATA[$F{usuario}]]></groupExpression>
+		<groupHeader>
+			<band height="51">
+				<staticText>
+					<reportElement x="80" y="30" width="151" height="21" uuid="e099a54c-e61c-47b9-9d3a-02c3f979dcde"/>
+					<textElement textAlignment="Center">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Número Pedido]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="280" y="30" width="151" height="21" uuid="b7fa8cf1-7ac1-4fd3-94f9-70bf3ed949e8"/>
+					<textElement textAlignment="Center">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Valor Pedido]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="200" y="0" width="160" height="30" uuid="9f701305-b22c-4ca0-b476-d02bcceb7632"/>
+					<textElement textAlignment="Center">
+						<font size="20" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="50">
+				<textField>
+					<reportElement x="331" y="10" width="100" height="30" uuid="d95f51be-aa54-40a3-bc67-491c56d2b151"/>
+					<textElement textAlignment="Center">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{total_neto1}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="50" y="10" width="80" height="31" uuid="660eeb3f-532f-4f5a-9625-976eac02ad83"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TOTAL]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="130" y="10" width="160" height="30" uuid="ff0ef728-c4cc-47e9-b602-4bf499e9d82f"/>
+					<textElement textAlignment="Center">
+						<font size="20" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="86" splitType="Stretch">
+			<image>
+				<reportElement x="10" y="0" width="110" height="81" uuid="bf0b9fb9-2d79-453c-b09f-bc56ecd71677"/>
+				<imageExpression><![CDATA["D:/reportes/LogoPizzaAmericana.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="140" y="10" width="431" height="41" uuid="ca45002d-76b6-42e6-9070-cf5b8c695402"/>
+				<textElement textAlignment="Center">
+					<font size="20" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPOTE DE CAJA DETALLADO]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="270" y="50" width="120" height="30" uuid="43f31e82-c299-44ca-b5d2-442171d19b60"/>
+				<textElement textAlignment="Center">
+					<font size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{fecha}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="37" splitType="Stretch">
+			<textField>
+				<reportElement x="280" y="10" width="151" height="20" uuid="1731614f-dbef-42c2-a117-67095de76a7b"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{total_neto}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="10" width="151" height="20" uuid="d7d1bba9-aa27-4ce1-a2d2-39aff0cf1002"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{idpedidotienda}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

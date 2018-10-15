@@ -83,7 +83,7 @@ public class ItemInventarioDAO {
 					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
 					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
-					+ "from item_inventario_consumo g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
+					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
 					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo from item_inventario a";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
@@ -133,8 +133,8 @@ public class ItemInventarioDAO {
 					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
 					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
-					+ "from item_inventario_consumo g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
-					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, a.cantidad, a.cantidad from item_inventario a";
+					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, a.cantidad,0 from item_inventario a";
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
@@ -174,7 +174,7 @@ public class ItemInventarioDAO {
 		Connection con1 = con.obtenerConexionBDLocal();
 		ArrayList<ItemInventario> itemsInventario = new ArrayList();
 		int idItem;
-		String nombreItem,unidadMedida,manejaCanastas,cantidadCanasta,nombreContenedor;
+		String nombreItem,unidadMedida,manejaCanastas,cantidadCanasta,nombreContenedor, categoria;
 		double cantidad;
 		
 		try
@@ -191,7 +191,8 @@ public class ItemInventarioDAO {
 				manejaCanastas = rs.getString("manejacanastas");
 				cantidadCanasta = rs.getString("cantidadxcanasta");
 				nombreContenedor = rs.getString("nombrecontenedor");
-				ItemInventario itemTemp = new ItemInventario(idItem, nombreItem, unidadMedida,cantidad, manejaCanastas, cantidadCanasta, nombreContenedor);
+				categoria = rs.getString("categoria");
+				ItemInventario itemTemp = new ItemInventario(idItem, nombreItem, unidadMedida,cantidad, manejaCanastas, cantidadCanasta, nombreContenedor,categoria);
 				itemsInventario.add(itemTemp);
 				
 			}
@@ -269,7 +270,7 @@ public class ItemInventarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into item_inventario (nombre_item, unidad_medida,manejacanastas,cantidadxcanasta,nombrecontenedor) values ('" + item.getNombreItem() + "', '" + item.getUnidadMedida() + "' , '" + item.getManejaCanastas() + "' , " + item.getCantidadCanasta() + " , '" + item.getNombreContenedor() + "')"; 
+			String insert = "insert into item_inventario (nombre_item, unidad_medida,manejacanastas,cantidadxcanasta,nombrecontenedor, categoria) values ('" + item.getNombreItem() + "', '" + item.getUnidadMedida() + "' , '" + item.getManejaCanastas() + "' , " + item.getCantidadCanasta() + " , '" + item.getNombreContenedor() + "' , '" + item.getCategoria() + "')"; 
 			logger.info(insert);
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
@@ -343,7 +344,7 @@ public class ItemInventarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update item_inventario set nombre_item = '" + item.getNombreItem() + "' , unidad_medida = '" + item.getUnidadMedida() + " ' , manejacanastas = '" + item.getManejaCanastas() + "' , cantidadxcanasta =" + item.getCantidadCanasta() + " , nombrecontenedor = '" + item.getNombreContenedor()  + "' where iditem = " + item.getIdItem() ; 
+			String update = "update item_inventario set nombre_item = '" + item.getNombreItem() + "' , unidad_medida = '" + item.getUnidadMedida() + " ' , manejacanastas = '" + item.getManejaCanastas() + "' , cantidadxcanasta =" + item.getCantidadCanasta() + " , nombrecontenedor = '" + item.getNombreContenedor() + "' , categoria = '" + item.getCategoria()  + "' where iditem = " + item.getIdItem() ; 
 			logger.info(update);
 			stm.executeUpdate(update);
 			

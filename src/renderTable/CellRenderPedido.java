@@ -24,8 +24,7 @@ public class CellRenderPedido extends DefaultTableCellRenderer implements TableC
 	 final Color colorFila1 = new Color (255, 255, 0);
      final Color colorFila2 = new Color (255, 0, 255);
      final Color colorFila3 = new Color (0, 255, 255);
-     public static int colorDeta = 0;
-     static int idDetalleAnterior = 0;
+     
     	
 //Debemos definir 3 colores para irlos graduando y alternando en el pintado de los iddetallepedidomaster
 	
@@ -36,44 +35,32 @@ public class CellRenderPedido extends DefaultTableCellRenderer implements TableC
         setBackground(null);
         //COnstructor de la clase DefaultTableCellRenderer
         DefaultTableModel modelo = (DefaultTableModel) table.getModel();
-        int filas = modelo.getRowCount();
         Component renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         
-        int idDetalleMasTmp = 0;
-        int idDetalleActual = 0;
-        try{
-        	idDetalleMasTmp = Integer.parseInt((String)table.getValueAt(row, 4));
-        	idDetalleActual = Integer.parseInt((String)table.getValueAt(row, 0));
-        	
-        }catch(Exception e)
+        //Se realiza una validación inicial para saber si el detalle pedido esta anulado para pintar de rojo toda la fila
+        if(((String)table.getValueAt(row, 6)).equals(new String("A")))
         {
-        	System.out.println("Error casteando el valor");
+        	setBackground(Color.RED);
+        	setForeground(Color.WHITE);
+        	return this;
         }
         
-        if((idDetalleMasTmp  == 0)&&(idDetalleActual != idDetalleAnterior))
+        //Realizamos el cálculo del residuo de la división por 3 del valor de la columna 7
+        int contDetPedido = Integer.parseInt((String)table.getValueAt(row, 7));
+        int resDetPedido = contDetPedido % 3;
+        if(resDetPedido == 1)
         {
-        	//idDetPedMasterAct = idDetalleTmp;
-        	colorDeta++;
-        	if(colorDeta == 4)
-        	{
-        		colorDeta = 1;
-        	}
+        	setBackground(colorFila1);
+        	setForeground(Color.BLACK);
+        }else if(resDetPedido == 2)
+        {
+        	setBackground(colorFila2);
+        	setForeground(Color.BLACK);
+        }else if(resDetPedido == 0)
+        {
+        	setBackground(colorFila3);
+        	setForeground(Color.BLACK);
         }
-       
-        	if(colorDeta == 1)
-            {
-            	setBackground(colorFila1);
-            	
-            }else if(colorDeta == 2)
-            {
-            	setBackground(colorFila2);
-            	
-            }else if(colorDeta == 3)
-            {
-            	setBackground(colorFila3);
-            	
-            }
-           	idDetalleAnterior = idDetalleActual;
         return this;
     }
 

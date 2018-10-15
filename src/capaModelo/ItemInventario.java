@@ -10,11 +10,12 @@ public class ItemInventario {
 	private String manejaCanastas;
 	private String cantidadCanasta;
 	private String nombreContenedor;
+	private String categoria;
 	
 	
 	
 	public ItemInventario(int idItem, String nombreItem, String unidadMedida, double cantidad, String manejaCanastas,
-			String cantidadCanasta, String nombreContenedor) {
+			String cantidadCanasta, String nombreContenedor, String categoria) {
 		super();
 		this.idItem = idItem;
 		this.nombreItem = nombreItem;
@@ -23,6 +24,7 @@ public class ItemInventario {
 		this.manejaCanastas = manejaCanastas;
 		this.cantidadCanasta = cantidadCanasta;
 		this.nombreContenedor = nombreContenedor;
+		this.categoria = categoria;
 	}
 	public double getCantidad() {
 		return cantidad;
@@ -70,6 +72,12 @@ public class ItemInventario {
 	public String toString()
 	{
 		return(nombreItem);
+	}
+	public String getCategoria() {
+		return categoria;
+	}
+	public void setCategoria(String categoria) {
+		this.categoria = categoria;
 	}
 	
 

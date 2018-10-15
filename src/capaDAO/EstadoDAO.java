@@ -81,7 +81,6 @@ public class EstadoDAO {
 			Estado estadoPedido = PedidoDAO.obtenerEstadoPedido(idPedido);
 			//En este punto ya obtenenido el idEstado, nos disponemos a verificar si es un estado final o no.
 			boolean esEstFinal = EstadoDAO.esEstadoFinal(estadoPedido.getIdestado());
-			System.out.println(idPedido + " " + esEstFinal);
 			Statement stm = con1.createStatement();
 			String consulta = "select a.fechacambio, IFNULL(b.descripcion, 'Tomando Pedido'), IFNULL(c.descripcion, 'Tomando Pedido')  from cambios_estado_pedido a left outer join  estado b on a.idestadoanterior = b.idestado left outer join estado c on a.idestadoposterior = c.idestado where a.idpedidotienda = " + idPedido + " order by fechacambio asc";
 			logger.info(consulta);

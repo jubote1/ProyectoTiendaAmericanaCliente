@@ -7,8 +7,17 @@ public class TipoPedido {
 	private String descripcion;
 	private boolean valorDefecto;
 	private String icono;
+	boolean esDomicilio;
 	
 	
+	
+	
+	public boolean isEsDomicilio() {
+		return esDomicilio;
+	}
+	public void setEsDomicilio(boolean esDomicilio) {
+		this.esDomicilio = esDomicilio;
+	}
 	public boolean isValorDefecto() {
 		return valorDefecto;
 	}
@@ -34,12 +43,13 @@ public class TipoPedido {
 	public void setIcono(String icono) {
 		this.icono = icono;
 	}
-	public TipoPedido(int idTipoPedido, String descripcion, boolean valorDefecto, String icono) {
+	public TipoPedido(int idTipoPedido, String descripcion, boolean valorDefecto, String icono, boolean esDomicilio) {
 		super();
 		this.idTipoPedido = idTipoPedido;
 		this.descripcion = descripcion;
 		this.valorDefecto = valorDefecto;
 		this.icono = icono;
+		this.esDomicilio = esDomicilio;
 	}
 	
 	public String toString()

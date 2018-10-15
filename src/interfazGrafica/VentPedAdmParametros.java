@@ -85,7 +85,10 @@ public class VentPedAdmParametros extends JDialog {
 		setTitle("ADMINISTRACI\u00D3N DE PAR\u00C1METROS");
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 773, 392);
+		setBounds(0,0, 773, 392);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 773, 392);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -128,15 +131,7 @@ public class VentPedAdmParametros extends JDialog {
 		panelJtable.setBounds(20, 147, 701, 167);
 		contentPane.add(panelJtable);
 		panelJtable.setLayout(null);
-		// Instanciamos el jtable
-		jTableParametro = new JTable();
-		jTableParametro.setForeground(Color.black);
-		jTableParametro.setBounds(52, 25, 512, 58);
-		panelJtable.add(jTableParametro);
-		jTableParametro.setBorder(new LineBorder(new Color(0, 0, 0)));
-		jTableParametro.setBackground(Color.WHITE);
 		DefaultTableModel modelo = pintarParametro();
-		this.jTableParametro.setModel(modelo);
 		//Adicionar manejo para el evento de seleccion
 		
 		
@@ -193,6 +188,17 @@ public class VentPedAdmParametros extends JDialog {
 		btnGrabarEdicion.setBounds(427, 133, 123, 23);
 		panelJtable.add(btnGrabarEdicion);
 		btnGrabarEdicion.setEnabled(false);
+		
+		JScrollPane scrollPaneParametros = new JScrollPane();
+		scrollPaneParametros.setBounds(52, 30, 512, 92);
+		panelJtable.add(scrollPaneParametros);
+		// Instanciamos el jtable
+		jTableParametro = new JTable();
+		scrollPaneParametros.setViewportView(jTableParametro);
+		jTableParametro.setForeground(Color.black);
+		jTableParametro.setBorder(new LineBorder(new Color(0, 0, 0)));
+		jTableParametro.setBackground(Color.WHITE);
+		this.jTableParametro.setModel(modelo);
 		jTextValorNumerico.setText("");
 		jTextValorTexto.setText("");
 		
@@ -257,5 +263,4 @@ public boolean validarDatos()
 	}
 	return(true);
 }
-	
 }

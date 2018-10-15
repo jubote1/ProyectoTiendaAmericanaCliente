@@ -16,8 +16,30 @@ public class DetallePedido {
 	private String tipoProducto;
 	private String tamano;
 	private int idDetalleModificador;
+	private String descargoInventario;
+	private String estado;
+	private int contadorDetallePedido;
 	
 	
+	
+	public int getContadorDetallePedido() {
+		return contadorDetallePedido;
+	}
+	public void setContadorDetallePedido(int contadorDetallePedido) {
+		this.contadorDetallePedido = contadorDetallePedido;
+	}
+	public String getEstado() {
+		return estado;
+	}
+	public void setEstado(String estado) {
+		this.estado = estado;
+	}
+	public String getDescargoInventario() {
+		return descargoInventario;
+	}
+	public void setDescargoInventario(String descargoInventario) {
+		this.descargoInventario = descargoInventario;
+	}
 	public int getIdDetallePedido() {
 		return idDetallePedido;
 	}
@@ -108,7 +130,7 @@ public class DetallePedido {
 	}
 	
 	public DetallePedido(int idDetallePedido, int idPedidoTienda, int idProducto, double cantidad, double valorUnitario,
-			double valorTotal, String observacion, int idDetallePedidoMaster) {
+			double valorTotal, String observacion, int idDetallePedidoMaster, String descargoInventario, String estado, int contadorDetallePedido) {
 		super();
 		this.idDetallePedido = idDetallePedido;
 		this.idPedidoTienda = idPedidoTienda;
@@ -118,7 +140,10 @@ public class DetallePedido {
 		this.valorTotal = valorTotal;
 		this.observacion = observacion;
 		this.idDetallePedidoMaster = idDetallePedidoMaster;
+		this.descargoInventario = descargoInventario;
 		this.idDetalleModificador = 0;
+		this.estado = estado;
+		this.contadorDetallePedido = contadorDetallePedido;
 	}
 	public DetallePedido(int idDetallePedido, int idPedidoTienda, int idProducto, double cantidad, double valorUnitario,
 			double valorTotal, String observacion, int idDetallePedidoMaster, String descripcioProducto,

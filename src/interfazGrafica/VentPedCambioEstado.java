@@ -68,38 +68,41 @@ public class VentPedCambioEstado extends JDialog {
 		this.posterior = posterior;
 		setTitle("CAMBIO ESTADO");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 544, 406);
+		setBounds(0,0, 544, 406);
+		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 544, 406);
 		panelPrincipal = new JPanel();
 		panelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(panelPrincipal);
 		panelPrincipal.setLayout(null);
 		
 		JLabel lblIdPedido = new JLabel("Id Pedido");
-		lblIdPedido.setBounds(77, 50, 85, 14);
+		lblIdPedido.setBounds(36, 50, 100, 14);
 		panelPrincipal.add(lblIdPedido);
 		
 		txtIdPedido = new JTextField();
 		txtIdPedido.setEditable(false);
-		txtIdPedido.setBounds(199, 47, 106, 20);
+		txtIdPedido.setBounds(156, 47, 165, 20);
 		panelPrincipal.add(txtIdPedido);
 		txtIdPedido.setColumns(10);
 		
 		JLabel lblEstadoActual = new JLabel("Estado Actual");
-		lblEstadoActual.setBounds(77, 138, 100, 14);
+		lblEstadoActual.setBounds(36, 138, 100, 14);
 		panelPrincipal.add(lblEstadoActual);
 		
 		txtEstadoActual = new JTextField();
 		txtEstadoActual.setEditable(false);
-		txtEstadoActual.setBounds(199, 135, 106, 20);
+		txtEstadoActual.setBounds(156, 135, 165, 20);
 		panelPrincipal.add(txtEstadoActual);
 		txtEstadoActual.setColumns(10);
 		
 		JLabel lblEstadoObjetivo = new JLabel("Estado Objetivo");
-		lblEstadoObjetivo.setBounds(77, 220, 100, 14);
+		lblEstadoObjetivo.setBounds(36, 207, 100, 14);
 		panelPrincipal.add(lblEstadoObjetivo);
 		
 		cmbEstadoObjetivo = new JComboBox();
-		cmbEstadoObjetivo.setBounds(199, 217, 106, 20);
+		cmbEstadoObjetivo.setBounds(156, 204, 165, 20);
 		panelPrincipal.add(cmbEstadoObjetivo);
 		
 		JButton btnContinuar = new JButton("Continuar");
@@ -112,11 +115,11 @@ public class VentPedCambioEstado extends JDialog {
 				if (anterior)
 				{
 					estAnt = (EstadoAnterior) cmbEstadoObjetivo.getSelectedItem();
-					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estAnt.getIdEstadoAnterior());
+					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estAnt.getIdEstadoAnterior(),Sesion.getUsuario());
 				}else if(posterior)
 				{
 					estPos = (EstadoPosterior) cmbEstadoObjetivo.getSelectedItem();
-					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior());
+					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior(),Sesion.getUsuario());
 					if(estPos.isImprimeEstPosterior())
 					{
 //						ReportesCtrl repCtrl = new ReportesCtrl();
@@ -148,12 +151,12 @@ public class VentPedCambioEstado extends JDialog {
 		
 		
 		JLabel lblTipoPedido = new JLabel("Tipo Pedido");
-		lblTipoPedido.setBounds(77, 97, 100, 14);
+		lblTipoPedido.setBounds(36, 97, 100, 14);
 		panelPrincipal.add(lblTipoPedido);
 		
 		txtTipoPedido = new JTextField();	
 		txtTipoPedido.setEditable(false);
-		txtTipoPedido.setBounds(199, 94, 106, 20);
+		txtTipoPedido.setBounds(155, 94, 166, 20);
 		panelPrincipal.add(txtTipoPedido);
 		txtTipoPedido.setColumns(10);
 		

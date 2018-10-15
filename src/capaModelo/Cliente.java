@@ -29,97 +29,6 @@ public class Cliente {
 	private String nomenclatura;
 	
 	
-	
-	public Cliente(int id, String telefono, String nombres, String direccion, String zonaDireccion, String observacion,
-			String tienda, int idtienda) {
-		super();
-		this.idcliente = id;
-		this.telefono = telefono;
-		this.nombres = nombres;
-		this.Direccion = direccion;
-		this.zonaDireccion = zonaDireccion;
-		this.observacion = observacion;
-		this.tienda = tienda;
-		this.idtienda = idtienda;
-	}
-
-	public Cliente(String telefono, String nombres, String direccion, String zonaDireccion, String observacion, String tienda) {
-		super();
-		this.telefono = telefono;
-		this.nombres = nombres;
-		this.Direccion = direccion;
-		this.zonaDireccion = zonaDireccion;
-		this.observacion = observacion;
-		this.tienda = tienda;
-	}
-	
-	public Cliente(String telefono, String nombres, String direccion, String zonaDireccion, String observacion, String tienda, int idtienda) {
-		super();
-		this.telefono = telefono;
-		this.nombres = nombres;
-		this.Direccion = direccion;
-		this.zonaDireccion = zonaDireccion;
-		this.observacion = observacion;
-		this.tienda = tienda;
-		this.idtienda = idtienda;
-	}
-	
-	
-	
-
-	public Cliente(int idcliente, String telefono, String nombres, String apellidos, String nombreCompania, String direccion, String Municipio, float latitud,
-			float lontitud, String zonaDireccion, String observacion, String tienda, int idtienda, int memcode, int idnomenclatura, String numNomenclatura, String numNomenclatura2, String num3, String nomenclatura) {
-		super();
-		this.idcliente = idcliente;
-		this.telefono = telefono;
-		this.nombres = nombres;
-		this.apellidos = apellidos;
-		this.nombreCompania = nombreCompania;
-		this.Direccion = direccion;
-		this.Municipio = Municipio;
-		this.latitud = latitud;
-		this.lontitud = lontitud;
-		this.zonaDireccion = zonaDireccion;
-		this.observacion = observacion;
-		this.tienda = tienda;
-		this.idtienda = idtienda;
-		this.memcode = memcode;
-		this.idnomenclatura = idnomenclatura;
-		this.numNomenclatura = numNomenclatura;
-		this.numNomenclatura2 = numNomenclatura2;
-		this.num3 = num3;
-		this.nomenclatura = nomenclatura; 
-	}
-
-	
-	public Cliente(int idcliente, String telefono, String nombres, String apellidos, String nombreCompania,
-			String direccion, String municipio, int idMunicipio, float latitud, float lontitud, String zonaDireccion,
-			String observacion, String tienda, int idtienda, int memcode, int idnomenclatura, String numNomenclatura, String numNomenclatura2, String num3, String nomenclatura) {
-		super();
-		this.idcliente = idcliente;
-		this.telefono = telefono;
-		this.nombres = nombres;
-		this.apellidos = apellidos;
-		this.nombreCompania = nombreCompania;
-		this.Direccion = direccion;
-		this.Municipio = municipio;
-		this.idMunicipio = idMunicipio;
-		this.latitud = latitud;
-		this.lontitud = lontitud;
-		this.zonaDireccion = zonaDireccion;
-		this.observacion = observacion;
-		this.tienda = tienda;
-		this.idtienda = idtienda;
-		this.memcode = memcode;
-		this.idnomenclatura = idnomenclatura;
-		this.numNomenclatura = numNomenclatura;
-		this.numNomenclatura2 = numNomenclatura2;
-		this.num3 = num3;
-		this.nomenclatura = nomenclatura; 
-	}
-
-	
-	
 	public int getMemcode() {
 		return memcode;
 	}
@@ -353,6 +262,35 @@ public class Cliente {
 	public Cliente() {
 		// TODO Auto-generated constructor stub
 	}
+
+		
+	public Cliente(int idcliente, String telefono, String nombres, String apellidos, String nombreCompania,
+			String direccion, String municipio, int idMunicipio, float latitud, float lontitud, String zonaDireccion,
+			String observacion, String tienda, int idtienda, int memcode, int idnomenclatura, String numNomenclatura, String numNomenclatura2, String num3, String nomenclatura) {
+		super();
+		this.idcliente = idcliente;
+		this.telefono = telefono;
+		this.nombres = nombres;
+		this.apellidos = apellidos;
+		this.nombreCompania = nombreCompania;
+		this.Direccion = direccion;
+		this.Municipio = municipio;
+		this.idMunicipio = idMunicipio;
+		this.latitud = latitud;
+		this.lontitud = lontitud;
+		this.zonaDireccion = zonaDireccion;
+		this.observacion = observacion;
+		this.tienda = tienda;
+		this.idtienda = idtienda;
+		this.memcode = memcode;
+		this.idnomenclatura = idnomenclatura;
+		this.numNomenclatura = numNomenclatura;
+		this.numNomenclatura2 = numNomenclatura2;
+		this.num3 = num3;
+		this.nomenclatura = nomenclatura; 
+	}
+
+
 
 	public Cliente(int idcliente, String telefono, String nombres, String apellidos) {
 		super();

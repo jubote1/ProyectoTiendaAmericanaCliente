@@ -76,7 +76,7 @@ public class ProductoModificadorSinDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idproducto,  a.idproductocon, c.descripcion from producto_modificador_sin a ,producto c where a.idproductosin = c.idproducto and a.idproducto = " + idProducto;
+			String consulta = "select a.idproducto,  a.idproductosin, c.descripcion from producto_modificador_sin a ,producto c where a.idproductosin = c.idproducto and a.idproducto = " + idProducto;
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			int idProductoSin;
