@@ -46,7 +46,7 @@ public class VentPedPintar extends JDialog {
 	private int idPedido;
 	private JTextField txtNumPedido;
 	private JPanel panelPintar;
-	
+	private ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	//Definimos la consulta de los datos de manera global
 	ArrayList<DetallePedido> detPedidos;
 	/**
@@ -95,7 +95,7 @@ public class VentPedPintar extends JDialog {
 		getContentPane().setLayout(new BorderLayout());
 		//Se realiza el llenado del ArrayList una sola vez
 		//Instanciamos objeto de la capa controladora
-		PedidoCtrl pedCtrl = new PedidoCtrl ();
+		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 		//Retornamos los detalles pedidos con la información que requerimos para pintar el pedido.
 		detPedidos = pedCtrl.obtenerDetallePedidoPintar(this.idPedido);
 		panelPintar = new JPanel();
@@ -366,7 +366,6 @@ public class VentPedPintar extends JDialog {
 						//Pintamos con la imagen que tambien se almacenaría en base de datos
 						//Obtenemos el idProducto
 						int idProd = detTem.getIdProducto();
-						ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
 						Producto otroProd = parCtrl.obtenerProducto(idProd);
 						
 						try

@@ -108,7 +108,7 @@ public class VentCliBuscarCliente extends JFrame {
         columnsName[1] = "Nombre Cliente";
         columnsName[2] = "Direccion";
         
-        ClienteCtrl clie = new ClienteCtrl();
+        ClienteCtrl clie = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
 		ArrayList<Cliente> clientes = clie.obtenerClientes(Telefono);
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);

@@ -244,7 +244,7 @@ public class VentSegTienda extends JDialog {
 		btnActualizarNmeros.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				validarNumerosResolucion();
-				OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl();
+				OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 				String numeroInicial = txtNumInicial.getText();
 				String numeroFinal = txtNumFinal.getText();
 				int numInicial;
@@ -279,7 +279,7 @@ public class VentSegTienda extends JDialog {
 				String ubicacion = txtUbicacion.getText();
 				String identificacion = txtIdentificacion.getText();
 				Tienda tienda = new Tienda(0,nombreTienda, url, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, "", "");
-				OperacionesTiendaCtrl opertiendaCtrl = new OperacionesTiendaCtrl();
+				OperacionesTiendaCtrl opertiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 				boolean respuesta = opertiendaCtrl.actualizarTienda(tienda);
 				if(respuesta)
 				{
@@ -298,7 +298,7 @@ public class VentSegTienda extends JDialog {
 	
 public void cargarDatosTienda()
 {
-	OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl();
+	OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 	Tienda tienda = operCtrl.obtenerTienda();
 	txtNombreTienda.setText(tienda.getNombretienda());
 	txtUrl.setText(tienda.getUrlContact());

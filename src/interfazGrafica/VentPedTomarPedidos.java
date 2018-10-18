@@ -107,7 +107,9 @@ public class VentPedTomarPedidos extends JFrame {
 	public static boolean esAnulado = false;
 	private JComboBox comboMotivoAnulacion;
 	public static int contadorDetallePedido = 1;
-	
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private ParametrosProductoCtrl parPro = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
+	ArrayList<Producto> productos =parPro.obtenerProductosCompleto();
 	/**
 	 * Launch the application.
 	 */
@@ -234,7 +236,6 @@ public class VentPedTomarPedidos extends JFrame {
 				}
 				// Se captura el valor del idDetalle que se desea eliminar
 				int idDetalleEliminar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				InventarioCtrl invCtrl = new InventarioCtrl();
 				//Se obtiene en un boolean si el idDetalle es maestro o no, sino lo es, no se puede eliminar, pues se debe
 				//eliminar el master
@@ -351,8 +352,7 @@ public class VentPedTomarPedidos extends JFrame {
 				int filaSeleccionada = tableDetallePedido.getSelectedRow();
 				int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
 				//Validaremos si el detallePedido tiene un producto que tiene productos con y sin.
-				PedidoCtrl pedCtrlCon = new PedidoCtrl();
-				boolean hayModCon = pedCtrlCon.detalleTieneModificadorCon(idDetalleTratar);
+				boolean hayModCon = pedCtrl.detalleTieneModificadorCon(idDetalleTratar);
 				if(hayModCon)
 				{
 					btnProductoCon.setEnabled(true);
@@ -361,7 +361,7 @@ public class VentPedTomarPedidos extends JFrame {
 				{
 					btnProductoCon.setEnabled(false);
 				}
-				boolean hayModSin = pedCtrlCon.detalleTieneModificadorSin(idDetalleTratar);
+				boolean hayModSin = pedCtrl.detalleTieneModificadorSin(idDetalleTratar);
 				if(hayModSin)
 				{
 					btnProductoSin.setEnabled(true);
@@ -530,7 +530,6 @@ public class VentPedTomarPedidos extends JFrame {
 		btnDescuento = new JButton("Descuento");
 		btnDescuento.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				if (idPedido > 0)
 				{
 					boolean hayDescuentos = pedCtrl.existePedidoDescuento(idPedido);
@@ -594,7 +593,6 @@ public class VentPedTomarPedidos extends JFrame {
 					dispose();
 					return;
 				}
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				//traemos la ventana padre para el JDialog de FinalizarPedido
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
                         (Component) arg0.getSource());
@@ -679,7 +677,6 @@ public class VentPedTomarPedidos extends JFrame {
 		JButton btnTerminarPedido = new JButton("Terminar Pedido");
 		btnTerminarPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				//Ingresamos lógica para tomar el tipo de pedido 
 				int idTipoPedido;
 				try
@@ -811,7 +808,6 @@ public class VentPedTomarPedidos extends JFrame {
 		setIconImage(img.getImage());
 		
 		//Acciones relacionadas con el botón de tipo de pedido
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		tiposPedidos = pedCtrl.obtenerTiposPedidoNat();
 		numTipoPedido = tiposPedidos.size();
 		//Inicializamos el botón con el tipo de pedido inicial
@@ -891,10 +887,8 @@ public class VentPedTomarPedidos extends JFrame {
 	
 	public void cargarConfiguracionMenu(int intMultimenu)
 	{
-//		String multime = (String) comboBoxMultiMenu.getSelectedItem();
-//		StringTokenizer StrMulti = new StringTokenizer(multime,"-");
-//		StrMulti.nextToken();
-//		int intMultimenu = Integer.parseInt(StrMulti.nextToken().trim());
+		//Realizamos optimización sobre este método para no ir por cada producto sino
+		//que los traemos todos en un ArrayList y de esta manera interactuamos con ellos
 		MenuCtrl menuCtrl = new MenuCtrl();
 		confiMenu = menuCtrl.obtenerConfMenu(intMultimenu);
 		//Aqui deberï¿½a pintarse el menï¿½
@@ -920,7 +914,6 @@ public class VentPedTomarPedidos extends JFrame {
 				else
 				{
 					objConfMenu = (ConfiguracionMenu) objGenerico;
-					ParametrosProductoCtrl parPro = new ParametrosProductoCtrl();
 					Producto prodBoton = parPro.obtenerProducto(objConfMenu.getIdProducto());
 					btn = new JButton();
 					btn.setText("<html><center>"+ prodBoton.getIdProducto() + "- <br> " + prodBoton.getDescripcion()+"</center></html>");
@@ -967,7 +960,6 @@ public class VentPedTomarPedidos extends JFrame {
 		StringTokenizer StrTokenProducto = new StringTokenizer(texto,"-");
 		String strIdProducto = StrTokenProducto.nextToken();
 		int idProducto = Integer.parseInt(strIdProducto);
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<Pregunta> preguntasProducto = pedCtrl.obtenerPreguntaProducto(idProducto);
 		//Si el producto no tiene preguntas forzadas se podrá facturar inmediatamente
 		// Si es cierto lo anterior no se ha creado el pedido, por lo tanto deberemos de crear el pedido
@@ -976,13 +968,12 @@ public class VentPedTomarPedidos extends JFrame {
 			crearEncabezadoPedido();
 		}
 		//Esto significa que la elección no tiene preguntas Forzadas por lo tanto la adición del producto es directa
-		ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
-		double precioProducto = parProducto.obtenerPrecioPilaProducto(idProducto);
+		double precioProducto = parPro.obtenerPrecioPilaProducto(idProducto);
 		double cantidad = 1;
 		DetallePedido detPedido = new DetallePedido(0,idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "",0, "N","", contadorDetallePedido);
 		//En estepunto debemos de validar si el producto adicionado tiene productos incluidos
 		//Agrupamos esta información en proIncluido
-		ArrayList<ProductoIncluido> proIncluido = parProducto.obtenerProductosIncluidos(idProducto, cantidad);
+		ArrayList<ProductoIncluido> proIncluido = parPro.obtenerProductosIncluidos(idProducto, cantidad);
 		//Capturamos el detalle pedido creado, validaremos si fue exitoso para agregarlo al contenedor y pantalla
 		int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
 		detPedido.setIdDetallePedido(idDetalle);
@@ -1002,7 +993,7 @@ public class VentPedTomarPedidos extends JFrame {
 			{
 				
 				ProductoIncluido proTem = proIncluido.get(i);
-				double precioProTem = parProducto.obtenerPrecioProducto(proTem.getIdproductoincluido(), proTem.getPrecio());
+				double precioProTem = parPro.obtenerPrecioProducto(proTem.getIdproductoincluido(), proTem.getPrecio());
 				detPedido = new DetallePedido(0, idPedido, proTem.getIdproductoincluido(),proTem.getCantidad(),precioProTem,proTem.getCantidad()*precioProTem,"",idDetallePedidoMaster, "N","", contadorDetallePedido);
 				int idDetProInc = pedCtrl.insertarDetallePedido(detPedido);
 				detPedido.setIdDetallePedido(idDetProInc);
@@ -1078,11 +1069,10 @@ public class VentPedTomarPedidos extends JFrame {
 		//Este será el contador con el que controlaremos el color del detallePedido master
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(7).setMaxWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(7).setMinWidth(0);
-		ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
 		for(int i = 0; i < detallesPedido.size();i++)
 		{
 			DetallePedido det = detallesPedido.get(i);
-			Producto proDet = parProducto.obtenerProducto(det.getIdProducto());
+			Producto proDet = parPro.obtenerProducto(det.getIdProducto());
 			String [] object = new String[]{Integer.toString(det.getIdDetallePedido()),Double.toString(det.getCantidad()),proDet.getDescripcion(),Double.toString(det.getValorTotal()), Integer.toString(det.getIdDetallePedidoMaster()), Integer.toString(det.getIdDetalleModificador()), det.getEstado(), Integer.toString(det.getContadorDetallePedido())};
 			modeloDetalle.addRow(object);
 		}
@@ -1100,7 +1090,6 @@ public class VentPedTomarPedidos extends JFrame {
 	
 	public void crearEncabezadoPedido()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
 		String fechaPedido = fecha.getFechaApertura();
 		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, Sesion.getUsuario());
@@ -1119,7 +1108,6 @@ public class VentPedTomarPedidos extends JFrame {
 	
 	public void initComboMotivoAnulacion()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<MotivoAnulacionPedido> motAnulacion = pedCtrl.obtenerMotivosAnulacion();
 		for(int i = 0; i < motAnulacion.size();i++)
 		{
@@ -1134,7 +1122,6 @@ public class VentPedTomarPedidos extends JFrame {
 	 */
 	public void anularPedido(boolean salirVentana)
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		// Validamos si el pedido es nuevo y no es reabierto
 		if(!esReabierto)
 		{

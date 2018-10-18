@@ -26,7 +26,7 @@ public class ConfiguracionMesaDAO {
 	 * Método que se encarga de retornar en un arreglo las configuraciones de las mesas y en que punto se encuentra configurada
 	 * @return Se retorna un arreglo bidimensional de objetos tipo ConfiguracionMesa.
 	 */
-	public static ConfiguracionMesa[][] obtenerConfMesa()
+	public static ConfiguracionMesa[][] obtenerConfMesa(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -37,7 +37,10 @@ public class ConfiguracionMesaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from configuracion_mesa";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			
 			//Inicializamos en null las diversas posiciones de la respuesta
@@ -69,7 +72,6 @@ public class ConfiguracionMesaDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -83,7 +85,7 @@ public class ConfiguracionMesaDAO {
 	
 
 
-	public static int insertarConfiguracionMesa(ConfiguracionMesa confMesa)
+	public static int insertarConfiguracionMesa(ConfiguracionMesa confMesa, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idConfMesaIns = 0;
@@ -93,7 +95,10 @@ public class ConfiguracionMesaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into configuracion_mesa ( fila, columna, mesa) values (" + confMesa.getFila() + ", " + confMesa.getColumna() + " , " + confMesa.getMesa() +  ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
@@ -116,7 +121,7 @@ public class ConfiguracionMesaDAO {
 		return(idConfMesaIns);
 	}
 	
-	public static boolean eliminarConfiguracionMesa(ConfiguracionMesa confMesa)
+	public static boolean eliminarConfiguracionMesa(ConfiguracionMesa confMesa, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -125,7 +130,10 @@ public class ConfiguracionMesaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from configuracion_mesa where fila = " + confMesa.getFila() + " and columna = " + confMesa.getColumna() + " and mesa =" + confMesa.getMesa();
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			stm.close();
 			con1.close();

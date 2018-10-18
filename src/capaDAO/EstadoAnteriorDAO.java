@@ -26,7 +26,7 @@ public class EstadoAnteriorDAO {
  * Método que se encarga de retonar todos los productos parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList<EstadoAnterior> obtenerEstadosAnteriores(int idEstado)
+	public static ArrayList<EstadoAnterior> obtenerEstadosAnteriores(int idEstado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -37,7 +37,10 @@ public class EstadoAnteriorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idestado, a.idestado_anterior, b.descripcion descripcion from estado_anterior a , estado b where a.idestado =" + idEstado + " and a.idestado_anterior = b.idestado";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idEstadoAnterior;
 			String descripcion;
@@ -53,7 +56,6 @@ public class EstadoAnteriorDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -68,7 +70,7 @@ public class EstadoAnteriorDAO {
 	
 		
 	
-	public static boolean insertarEstadoAnterior(EstadoAnterior estadoAnt)
+	public static boolean insertarEstadoAnterior(EstadoAnterior estadoAnt, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idEstadoIns = 0;
@@ -78,7 +80,10 @@ public class EstadoAnteriorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into estado_anterior (idestado, idestado_anterior) values(" + estadoAnt.getIdEstado() + " , " + estadoAnt.getIdEstadoAnterior() + ")";
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			stm.close();
 			con1.close();
@@ -97,7 +102,7 @@ public class EstadoAnteriorDAO {
 	}
 	
 	
-	public static boolean eliminarEstadoAnterior(EstadoAnterior estadoAnt)
+	public static boolean eliminarEstadoAnterior(EstadoAnterior estadoAnt, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -107,7 +112,10 @@ public class EstadoAnteriorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from estado_anterior where idestado = " + estadoAnt.getIdEstado() + " and idestado_anterior = " + estadoAnt.getIdEstadoAnterior(); 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();

@@ -33,6 +33,12 @@ import capaModelo.ProductoModificadorSin;
  */
 public class ParametrosProductoCtrl {
 	
+	
+	private boolean auditoria;
+	public ParametrosProductoCtrl(boolean auditoria)
+	{
+		this.auditoria = auditoria;
+	}
 	//IMPUESTO
 	
 	/**
@@ -41,7 +47,7 @@ public class ParametrosProductoCtrl {
 	 */
 	public ArrayList<Object> obtenerImpuestos()
 	{
-		ArrayList<Object>  impuestos = ImpuestoDAO.obtenerImpuesto();
+		ArrayList<Object>  impuestos = ImpuestoDAO.obtenerImpuesto(auditoria);
 		return(impuestos);
 	}
 	
@@ -52,7 +58,7 @@ public class ParametrosProductoCtrl {
 	 */
 	public int insertarImpuesto(Impuesto impuesto)
 	{
-		int idImpuesto = ImpuestoDAO.insertarImpuesto(impuesto);
+		int idImpuesto = ImpuestoDAO.insertarImpuesto(impuesto, auditoria);
 		return(idImpuesto);
 	}
 	
@@ -63,7 +69,7 @@ public class ParametrosProductoCtrl {
 	 */
 	public boolean editarImpuesto(Impuesto impuesto)
 	{
-		boolean respuesta  = ImpuestoDAO.EditarImpuesto(impuesto);
+		boolean respuesta  = ImpuestoDAO.EditarImpuesto(impuesto, auditoria);
 		return(respuesta);
 	}
 	/**
@@ -73,7 +79,7 @@ public class ParametrosProductoCtrl {
 	 */
 	public boolean eliminarImpuesto(int idImpuesto)
 	{
-		boolean respuesta = ImpuestoDAO.eliminarImpuesto(idImpuesto);
+		boolean respuesta = ImpuestoDAO.eliminarImpuesto(idImpuesto, auditoria);
 		return(respuesta);
 	}
 
@@ -86,7 +92,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public ArrayList<Object> obtenerImpuestosProducto(int idImpuestoProducto)
 		{
-			ArrayList<Object>  impuestosProducto = ImpuestoProductoDAO.obtenerImpuestosProducto(idImpuestoProducto);
+			ArrayList<Object>  impuestosProducto = ImpuestoProductoDAO.obtenerImpuestosProducto(idImpuestoProducto, auditoria);
 			return(impuestosProducto);
 		}
 		
@@ -97,7 +103,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public int insertarImpuestoProducto(ImpuestoProducto impuestoProducto)
 		{
-			int idImpuestoProducto = ImpuestoProductoDAO.insertarImpuestoProducto(impuestoProducto);
+			int idImpuestoProducto = ImpuestoProductoDAO.insertarImpuestoProducto(impuestoProducto, auditoria);
 			return(idImpuestoProducto);
 		}
 		
@@ -109,7 +115,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public boolean eliminarImpuestoProducto(int idImpuestoProducto)
 		{
-			boolean respuesta = ImpuestoProductoDAO.eliminarImpuestoProducto(idImpuestoProducto);
+			boolean respuesta = ImpuestoProductoDAO.eliminarImpuestoProducto(idImpuestoProducto, auditoria);
 			return(respuesta);
 		}
 
@@ -120,7 +126,7 @@ public class ParametrosProductoCtrl {
 			 */
 			public ArrayList<Object> obtenerProductosIncluidos(int idproductoincluido)
 			{
-				ArrayList<Object>  productosIncluidos = ProductoIncluidoDAO.obtenerProductosIncluidos(idproductoincluido);
+				ArrayList<Object>  productosIncluidos = ProductoIncluidoDAO.obtenerProductosIncluidos(idproductoincluido, auditoria);
 				return(productosIncluidos);
 			}
 			
@@ -131,7 +137,7 @@ public class ParametrosProductoCtrl {
 			 */
 			public int insertarProductoIncluido(ProductoIncluido productoIncluido)
 			{
-				int idproducto_incluido = ProductoIncluidoDAO.insertarProductoIncluido(productoIncluido);
+				int idproducto_incluido = ProductoIncluidoDAO.insertarProductoIncluido(productoIncluido, auditoria);
 				return(idproducto_incluido);
 			}
 			
@@ -143,7 +149,7 @@ public class ParametrosProductoCtrl {
 			 */
 			public boolean eliminarProductoIncluido(int idproducto_incluido)
 			{
-				boolean respuesta = ProductoIncluidoDAO.eliminarProductoIncluido(idproducto_incluido);
+				boolean respuesta = ProductoIncluidoDAO.eliminarProductoIncluido(idproducto_incluido, auditoria);
 				return(respuesta);
 			}
 
@@ -156,7 +162,7 @@ public class ParametrosProductoCtrl {
 			 */
 			public ArrayList<Object> obtenerItemsInventarioProducto(int idProducto)
 			{
-				ArrayList<Object>  itemsProducto = ItemInventarioProductoDAO.obtenerItemsInventarioProducto(idProducto);
+				ArrayList<Object>  itemsProducto = ItemInventarioProductoDAO.obtenerItemsInventarioProducto(idProducto, auditoria);
 				return(itemsProducto);
 			}
 			
@@ -167,7 +173,7 @@ public class ParametrosProductoCtrl {
 			 */
 			public int insertarItemInventarioProducto(ItemInventarioProducto itemProducto)
 			{
-				int idItemProducto = ItemInventarioProductoDAO.insertarItemInventarioProducto(itemProducto);
+				int idItemProducto = ItemInventarioProductoDAO.insertarItemInventarioProducto(itemProducto, auditoria);
 				return(idItemProducto);
 			}
 			
@@ -179,7 +185,7 @@ public class ParametrosProductoCtrl {
 			 */
 			public boolean eliminarItemInventarioProducto(int idItemProducto)
 			{
-				boolean respuesta = ItemInventarioProductoDAO.eliminarItemInventarioProducto(idItemProducto);
+				boolean respuesta = ItemInventarioProductoDAO.eliminarItemInventarioProducto(idItemProducto, auditoria);
 				return(respuesta);
 			}
 
@@ -193,13 +199,13 @@ public class ParametrosProductoCtrl {
 	 */
 	public ArrayList<Object> obtenerItemsInventarios()
 	{
-		ArrayList<Object>  items = ItemInventarioDAO.obtenerItemInventario();
+		ArrayList<Object>  items = ItemInventarioDAO.obtenerItemInventario(auditoria);
 		return(items);
 	}
 	
 	public ArrayList<ItemInventario> obtenerItemsInventariosObj()
 	{
-		ArrayList<ItemInventario>  items = ItemInventarioDAO.obtenerItemInventarioObj();
+		ArrayList<ItemInventario>  items = ItemInventarioDAO.obtenerItemInventarioObj(auditoria);
 		return(items);
 	}
 	
@@ -211,7 +217,7 @@ public class ParametrosProductoCtrl {
 	 */
 	public int insertarItemInventario(ItemInventario item)
 	{
-		int idItem = ItemInventarioDAO.insertarItemInventario(item);
+		int idItem = ItemInventarioDAO.insertarItemInventario(item, auditoria);
 		return(idItem);
 	}
 	
@@ -222,7 +228,7 @@ public class ParametrosProductoCtrl {
 	 */
 	public boolean editarItemInventario(ItemInventario item)
 	{
-		boolean respuesta  = ItemInventarioDAO.EditarItemInventario(item);
+		boolean respuesta  = ItemInventarioDAO.EditarItemInventario(item, auditoria);
 		return(respuesta);
 	}
 	/**
@@ -232,7 +238,7 @@ public class ParametrosProductoCtrl {
 	 */
 	public boolean eliminarItemInventario(int idItem)
 	{
-		boolean respuesta = ItemInventarioDAO.eliminarItemInventario(idItem);
+		boolean respuesta = ItemInventarioDAO.eliminarItemInventario(idItem, auditoria);
 		return(respuesta);
 	}
 	
@@ -245,7 +251,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public ArrayList<Object> obtenerProductos()
 		{
-			ArrayList<Object>  productos = ProductoDAO.obtenerProducto();
+			ArrayList<Object>  productos = ProductoDAO.obtenerProducto( auditoria);
 			return(productos);
 		}
 		
@@ -256,7 +262,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public int insertarProducto(Producto producto)
 		{
-			int idProducto = ProductoDAO.insertarProducto(producto);
+			int idProducto = ProductoDAO.insertarProducto(producto, auditoria);
 			return(idProducto);
 		}
 		
@@ -269,13 +275,13 @@ public class ParametrosProductoCtrl {
 		 */
 		public double obtenerPrecioPilaProducto(int idProducto)
 		{
-			double precioProducto = ProductoDAO.obtenerPrecioPilaProducto(idProducto);
+			double precioProducto = ProductoDAO.obtenerPrecioPilaProducto(idProducto, auditoria);
 			return(precioProducto);
 		}
 		
 		public double obtenerPrecioProducto(int idProducto, String precio)
 		{
-			double precioProducto = ProductoDAO.obtenerPrecioProducto(idProducto,precio);
+			double precioProducto = ProductoDAO.obtenerPrecioProducto(idProducto,precio, auditoria);
 			return(precioProducto);
 		}
 		
@@ -314,7 +320,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public double obtenerPrecioProducto(String precio, int idProducto)
 		{
-			double precioProducto = ProductoDAO.obtenerPrecioProducto(precio, idProducto);
+			double precioProducto = ProductoDAO.obtenerPrecioProducto(precio, idProducto, auditoria);
 			return(precioProducto);
 		}
 		
@@ -326,7 +332,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public Producto obtenerProducto(int idProducto)
 		{
-			Producto producto = ProductoDAO.obtenerProducto(idProducto);
+			Producto producto = ProductoDAO.obtenerProducto(idProducto, auditoria);
 			return(producto);
 		}
 		
@@ -337,7 +343,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public boolean editarProducto(Producto producto)
 		{
-			boolean respuesta  = ProductoDAO.EditarProducto(producto);
+			boolean respuesta  = ProductoDAO.EditarProducto(producto, auditoria);
 			return(respuesta);
 		}
 		/**
@@ -347,7 +353,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public boolean eliminarProducto(int idProducto)
 		{
-			boolean respuesta = ProductoDAO.eliminarProducto(idProducto);
+			boolean respuesta = ProductoDAO.eliminarProducto(idProducto, auditoria);
 			return(respuesta);
 		}
 	
@@ -361,7 +367,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public ArrayList<Object> obtenerEleccionForzadas(int idPregunta)
 		{
-			ArrayList<Object>  eleccionesForzadas = EleccionForzadaDAO.obtenerEleccionesForzadas(idPregunta);
+			ArrayList<Object>  eleccionesForzadas = EleccionForzadaDAO.obtenerEleccionesForzadas(idPregunta, auditoria);
 			return(eleccionesForzadas);
 		}
 		
@@ -373,7 +379,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public ArrayList<EleccionForzada> obtEleccionesForzadas(int idPreConsulta)
 		{
-			ArrayList<EleccionForzada>  eleccionesForzadas = EleccionForzadaDAO.obtEleccionesForzadas(idPreConsulta);
+			ArrayList<EleccionForzada>  eleccionesForzadas = EleccionForzadaDAO.obtEleccionesForzadas(idPreConsulta, auditoria);
 			return(eleccionesForzadas);
 		}
 		
@@ -385,7 +391,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public int insertarEleccionForzada(EleccionForzada eleccion)
 		{
-			int idEleccion = EleccionForzadaDAO.insertarEleccionForzada(eleccion);
+			int idEleccion = EleccionForzadaDAO.insertarEleccionForzada(eleccion, auditoria);
 			return(idEleccion);
 		}
 		
@@ -396,7 +402,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public boolean editarEleccionForzada(EleccionForzada eleccion)
 		{
-			boolean respuesta  = EleccionForzadaDAO.EditarEleccionForzada(eleccion);
+			boolean respuesta  = EleccionForzadaDAO.EditarEleccionForzada(eleccion, auditoria);
 			return(respuesta);
 		}
 		/**
@@ -406,7 +412,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public boolean eliminarEleccionForzada(int idEleccion)
 		{
-			boolean respuesta = EleccionForzadaDAO.eliminarEleccionForzada(idEleccion);
+			boolean respuesta = EleccionForzadaDAO.eliminarEleccionForzada(idEleccion, auditoria);
 			return(respuesta);
 		}
 		
@@ -418,7 +424,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public ArrayList<Object> obtenerPreguntas()
 		{
-			ArrayList<Object>  preguntas = PreguntaDAO.obtenerPreguntas();
+			ArrayList<Object>  preguntas = PreguntaDAO.obtenerPreguntas(auditoria);
 			return(preguntas);
 		}	
 		
@@ -431,7 +437,7 @@ public class ParametrosProductoCtrl {
 		 */
 		public Pregunta obtenerPregunta(int idPregunta)
 		{
-			Pregunta pregunta = PreguntaDAO.obtenerPregunta(idPregunta);
+			Pregunta pregunta = PreguntaDAO.obtenerPregunta(idPregunta, auditoria);
 			return(pregunta);
 		}
 		
@@ -443,7 +449,7 @@ public class ParametrosProductoCtrl {
 				 */
 				public int insertarPregunta(Pregunta pregunta)
 				{
-					int idPregunta = PreguntaDAO.insertarPregunta(pregunta);
+					int idPregunta = PreguntaDAO.insertarPregunta(pregunta, auditoria);
 					return(idPregunta);
 				}
 				
@@ -454,7 +460,7 @@ public class ParametrosProductoCtrl {
 				 */
 				public boolean editarPregunta(Pregunta pregunta)
 				{
-					boolean respuesta  = PreguntaDAO.EditarPregunta(pregunta);
+					boolean respuesta  = PreguntaDAO.EditarPregunta(pregunta, auditoria);
 					return(respuesta);
 				}
 				/**
@@ -464,13 +470,13 @@ public class ParametrosProductoCtrl {
 				 */
 				public boolean eliminarPregunta(int idPregunta)
 				{
-					boolean respuesta = PreguntaDAO.eliminarPregunta(idPregunta);
+					boolean respuesta = PreguntaDAO.eliminarPregunta(idPregunta, auditoria);
 					return(respuesta);
 				}
 
 				public ArrayList<ProductoIncluido> obtenerProductosIncluidos(int idProducto, double cantidad)
 				{
-					ArrayList<ProductoIncluido> prodIncluidosPedido = ProductoIncluidoDAO.obtenerProductosIncluidos(idProducto, cantidad);
+					ArrayList<ProductoIncluido> prodIncluidosPedido = ProductoIncluidoDAO.obtenerProductosIncluidos(idProducto, cantidad, auditoria);
 					return(prodIncluidosPedido);
 							
 				}
@@ -479,59 +485,65 @@ public class ParametrosProductoCtrl {
 				
 				public ArrayList obtenerProdModificadorCon(int idProducto)
 				{
-					ArrayList modCon = ProductoModificadorConDAO.obtenerProdModificadorCon(idProducto);
+					ArrayList modCon = ProductoModificadorConDAO.obtenerProdModificadorCon(idProducto, auditoria);
 					return(modCon);
 				}
 				
 				public ArrayList<Producto> obtenerProdModificadorConFalta(int idProd)
 				{
-					ArrayList<Producto> modConFalta = ProductoModificadorConDAO.obtenerProdModificadorConFalta(idProd);
+					ArrayList<Producto> modConFalta = ProductoModificadorConDAO.obtenerProdModificadorConFalta(idProd, auditoria);
 					return(modConFalta);
 				}
 				
 				public void insertarProdModificadoCon(ProductoModificadorCon prodMod)
 				{
-					 ProductoModificadorConDAO.insertarProdModificadoCon(prodMod);
+					 ProductoModificadorConDAO.insertarProdModificadoCon(prodMod, auditoria);
 				}
 				
 				public boolean eliminarProdModifidadorCon(ProductoModificadorCon prodConEli)
 				{
-					boolean respuesta = ProductoModificadorConDAO.eliminarProdModifidadorCon(prodConEli);
+					boolean respuesta = ProductoModificadorConDAO.eliminarProdModifidadorCon(prodConEli, auditoria);
 					return(respuesta);
 				}
 				
 				public ArrayList obtenerProdModificadorSin(int idProducto)
 				{
-					ArrayList modSin = ProductoModificadorSinDAO.obtenerProdModificadorSin(idProducto);
+					ArrayList modSin = ProductoModificadorSinDAO.obtenerProdModificadorSin(idProducto, auditoria);
 					return(modSin);
 				}
 				
 				public ArrayList<Producto> obtenerProdModificadorSinFalta(int idProd)
 				{
-					ArrayList<Producto> modSinFalta = ProductoModificadorSinDAO.obtenerProdModificadorSinFalta(idProd);
+					ArrayList<Producto> modSinFalta = ProductoModificadorSinDAO.obtenerProdModificadorSinFalta(idProd, auditoria);
 					return(modSinFalta);
 				}
 				
 				public void insertarProdModificadoSin(ProductoModificadorSin prodMod)
 				{
-					 ProductoModificadorSinDAO.insertarProdModificadoSin(prodMod);
+					 ProductoModificadorSinDAO.insertarProdModificadoSin(prodMod, auditoria);
 				}
 				
 				public boolean eliminarProdModifidadorSin(ProductoModificadorSin prodSinEli)
 				{
-					boolean respuesta = ProductoModificadorSinDAO.eliminarProdModifidadorSin(prodSinEli);
+					boolean respuesta = ProductoModificadorSinDAO.eliminarProdModifidadorSin(prodSinEli, auditoria);
 					return(respuesta);
 				}
 				
 				public boolean EditarCantProductoCon(int idProducto, int cantidad)
 				{
-					boolean respuesta = ProductoDAO.EditarCantProductoCon(idProducto, cantidad);
+					boolean respuesta = ProductoDAO.EditarCantProductoCon(idProducto, cantidad, auditoria);
 					return(respuesta);
 				}
 				
 				public boolean EditarCantProductoSin(int idProducto, int cantidad)
 				{
-					boolean respuesta = ProductoDAO.EditarCantProductoSin(idProducto, cantidad);
+					boolean respuesta = ProductoDAO.EditarCantProductoSin(idProducto, cantidad, auditoria);
 					return(respuesta);
+				}
+				
+				public ArrayList<Producto> obtenerProductosCompleto()
+				{
+					ArrayList<Producto> productos = ProductoDAO.obtenerProductos(auditoria);
+					return(productos);
 				}
 }

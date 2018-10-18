@@ -181,7 +181,7 @@ public class VentInvRetirarInventario extends JDialog {
 		txtFechaInventario.setColumns(10);
 		
 		//Vamos a recuperar la fecha del sistema y la vamos a mostrar en el campo correspondiente
-		PedidoCtrl pedCtrl = new PedidoCtrl();
+		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
 		fechaSis = fecha.getFechaApertura();
 		txtFechaInventario.setText(fechaSis);

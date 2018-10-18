@@ -26,7 +26,7 @@ public class ItemInventarioProductoDAO {
  * Método que se encarga de retonar todos los items de inventario por producto, dado un id producto determinado parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerItemsInventarioProducto(int idProducto)
+	public static ArrayList obtenerItemsInventarioProducto(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -37,7 +37,10 @@ public class ItemInventarioProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.iditem_producto , c.descripcion, a.iditem, b.nombre_item, a.cantidad from item_inventario_x_producto a, item_inventario b, producto c where a.idproducto = c.idproducto and a.iditem = b.iditem and a.idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -56,7 +59,6 @@ public class ItemInventarioProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -73,7 +75,7 @@ public class ItemInventarioProductoDAO {
 	 * @param idProducto
 	 * @return
 	 */
-	public static ArrayList<ModificadorInventario> obtenerItemsInventarioProducto(int idProducto, double cantidad)
+	public static ArrayList<ModificadorInventario> obtenerItemsInventarioProducto(int idProducto, double cantidad, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -84,7 +86,10 @@ public class ItemInventarioProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.iditem,  a.cantidad from item_inventario_x_producto a where a.idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idItem = 0;
 			double cantidadItem = 0;
@@ -99,7 +104,6 @@ public class ItemInventarioProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -116,7 +120,7 @@ public class ItemInventarioProductoDAO {
 	 * @param impuesto Recibe un objeto de tipo item inventari por producto del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el iditem_producto creado en la base de datos
 	 */
-	public static int insertarItemInventarioProducto(ItemInventarioProducto itemProducto)
+	public static int insertarItemInventarioProducto(ItemInventarioProducto itemProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idItemIns = 0;
@@ -126,12 +130,19 @@ public class ItemInventarioProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into item_inventario_x_producto (idproducto, iditem, cantidad) values (" + itemProducto.getIdProducto() + ", " + itemProducto.getIdItem() + " , " + itemProducto.getCantidad() + ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idItemIns=rs.getInt(1);
-				logger.info("id impuesto insertada en bd " + idItemIns);
+				if(auditoria)
+				{
+					logger.info("id impuesto insertada en bd " + idItemIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -155,7 +166,7 @@ public class ItemInventarioProductoDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarItemInventarioProducto(int idItemProducto)
+	public static boolean eliminarItemInventarioProducto(int idItemProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -165,7 +176,10 @@ public class ItemInventarioProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from item_inventario_x_producto where iditem_producto = " + idItemProducto; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();

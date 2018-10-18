@@ -15,7 +15,7 @@ import capaModelo.Parametro;
 
 public class ParametrosDAO {
 	
-	public static int retornarValorNumerico(String variable)
+	public static int retornarValorNumerico(String variable, boolean auditoria)
 	{
 		int valor = 0;
 		Logger logger = Logger.getLogger("log_file");
@@ -25,7 +25,10 @@ public class ParametrosDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select valornumerico from parametros where valorparametro = '"+ variable +"'";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				
@@ -45,19 +48,19 @@ public class ParametrosDAO {
 			con1.close();
 		}catch (Exception e)
 		{
-			System.out.println(e.toString() + e.getMessage());
+			
 			try
 			{
 				con1.close();
 			}catch(Exception e1)
 			{
-				System.out.println(e.toString()+ e.getMessage());
+				
 			}
 		}
 		return(valor);
 	}
 	
-	public static String retornarValorAlfanumerico(String variable)
+	public static String retornarValorAlfanumerico(String variable, boolean auditoria)
 	{
 		String valor = "";
 		Logger logger = Logger.getLogger("log_file");
@@ -67,7 +70,10 @@ public class ParametrosDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select valortexto from parametros where valorparametro = '"+ variable +"'";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				
@@ -87,13 +93,13 @@ public class ParametrosDAO {
 			con1.close();
 		}catch (Exception e)
 		{
-			System.out.println(e.toString() + e.getMessage());
+			
 			try
 			{
 				con1.close();
 			}catch(Exception e1)
 			{
-				System.out.println(e.toString()+ e.getMessage());
+				
 			}
 		}
 		return(valor);
@@ -103,7 +109,7 @@ public class ParametrosDAO {
 	 * Método que se encarga de obtener un arrayList con los parámetros ingresados en el sistema. 
 	 * @return Se retorna ArrayList genérico con todos los parámetros del sistema.
 	 */
-	public static ArrayList obtenerParametros()
+	public static ArrayList obtenerParametros(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -114,7 +120,10 @@ public class ParametrosDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from parametros";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -133,7 +142,6 @@ public class ParametrosDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -150,7 +158,7 @@ public class ParametrosDAO {
 	 * @param valorParametro de tipo texto como parametro para la consulta
 	 * @return Se retorna un objeto de tipo Parametro
 	 */
-	public static Parametro obtenerParametro(String valorParametro)
+	public static Parametro obtenerParametro(String valorParametro, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -161,7 +169,10 @@ public class ParametrosDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from parametros where valorparametro = '" + valorParametro +"'";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int valorNumerico = 0;
 			String valorTexto = "";
@@ -177,7 +188,6 @@ public class ParametrosDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -194,7 +204,7 @@ public class ParametrosDAO {
 	 * @param Parametro como objeto tipo parametro del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor booleano con la respuesta de si fue o no creado el objeto parámetro en la base de datos.
 	 */
-	public static boolean insertarParametro(Parametro parametro)
+	public static boolean insertarParametro(Parametro parametro, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -204,7 +214,10 @@ public class ParametrosDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into parametros (valorparametro, valornumerico, valortexto) values ('" + parametro.getValorParametro() + "', " + parametro.getValorNumerico() + ", '" + parametro.getValorTexto() + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			stm.close();
@@ -229,7 +242,7 @@ public class ParametrosDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarParametro(String valorParametro)
+	public static boolean eliminarParametro(String valorParametro, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -239,7 +252,10 @@ public class ParametrosDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from parametros where valorparametro = '" + valorParametro+"'"; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -264,7 +280,7 @@ public class ParametrosDAO {
 	 * @param impuesto Recibe como parámetro un objeto de la entidad impuesto con base en el cual se realiza la modificación
 	 * @return Se retorna un valor booleano indicando si el proceso fue o no satisfactorio
 	 */
-	public static boolean EditarParametro(Parametro parametro)
+	public static boolean EditarParametro(Parametro parametro, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -274,7 +290,10 @@ public class ParametrosDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update parametros set valortexto = '" + parametro.getValorTexto() + "' , valornumerico = " + parametro.getValorNumerico() + " where valorparametro = '" + parametro.getValorParametro()+"'" ; 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();

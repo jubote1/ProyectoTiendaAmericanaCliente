@@ -27,7 +27,7 @@ public class ConfiguracionMenuDAO {
  * @return Se retornará un arreglo de dos dimensiones con objetos de tipo ConfiguracionMenu, dado un multimenu quien se encarga de 
  * agruparlos.
  */
-	public static ConfiguracionMenu[][] obtenerConfMenu(int multimenu)
+	public static ConfiguracionMenu[][] obtenerConfMenu(int multimenu, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -38,7 +38,10 @@ public class ConfiguracionMenuDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from configuracion_menu  where multimenu = " + multimenu;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			
 			//Inicializamos en null las diversas posiciones de la respuesta
@@ -91,7 +94,7 @@ public class ConfiguracionMenuDAO {
 	 * @return Se retorna un entero con el idConfiguracionMenu creado en la base de datos en caso de que este proceso termine
 	 * correctamente.
 	 */
-	public static int insertarConfiguracionMenu(ConfiguracionMenu confMenu)
+	public static int insertarConfiguracionMenu(ConfiguracionMenu confMenu, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idConfMenuIns = 0;
@@ -101,7 +104,10 @@ public class ConfiguracionMenuDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into configuracion_menu (multimenu, menu, fila, columna, idproducto) values (" + confMenu.getMultimenu() + ", " + confMenu.getMenu() + " , " + confMenu.getFila() + " , " + confMenu.getColumna() + " , " + confMenu.getIdProducto() + ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
@@ -124,7 +130,7 @@ public class ConfiguracionMenuDAO {
 		return(idConfMenuIns);
 	}
 	
-	public static boolean eliminarConfiguracionMenu(ConfiguracionMenu confMenu)
+	public static boolean eliminarConfiguracionMenu(ConfiguracionMenu confMenu, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -133,7 +139,10 @@ public class ConfiguracionMenuDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from configuracion_menu where multimenu = " + confMenu.getMultimenu() + " and menu = " + confMenu.getMenu();
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			stm.close();
 			con1.close();
@@ -159,7 +168,7 @@ public class ConfiguracionMenuDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarEleccionForzada(int idEleccionForzada)
+	public static boolean eliminarEleccionForzada(int idEleccionForzada, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -169,7 +178,10 @@ public class ConfiguracionMenuDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from eleccion_forzada where ideleccion_forzada = " + idEleccionForzada; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -194,7 +206,7 @@ public class ConfiguracionMenuDAO {
 	 * @param EleccionForzada Recibe como parámetro un objeto de la entidad EleccionForzada con base en el cual se realiza la modificación
 	 * @return Se retorna un valor booleano indicando si el proceso fue o no satisfactorio
 	 */
-	public static boolean EditarEleccionForzada(EleccionForzada eleccionForzada)
+	public static boolean EditarEleccionForzada(EleccionForzada eleccionForzada, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -204,9 +216,11 @@ public class ConfiguracionMenuDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update eleccion_forzada set idproducto = " + eleccionForzada.getIdProducto() + " , idpregunta = " + eleccionForzada.getIdPregunta() + " , precio = '" + eleccionForzada.getPrecio() + "' , estado = " + eleccionForzada.getEstado()  + " where ideleccion_forzada = " + eleccionForzada.getIdEleccionForzada() ; 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
-			
 			stm.close();
 			con1.close();
 		}

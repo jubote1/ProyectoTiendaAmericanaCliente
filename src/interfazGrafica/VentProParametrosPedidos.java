@@ -34,6 +34,7 @@ public class VentProParametrosPedidos extends JFrame {
 	int idTipoPedido;
 	JCheckBox chValorDefecto;
 	JCheckBox chEsDomicilio;
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -126,7 +127,6 @@ public class VentProParametrosPedidos extends JFrame {
 						esDomicilio = true;
 					}
 					TipoPedido tipPedido = new TipoPedido(0, descripcion, valDefecto,"", esDomicilio);
-					PedidoCtrl pedCtrl = new PedidoCtrl();
 					int idTipInsertado = pedCtrl.insertarTipoPedido(tipPedido);
 					if (idTipInsertado > 0)
 					{
@@ -154,8 +154,7 @@ public class VentProParametrosPedidos extends JFrame {
 				String TipPedidoEliminar = (String) tableTipoPedido.getValueAt(filaSeleccionada, 1);
 				int idtTipoEliminar = Integer.parseInt((String)tableTipoPedido.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Tipo Pedido " +  TipPedidoEliminar , "Eliminacion Tipo Pedido ", JOptionPane.YES_NO_OPTION);
-				PedidoCtrl pedEliminar = new PedidoCtrl();
-				pedEliminar.eliminarTipoPedido(idtTipoEliminar);
+				pedCtrl.eliminarTipoPedido(idtTipoEliminar);
 				DefaultTableModel modelo = pintarTipoPedido();
 				tableTipoPedido.setModel(modelo);
 			}
@@ -185,7 +184,6 @@ public class VentProParametrosPedidos extends JFrame {
 				filaSeleccionada = tableTipoPedido.getSelectedRow();
 				int idTipoEditar = Integer.parseInt((String)tableTipoPedido.getValueAt(filaSeleccionada, 0));
 				txtIdTipoPedido.setText((String)tableTipoPedido.getValueAt(filaSeleccionada, 0));
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				TipoPedido tipPedEditar = pedCtrl.obtenerTipoPedido(idTipoEditar);
 				txtDescripcion.setText(tipPedEditar.getDescripcion());
 				if(tipPedEditar.isValorDefecto())
@@ -220,7 +218,6 @@ public class VentProParametrosPedidos extends JFrame {
 					boolean valDefecto = chValorDefecto.isSelected();
 					boolean valEsDomicilio = chEsDomicilio.isSelected();
 					TipoPedido tipoPedidoEditado = new TipoPedido(idTipoPedido,txtDescripcion.getText(),valDefecto,"", valEsDomicilio); 
-					PedidoCtrl pedCtrl = new PedidoCtrl();
 					boolean respuesta = pedCtrl.EditarTipoPedido(tipoPedidoEditado);
 					if (respuesta)
 					{
@@ -271,8 +268,7 @@ public class VentProParametrosPedidos extends JFrame {
         columnsName[0] = "Id Tipo Pedido ";
         columnsName[1] = "Descripcion Tipo Pedido";
         columnsName[2] = "Valor por Defecto";
-        PedidoCtrl par = new PedidoCtrl();
-		ArrayList<Object> tiposPedido = par.obtenerTiposPedido();
+       	ArrayList<Object> tiposPedido = pedCtrl.obtenerTiposPedido();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < tiposPedido.size();y++)

@@ -25,7 +25,7 @@ public class FormaPagoDAO {
 	 * 
 	 * @return Se retorna el id de forma de pago retornado en la inserción de la entidad en la base de datos.
 	 */
-	public static int insertarFormaPago(FormaPago forma)
+	public static int insertarFormaPago(FormaPago forma, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idFormaPagoIns = 0;
@@ -35,12 +35,19 @@ public class FormaPagoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into forma_pago (nombre, tipoformapago) values ('" + forma.getNombre() + "', '" + forma.getTipoforma() + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idFormaPagoIns =rs.getInt(1);
-				logger.info("Id forma pago insertada en bd " + idFormaPagoIns);
+				if(auditoria)
+				{
+					logger.info("Id forma pago insertada en bd " + idFormaPagoIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -62,7 +69,7 @@ public class FormaPagoDAO {
 	 * Método que se encarga de la eliminación de una Forma de pago con base en la información de parámetros enviada.
 	 * @param idFormaPago Se recibe como parámetro el idformapago que se desea eliminar.
 	 */
-	public static void eliminarFormaPago(int idFormaPago)
+	public static void eliminarFormaPago(int idFormaPago, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -71,7 +78,10 @@ public class FormaPagoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from forma_pago  where idforma_pago = " + idFormaPago; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			stm.close();
 			con1.close();
@@ -93,7 +103,7 @@ public class FormaPagoDAO {
 	 * @param idFormaPago Se recibe como parámetro un entero con el id forma de pago
 	 * @return Se retorna un objeto Modelo Forma de pago con la información de la forma de pago cosultada.
 	 */
-	public static FormaPago retornarFormaPago(int idFormaPago)
+	public static FormaPago retornarFormaPago(int idFormaPago, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -103,7 +113,10 @@ public class FormaPagoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select idforma_pago,nombre, tipoformapago from  forma_pago  where idforma_pago = " + idFormaPago; 
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idforma = 0;
 			String nombr = "";
@@ -135,7 +148,7 @@ public class FormaPagoDAO {
 	 * @param forma Se recibe como parámetro un objeto Modelo Forma Pago con los valores base para la modificación.
 	 * @return se retorna un valor tipo String con el resultado del proceso.
 	 */
-	public static String editarFormaPago(FormaPago forma)
+	public static String editarFormaPago(FormaPago forma, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -145,7 +158,10 @@ public class FormaPagoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update forma_pago set nombre ='" + forma.getNombre() + "', tipoformapago =  '" + forma.getTipoforma() + "' where idforma_pago = " + forma.getIdformapago(); 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			resultado = "exitoso";
 			stm.close();
@@ -168,7 +184,7 @@ public class FormaPagoDAO {
 	 * Método que se encarga de retornar todas las formas pago definidas en base de datos
 	 * @return Se retorna un ArrayList con todos los objetos Forma Pago definidos en el sistema.
 	 */
-	public static ArrayList<FormaPago> obtenerFormasPago()
+	public static ArrayList<FormaPago> obtenerFormasPago(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ArrayList<FormaPago> formaspago = new ArrayList();
@@ -178,7 +194,10 @@ public class FormaPagoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idforma_pago, a.nombre, a.tipoformapago from forma_pago a";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idformapago;
 			String nombre;

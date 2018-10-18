@@ -20,7 +20,7 @@ import capaConexion.ConexionBaseDatos;
 		 * la información de los registros que coincidente con dicho teléfono.
 		 * @return ArrayList de tipo cliente con la información de clientes que coinciden con el teléfono dado.
 		 */
-		public static ArrayList<Cliente> obtenerCliente(String tel)
+		public static ArrayList<Cliente> obtenerCliente(String tel, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
 			ArrayList<Cliente> clientes = new ArrayList();
@@ -31,7 +31,10 @@ import capaConexion.ConexionBaseDatos;
 				Statement stm = con1.createStatement();
 				//String consulta = "select a.idcliente, b.nombretienda nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.telefono = '" + tel +"'";
 				String consulta = "select a.idcliente, b.nombretienda nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, a.idmunicipio from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.telefono = '" + tel +"'";
-				logger.info(consulta);
+				if(auditoria)
+				{
+					logger.info(consulta);
+				}
 				ResultSet rs = stm.executeQuery(consulta);
 				int idcliente;
 				String nombreTienda;
@@ -98,7 +101,7 @@ import capaConexion.ConexionBaseDatos;
 		 * @param clienteInsertar Se recibe como parámetro un objeto Modelo Cliente con base en el cual se inserta el cliente.
 		 * @return  Se retorna un int con el valor del idcliente insertado en la base de datos.
 		 */
-		public static int insertarCliente(Cliente clienteInsertar)
+		public static int insertarCliente(Cliente clienteInsertar, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
 			int idClienteInsertado = 0;
@@ -108,7 +111,10 @@ import capaConexion.ConexionBaseDatos;
 			{
 				Statement stm = con1.createStatement();
 				String insert = "insert into cliente (idtienda,nombre, apellido, nombrecompania, direccion, zona, telefono, observacion, idmunicipio, latitud, longitud, idnomenclatura, num_nomencla1, num_nomencla2, num3) values (" + clienteInsertar.getIdtienda() + ", '" +clienteInsertar.getNombres() + "' , '" + clienteInsertar.getApellidos() + "' , '" + clienteInsertar.getNombreCompania() + "' , '" + clienteInsertar.getDireccion() + "' , '" + clienteInsertar.getZonaDireccion() +"' , '" + clienteInsertar.getTelefono() + "' , '" + clienteInsertar.getObservacion() + "' , " + clienteInsertar.getIdMunicipio() + " , " + clienteInsertar.getLatitud() + " , " + clienteInsertar.getLontitud() + " ,  " + clienteInsertar.getIdnomenclatura() + " , '" + clienteInsertar.getNumNomenclatura() + "' , '" + clienteInsertar.getNumNomenclatura2() + "' ,  '" + clienteInsertar.getNum3() + "')"; 
-				logger.info(insert);
+				if(auditoria)
+				{
+					logger.info(insert);
+				}
 				stm.executeUpdate(insert);
 				ResultSet rs = stm.getGeneratedKeys();
 				if (rs.next()){
@@ -137,7 +143,7 @@ import capaConexion.ConexionBaseDatos;
 		 * @param id Se recibe un id cliente y con base en este se busca en base de datos.
 		 * @return Se retorna un objeto Modelo Cliente con la información del cliente.
 		 */
-		public static Cliente obtenerClienteporID(int id)
+		public static Cliente obtenerClienteporID(int id, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
 			Cliente clienteConsultado = new Cliente(); 
@@ -147,7 +153,10 @@ import capaConexion.ConexionBaseDatos;
 			{
 				Statement stm = con1.createStatement();
 				String consulta = "select a.idcliente, b.nombretienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, c.idmunicipio from cliente a JOIN tienda b ON a.idtienda = b.idtienda JOIN municipio c ON a.idmunicipio = c.idmunicipio left join nomenclatura_direccion d on a.idnomenclatura = d.idnomenclatura  where a.idcliente = " + id +"";
-				logger.info(consulta);
+				if(auditoria)
+				{
+					logger.info(consulta);
+				}
 				ResultSet rs = stm.executeQuery(consulta);
 				int idcliente;
 				String nombreTienda;
@@ -215,7 +224,7 @@ import capaConexion.ConexionBaseDatos;
 		 * @param clienteAct Se envía como parámetro un tipo de Modelo Cliente con base en el cual se hace la actualización.
 		 * @return Se retorna un valor entero con el valor del id cliente actualizado en el sistema.
 		 */
-		public static int actualizarCliente(Cliente clienteAct)
+		public static int actualizarCliente(Cliente clienteAct, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
 			int idClienteActualizado = 0;
@@ -228,12 +237,19 @@ import capaConexion.ConexionBaseDatos;
 				if(clienteAct.getIdcliente() > 0)
 				{
 					String update = "update cliente set nombre = '" + clienteAct.getNombres() + "' , direccion = '" + clienteAct.getDireccion() + "' , idmunicipio = " + clienteAct.getIdMunicipio() + " , latitud = " + clienteAct.getLatitud() + " , longitud = " + clienteAct.getLontitud() + " , zona = '" + clienteAct.getZonaDireccion() + "' , observacion = '" + clienteAct.getObservacion() +"', apellido = '" + clienteAct.getApellidos() + "' , nombrecompania = '" + clienteAct.getNombreCompania() + "' , idnomenclatura = " + clienteAct.getIdnomenclatura() + " , num_nomencla1 = '" + clienteAct.getNumNomenclatura() + "' , num_nomencla2 = '" + clienteAct.getNumNomenclatura2() + "' , num3 =  '" + clienteAct.getNum3()  + "'  where idcliente = " + clienteAct.getIdcliente(); 
+					if(auditoria)
+					{
+						logger.info(update);
+					}
 					logger.info(update);
 					stm.executeUpdate(update);
 					idClienteActualizado = clienteAct.getIdcliente();
 				}else
 				{
-					logger.info("No se pudo hacer actualizaciï¿½n dado que el idCliente venia en ceros o vacï¿½o");
+					if(auditoria)
+					{
+						logger.info("No se pudo hacer actualizaciï¿½n dado que el idCliente venia en ceros o vacï¿½o");
+					}
 				}
 				stm.close();
 				con1.close();
@@ -260,7 +276,7 @@ import capaConexion.ConexionBaseDatos;
 		 * @param memcode Valor de memcode a actualizar.
 		 * @return Se retorna un entero con el idcliente actualizado.
 		 */
-		public static int actualizarClienteMemcode(int idCliente, int memcode)
+		public static int actualizarClienteMemcode(int idCliente, int memcode, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
 			int idClienteActualizado = 0;
@@ -271,7 +287,10 @@ import capaConexion.ConexionBaseDatos;
 				//Para actualizar el cliente el idcliente debe ser diferente de vacï¿½o.
 				Statement stm = con1.createStatement();
 				String update = "update cliente set memcode = " + memcode + "  where idcliente = " + idCliente; 
-				logger.info(update);
+				if(auditoria)
+				{
+					logger.info(update);
+				}
 				stm.executeUpdate(update);
 				idClienteActualizado = idCliente;
 				
@@ -293,7 +312,7 @@ import capaConexion.ConexionBaseDatos;
 		}
 		
 		
-		public static ArrayList<Cliente> ObtenerClientesTienda(int idtienda)
+		public static ArrayList<Cliente> ObtenerClientesTienda(int idtienda, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
 			ArrayList<Cliente> clientes = new ArrayList();
@@ -303,7 +322,10 @@ import capaConexion.ConexionBaseDatos;
 			{
 				Statement stm = con1.createStatement();
 				String consulta = "select a.idcliente, b.nombre nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, c.idmunicipio from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.idtienda = " + idtienda +" and a.idcliente not in (select b.idcliente from geolocaliza_masivo_tienda b )" ;
-				logger.info(consulta);
+				if(auditoria)
+				{
+					logger.info(consulta);
+				}
 				ResultSet rs = stm.executeQuery(consulta);
 				int idcliente;
 				String nombreTienda;
@@ -365,7 +387,7 @@ import capaConexion.ConexionBaseDatos;
 			
 		}
 		
-		public static boolean InsertarClienteGeolocalizado(int idcliente,  String direccion, String municipio, int idtiendaanterior, int idtiendaactual)
+		public static boolean InsertarClienteGeolocalizado(int idcliente,  String direccion, String municipio, int idtiendaanterior, int idtiendaactual, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
 			ConexionBaseDatos con = new ConexionBaseDatos();
@@ -374,7 +396,10 @@ import capaConexion.ConexionBaseDatos;
 			{
 				Statement stm = con1.createStatement();
 				String insert = "insert into geolocaliza_masivo_tienda (idcliente,direccionbuscada,municipio,idtiendaanterior,idtiendaactual) values (" + idcliente + ", '" + direccion + "' , '" + municipio  + "' , " + idtiendaanterior + " , " + idtiendaactual + ")"; 
-				logger.info(insert);
+				if(auditoria)
+				{
+					logger.info(insert);
+				}
 				stm.executeUpdate(insert);
 				ResultSet rs = stm.getGeneratedKeys();
 				stm.close();
@@ -394,6 +419,48 @@ import capaConexion.ConexionBaseDatos;
 				}
 				
 			}
+			
+		}
+		
+		/**
+		 * Método que se encarga de validar si un cliente dado el teléfono existe o no en el sistema.
+		 * @param telefono parámetro con base en el cual se sabe si un cliente existe o no.
+		 * @return Se retorna un valor booleano que indica si el cliente existe o no.
+		 */
+		public static boolean  existeCliente(String telefono, boolean auditoria)
+		{
+			Logger logger = Logger.getLogger("log_file");
+			ArrayList<Cliente> clientes = new ArrayList();
+			ConexionBaseDatos con = new ConexionBaseDatos();
+			Connection con1 = con.obtenerConexionBDLocal();
+			boolean respuesta = false;
+			try
+			{
+				Statement stm = con1.createStatement();
+				String consulta = "select idcliente from cliente  where telefono = '"+ telefono + "'";
+				if(auditoria)
+				{
+					logger.info(consulta);
+				}
+				ResultSet rs = stm.executeQuery(consulta);
+				int idcliente;
+				while(rs.next()){
+					respuesta = true;
+					break;
+				}
+				rs.close();
+				stm.close();
+				con1.close();
+			}catch (Exception e){
+				logger.error(e.toString());
+				try
+				{
+					con1.close();
+				}catch(Exception e1)
+				{
+				}
+			}
+			return(respuesta);
 			
 		}
 

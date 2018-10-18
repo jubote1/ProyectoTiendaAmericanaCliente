@@ -43,6 +43,7 @@ public class VentSegConfMenu extends JFrame {
 	// El arreglo con los botones del menú activo se manejará como variable global
 	private Object[][] botones;
 	private JButton btnEliminarRelacinProducto;
+	private ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -244,7 +245,6 @@ public class VentSegConfMenu extends JFrame {
 	public void InicializarCombos()
 	{
 		//Inicializamos combo de productos
-		ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
 		ArrayList productos = parCtrl.obtenerProductos();
 		for(int i = 0; i<productos.size();i++)
 		{
@@ -291,8 +291,7 @@ public class VentSegConfMenu extends JFrame {
 				else
 				{
 					objConfMenu = (ConfiguracionMenu) objGenerico;
-					ParametrosProductoCtrl parPro = new ParametrosProductoCtrl();
-					Producto prodBoton = parPro.obtenerProducto(objConfMenu.getIdProducto());
+					Producto prodBoton = parCtrl.obtenerProducto(objConfMenu.getIdProducto());
 					btn = new JButton(prodBoton.getIdProducto() + " - " + prodBoton.getDescripcion());
 				}
 				botones[i][j] = btn;

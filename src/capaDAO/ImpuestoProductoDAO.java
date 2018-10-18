@@ -24,7 +24,7 @@ public class ImpuestoProductoDAO {
  * Método que se encarga de retonar todos los impuestos por producto, dado un id producto determinado parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerImpuestosProducto(int idImpuestoProducto)
+	public static ArrayList obtenerImpuestosProducto(int idImpuestoProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -35,7 +35,10 @@ public class ImpuestoProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idimpuesto_producto, a.idproducto , c.descripcion, a.idimpuesto, b.descripcion from impuesto_x_producto a, impuesto b, producto c where a.idproducto = c.idproducto and a.idimpuesto = b.idimpuesto and a.idproducto = " + idImpuestoProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -54,7 +57,6 @@ public class ImpuestoProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -67,7 +69,7 @@ public class ImpuestoProductoDAO {
 	}
 	
 	
-	public static ArrayList<ImpuestoProducto> obtenerImpuestosProductoObj(int idProducto)
+	public static ArrayList<ImpuestoProducto> obtenerImpuestosProductoObj(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -78,7 +80,10 @@ public class ImpuestoProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from impuesto_x_producto a where  a.idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -96,7 +101,6 @@ public class ImpuestoProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -113,7 +117,7 @@ public class ImpuestoProductoDAO {
 	 * @param impuesto Recibe un objeto de tipo impuesto del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el idimpuesto creado en la base de datos
 	 */
-	public static int insertarImpuestoProducto(ImpuestoProducto impuestoProducto)
+	public static int insertarImpuestoProducto(ImpuestoProducto impuestoProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idImpuestoIns = 0;
@@ -123,12 +127,19 @@ public class ImpuestoProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into impuesto_x_producto (idproducto, idimpuesto) values (" + impuestoProducto.getIdProducto() + ", " + impuestoProducto.getIdImpuesto() + ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idImpuestoIns=rs.getInt(1);
-				logger.info("id impuesto insertada en bd " + idImpuestoIns);
+				if(auditoria)
+				{
+					logger.info("id impuesto insertada en bd " + idImpuestoIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -152,7 +163,7 @@ public class ImpuestoProductoDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarImpuestoProducto(int idImpuestoProducto)
+	public static boolean eliminarImpuestoProducto(int idImpuestoProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -162,7 +173,10 @@ public class ImpuestoProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from impuesto_x_producto where idimpuesto_producto = " + idImpuestoProducto; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();

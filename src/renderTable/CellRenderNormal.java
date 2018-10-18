@@ -13,8 +13,10 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
+import capaControlador.PedidoCtrl;
 import capaDAO.EstadoDAO;
 import capaModelo.Estado;
+import interfazGrafica.PrincipalLogueo;
 
 
 public class CellRenderNormal extends DefaultTableCellRenderer implements TableCellRenderer {
@@ -22,7 +24,7 @@ public class CellRenderNormal extends DefaultTableCellRenderer implements TableC
 	
 	static boolean tipoPedido= false;
 	static boolean estado = false;
-	static ArrayList<Estado>arregloEstados = EstadoDAO.obtenerTodosEstado();
+	static ArrayList<Estado>arregloEstados = (new PedidoCtrl(PrincipalLogueo.habilitaAuditoria)).obtenerTodosEstado();
 	
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

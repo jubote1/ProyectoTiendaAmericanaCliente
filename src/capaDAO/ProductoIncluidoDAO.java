@@ -25,7 +25,7 @@ public class ProductoIncluidoDAO {
  * Método que se encarga de retonar todos los  productos incluidos , dado un id producto determinado parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerProductosIncluidos(int idProducto)
+	public static ArrayList obtenerProductosIncluidos(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -36,7 +36,10 @@ public class ProductoIncluidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idproducto_incluido, b.descripcion, c.descripcion, a.cantidad, a.precio  from producto_incluido a, producto b, producto c where a.idproductoincluye = b.idproducto and a.idproductoincluido = c.idproducto and a.idproductoincluye = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -55,7 +58,6 @@ public class ProductoIncluidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -68,7 +70,7 @@ public class ProductoIncluidoDAO {
 	}
 	
 
-	public static ArrayList<ProductoIncluido> obtenerProductosIncluidos(int idProducto, double cantidad)
+	public static ArrayList<ProductoIncluido> obtenerProductosIncluidos(int idProducto, double cantidad, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -79,7 +81,10 @@ public class ProductoIncluidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select  a.idproductoincluido, cantidad*"+cantidad +"as cantidad, a.precio  from producto_incluido a where a.idproductoincluye = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idProducto_Incluido;
 			int idProductoIncluido;
@@ -99,7 +104,6 @@ public class ProductoIncluidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -116,7 +120,7 @@ public class ProductoIncluidoDAO {
 	 * @param productoIncluido Recibe un objeto de tipo Producto Incluido del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el idproducto_incluido creado en la base de datos
 	 */
-	public static int insertarProductoIncluido(ProductoIncluido productoIncluido)
+	public static int insertarProductoIncluido(ProductoIncluido productoIncluido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idProductoIns = 0;
@@ -126,7 +130,10 @@ public class ProductoIncluidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into producto_incluido (idproductoincluye, idproductoincluido,cantidad, precio) values (" + productoIncluido.getIdproductoincluye() + ", " + productoIncluido.getIdproductoincluido() + " , " + productoIncluido.getCantidad() + " , '" + productoIncluido.getPrecio() + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
@@ -155,7 +162,7 @@ public class ProductoIncluidoDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarProductoIncluido(int idproducto_incluido)
+	public static boolean eliminarProductoIncluido(int idproducto_incluido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -165,7 +172,10 @@ public class ProductoIncluidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from producto_incluido where idproducto_incluido = " + idproducto_incluido; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();

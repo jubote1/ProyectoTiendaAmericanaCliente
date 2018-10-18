@@ -12,7 +12,7 @@ import capaConexion.ConexionBaseDatos;
 
 public class NomenclaturaDAO {
 	
-	public static ArrayList<NomenclaturaDireccion> obtenerNomenclaturaDireccion()
+	public static ArrayList<NomenclaturaDireccion> obtenerNomenclaturaDireccion(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -22,7 +22,10 @@ public class NomenclaturaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from nomenclatura_direccion" ; 
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idnomenclatura;
 			String nomenclatura;

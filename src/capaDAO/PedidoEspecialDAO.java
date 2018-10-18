@@ -15,7 +15,7 @@ import capaModelo.PedidoEspecial;
 
 public class PedidoEspecialDAO {
 	
-	public static int insertarPedidoEspecial(PedidoEspecial ped)
+	public static int insertarPedidoEspecial(PedidoEspecial ped, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idPedidoEspecial = 0;
@@ -25,6 +25,10 @@ public class PedidoEspecialDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from pedido_especial where iditem = " + ped.getIdItem() + " and fecha_solicitud = '" + ped.getFecha() + "'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			boolean existe = false;
 			double cantidadInicial = 0;
@@ -40,12 +44,19 @@ public class PedidoEspecialDAO {
 				idPedidoEspecial = -1;
 				double cantidadFinal = cantidadInicial + ped.getCantidad();
 				String update = "update pedido_especial set cantidad = " + cantidadFinal + " where iditem = " + ped.getIdItem() + " and fecha_solicitud = '" + ped.getFecha() + "'";
+				if(auditoria)
+				{
+					logger.info(update);
+				}
 				stm.executeUpdate(update);
 			}
 			else
 			{
 				String insert = "insert into pedido_especial (iditem,cantidad, fecha_solicitud) values (" + ped.getIdItem() + ", " + ped.getCantidad() + " , '" + ped.getFecha() + "')"; 
-				logger.info(insert);
+				if(auditoria)
+				{
+					logger.info(insert);
+				}
 				stm.executeUpdate(insert);
 				rs = stm.getGeneratedKeys();
 				if (rs.next()){
@@ -75,7 +86,7 @@ public class PedidoEspecialDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarItemInventario(int idPedidoEspecial)
+	public static boolean eliminarItemInventario(int idPedidoEspecial, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -85,7 +96,10 @@ public class PedidoEspecialDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from pedido_especial where idpedidoespecial = " + idPedidoEspecial; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -106,7 +120,7 @@ public class PedidoEspecialDAO {
 	}
 	
 	
-	public static ArrayList obtenerPedidosEspeciales(String fecha)
+	public static ArrayList obtenerPedidosEspeciales(String fecha, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -117,8 +131,10 @@ public class PedidoEspecialDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idpedidoespecial,a.iditem, b.nombre_item, a.cantidad, b.unidad_medida, a.fecha_solicitud from pedido_especial a, item_inventario b where a.iditem = b.iditem and fecha_solicitud = '" + fecha + "'";
-			System.out.println(consulta);
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -137,7 +153,7 @@ public class PedidoEspecialDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
+			
 			try
 			{
 				con1.close();

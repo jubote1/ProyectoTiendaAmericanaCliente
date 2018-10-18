@@ -367,7 +367,7 @@ public class VentPedDescuento extends JFrame {
 		btnFinalizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Tomamos la información para insertar la forma de pago
-				PedidoCtrl pedCtrl = new PedidoCtrl();
+				PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 				// Se envían datos para la inserción del descuento
 				double valorPorcen;
 				try

@@ -24,7 +24,7 @@ public class PreguntaDAO {
  * Método que se encarga de retonar todos las preguntas en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerPreguntas()
+	public static ArrayList obtenerPreguntas(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -35,7 +35,10 @@ public class PreguntaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select idpregunta, titulopregunta, obliga_eleccion, numero_maximo_eleccion, estado, permite_dividir, descripcion from pregunta";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -54,7 +57,6 @@ public class PreguntaDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -66,7 +68,7 @@ public class PreguntaDAO {
 		
 	}
 	
-	public static Pregunta obtenerPregunta(int idPregunta)
+	public static Pregunta obtenerPregunta(int idPregunta, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -77,7 +79,10 @@ public class PreguntaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from pregunta where idpregunta = " + idPregunta;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -96,7 +101,6 @@ public class PreguntaDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -113,7 +117,7 @@ public class PreguntaDAO {
 	 * @param Pregunta Recibe un objeto de tipo Pregunta del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el idpregunta creado en la base de datos
 	 */
-	public static int insertarPregunta(Pregunta pregunta)
+	public static int insertarPregunta(Pregunta pregunta, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idPreguntaIns = 0;
@@ -123,12 +127,19 @@ public class PreguntaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into pregunta (titulopregunta, obliga_eleccion, numero_maximo_eleccion, estado, permite_dividir, descripcion) values ('" + pregunta.getTituloPregunta() + "', " + pregunta.getObligaEleccion() +" , " + pregunta.getNumeroMaximoEleccion() + " , " + pregunta.getEstado() + " , " + pregunta.getPermiteDividir() + " , '" + pregunta.getDescripcion() + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idPreguntaIns=rs.getInt(1);
-				logger.info("id impuesto insertada en bd " + idPreguntaIns);
+				if(auditoria)
+				{
+					logger.info("id impuesto insertada en bd " + idPreguntaIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -152,7 +163,7 @@ public class PreguntaDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarPregunta(int idPregunta)
+	public static boolean eliminarPregunta(int idPregunta, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -162,7 +173,10 @@ public class PreguntaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from pregunta where idpregunta = " + idPregunta; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -187,7 +201,7 @@ public class PreguntaDAO {
 	 * @param impuesto Recibe como parámetro un objeto de la entidad Pregunta con base en el cual se realiza la modificación
 	 * @return Se retorna un valor booleano indicando si el proceso fue o no satisfactorio
 	 */
-	public static boolean EditarPregunta(Pregunta pregunta)
+	public static boolean EditarPregunta(Pregunta pregunta, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -197,7 +211,10 @@ public class PreguntaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update pregunta set titulopregunta = '" + pregunta.getTituloPregunta() + "' , obliga_eleccion = " + pregunta.getObligaEleccion() + ", numero_maximo_eleccion = " + pregunta.getNumeroMaximoEleccion() + ", estado = " + pregunta.getEstado() + " , permite_dividir = " + pregunta.getPermiteDividir() + " , descripcion = '" + pregunta.getDescripcion() + "'  where idpregunta = " + pregunta.getIdPregunta() ; 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();
@@ -223,7 +240,7 @@ public class PreguntaDAO {
 	 * anterior debido a que las 5 posibles preguntas están dentro de un mismo registro en la tabla producto.
 	 * @return
 	 */
-	public static ArrayList<Pregunta> obtenerPreguntaProducto(int idProducto)
+	public static ArrayList<Pregunta> obtenerPreguntaProducto(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ArrayList<Pregunta> preguntaProducto = new ArrayList();
@@ -237,7 +254,10 @@ public class PreguntaDAO {
 					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada3 and  b.idproducto = " + idProducto + " union "
 					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada4 and  b.idproducto = " + idProducto + " union "
 					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada5 and  b.idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			
 			String tituloPregunta, descripcion;

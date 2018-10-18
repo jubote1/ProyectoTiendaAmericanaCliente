@@ -3,10 +3,13 @@ package reportes;
 import java.sql.Connection;
 import java.util.Map;
 
+import javax.swing.JFrame;
+
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperPrintManager;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.util.JRLoader;
+import net.sf.jasperreports.swing.JRViewer;
 import net.sf.jasperreports.view.JasperViewer;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -18,7 +21,7 @@ public abstract class AbstractJasperReports {
 	private static JasperPrint reportFilled;
 	private static JasperViewer viewer;
 	
-	public static void createReport (Connection con, String path, Map parametro, boolean imprimir)
+	public static void createReport (Connection con, String path, Map parametro, boolean imprimir, boolean esJFrame)
 	{
 		try{
 				report = (JasperReport) JRLoader.loadObjectFromFile(path);
@@ -28,7 +31,15 @@ public abstract class AbstractJasperReports {
 					JasperPrintManager.printReport(reportFilled, false);
 					
 				}
-				
+				if(esJFrame)
+				{
+					JFrame frame = new JFrame("Report");
+					frame.getContentPane().add(new JRViewer(reportFilled));
+					frame.pack();
+					frame.setVisible(true);
+					frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+					frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				}
 		}catch(JRException ex){
 			System.out.println(ex.toString());
 		}

@@ -19,11 +19,16 @@ import utilidades.ControladorEnvioCorreo;
 
 public class ParametrosCtrl {
 	
+	private boolean auditoria;
+	public ParametrosCtrl()
+	{
+		this.auditoria = auditoria;
+	}
 	public String retornarTiemposPedido()
 	{
 		JSONArray listJSON = new JSONArray();
 		JSONObject Respuesta = new JSONObject();
-		int tiempo = TiempoPedidoDAO.retornarTiempoPedido();
+		int tiempo = TiempoPedidoDAO.retornarTiempoPedido( auditoria);
 		Respuesta.put("tiempopedido", tiempo);
 		listJSON.add(Respuesta);
 		return(Respuesta.toString());
@@ -33,8 +38,8 @@ public class ParametrosCtrl {
 	{
 		JSONArray listJSON = new JSONArray();
 		JSONObject Respuesta = new JSONObject();
-		Tienda tienda = TiendaDAO.obtenerTienda();
-		boolean respues = TiempoPedidoDAO.actualizarTiempoPedido(nuevotiempo, tienda.getIdTienda(), user);
+		Tienda tienda = TiendaDAO.obtenerTienda(auditoria);
+		boolean respues = TiempoPedidoDAO.actualizarTiempoPedido(nuevotiempo, tienda.getIdTienda(), user, auditoria);
 		if(respues)
 		{
 			if (nuevotiempo > 70)
@@ -42,7 +47,7 @@ public class ParametrosCtrl {
 				
 				Correo correo = new Correo();
 				correo.setAsunto("ALERTA TIEMPOS PEDIDO");
-				ArrayList correos = GeneralDAO.obtenerCorreosParametro("TIEMPOPEDIDO");
+				ArrayList correos = GeneralDAO.obtenerCorreosParametro("TIEMPOPEDIDO", auditoria);
 				correo.setContrasena("Pizzaamericana2017");
 				correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
 				correo.setMensaje("La tienda " + tienda.getNombretienda() + " está aumentando el tiempo de entrega a " + nuevotiempo + " minutos");
@@ -57,7 +62,7 @@ public class ParametrosCtrl {
 	
 	public String obtenerTienda(){
 		JSONArray listJSON = new JSONArray();
-		Tienda tienda = TiendaDAO.obtenerTienda();
+		Tienda tienda = TiendaDAO.obtenerTienda(auditoria);
 		JSONObject objTienda = new JSONObject();
 		objTienda.put("idtienda", tienda.getIdTienda());
 		objTienda.put("nombre", tienda.getNombretienda());
@@ -87,7 +92,7 @@ public class ParametrosCtrl {
 		 */
 		public String retornarFormasPago(){
 			JSONArray listJSON = new JSONArray();
-			ArrayList<FormaPago> formasPago = FormaPagoDAO.obtenerFormasPago();
+			ArrayList<FormaPago> formasPago = FormaPagoDAO.obtenerFormasPago(auditoria);
 			for (FormaPago forma : formasPago) 
 			{
 				JSONObject cadaFormaPagoJSON = new JSONObject();
@@ -101,31 +106,31 @@ public class ParametrosCtrl {
 	
 		public boolean EditarParametro(Parametro parametro)
 		{
-			boolean respuesta = ParametrosDAO.EditarParametro(parametro);
+			boolean respuesta = ParametrosDAO.EditarParametro(parametro, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean eliminarParametro(String valorParametro)
 		{
-			boolean respuesta = ParametrosDAO.eliminarParametro(valorParametro);
+			boolean respuesta = ParametrosDAO.eliminarParametro(valorParametro, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean insertarParametro(Parametro parametro)
 		{
-			boolean respuesta = ParametrosDAO.insertarParametro(parametro);
+			boolean respuesta = ParametrosDAO.insertarParametro(parametro, auditoria);
 			return(respuesta);
 		}
 		
 		public Parametro obtenerParametro(String valorParametro)
 		{
-			Parametro parametro = ParametrosDAO.obtenerParametro(valorParametro);
+			Parametro parametro = ParametrosDAO.obtenerParametro(valorParametro, auditoria);
 			return parametro;
 		}
 		
 		public ArrayList obtenerParametros()
 		{
-			ArrayList parametros = ParametrosDAO.obtenerParametros();
+			ArrayList parametros = ParametrosDAO.obtenerParametros(auditoria);
 			return parametros;
 		}
 }

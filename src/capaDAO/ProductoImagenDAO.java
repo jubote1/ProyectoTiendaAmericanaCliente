@@ -16,9 +16,13 @@ import capaModelo.Producto;
 public class ProductoImagenDAO {
 	
 	
-	public boolean insertarProductoImagen(int idProducto, String ruta){
+	public boolean insertarProductoImagen(int idProducto, String ruta, boolean auditoria){
 		Logger logger = Logger.getLogger("log_file");
 		 String insert = "insert into producto_imagen(idproducto,imagen) values(?,?)";
+		 if(auditoria)
+			{
+				logger.info(insert);
+			}
 		 FileInputStream fis = null;
 		 PreparedStatement ps = null;
 		 boolean respuesta = false;

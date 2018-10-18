@@ -9,13 +9,18 @@ import capaModelo.NomenclaturaDireccion;
 
 public class ParametrosDireccionCtrl {
 	
+	private boolean auditoria;
+	public ParametrosDireccionCtrl()
+	{
+		this.auditoria = auditoria;
+	}
 	/**
 	 * Método de capa controladora para el retorno de los municipios
 	 * @return ArrayList con tipo de datos genérico de municipio.
 	 */
 	public ArrayList<Object> obtenerMunicipios()
 	{
-		ArrayList<Object>  municipios = MunicipioDAO.obtenerMunicipios();
+		ArrayList<Object>  municipios = MunicipioDAO.obtenerMunicipios(auditoria);
 		return(municipios);
 	}
 	
@@ -26,7 +31,7 @@ public class ParametrosDireccionCtrl {
 	 */
 	public ArrayList<Municipio> obtenerMunicipiosObjeto()
 	{
-		ArrayList<Municipio>  municipios = MunicipioDAO.obtenerMunicipiosObjeto();
+		ArrayList<Municipio>  municipios = MunicipioDAO.obtenerMunicipiosObjeto(auditoria);
 		return(municipios);
 	}
 	
@@ -37,7 +42,7 @@ public class ParametrosDireccionCtrl {
 	 */
 	public ArrayList<NomenclaturaDireccion> obtenerNomenclaturas()
 	{
-		ArrayList<NomenclaturaDireccion>  nomen = NomenclaturaDAO.obtenerNomenclaturaDireccion();
+		ArrayList<NomenclaturaDireccion>  nomen = NomenclaturaDAO.obtenerNomenclaturaDireccion(auditoria);
 		return(nomen);
 	}
 	
@@ -49,7 +54,7 @@ public class ParametrosDireccionCtrl {
 	 */
 	public Municipio obtenerMunicipio(int idMunicipio)
 	{
-		Municipio  municipio = MunicipioDAO.obtenerMunicipio(idMunicipio);
+		Municipio  municipio = MunicipioDAO.obtenerMunicipio(idMunicipio, auditoria);
 		return(municipio);
 	}
 	
@@ -60,7 +65,7 @@ public class ParametrosDireccionCtrl {
 	 */
 	public int insertarMunicipio(Municipio municipio)
 	{
-		int idMunicipio = MunicipioDAO.insertarMunicipio(municipio);
+		int idMunicipio = MunicipioDAO.insertarMunicipio(municipio, auditoria);
 		return(idMunicipio);
 	}
 	
@@ -72,7 +77,7 @@ public class ParametrosDireccionCtrl {
 	 */
 	public boolean eliminarMunicipio(int idMunicipio)
 	{
-		boolean respuesta = MunicipioDAO.eliminarMunicipio(idMunicipio);
+		boolean respuesta = MunicipioDAO.eliminarMunicipio(idMunicipio, auditoria);
 		return(respuesta);
 	}
 	
@@ -83,7 +88,7 @@ public class ParametrosDireccionCtrl {
 	 */
 	public boolean editarMunicipio(Municipio municipio)
 	{
-		boolean respuesta = MunicipioDAO.editarMunicipio(municipio);
+		boolean respuesta = MunicipioDAO.editarMunicipio(municipio, auditoria);
 		return(respuesta);
 	}
 

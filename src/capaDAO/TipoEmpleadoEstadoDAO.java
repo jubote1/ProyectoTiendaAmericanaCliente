@@ -22,7 +22,7 @@ import com.mysql.jdbc.ResultSetMetaData;
  */
 public class TipoEmpleadoEstadoDAO {
 	
-	public static ArrayList<Estado> obtenerEstadosTipoEmpleado(int idTipoEmpleado)
+	public static ArrayList<Estado> obtenerEstadosTipoEmpleado(int idTipoEmpleado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -33,7 +33,10 @@ public class TipoEmpleadoEstadoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.* from estado a, tipo_empleado_estados b where a.idestado = b.idestado and b.idtipoempleado = " + idTipoEmpleado;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idestado, idTipoPedido;
 			String descripcion, descripcionCorta;
@@ -74,7 +77,6 @@ public class TipoEmpleadoEstadoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -88,7 +90,7 @@ public class TipoEmpleadoEstadoDAO {
 	
 		
 	
-	public static boolean insertarTipoEmpleadoEstado(int idTipoEmpleado, int idEstado)
+	public static boolean insertarTipoEmpleadoEstado(int idTipoEmpleado, int idEstado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idEstadoIns = 0;
@@ -98,7 +100,10 @@ public class TipoEmpleadoEstadoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into tipo_empleado_estados (idtipoempleado, idestado) values(" + idTipoEmpleado + " , " + idEstado + ")";
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			stm.close();
 			con1.close();
@@ -117,7 +122,7 @@ public class TipoEmpleadoEstadoDAO {
 	}
 	
 	
-	public static boolean eliminarTipoEmpleadoEstado(int idTipoEmpleado, int idEstado)
+	public static boolean eliminarTipoEmpleadoEstado(int idTipoEmpleado, int idEstado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -127,7 +132,10 @@ public class TipoEmpleadoEstadoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from tipo_empleado_estados where idestado = " + idEstado + " and idtipoempleado = " + idTipoEmpleado; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();

@@ -22,7 +22,7 @@ public class MenuAgrupadorDAO {
  * Método que se encarga de retornar todas las entidades Tiendas definidas en la base de datos
  * @return Se retorna un ArrayList con todas las entidades Tiendas definidas en la base de datos.
  */
-	public static ArrayList obtenerMenusAgrupador()
+	public static ArrayList obtenerMenusAgrupador(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -33,7 +33,10 @@ public class MenuAgrupadorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from agrupador_menu";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -56,7 +59,6 @@ public class MenuAgrupadorDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -69,7 +71,7 @@ public class MenuAgrupadorDAO {
 	}
 	
 	
-	public static int insertarMenuAgrupador(MenuAgrupador menu)
+	public static int insertarMenuAgrupador(MenuAgrupador menu, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idMenuAgrupadorIns = 0;
@@ -79,12 +81,19 @@ public class MenuAgrupadorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into agrupador_menu (menu_agrupador, descripcion) values ('" + menu.getMenuAgrupador() + "', '" + menu.getDescripcion() + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idMenuAgrupadorIns=rs.getInt(1);
-				logger.info("id menu agrupador insertada en bd " + idMenuAgrupadorIns);
+				if(auditoria)
+				{
+					logger.info("id menu agrupador insertada en bd " + idMenuAgrupadorIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -102,7 +111,7 @@ public class MenuAgrupadorDAO {
 		return(idMenuAgrupadorIns);
 	}
 	
-	public static boolean eliminarMenuAgrupador(int idMenu)
+	public static boolean eliminarMenuAgrupador(int idMenu, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -112,7 +121,10 @@ public class MenuAgrupadorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from agrupador_menu where idmenuagrupador = " + idMenu; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -132,7 +144,7 @@ public class MenuAgrupadorDAO {
 		return(respuesta);
 	}
 	
-	public static boolean EditarMenuAgrupador(MenuAgrupador menu)
+	public static boolean EditarMenuAgrupador(MenuAgrupador menu, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -142,7 +154,10 @@ public class MenuAgrupadorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update agrupador_menu set menu_agrupador = '" + menu.getMenuAgrupador() + "' , descripcion = '" + menu.getDescripcion() + "' where idmenuagrupador = " + menu.getIdmenuagrupador() ; 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();

@@ -23,7 +23,7 @@ public class UsuarioDAO {
 	 * autenticación del usuario.
 	 * @return Se retorna un valor booleano que indica si el proceso de autenticación es satifactorio o no.
 	 */
-	public static int validarUsuario(Usuario usuario)
+	public static int validarUsuario(Usuario usuario, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -34,7 +34,10 @@ public class UsuarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select nombre_largo, id, administrador, idtipoempleado,tipoinicio from usuario where nombre = '" + usuario.getNombreUsuario() + "' and password = '" + usuario.getContrasena()+"'";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			
 			while(rs.next()){
@@ -77,8 +80,9 @@ public class UsuarioDAO {
 	 * @return Se retorna un valor booleano con base en el cual se realiza la validación del usuario en base de datos
 	 * 
 	 */
-	public static String validarAutenticacion(Usuario usuario)
+	public static String validarAutenticacion(Usuario usuario, boolean auditoria)
 	{
+		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
 		String resultado = "";
@@ -86,6 +90,10 @@ public class UsuarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select administrador from usuario where nombre = '" + usuario.getNombreUsuario() + "'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				
@@ -116,7 +124,7 @@ public class UsuarioDAO {
 	 * @param idUsuario parámetro con base en la cual se valida o no la existencia del usuario en base de datos
 	 * @return Un valor booleano con la validación o no de la existencia del usuario.
 	 */
-	public static boolean validarExistenciaUsuario(int idUsuario)
+	public static boolean validarExistenciaUsuario(int idUsuario, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -127,7 +135,10 @@ public class UsuarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from usuario where id = " + idUsuario;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			
 			while(rs.next()){
@@ -153,7 +164,7 @@ public class UsuarioDAO {
 	 * Método que se encarga de obtener en un ArrayList los empleados del sistema
 	 * @return
 	 */
-	public static ArrayList obtenerEmpleados()
+	public static ArrayList obtenerEmpleados(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -164,7 +175,10 @@ public class UsuarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select id,nombre, nombre_largo, administrador, tipoinicio  from usuario ";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -183,7 +197,6 @@ public class UsuarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -202,7 +215,7 @@ public class UsuarioDAO {
 	 * @param empleado Se recibe un objeto de tipo usuario con la información del empleado que termina siendo un autor del sistema
 	 * @return Se retorna un entero con id asignado por el sistema en la inserción.
 	 */
-	public static int insertarEmpleado(Usuario empleado)
+	public static int insertarEmpleado(Usuario empleado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idEmpleadoIns = 0;
@@ -217,7 +230,10 @@ public class UsuarioDAO {
 			}
 			Statement stm = con1.createStatement();
 			String insert = "insert into usuario (nombre, password,  nombre_largo,administrador, idtipoempleado, tipoinicio) values ('" + empleado.getNombreUsuario() + "' , '" + empleado.getContrasena() + "' , '" + empleado.getNombreLargo() + "' , '" + administrador + "', " + empleado.getidTipoEmpleado() + " , '" + empleado.getTipoInicio() + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
@@ -245,7 +261,7 @@ public class UsuarioDAO {
 	 * @param idEmpleado se recibe el idempleado el cual es el identificador único a nivel de base de datos
 	 * @return se retorna un valor booleano con el resultado del proceso.
 	 */
-	public static boolean eliminarEmpleado(int idEmpleado)
+	public static boolean eliminarEmpleado(int idEmpleado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -255,7 +271,10 @@ public class UsuarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from usuario where itipoempleado = " + idEmpleado; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -276,7 +295,7 @@ public class UsuarioDAO {
 	}
 	
 	
-	public static boolean editarEmpleado(Usuario empleadoEdi)
+	public static boolean editarEmpleado(Usuario empleadoEdi, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = false;
@@ -291,7 +310,10 @@ public class UsuarioDAO {
 			}
 			Statement stm = con1.createStatement();
 			String update = "update usuario set nombre = '" + empleadoEdi.getNombreUsuario()  +"' , nombre_largo = '"+ empleadoEdi.getNombreLargo() +"' , administrador ='"+ administrador +"' , idtipoempleado= "+ empleadoEdi.getidTipoEmpleado() +", tipoinicio = '"+ empleadoEdi.getTipoInicio()+ "'  where id = " + empleadoEdi.getIdUsuario();
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			respuesta = true;
 			stm.close();
@@ -311,7 +333,7 @@ public class UsuarioDAO {
 		return(respuesta);
 	}
 	
-	public static Usuario obtenerEmpleado(int idEmpleado)
+	public static Usuario obtenerEmpleado(int idEmpleado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -322,7 +344,10 @@ public class UsuarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from usuario where id = " + idEmpleado;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			String nombre = "", nombreLargo ="", tipoInicio = "";
 			String strAdmin;
@@ -346,7 +371,6 @@ public class UsuarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();

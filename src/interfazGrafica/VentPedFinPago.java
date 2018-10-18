@@ -47,7 +47,7 @@ public class VentPedFinPago extends JDialog {
 	private JTable tablePago;
 	private JTextField displayTotal;
 	private boolean hayFormaPago = false;
-	
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	public void clarearVarEstaticas()
 	{
 		Efectivo = 0;
@@ -343,7 +343,6 @@ public class VentPedFinPago extends JDialog {
 //				}
 //				
 				//Tomamos la información para insertar la forma de pago
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				//Si el pedido tenía forma de pago, deberemos de eliminar la forma de pago anterior
 				if(hayFormaPago)
 				{
@@ -551,7 +550,6 @@ public class VentPedFinPago extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				
 				//Tomamos la información para insertar la forma de pago
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				// Se envían datos para la inserción de la forma de pago.
 				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, VentPedTomarPedidos.idPedido);
 				if(resFormaPago)
@@ -644,7 +642,7 @@ public class VentPedFinPago extends JDialog {
 		//Validamos si ya existe forma de pago para cargar la información en el frame
 		if(hayFormaPago)
 		{
-			PedidoCtrl pedCtrl = new PedidoCtrl();
+			
 			
 		}
 		

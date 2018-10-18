@@ -60,7 +60,7 @@ public class VentPedModificador extends JDialog {
 	boolean modCon = false;
 	boolean modSin = false;
 	private int contadorDetallePedido;
-	
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -140,7 +140,6 @@ public class VentPedModificador extends JDialog {
 		panelModificadores.removeAll();
 		panelModificadores.repaint();
 		//Definimos las variables necesarias para el proceso
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<ProductoModificadorCon> prodModificadores;
 		ArrayList<ProductoModificadorSin> prodModificadoresSin;
 		if(modCon)
@@ -283,7 +282,6 @@ public class VentPedModificador extends JDialog {
 
 	public void incluirProductos()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();	
 		//Realizamos adición de los productos, lo primero es validar si esta dividida
 			for(int m = 0; m < arregloBotPan1.size(); m++)
 			{
@@ -296,7 +294,7 @@ public class VentPedModificador extends JDialog {
 //						StringTokenizer StrTokenProducto = new StringTokenizer(txtJBut,"-");
 //						String strIdProducto = StrTokenProducto.nextToken();
 						int idProducto = Integer.parseInt(txtJBut);
-						ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
+						ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 						//Para obtener el precio deberíamos recorrer las elecciones de la pregunta y capturar el precio
 						double precioProducto = parProducto.obtenerPrecioPilaProducto(idProducto);
 						double cantidad = 0.5;

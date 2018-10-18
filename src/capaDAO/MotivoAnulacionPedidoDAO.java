@@ -18,7 +18,7 @@ public class MotivoAnulacionPedidoDAO {
 	
 	
 	
-	public static ArrayList<MotivoAnulacionPedido> obtenerMotivosAnulacion()
+	public static ArrayList<MotivoAnulacionPedido> obtenerMotivosAnulacion(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -29,7 +29,10 @@ public class MotivoAnulacionPedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from motivo_anulacion_pedido " ;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idMotivoAnulacion;
 			String descripcion, descuentoInventario;
@@ -51,7 +54,6 @@ public class MotivoAnulacionPedidoDAO {
 		}
 		catch (Exception e){
 			logger.error(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();

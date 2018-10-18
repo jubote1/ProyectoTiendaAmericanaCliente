@@ -25,7 +25,7 @@ public class TipoPedidoDAO {
  * Método que se encarga de retonar todos los impuestos parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerTiposPedido()
+	public static ArrayList obtenerTiposPedido(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -36,7 +36,10 @@ public class TipoPedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from tipo_pedido";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -55,7 +58,6 @@ public class TipoPedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -67,7 +69,7 @@ public class TipoPedidoDAO {
 		
 	}
 	
-	public static ArrayList<TipoPedido> obtenerTiposPedidoNat()
+	public static ArrayList<TipoPedido> obtenerTiposPedidoNat(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -78,7 +80,10 @@ public class TipoPedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from tipo_pedido order by valordefecto desc";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			TipoPedido tipoPedidoRet = new TipoPedido(0, "", false, "", false);
 			int valDef = 0;
@@ -110,7 +115,6 @@ public class TipoPedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -122,7 +126,7 @@ public class TipoPedidoDAO {
 		
 	}
 	
-	public static TipoPedido obtenerTipoPedido(int idTipoPedido)
+	public static TipoPedido obtenerTipoPedido(int idTipoPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -133,7 +137,10 @@ public class TipoPedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from tipo_pedido where idtipoPedido = " + idTipoPedido;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int valDef = 0;
 			String descripcion = "";
@@ -162,7 +169,6 @@ public class TipoPedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -179,7 +185,7 @@ public class TipoPedidoDAO {
 	 * @param impuesto Recibe un objeto de tipo impuesto del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el idimpuesto creado en la base de datos
 	 */
-	public static int insertarTipoPedido(TipoPedido tipPed)
+	public static int insertarTipoPedido(TipoPedido tipPed, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idTipoIns = 0;
@@ -199,12 +205,19 @@ public class TipoPedidoDAO {
 			}
 			Statement stm = con1.createStatement();
 			String insert = "insert into tipo_pedido (descripcion, valordefecto, esdomicilio) values ('" + tipPed.getDescripcion() + "' ," + valDef + ","+ esDomi +")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idTipoIns=rs.getInt(1);
-				logger.info("id Tipo Pedido insertada en bd " + idTipoIns);
+				if(auditoria)
+				{
+					logger.info("id Tipo Pedido insertada en bd " + idTipoIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -228,7 +241,7 @@ public class TipoPedidoDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarTipoPedido(int idTipoPedido)
+	public static boolean eliminarTipoPedido(int idTipoPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -238,7 +251,10 @@ public class TipoPedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from tipo_pedido where idtipopedido = " + idTipoPedido; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -263,7 +279,7 @@ public class TipoPedidoDAO {
 	 * @param impuesto Recibe como parámetro un objeto de la entidad impuesto con base en el cual se realiza la modificación
 	 * @return Se retorna un valor booleano indicando si el proceso fue o no satisfactorio
 	 */
-	public static boolean EditarTipoPedido(TipoPedido tipPedidoEditar)
+	public static boolean EditarTipoPedido(TipoPedido tipPedidoEditar, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -283,7 +299,10 @@ public class TipoPedidoDAO {
 			}
 			Statement stm = con1.createStatement();
 			String update = "update tipo_pedido set descripcion = '" + tipPedidoEditar.getDescripcion() + "' , valordefecto =" + valDef + " , esdomicilio = " + esDomi + " where idtipopedido = " + tipPedidoEditar.getIdTipoPedido() ; 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();

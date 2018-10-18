@@ -6,24 +6,28 @@ import capaModelo.ConfiguracionMenu;
 import capaModelo.ConfiguracionMesa;
 
 public class MenuCtrl {
-	
-	public static int insertarConfiguracionMenu(ConfiguracionMenu confMenu)
+	private boolean auditoria;
+	public MenuCtrl()
 	{
-		int idConfMenuIns = ConfiguracionMenuDAO.insertarConfiguracionMenu(confMenu);
+		this.auditoria = auditoria;
+	}
+	public  int insertarConfiguracionMenu(ConfiguracionMenu confMenu)
+	{
+		int idConfMenuIns = ConfiguracionMenuDAO.insertarConfiguracionMenu(confMenu, auditoria);
 		return(idConfMenuIns);
 		
 	}
 	
-	public static boolean eliminarConfiguracionMenu(ConfiguracionMenu confMenu)
+	public  boolean eliminarConfiguracionMenu(ConfiguracionMenu confMenu)
 	{
-		boolean respuesta = ConfiguracionMenuDAO.eliminarConfiguracionMenu(confMenu);
+		boolean respuesta = ConfiguracionMenuDAO.eliminarConfiguracionMenu(confMenu, auditoria);
 		return(respuesta);
 		
 	}
 	
-	public static ConfiguracionMenu[][] obtenerConfMenu(int multimenu)
+	public  ConfiguracionMenu[][] obtenerConfMenu(int multimenu)
 	{
-		ConfiguracionMenu[][] confMenu = ConfiguracionMenuDAO.obtenerConfMenu(multimenu);
+		ConfiguracionMenu[][] confMenu = ConfiguracionMenuDAO.obtenerConfMenu(multimenu, auditoria);
 		return(confMenu);
 	}
 	
@@ -34,7 +38,7 @@ public class MenuCtrl {
 	 */
 	public  ConfiguracionMesa[][] obtenerConfMesa()
 	{
-		ConfiguracionMesa[][] confMesa = ConfiguracionMesaDAO.obtenerConfMesa();
+		ConfiguracionMesa[][] confMesa = ConfiguracionMesaDAO.obtenerConfMesa(auditoria);
 		return(confMesa);
 	}
 	
@@ -45,7 +49,7 @@ public class MenuCtrl {
 	 */
 	public int insertarConfiguracionMesa(ConfiguracionMesa confMesa)
 	{
-		int id =  ConfiguracionMesaDAO.insertarConfiguracionMesa(confMesa);
+		int id =  ConfiguracionMesaDAO.insertarConfiguracionMesa(confMesa, auditoria);
 		return(id);
 	}
 /**
@@ -55,7 +59,7 @@ public class MenuCtrl {
  */
 	public boolean eliminarConfiguracionMesa(ConfiguracionMesa confMesa)
 	{
-		boolean resultado = ConfiguracionMesaDAO.eliminarConfiguracionMesa(confMesa);
+		boolean resultado = ConfiguracionMesaDAO.eliminarConfiguracionMesa(confMesa, auditoria);
 		return(resultado);
 	}
 }

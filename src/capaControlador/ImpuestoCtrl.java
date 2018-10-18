@@ -12,12 +12,15 @@ import capaModelo.ImpuestoProducto;
 
 public class ImpuestoCtrl {
 	
-	
-	
+	private boolean auditoria;
+	public ImpuestoCtrl(boolean auditoria)
+	{
+		this.auditoria = auditoria;
+	}
 	public boolean liquidarImpuestosPedido(int idPedido)
 	{
 		boolean respuesta = true;
-		ArrayList<DetallePedido> detPedido = DetallePedidoDAO.obtenerDetallePedido(idPedido);
+		ArrayList<DetallePedido> detPedido = DetallePedidoDAO.obtenerDetallePedido(idPedido, auditoria);
 		//Acumular total si se tienen varios impuestos
 		double totalImpuesto;
 		//Valor para un impuesto en el cálculo parcial
@@ -31,17 +34,17 @@ public class ImpuestoCtrl {
 			totalImpuesto = 0;
 			DetallePedido detPed = detPedido.get(i);
 			valorTotal = detPed.getValorTotal();
-			ArrayList<ImpuestoProducto> impProd = ImpuestoProductoDAO.obtenerImpuestosProductoObj(detPed.getIdProducto());
+			ArrayList<ImpuestoProducto> impProd = ImpuestoProductoDAO.obtenerImpuestosProductoObj(detPed.getIdProducto(), auditoria);
 			for(int j = 0; j < impProd.size(); j++)
 			{
-				porcImpuesto = ImpuestoDAO.obtenerImpuesto(impProd.get(j).getIdImpuesto());
+				porcImpuesto = ImpuestoDAO.obtenerImpuesto(impProd.get(j).getIdImpuesto(), auditoria);
 				impuestoParcial = porcImpuesto * (valorTotal/100);
 				totalImpuesto = totalImpuesto + impuestoParcial;
 				DetallePedidoImpuesto detPedImp = new DetallePedidoImpuesto(idPedido,detPed.getIdDetallePedido(),impProd.get(j).getIdImpuesto(),impuestoParcial);
-				DetallePedidoImpuestoDAO.insertarDetallePedidoImpuesto(detPedImp);
+				DetallePedidoImpuestoDAO.insertarDetallePedidoImpuesto(detPedImp, auditoria);
 			}
 			//Se lanza la actualización para el detalle pedido con el total del impuesto
-			DetallePedidoDAO.ActualizarImpuestoDetallesPedido(detPed.getIdDetallePedido(), totalImpuesto);
+			DetallePedidoDAO.ActualizarImpuestoDetallesPedido(detPed.getIdDetallePedido(), totalImpuesto, auditoria);
 		}
 		return(respuesta);
 	}

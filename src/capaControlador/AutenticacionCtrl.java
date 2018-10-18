@@ -18,13 +18,19 @@ public class AutenticacionCtrl {
 	
 	
 	private static AutenticacionCtrl instance;
+	private boolean auditoria;
 	
 	//singleton controlador
 	public static AutenticacionCtrl getInstance(){
 		if(instance == null){
-			instance = new AutenticacionCtrl();
+			instance = new AutenticacionCtrl(false);
 		}
 		return instance;
+	}
+	
+	public AutenticacionCtrl(boolean auditoria)
+	{
+		this.auditoria = auditoria;
 	}
 	
 	/**
@@ -37,7 +43,7 @@ public class AutenticacionCtrl {
 	public boolean autenticarUsuario(Usuario usuario){
 		int resultado = 0;
 		boolean respuesta = false;
-		resultado = UsuarioDAO.validarUsuario(usuario);
+		resultado = UsuarioDAO.validarUsuario(usuario , auditoria);
 		if(resultado > 0)
 		{
 			respuesta = true;
@@ -54,7 +60,7 @@ public class AutenticacionCtrl {
 	public String validarAutenticacion(String usuario)
 	{
 		Usuario usu = new Usuario(usuario);
-		String resultado = UsuarioDAO.validarAutenticacion(usu);
+		String resultado = UsuarioDAO.validarAutenticacion(usu, auditoria);
 		return(resultado);
 	}
 	
@@ -64,25 +70,25 @@ public class AutenticacionCtrl {
 	 */
 	public ArrayList<Object> obtenerMenusAgrupador()
 	{
-		ArrayList<Object>  menus = MenuAgrupadorDAO.obtenerMenusAgrupador();
+		ArrayList<Object>  menus = MenuAgrupadorDAO.obtenerMenusAgrupador(auditoria);
 		return(menus);
 	}
 	
 	public int insertarMenuAgrupador(MenuAgrupador menu)
 	{
-		int idMenu = MenuAgrupadorDAO.insertarMenuAgrupador(menu);
+		int idMenu = MenuAgrupadorDAO.insertarMenuAgrupador(menu, auditoria);
 		return(idMenu);
 	}
 	
 	public boolean editarMenuAgrupador(MenuAgrupador menu)
 	{
-		boolean respuesta  = MenuAgrupadorDAO.EditarMenuAgrupador(menu);
+		boolean respuesta  = MenuAgrupadorDAO.EditarMenuAgrupador(menu, auditoria);
 		return(respuesta);
 	}
 	
 	public boolean eliminarMenuAgrupador(int idMenu)
 	{
-		boolean respuesta = MenuAgrupadorDAO.eliminarMenuAgrupador(idMenu);
+		boolean respuesta = MenuAgrupadorDAO.eliminarMenuAgrupador(idMenu, auditoria);
 		return(respuesta);
 	}
 

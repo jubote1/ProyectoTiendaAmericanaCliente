@@ -28,8 +28,10 @@ import java.awt.event.ActionEvent;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.EmpleadoCtrl;
 import capaControlador.OperacionesTiendaCtrl;
+import capaControlador.ParametrosCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
+import capaModelo.Parametro;
 import capaModelo.Usuario;
 
 public class PrincipalLogueo extends JFrame implements Runnable{
@@ -42,6 +44,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	private JTextField txtFechaUltCierre;
 	private JTextField txtEstadoCierre;
 	private JLabel lblHora;
+	public static boolean habilitaAuditoria = false;
 	String hora,minutos,segundos,ampm;
 	Calendar calendario;    
 	Thread h1;
@@ -77,6 +80,20 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
+		//Inicializamos la variable de habilitaAuditoria
+		ParametrosCtrl parCtrl = new ParametrosCtrl();
+		//Traemos de base de datos el valor del parametro de auditoria
+		Parametro parametroAud = parCtrl.obtenerParametro("AUDITORIA");
+		//Extraemos el valor del campo de ValorTexto
+		String strParam = parametroAud.getValorTexto();
+		//Intentamos realizar el parseo para un dato tipo boolean sino se puede se deja como false
+		try
+		{
+			habilitaAuditoria = Boolean.parseBoolean(strParam);
+		}catch(Exception e)
+		{
+			habilitaAuditoria = false;
+		}
 		JLabel lblNombreSistema = new JLabel("SISTEMA TIENDA PIZZA AMERICANA");
 		lblNombreSistema.setFont(new Font("Traditional Arabic", Font.BOLD, 17));
 		lblNombreSistema.setBounds(64, 11, 338, 40);
@@ -103,7 +120,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		contentPane.add(jpassClave);
 		
 		JButton btnAutenticar = new JButton("Autenticar");
-		PedidoCtrl pedCtrl = new PedidoCtrl();
+		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 		FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
 		boolean estaAperturado = pedCtrl.isSistemaAperturado();
 		btnAutenticar.addActionListener(new ActionListener() {
@@ -125,7 +142,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 					JOptionPane.showMessageDialog(null, "Usuario en Blanco", "Debes Ingresar el nombre de Usuario", JOptionPane.ERROR_MESSAGE);
 				}else
 				{
-					AutenticacionCtrl aut = new AutenticacionCtrl();
+					AutenticacionCtrl aut = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 					objUsuario = new Usuario(0,usuario, claveFinal, "", 0,"" , false);
 					boolean  resultado = aut.autenticarUsuario(objUsuario);
 					
@@ -137,7 +154,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 						if(!estaAperturado)
 						{
 							//Llamamos método para validar el estado de la fecha respecto a la última apertura.
-							OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl();
+							OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 							String fechaMayor = operCtrl.validarEstadoFechaSistema();
 							String fechaAumentada = operCtrl.aumentarFecha(fechasSistema.getFechaApertura());
 							Object seleccion = JOptionPane.showInputDialog(

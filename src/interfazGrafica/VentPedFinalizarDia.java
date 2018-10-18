@@ -26,15 +26,19 @@ import javax.swing.JDialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import java.awt.Font;
+import java.awt.Window;
+
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
+import java.awt.Component;
 
 public class VentPedFinalizarDia extends JDialog {
 
@@ -45,6 +49,7 @@ public class VentPedFinalizarDia extends JDialog {
 	private JTable tableResTipoPedido;
 	private JTextField txtTotalVendido;
 	private double totalVendido = 0;
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -108,7 +113,6 @@ public class VentPedFinalizarDia extends JDialog {
 		txtFechaInventario.setColumns(10);
 		
 		//Vamos a recuperar la fecha del sistema y la vamos a mostrar en el campo correspondiente
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
 		fechaSis = fecha.getFechaApertura();
 		txtFechaInventario.setText(fechaSis);
@@ -118,6 +122,7 @@ public class VentPedFinalizarDia extends JDialog {
 		contentPanePrincipal.add(scrollResCierre);
 		
 		JTextPane txtPaneResCierre = new JTextPane();
+		txtPaneResCierre.setEditable(false);
 		scrollResCierre.setViewportView(txtPaneResCierre);
 		
 		JLabel lblTotalesPorTipo = new JLabel("TOTALES POR TIPO DE PEDIDO");
@@ -158,7 +163,8 @@ public class VentPedFinalizarDia extends JDialog {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				//Acción para la generación inventario consumido
-				ReportesCtrl repCtrl = new ReportesCtrl();
+				dispose();
+				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
 				repCtrl.generarReporteInventarioCon();
 			}
 		});
@@ -170,7 +176,8 @@ public class VentPedFinalizarDia extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				
 				//Acción para la generación de reporte de caja
-				ReportesCtrl repCtrl = new ReportesCtrl();
+				dispose();
+				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
 				repCtrl.generarReporteCaja();
 			}
 		});
@@ -182,7 +189,8 @@ public class VentPedFinalizarDia extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				
 				//Acción para la generación de reporte de caja detallado
-				ReportesCtrl repCtrl = new ReportesCtrl();
+				dispose();
+				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
 				repCtrl.generarReporteCajaDet();
 			}
 		});
@@ -194,7 +202,8 @@ public class VentPedFinalizarDia extends JDialog {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				//Acción para la generación de reporte inventario actual
-				ReportesCtrl repCtrl = new ReportesCtrl();
+				dispose();
+				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
 				repCtrl.generarReporteInventarioAct();
 			}
 		});
@@ -214,15 +223,18 @@ public class VentPedFinalizarDia extends JDialog {
 		JButton btnValidarCierre = new JButton("Validar Cierre");
 		btnValidarCierre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl();
+				OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 				String resp = operTienda.validacionesPreCierre(fechaSis);
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				if(resp.equals(new String("")))
 				{
-					JOptionPane.showMessageDialog(null, "El cierre ha superado las prevalidaciones" , "Puede iniciar el cierre", JOptionPane.INFORMATION_MESSAGE);
+					((JButton)arg0.getSource()).getParent();
+					JOptionPane.showMessageDialog(ventanaPadre, "El cierre ha superado las prevalidaciones" , "Puede iniciar el cierre", JOptionPane.INFORMATION_MESSAGE);
 				}
 				else
 				{
-					JOptionPane.showMessageDialog(null, "El cierre presenta inconvenientes, se deben de validar temas adicionales" , "El cierre NO puede Iniciar.", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(ventanaPadre, "El cierre presenta inconvenientes, se deben de validar temas adicionales" , "El cierre NO puede Iniciar.", JOptionPane.ERROR_MESSAGE);
 				}
 				txtPaneResCierre.setText(resp);
 			}
@@ -232,7 +244,7 @@ public class VentPedFinalizarDia extends JDialog {
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Acción para la generación de reporte general de ventas
-				ReportesCtrl repCtrl = new ReportesCtrl();
+				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
 				repCtrl.generarReporteVentasDiario();
 								
 			}
@@ -240,7 +252,7 @@ public class VentPedFinalizarDia extends JDialog {
 		btnCierreDia.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl();
+				OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 				String resp = operTienda.finalizarDia(fechaSis);
 				if(resp.equals(new String("PROCESO EXITOSO")))
 				{
@@ -296,7 +308,6 @@ public class VentPedFinalizarDia extends JDialog {
         
         columnsName[0] = "Tipo Pedido";
         columnsName[1] = "TOTAL";
-        PedidoCtrl pedCtrl = new  PedidoCtrl();
         ArrayList totTipoPedido = new ArrayList();
         totTipoPedido = pedCtrl.obtenerTotalesPedidosPorTipo(fechaSis);
         DefaultTableModel modelo = new DefaultTableModel(){

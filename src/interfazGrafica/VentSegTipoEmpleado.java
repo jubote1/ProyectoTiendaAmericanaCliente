@@ -50,6 +50,7 @@ public class VentSegTipoEmpleado extends JFrame {
 	EstadoListModel estListModel2 = new EstadoListModel();
 	JList listEstDisponibles;
 	JList listAsignados;
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -81,7 +82,7 @@ public class VentSegTipoEmpleado extends JFrame {
         columnsName[4] = "Administrador";
         columnsName[5] = "Hornero";
         columnsName[6] = "Cocinero";
-        EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+        EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 		ArrayList<Object> tiposEmpleado = empCtrl.obtenerTipoEmpleado();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
@@ -223,10 +224,9 @@ public class VentSegTipoEmpleado extends JFrame {
 				     //Obtenemos el objeto estado seleccionado 
 					 Estado p = estListModel2.getEstado(selection);
 					 //Hacemos la inserción
-				     PedidoCtrl pedCtrl = new PedidoCtrl();
-				     //Realizamos la insercion en base de datos
+				      //Realizamos la insercion en base de datos
 				     boolean resEli = pedCtrl.eliminarTipoEmpleadoEstado(idTipoEmpleado, p.getIdestado());
-				     Estado estEli= EstadoDAO.obtenerEstado(p.getIdestado());
+				     Estado estEli= pedCtrl.obtenerEstado(p.getIdestado());
 				     if(resEli)
 				     {
 				    	 //Si la inserción en base de datos es correcta se realiza el movimiento en los JList
@@ -258,10 +258,9 @@ public class VentSegTipoEmpleado extends JFrame {
 				     //Obtenemos el objeto estado seleccionado 
 					 Estado p = estListModel1.getEstado(selection);
 					 //Hacemos la inserción
-				     PedidoCtrl pedCtrl = new PedidoCtrl();
-				     //Realizamos la insercion en base de datos
+					 //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.insertarTipoEmpleadoEstado(idTipoEmpleado, p.getIdestado());
-				     Estado estAdi = EstadoDAO.obtenerEstado(p.getIdestado());
+				     Estado estAdi = pedCtrl.obtenerEstado(p.getIdestado());
 				     if(resIns)
 				     {
 				    	 //Si la inserción en base de datos es correcta se realiza el movimiento en los JList
@@ -338,7 +337,7 @@ public class VentSegTipoEmpleado extends JFrame {
 						cocinero = true;
 					}
 					TipoEmpleado tipEmp = new TipoEmpleado(0, descripcion,cajero, domiciliario, administrador, hornero, cocinero);
-					EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+					EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 					int idTipoEmp = empCtrl.insertarTipoEmpleado(tipEmp);
 					DefaultTableModel modelo = pintarTipoEmpleado();
 					jTableTipEmpleado.setModel(modelo);
@@ -363,7 +362,7 @@ public class VentSegTipoEmpleado extends JFrame {
 				String descTipEmpleado = (String) jTableTipEmpleado.getValueAt(filaSeleccionada, 1);
 				int idTipEmpleado = Integer.parseInt((String)jTableTipEmpleado.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Tipo Empleado " +  descTipEmpleado , "Eliminacion Tipo Empleado ", JOptionPane.YES_NO_OPTION);
-				EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+				EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 				empCtrl.eliminarTipoEmpleado(idTipEmpleado);
 				DefaultTableModel modelo = pintarTipoEmpleado();
 				jTableTipEmpleado.setModel(modelo);
@@ -441,7 +440,7 @@ public class VentSegTipoEmpleado extends JFrame {
 						cocinero = true;
 					}
 					TipoEmpleado tipEmp = new TipoEmpleado(idTipEmp, descripcion,cajero, domiciliario, administrador, hornero, cocinero);
-					EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+					EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 					boolean respuesta = empCtrl.editarTipoEmpleado(tipEmp);
 					if (respuesta)
 					{
@@ -484,7 +483,6 @@ public boolean validarDatos()
 
 public void llenarEstadosNoAsignados()
 {
-	PedidoCtrl pedCtrl = new PedidoCtrl();
 	ArrayList<Estado> estadosNoAsignados = pedCtrl.obtenerEstFalTipoEmpleado(idTipoEmpleado);
 	for(int i = 0; i < estadosNoAsignados.size(); i++)
 	{
@@ -495,7 +493,6 @@ public void llenarEstadosNoAsignados()
 
 public void llenarEstadosAsignados()
 {
-	PedidoCtrl pedCtrl = new PedidoCtrl();
 	ArrayList<Estado> estadosAsignados = pedCtrl.obtenerEstadosTipoEmpleado(idTipoEmpleado);
 	for(int i = 0; i < estadosAsignados.size(); i++)
 	{

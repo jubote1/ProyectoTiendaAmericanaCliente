@@ -24,7 +24,7 @@ public class ItemInventarioDAO {
  * Método que se encarga de retonar todos los items inventario parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerItemInventario()
+	public static ArrayList obtenerItemInventario(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -35,7 +35,10 @@ public class ItemInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from item_inventario";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -54,7 +57,6 @@ public class ItemInventarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -66,7 +68,7 @@ public class ItemInventarioDAO {
 		
 	}
 	
-	public static ArrayList obtenerItemInventarioResumen(String fecha)
+	public static ArrayList obtenerItemInventarioResumen(String fecha, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -85,7 +87,10 @@ public class ItemInventarioDAO {
 					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
 					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo from item_inventario a";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -104,7 +109,6 @@ public class ItemInventarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -116,7 +120,7 @@ public class ItemInventarioDAO {
 		
 	}
 	
-	public static ArrayList obtenerItemInventarioVarianza(String fecha)
+	public static ArrayList obtenerItemInventarioVarianza(String fecha, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -135,7 +139,10 @@ public class ItemInventarioDAO {
 					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
 					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, a.cantidad,0 from item_inventario a";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -154,7 +161,6 @@ public class ItemInventarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -167,7 +173,7 @@ public class ItemInventarioDAO {
 	}
 	
 	
-	public static ArrayList<ItemInventario> obtenerItemInventarioObj()
+	public static ArrayList<ItemInventario> obtenerItemInventarioObj(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -181,7 +187,10 @@ public class ItemInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from item_inventario";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				idItem = rs.getInt("iditem");
@@ -201,7 +210,6 @@ public class ItemInventarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -213,7 +221,7 @@ public class ItemInventarioDAO {
 		
 	}
 	
-	public static ArrayList obtenerItemInventarioIngresar()
+	public static ArrayList obtenerItemInventarioIngresar(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -224,7 +232,10 @@ public class ItemInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select iditem,nombre_item,unidad_medida,cantidadxcanasta,nombrecontenedor,0 from item_inventario";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -243,7 +254,6 @@ public class ItemInventarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -261,7 +271,7 @@ public class ItemInventarioDAO {
 	 * @param impuesto Recibe un objeto de tipo item inventario del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el iditem creado en la base de datos
 	 */
-	public static int insertarItemInventario(ItemInventario item)
+	public static int insertarItemInventario(ItemInventario item, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idImpuestoIns = 0;
@@ -271,12 +281,19 @@ public class ItemInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into item_inventario (nombre_item, unidad_medida,manejacanastas,cantidadxcanasta,nombrecontenedor, categoria) values ('" + item.getNombreItem() + "', '" + item.getUnidadMedida() + "' , '" + item.getManejaCanastas() + "' , " + item.getCantidadCanasta() + " , '" + item.getNombreContenedor() + "' , '" + item.getCategoria() + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idImpuestoIns=rs.getInt(1);
-				logger.info("id item insertada en bd " + idImpuestoIns);
+				if(auditoria)
+				{
+					logger.info("id item insertada en bd " + idImpuestoIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -300,7 +317,7 @@ public class ItemInventarioDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarItemInventario(int idItem)
+	public static boolean eliminarItemInventario(int idItem, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -310,7 +327,10 @@ public class ItemInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from item_inventario where iditem = " + idItem; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -335,7 +355,7 @@ public class ItemInventarioDAO {
 	 * @param impuesto Recibe como parámetro un objeto de la entidad item inventario con base en el cual se realiza la modificación
 	 * @return Se retorna un valor booleano indicando si el proceso fue o no satisfactorio
 	 */
-	public static boolean EditarItemInventario(ItemInventario item)
+	public static boolean EditarItemInventario(ItemInventario item, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -345,7 +365,10 @@ public class ItemInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update item_inventario set nombre_item = '" + item.getNombreItem() + "' , unidad_medida = '" + item.getUnidadMedida() + " ' , manejacanastas = '" + item.getManejaCanastas() + "' , cantidadxcanasta =" + item.getCantidadCanasta() + " , nombrecontenedor = '" + item.getNombreContenedor() + "' , categoria = '" + item.getCategoria()  + "' where iditem = " + item.getIdItem() ; 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();

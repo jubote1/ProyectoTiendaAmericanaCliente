@@ -51,14 +51,16 @@ import capaModelo.RespuestaPedidoPixel;
 import capaModelo.Tienda;
 import capaModelo.TipoPedido;
 import capaModelo.Usuario;
+import interfazGrafica.Impresion;
 import interfazGrafica.Sesion;
 import interfazGrafica.VentPedTomarPedidos;
 
 public class PedidoCtrl {
 	
-	public PedidoCtrl()
+	private boolean auditoria;
+	public PedidoCtrl(boolean auditoria)
 	{
-		
+		this.auditoria = auditoria;
 	}
 	
 	
@@ -103,7 +105,7 @@ public class PedidoCtrl {
 	
 	public ArrayList<Pregunta> obtenerPreguntaProducto(int idProducto)
 	{
-		ArrayList<Pregunta> preguntaProducto = PreguntaDAO.obtenerPreguntaProducto(idProducto);
+		ArrayList<Pregunta> preguntaProducto = PreguntaDAO.obtenerPreguntaProducto(idProducto, auditoria);
 		return(preguntaProducto);
 	}
 	
@@ -117,34 +119,34 @@ public class PedidoCtrl {
 	 */
 	public int InsertarEncabezadoPedido(int idtienda, int idcliente, String fechaPedido, String user)
 	{
-		int idPedidoNuevo = PedidoDAO.InsertarEncabezadoPedido(idtienda, idcliente, fechaPedido, user);
+		int idPedidoNuevo = PedidoDAO.InsertarEncabezadoPedido(idtienda, idcliente, fechaPedido, user, auditoria);
 		//El estado cero se tiene la convención q
-		PedidoDAO.ActualizarEstadoPedido(idPedidoNuevo, 0, 0,Sesion.getUsuario());
+		PedidoDAO.ActualizarEstadoPedido(idPedidoNuevo, 0, 0,Sesion.getUsuario(), auditoria);
 		return(idPedidoNuevo);
 		
 	}
 	
 	public int insertarDetallePedido(DetallePedido detPedido)
 	{
-		int idDetalleoNuevo = DetallePedidoDAO.insertarDetallePedido(detPedido);
+		int idDetalleoNuevo = DetallePedidoDAO.insertarDetallePedido(detPedido, auditoria);
 		return(idDetalleoNuevo);
 	}
 	
 	public boolean eliminarDetallePedido(int idDetallePedido)
 	{
-		boolean respuesta = DetallePedidoDAO.eliminarDetallePedido(idDetallePedido);
+		boolean respuesta = DetallePedidoDAO.eliminarDetallePedido(idDetallePedido, auditoria);
 		return(respuesta);
 	}
 	
 	public boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion)
 	{
-		boolean respuesta = DetallePedidoDAO.anularDetallePedido(idDetallePedido, idMotivoAnulacion);
+		boolean respuesta = DetallePedidoDAO.anularDetallePedido(idDetallePedido, idMotivoAnulacion, auditoria);
 		return(respuesta);
 	}
 	
 	public boolean validarDetalleMaster(int idDetallePedido)
 	{
-		boolean respuesta = DetallePedidoDAO.validarDetalleMaster(idDetallePedido);
+		boolean respuesta = DetallePedidoDAO.validarDetalleMaster(idDetallePedido, auditoria);
 		return(respuesta);
 	}
 	
@@ -154,12 +156,12 @@ public class PedidoCtrl {
 		if(efectivo > 0)
 		{
 			PedidoFormaPago forEfectivo = new PedidoFormaPago(0,idPedidoTienda,1,valorTotal,efectivo);
-			resIdEfe = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forEfectivo);
+			resIdEfe = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forEfectivo, auditoria);
 		}
 		if(tarjeta > 0)
 		{
 			PedidoFormaPago forTarjeta = new PedidoFormaPago(0,idPedidoTienda,2,valorTotal,tarjeta);
-			resIdTar = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forTarjeta);
+			resIdTar = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forTarjeta, auditoria);
 		}
 		if(resIdEfe > 0 || resIdTar > 0)
 		{
@@ -173,7 +175,7 @@ public class PedidoCtrl {
 	
 	public boolean existeFormaPago(int idPedido)
 	{
-		boolean respuesta = PedidoFormaPagoDAO.existeFormaPago(idPedido);
+		boolean respuesta = PedidoFormaPagoDAO.existeFormaPago(idPedido, auditoria);
 		return(respuesta);
 	}
 	
@@ -188,13 +190,21 @@ public class PedidoCtrl {
 	{
 		//Antes de finalizar pedido realizaremos el cálculo de los impuestos
 		//Clareamos los impuestos liquidados, si existe con anterioridad
-		DetallePedidoImpuestoDAO.eliminarDetallePedidoImpuesto(idPedido);
+		DetallePedidoImpuestoDAO.eliminarDetallePedidoImpuesto(idPedido, auditoria);
 		//Realizamos la liquidación de los impuestos para el pedido
-		ImpuestoCtrl impCtrl = new ImpuestoCtrl();
+		ImpuestoCtrl impCtrl = new ImpuestoCtrl(auditoria);
 		impCtrl.liquidarImpuestosPedido(idPedido);
-		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido, idTipoPedido);
-		int idEstadoPostIni = EstadoDAO.obtenerEstadoInicial(idTipoPedido);
-		PedidoDAO.ActualizarEstadoPedido(idPedido, 0 , idEstadoPostIni,Sesion.getUsuario());
+		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido, idTipoPedido, auditoria);
+		Estado estadoIni = EstadoDAO.obtenerEstadoInicial(idTipoPedido, auditoria);
+		int idEstadoPostIni = estadoIni.getIdestado();
+		PedidoDAO.ActualizarEstadoPedido(idPedido, 0 , idEstadoPostIni,Sesion.getUsuario(), auditoria);
+		//En este punto debemos de validar si este estado requiere de impresión
+		if(estadoIni.isImpresion())
+		{
+			String strFactura = generarStrImpresionFactura(idPedido);
+			Impresion imp = new Impresion();
+			imp.imprimirFactura(strFactura);
+		}
 		return(respuesta);
 	}
 	
@@ -204,15 +214,15 @@ public class PedidoCtrl {
 		boolean respuesta = true;
 		if(respuesta)
 		{
-			respuesta = PedidoDAO.anularPedido(idPedido, idMotivoAnulacion);
+			respuesta = PedidoDAO.anularPedido(idPedido, idMotivoAnulacion, auditoria);
 		}
 		if(respuesta)
 		{
 			//Debemos anular todos los detalles pedidos
-			ArrayList<DetallePedido> detPedido = DetallePedidoDAO.obtenerDetallePedido(idPedido);
+			ArrayList<DetallePedido> detPedido = DetallePedidoDAO.obtenerDetallePedido(idPedido, auditoria);
 			for(int i = 0; i < detPedido.size(); i++)
 			{
-				DetallePedidoDAO.anularDetallePedido(detPedido.get(i).getIdDetallePedido(), idMotivoAnulacion);
+				DetallePedidoDAO.anularDetallePedido(detPedido.get(i).getIdDetallePedido(), idMotivoAnulacion, auditoria);
 			}
 			return(true);
 		}
@@ -221,10 +231,10 @@ public class PedidoCtrl {
 	
 	public boolean anularPedidoEliminar(int idPedido)
 	{
-		boolean respuesta = DetallePedidoDAO.eliminarDetallesPedido(idPedido);
+		boolean respuesta = DetallePedidoDAO.eliminarDetallesPedido(idPedido, auditoria);
 		if(respuesta)
 		{
-			respuesta = PedidoDAO.eliminarPedido(idPedido);
+			respuesta = PedidoDAO.eliminarPedido(idPedido, auditoria);
 		}
 		if(respuesta)
 		{
@@ -238,31 +248,31 @@ public class PedidoCtrl {
 	
 	public  ArrayList obtenerEstado()
 	{
-		ArrayList estados = EstadoDAO.obtenerEstado();
+		ArrayList estados = EstadoDAO.obtenerEstado( auditoria);
 		return(estados);
 	}
 	
 	public Estado obtenerEstado(int idEstado)
 	{
-		Estado estado = EstadoDAO.obtenerEstado(idEstado);
+		Estado estado = EstadoDAO.obtenerEstado(idEstado, auditoria);
 		return(estado);
 	}
 	
-	public static int insertarEstado(Estado estado)
+	public int insertarEstado(Estado estado)
 	{
-		int idEstadoIns = EstadoDAO.insertarEstado(estado);
+		int idEstadoIns = EstadoDAO.insertarEstado(estado, auditoria);
 		return(idEstadoIns);
 	}
 	
 	public boolean eliminarEstado(int idestado)
 	{
-		boolean respuesta = EstadoDAO.eliminarEstado(idestado);
+		boolean respuesta = EstadoDAO.eliminarEstado(idestado, auditoria);
 		return(respuesta);
 	}
 	
 	public boolean editarEstado(Estado estado)
 	{
-		boolean respuesta = EstadoDAO.editarEstado(estado);
+		boolean respuesta = EstadoDAO.editarEstado(estado, auditoria);
 		return(respuesta);
 	}
 	
@@ -270,26 +280,26 @@ public class PedidoCtrl {
 	
 	public ArrayList<EstadoAnterior> obtenerEstadosAnteriores(int idEstado)
 	{
-		ArrayList<EstadoAnterior> estadosAnt = EstadoAnteriorDAO.obtenerEstadosAnteriores(idEstado);
+		ArrayList<EstadoAnterior> estadosAnt = EstadoAnteriorDAO.obtenerEstadosAnteriores(idEstado, auditoria);
 		return(estadosAnt);
 	}
 	
 	public boolean insertarEstadoAnterior(EstadoAnterior estadoAnt)
 	{
-		boolean respuesta = EstadoAnteriorDAO.insertarEstadoAnterior(estadoAnt);
+		boolean respuesta = EstadoAnteriorDAO.insertarEstadoAnterior(estadoAnt, auditoria);
 		return(respuesta);
 	}
 	
 	public boolean eliminarEstadoAnterior(EstadoAnterior estadoAnt)
 	{
-		boolean respuesta = EstadoAnteriorDAO.eliminarEstadoAnterior(estadoAnt);
+		boolean respuesta = EstadoAnteriorDAO.eliminarEstadoAnterior(estadoAnt, auditoria);
 		return(respuesta);
 	}
 	
 	public ArrayList<Estado> obtenerEstadosAnterioresFaltantes(int idEstado)
 	{
-		ArrayList<EstadoAnterior> estadosAnt = EstadoAnteriorDAO.obtenerEstadosAnteriores(idEstado);
-		ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado();
+		ArrayList<EstadoAnterior> estadosAnt = EstadoAnteriorDAO.obtenerEstadosAnteriores(idEstado, auditoria);
+		ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado( auditoria);
 		ArrayList<Estado> estadosFaltantes = new ArrayList();
 		for(int i = 0; i < estados.size(); i++)
 		{
@@ -317,26 +327,26 @@ public class PedidoCtrl {
 	
 		public ArrayList<EstadoPosterior> obtenerEstadosPosteriores(int idEstado)
 		{
-			ArrayList<EstadoPosterior> estadosPos = EstadoPosteriorDAO.obtenerEstadosPos(idEstado);
+			ArrayList<EstadoPosterior> estadosPos = EstadoPosteriorDAO.obtenerEstadosPos(idEstado, auditoria);
 			return(estadosPos);
 		}
 		
 		public boolean insertarEstadoPosterior(EstadoPosterior estadoPos)
 		{
-			boolean respuesta = EstadoPosteriorDAO.insertarEstado(estadoPos);
+			boolean respuesta = EstadoPosteriorDAO.insertarEstado(estadoPos, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean eliminarEstadoPosterior(EstadoPosterior estadoPos)
 		{
-			boolean respuesta = EstadoPosteriorDAO.eliminarEstadoPosterior(estadoPos);
+			boolean respuesta = EstadoPosteriorDAO.eliminarEstadoPosterior(estadoPos, auditoria);
 			return(respuesta);
 		}
 		
 		public ArrayList<Estado> obtenerEstadosPosterioresFaltantes(int idEstado)
 		{
-			ArrayList<EstadoPosterior> estadosPos = EstadoPosteriorDAO.obtenerEstadosPos(idEstado);
-			ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado();
+			ArrayList<EstadoPosterior> estadosPos = EstadoPosteriorDAO.obtenerEstadosPos(idEstado, auditoria);
+			ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado(auditoria);
 			ArrayList<Estado> estadosFaltantes = new ArrayList();
 			for(int i = 0; i < estados.size(); i++)
 			{
@@ -363,48 +373,48 @@ public class PedidoCtrl {
 		
 		public  ArrayList obtenerTiposPedido()
 		{
-			ArrayList tiposPedido = TipoPedidoDAO.obtenerTiposPedido();
+			ArrayList tiposPedido = TipoPedidoDAO.obtenerTiposPedido( auditoria);
 			return(tiposPedido);
 		}
 		
 		public int insertarTipoPedido(TipoPedido tipPed)
 		{
-			int idTipoIns = TipoPedidoDAO.insertarTipoPedido(tipPed);
+			int idTipoIns = TipoPedidoDAO.insertarTipoPedido(tipPed, auditoria);
 			return(idTipoIns);
 		}
 		
 		public  boolean eliminarTipoPedido(int idTipoPedido)
 		{
-			boolean respuesta = TipoPedidoDAO.eliminarTipoPedido(idTipoPedido);
+			boolean respuesta = TipoPedidoDAO.eliminarTipoPedido(idTipoPedido, auditoria);
 			return(respuesta);
 		}
 		
 		public  boolean EditarTipoPedido(TipoPedido tipPedidoEditar)
 		{
-			boolean respuesta = TipoPedidoDAO.EditarTipoPedido(tipPedidoEditar);
+			boolean respuesta = TipoPedidoDAO.EditarTipoPedido(tipPedidoEditar, auditoria);
 			return(respuesta);
 		}
 		public TipoPedido obtenerTipoPedido(int idTipoPedido)
 		{
-			TipoPedido tipPedCon = TipoPedidoDAO.obtenerTipoPedido(idTipoPedido);
+			TipoPedido tipPedCon = TipoPedidoDAO.obtenerTipoPedido(idTipoPedido, auditoria);
 			return(tipPedCon);
 		}
 		
 		public ArrayList<TipoPedido> obtenerTiposPedidoNat()
 		{
-			ArrayList<TipoPedido> tiposPedidoNat = TipoPedidoDAO.obtenerTiposPedidoNat();
+			ArrayList<TipoPedido> tiposPedidoNat = TipoPedidoDAO.obtenerTiposPedidoNat(auditoria);
 			return(tiposPedidoNat);
 		}
 		
 		public FechaSistema obtenerFechasSistema()
 		{
-			FechaSistema fecha = TiendaDAO.obtenerFechasSistema();
+			FechaSistema fecha = TiendaDAO.obtenerFechasSistema( auditoria);
 			return(fecha);
 		}
 		
 		public boolean isSistemaAperturado()
 		{
-			FechaSistema fecha = TiendaDAO.obtenerFechasSistema();
+			FechaSistema fecha = TiendaDAO.obtenerFechasSistema( auditoria);
 			String fechaSistema = fecha.getFechaApertura();
 			String fechaUltimoCierre = fecha.getFechaUltimoCierre();
 			if(fechaSistema.equals(fechaUltimoCierre))
@@ -416,11 +426,11 @@ public class PedidoCtrl {
 		
 		public ArrayList obtenerPedidosPorTipo(int idTipoPedido)
 		{
-			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema(auditoria);
 			ArrayList pedidos = new ArrayList();
 			if(sePuedeFacturar(fechaSistema))
 			{
-				pedidos = PedidoDAO.obtenerPedidosPorTipo(idTipoPedido, fechaSistema.getFechaApertura());
+				pedidos = PedidoDAO.obtenerPedidosPorTipo(idTipoPedido, fechaSistema.getFechaApertura(), auditoria);
 				int idPedido = 0;
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
@@ -436,11 +446,11 @@ public class PedidoCtrl {
 		
 		public ArrayList obtenerPedidosTableSinFinales()
 		{
-			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema(auditoria);
 			ArrayList pedidos = new ArrayList();
 			if(sePuedeFacturar(fechaSistema))
 			{
-				pedidos = PedidoDAO.obtenerPedidosTable(fechaSistema.getFechaApertura());
+				pedidos = PedidoDAO.obtenerPedidosTable(fechaSistema.getFechaApertura(), auditoria);
 				int idPedido = 0;
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
@@ -460,11 +470,11 @@ public class PedidoCtrl {
 		 */
 		public ArrayList obtenerPedidosTableConFinales()
 		{
-			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema( auditoria);
 			ArrayList pedidos = new ArrayList();
 			if(sePuedeFacturar(fechaSistema))
 			{
-				pedidos = PedidoDAO.obtenerPedidosTableConFinales(fechaSistema.getFechaApertura());
+				pedidos = PedidoDAO.obtenerPedidosTableConFinales(fechaSistema.getFechaApertura(), auditoria);
 				int idPedido = 0;
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
@@ -495,43 +505,44 @@ public class PedidoCtrl {
 		 */
 		public Estado obtenerEstadoPedido(int idPedidoTienda)
 		{
-			Estado estadoPedido = PedidoDAO.obtenerEstadoPedido(idPedidoTienda);
+			Estado estadoPedido = PedidoDAO.obtenerEstadoPedido(idPedidoTienda, auditoria);
 			return(estadoPedido);
 		}
 		
 		public boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario)
 		{
-			boolean respuesta = PedidoDAO.ActualizarEstadoPedido(idPedido, idEstadoAnterior, idEstadoPosterior, usuario);
+			boolean respuesta = PedidoDAO.ActualizarEstadoPedido(idPedido, idEstadoAnterior, idEstadoPosterior, usuario, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean tieneEstadoFinal( int idTipoPedido, int idEstado)
 		{
-			boolean respuesta = EstadoDAO.tieneEstadoFinal(idTipoPedido, idEstado);
+			boolean respuesta = EstadoDAO.tieneEstadoFinal(idTipoPedido, idEstado, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean tieneEstadoInicial( int idTipoPedido, int idEstado)
 		{
-			boolean respuesta = EstadoDAO.tieneEstadoInicial(idTipoPedido, idEstado);
+			boolean respuesta = EstadoDAO.tieneEstadoInicial(idTipoPedido, idEstado, auditoria);
 			return(respuesta);
 		}
 	
 		public int obtenerEstadoInicial( int idTipoPedido)
 		{
-			int respuesta = EstadoDAO.obtenerEstadoInicial(idTipoPedido);
+			Estado estado = EstadoDAO.obtenerEstadoInicial(idTipoPedido, auditoria);
+			int respuesta = estado.getIdestado();
 			return (respuesta);
 		}
 		
 		public int obtenerEstadoFinal( int idTipoPedido)
 		{
-			int respuesta = EstadoDAO.obtenerEstadoFinal(idTipoPedido);
+			int respuesta = EstadoDAO.obtenerEstadoFinal(idTipoPedido, auditoria);
 			return (respuesta);
 		}
 		
 		public ArrayList obtenerHistoriaEstadoPedido(int idPedido)
 		{
-			ArrayList historiaPedido = EstadoDAO.obtenerHistoriaEstadoPedido(idPedido);
+			ArrayList historiaPedido = EstadoDAO.obtenerHistoriaEstadoPedido(idPedido, auditoria);
 			return(historiaPedido);
 		}
 		
@@ -539,76 +550,76 @@ public class PedidoCtrl {
 		
 		public boolean esEstadoFinal(int idTipoPedido, int idEstado)
 		{
-			boolean respuesta = EstadoDAO.esEstadoFinal(idTipoPedido, idEstado);
+			boolean respuesta = EstadoDAO.esEstadoFinal(idTipoPedido, idEstado, auditoria);
 			return(respuesta);
 		}
 		
-		public static boolean esEstadoInicial(int idTipoPedido, int idEstado)
+		public boolean esEstadoInicial(int idTipoPedido, int idEstado)
 		{
-			boolean respuesta = EstadoDAO.esEstadoInicial(idTipoPedido, idEstado);
+			boolean respuesta = EstadoDAO.esEstadoInicial(idTipoPedido, idEstado, auditoria);
 			return(respuesta);
 		}
 		//PedidoDescuento
 		
 		public boolean insertarPedidoDescuento(PedidoDescuento descuento)
 		{
-			boolean respuesta = PedidoDescuentoDAO.insertarPedidoDescuento(descuento);
+			boolean respuesta = PedidoDescuentoDAO.insertarPedidoDescuento(descuento, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean eliminarPedidoDescuento(int idPedido)
 		{
-			boolean respuesta = PedidoDescuentoDAO.eliminarPedidoDescuento(idPedido);
+			boolean respuesta = PedidoDescuentoDAO.eliminarPedidoDescuento(idPedido, auditoria);
 			return(respuesta);
 		}
 		
 		public PedidoDescuento obtenerPedidoDescuento(int idPedido)
 		{
-			PedidoDescuento descuento = PedidoDescuentoDAO.obtenerPedidoDescuento(idPedido);
+			PedidoDescuento descuento = PedidoDescuentoDAO.obtenerPedidoDescuento(idPedido, auditoria);
 			return(descuento);
 		}
 		
 		public boolean existePedidoDescuento(int idPedido)
 		{
-			boolean respuesta = PedidoDescuentoDAO.existePedidoDescuento(idPedido);
+			boolean respuesta = PedidoDescuentoDAO.existePedidoDescuento(idPedido, auditoria);
 			return(respuesta);
 		}
 		
 		public double obtenerTotalBrutoPedido(int idpedido)
 		{
-			double valorBruto = PedidoDAO.obtenerTotalBrutoPedido(idpedido);
+			double valorBruto = PedidoDAO.obtenerTotalBrutoPedido(idpedido, auditoria);
 			return(valorBruto);
 		}
 		
 		public ArrayList<DetallePedido> obtenerDetallePedido(int idPedido)
 		{
-			ArrayList<DetallePedido> detPedidos = DetallePedidoDAO.obtenerDetallePedido(idPedido);
+			ArrayList<DetallePedido> detPedidos = DetallePedidoDAO.obtenerDetallePedido(idPedido, auditoria);
 			detPedidos = ordenarDetallePedido(detPedidos);
 			return(detPedidos);
 		}
 		
 		public ArrayList<DetallePedido> obtenerDetallePedidoPintar(int idPedido)
 		{
-			ArrayList<DetallePedido> detPedidos = DetallePedidoDAO.obtenerDetallePedidoPintar(idPedido);
+			ArrayList<DetallePedido> detPedidos = DetallePedidoDAO.obtenerDetallePedidoPintar(idPedido, auditoria);
 			detPedidos = ordenarDetallePedido(detPedidos);
 			return(detPedidos);
 		}
 		
 		public Cliente obtenerClientePedido(int idPedido)
 		{
-			Cliente cliente = PedidoDAO.obtenerClientePedido(idPedido);
+			Cliente cliente = PedidoDAO.obtenerClientePedido(idPedido, auditoria);
 			return(cliente);
 		}
 		
 		public boolean eliminarPedidoFormaPago(int idPedido)
 		{
-			boolean respuesta = PedidoFormaPagoDAO.eliminarPedidoFormaPago(idPedido);
+			boolean respuesta = PedidoFormaPagoDAO.eliminarPedidoFormaPago(idPedido, auditoria);
 			return(respuesta);
 		}
 		
 		public int obtenerTipoDePedido(int idPedido)
 		{
-			int idTipoPedido = PedidoDAO.obtenerTipoPedido(idPedido);
+			int idTipoPedido = PedidoDAO.obtenerTipoPedido(idPedido, auditoria);
 			return(idTipoPedido);
 			
 		}
@@ -622,7 +633,7 @@ public class PedidoCtrl {
 		public String calcularTiempoPedido(int idPedido)
 		{
 			String respuesta = "";
-			ArrayList hisEstPedido = EstadoDAO.obtenerHistoriaEstadoPedido(idPedido);
+			ArrayList hisEstPedido = EstadoDAO.obtenerHistoriaEstadoPedido(idPedido, auditoria);
 			//En este punto ya podemos realizar validación si el estado es final o no y de acuerdo a esto tomar ciertas
 			//determinaciones.
 			int cantHist  = hisEstPedido.size();
@@ -730,9 +741,9 @@ public class PedidoCtrl {
 		 * @param fechaPedido Se recibe un string con la fecha a consultar y resumir los totales.
 		 * @return Se retorna un arraylist con los totales resumidos
 		 */
-		public static ArrayList obtenerTotalesPedidosPorTipo(String fechaPedido)
+		public ArrayList obtenerTotalesPedidosPorTipo(String fechaPedido)
 		{
-			ArrayList resumenTotTipoPedido = PedidoDAO.obtenerTotalesPedidosPorTipo(fechaPedido);
+			ArrayList resumenTotTipoPedido = PedidoDAO.obtenerTotalesPedidosPorTipo(fechaPedido, auditoria);
 			return(resumenTotTipoPedido);
 		}
 		
@@ -740,8 +751,8 @@ public class PedidoCtrl {
 		
 		public ArrayList<Estado> obtenerEstFalTipoEmpleado(int idTipoEmpleado)
 		{
-			ArrayList<Estado> estadosTipEmpleado = TipoEmpleadoEstadoDAO.obtenerEstadosTipoEmpleado(idTipoEmpleado);
-			ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado();
+			ArrayList<Estado> estadosTipEmpleado = TipoEmpleadoEstadoDAO.obtenerEstadosTipoEmpleado(idTipoEmpleado, auditoria);
+			ArrayList<Estado> estados = EstadoDAO.obtenerTodosEstado( auditoria);
 			ArrayList<Estado> estadosFaltantes = new ArrayList();
 			for(int i = 0; i < estados.size(); i++)
 			{
@@ -766,32 +777,32 @@ public class PedidoCtrl {
 		
 		public ArrayList<Estado> obtenerEstadosTipoEmpleado(int idTipoEmpleado)
 		{
-			ArrayList<Estado> estTipEmp = TipoEmpleadoEstadoDAO.obtenerEstadosTipoEmpleado(idTipoEmpleado);
+			ArrayList<Estado> estTipEmp = TipoEmpleadoEstadoDAO.obtenerEstadosTipoEmpleado(idTipoEmpleado, auditoria);
 			return(estTipEmp);
 		}
 		
 		public boolean insertarTipoEmpleadoEstado(int idTipoEmpleado, int idEstado)
 		{
-			boolean respuesta = TipoEmpleadoEstadoDAO.insertarTipoEmpleadoEstado(idTipoEmpleado, idEstado);
+			boolean respuesta = TipoEmpleadoEstadoDAO.insertarTipoEmpleadoEstado(idTipoEmpleado, idEstado, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean eliminarTipoEmpleadoEstado(int idTipoEmpleado, int idEstado)
 		{
-			boolean respuesta = TipoEmpleadoEstadoDAO.eliminarTipoEmpleadoEstado(idTipoEmpleado, idEstado);
+			boolean respuesta = TipoEmpleadoEstadoDAO.eliminarTipoEmpleadoEstado(idTipoEmpleado, idEstado, auditoria);
 			return(respuesta);
 		}
 		
 		public ArrayList obtenerPedidosVentanaComanda(int idEmpleado)
 		{
-			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema( auditoria);
 			ArrayList pedidos = new ArrayList();
 			if(sePuedeFacturar(fechaSistema))
 			{
 				//Obtenemos el tipo de Usuario del usuario logueado
-				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado);
+				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
 				int idTipoEmpActual = usuActual.getidTipoEmpleado();
-				pedidos = PedidoDAO.obtenerPedidosVentanaComanda(fechaSistema.getFechaApertura(), idTipoEmpActual );
+				pedidos = PedidoDAO.obtenerPedidosVentanaComanda(fechaSistema.getFechaApertura(), idTipoEmpActual, auditoria );
 				int idPedido = 0;
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
@@ -807,14 +818,14 @@ public class PedidoCtrl {
 		
 		public ArrayList obtenerPedidosVentanaComandaTipPed(int idEmpleado, int idTipoPedido)
 		{
-			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema();
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema( auditoria);
 			ArrayList pedidos = new ArrayList();
 			if(sePuedeFacturar(fechaSistema))
 			{
 				//Obtenemos el tipo de Usuario del usuario logueado
-				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado);
+				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
 				int idTipoEmpActual = usuActual.getidTipoEmpleado();
-				pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), idTipoEmpActual, idTipoPedido );
+				pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), idTipoEmpActual, idTipoPedido, auditoria );
 				int idPedido = 0;
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
@@ -830,62 +841,62 @@ public class PedidoCtrl {
 		
 		public boolean tieneModificadorCon(int idProducto)
 		{
-			boolean respuesta = ProductoModificadorConDAO.tieneModificadorCon(idProducto);
+			boolean respuesta = ProductoModificadorConDAO.tieneModificadorCon(idProducto, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean detalleTieneModificadorCon(int idDetalle)
 		{
-			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
-			boolean respuesta = ProductoModificadorConDAO.tieneModificadorCon(detPedido.getIdProducto());
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
+			boolean respuesta = ProductoModificadorConDAO.tieneModificadorCon(detPedido.getIdProducto(), auditoria);
 			return(respuesta);
 		}
 		
 		public boolean tieneModificadorSin(int idProducto)
 		{
-			boolean respuesta = ProductoModificadorSinDAO.tieneModificadorSin(idProducto);
+			boolean respuesta = ProductoModificadorSinDAO.tieneModificadorSin(idProducto, auditoria);
 			return(respuesta);
 		}
 		
 		public boolean detalleTieneModificadorSin(int idDetalle)
 		{
-			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
-			boolean respuesta = ProductoModificadorSinDAO.tieneModificadorSin(detPedido.getIdProducto());
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
+			boolean respuesta = ProductoModificadorSinDAO.tieneModificadorSin(detPedido.getIdProducto(), auditoria);
 			return(respuesta);
 		}
 		
 		//Métodos para retornar los modificadores dado un idDetallePedido
 		public ArrayList<ProductoModificadorCon> obtenerModificadoresCon(int idDetalle)
 		{
-			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
-			ArrayList<ProductoModificadorCon> prodMods = ProductoModificadorConDAO.obtenerProdModificadoresCon(detPedido.getIdProducto());
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
+			ArrayList<ProductoModificadorCon> prodMods = ProductoModificadorConDAO.obtenerProdModificadoresCon(detPedido.getIdProducto(), auditoria);
 			return(prodMods);
 		}
 		
 		public ArrayList<ProductoModificadorSin> obtenerModificadoresSin(int idDetalle)
 		{
-			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
-			ArrayList<ProductoModificadorSin> prodMods = ProductoModificadorSinDAO.obtenerProdModificadoresSin(detPedido.getIdProducto());
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
+			ArrayList<ProductoModificadorSin> prodMods = ProductoModificadorSinDAO.obtenerProdModificadoresSin(detPedido.getIdProducto(), auditoria);
 			return(prodMods);
 		}
 		
 		public int obtenerMaxModificadorCon(int idDetalle)
 		{
-			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
-			Producto pro = ProductoDAO.obtenerProducto(detPedido.getIdProducto());
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
+			Producto pro = ProductoDAO.obtenerProducto(detPedido.getIdProducto(), auditoria);
 			return(pro.getModificadorCon());
 		}
 		
 		public int obtenerMaxModificadorSin(int idDetalle)
 		{
-			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle);
-			Producto pro = ProductoDAO.obtenerProducto(detPedido.getIdProducto());
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
+			Producto pro = ProductoDAO.obtenerProducto(detPedido.getIdProducto(), auditoria);
 			return(pro.getModificadorSin());
 		}
 		
 		public int obtenerIdDetalleMaster(int idDetallePedido)
 		{
-			int respuesta = DetallePedidoDAO.obtenerIdDetalleMaster(idDetallePedido);
+			int respuesta = DetallePedidoDAO.obtenerIdDetalleMaster(idDetallePedido, auditoria);
 			return(respuesta);
 		}
 		
@@ -926,7 +937,7 @@ public class PedidoCtrl {
 		
 		public Pedido obtenerPedido(int idPedidoTienda)
 		{
-			Pedido pedCon = PedidoDAO.obtenerPedido(idPedidoTienda);
+			Pedido pedCon = PedidoDAO.obtenerPedido(idPedidoTienda, auditoria);
 			return(pedCon);
 		}
 		
@@ -934,7 +945,7 @@ public class PedidoCtrl {
 		{
 			
 			//Obtenemos la tienda sobre la que estamos trabajando
-			Tienda tienda = TiendaDAO.obtenerTienda();
+			Tienda tienda = TiendaDAO.obtenerTienda( auditoria);
 			ArrayList<DetallePedido> detPedido = obtenerDetallePedidoPintar(idPedido);
 			DetallePedido detTemp;
 			String factura = " " + tienda.getNombretienda() +"\n"
@@ -989,8 +1000,16 @@ public class PedidoCtrl {
 		
 		public ArrayList<MotivoAnulacionPedido> obtenerMotivosAnulacion()
 		{
-			ArrayList<MotivoAnulacionPedido> motAnu = MotivoAnulacionPedidoDAO.obtenerMotivosAnulacion();
+			ArrayList<MotivoAnulacionPedido> motAnu = MotivoAnulacionPedidoDAO.obtenerMotivosAnulacion( auditoria);
 			return(motAnu);
 		}
+		
+		public ArrayList<Estado> obtenerTodosEstado()
+		{
+			ArrayList <Estado> estados = EstadoDAO.obtenerTodosEstado(auditoria);
+			return (estados);
+		}
+		
+		
 		
 }

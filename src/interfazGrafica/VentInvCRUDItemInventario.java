@@ -40,7 +40,7 @@ public class VentInvCRUDItemInventario extends JDialog {
 	private JTextField txtNombreContenedor;
 	private JCheckBox chckbxManejaCanasta;
 	private JComboBox cbCategoria;
-
+	private ParametrosProductoCtrl par = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -70,8 +70,7 @@ public class VentInvCRUDItemInventario extends JDialog {
         columnsName[1] = "Nombre Item";
         columnsName[2] = "Unidad Medida";
         columnsName[3] = "Categoria";
-        ParametrosProductoCtrl par = new ParametrosProductoCtrl();
-		ArrayList<Object> items = par.obtenerItemsInventarios();
+        ArrayList<Object> items = par.obtenerItemsInventarios();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < items.size();y++)
@@ -168,8 +167,7 @@ public class VentInvCRUDItemInventario extends JDialog {
 					manejaContenedor = "S";
 				}
 				ItemInventario itemNuevo = new ItemInventario(0,nombreItem, unidadMedida,0,manejaContenedor,cantidadCanasta,nombreContenedor,categoria); 
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				int idItem = parCtrl.insertarItemInventario(itemNuevo);
+				int idItem = par.insertarItemInventario(itemNuevo);
 				DefaultTableModel modelo = pintarItemInventario();
 				jTableItemInventario.setModel(modelo);
 				//Limpiamos el contenido de los campos
@@ -189,8 +187,7 @@ public class VentInvCRUDItemInventario extends JDialog {
 				String itemEliminar = (String) jTableItemInventario.getValueAt(filaSeleccionada, 1);
 				int idItem = Integer.parseInt((String)jTableItemInventario.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el item Inventario " +  itemEliminar , "Eliminacion Item Inventario ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarItemInventario(idItem);
+				par.eliminarItemInventario(idItem);
 				DefaultTableModel modelo = pintarItemInventario();
 				jTableItemInventario.setModel(modelo);
 				jTextNombre.setText("");
@@ -304,8 +301,7 @@ public class VentInvCRUDItemInventario extends JDialog {
 						manejaContenedor = "S";
 					}
 					ItemInventario itemEditado = new ItemInventario(Integer.parseInt(jTextIDItem.getText()),jTextNombre.getText(),jTextUnidadMedida.getText(),0, manejaContenedor, cantidadCanasta, nombreContenedor,categoria); 
-					ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-					boolean respuesta = parCtrl.editarItemInventario(itemEditado);
+					boolean respuesta = par.editarItemInventario(itemEditado);
 					if (respuesta)
 					{
 						JOptionPane.showMessageDialog(null, "Se ha editado correctamente el registro " , "Confirmación Edición", JOptionPane.OK_OPTION);

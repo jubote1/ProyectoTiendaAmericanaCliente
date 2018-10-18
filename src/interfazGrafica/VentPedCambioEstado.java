@@ -43,6 +43,7 @@ public class VentPedCambioEstado extends JDialog {
 	private boolean posterior;
 	private JLabel lblImgEstObj;
 	private JLabel lblImgEstActual;
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -110,7 +111,6 @@ public class VentPedCambioEstado extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				EstadoAnterior estAnt;
 				EstadoPosterior estPos;
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				boolean respuesta = false;
 				if (anterior)
 				{
@@ -161,7 +161,6 @@ public class VentPedCambioEstado extends JDialog {
 		txtTipoPedido.setColumns(10);
 		
 		idPedidoTienda = idPedido;
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		estadoPedido = pedCtrl.obtenerEstadoPedido(idPedidoTienda);
 		txtIdPedido.setText(Integer.toString(idPedidoTienda));
 		txtEstadoActual.setText(estadoPedido.getDescripcion());
@@ -221,7 +220,6 @@ public class VentPedCambioEstado extends JDialog {
 	
 	public void initImagenesEstado()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		BufferedImage image = null;
 		InputStream in = null;
 		ImageIcon imgi = null;

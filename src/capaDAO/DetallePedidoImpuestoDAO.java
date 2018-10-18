@@ -10,7 +10,7 @@ import capaModelo.DetallePedidoImpuesto;
 
 public class DetallePedidoImpuestoDAO {
 	
-	public static boolean eliminarDetallePedidoImpuesto(int idPedido)
+	public static boolean eliminarDetallePedidoImpuesto(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -19,8 +19,11 @@ public class DetallePedidoImpuestoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String delete = "delete from detalle_pedido_impuesto where idpedido = " + idPedido; 
-			logger.info(delete);
+			String delete = "delete from detalle_pedido_impuesto where idpedido = " + idPedido;
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -45,7 +48,7 @@ public class DetallePedidoImpuestoDAO {
 	 * @param detPedImpuesto
 	 * @return
 	 */
-	public static boolean insertarDetallePedidoImpuesto(DetallePedidoImpuesto detPedImpuesto)
+	public static boolean insertarDetallePedidoImpuesto(DetallePedidoImpuesto detPedImpuesto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -55,7 +58,10 @@ public class DetallePedidoImpuestoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "insert into detalle_pedido_impuesto (idpedido, iddetalle_pedido, idimpuesto, valor_impuesto) values (" + detPedImpuesto.getIdPedido() + " , " + detPedImpuesto.getIdDetallePedido() + " , " + detPedImpuesto.getIdImpuesto() + " , " + detPedImpuesto.getValorImpuesto() + ")" ; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();

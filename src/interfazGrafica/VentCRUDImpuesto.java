@@ -32,7 +32,7 @@ public class VentCRUDImpuesto extends JFrame {
 	private JTextField jTextValorPorcentaje;
 	private JScrollPane scrollPane;
 	private JTable jTableImpuesto;
-
+	private ParametrosProductoCtrl parPro = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -60,8 +60,7 @@ public class VentCRUDImpuesto extends JFrame {
         columnsName[0] = "Id ";
         columnsName[1] = "Descripcion";
         columnsName[2] = "Valor Porcentaje";
-        ParametrosProductoCtrl par = new ParametrosProductoCtrl();
-		ArrayList<Object> impuestos = par.obtenerImpuestos();
+        ArrayList<Object> impuestos = parPro.obtenerImpuestos();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < impuestos.size();y++)
@@ -171,8 +170,7 @@ public class VentCRUDImpuesto extends JFrame {
 				String descripcion = jTextDescripcion.getText();
 				double valorPorcentaje = Double.parseDouble(jTextValorPorcentaje.getText());
 				Impuesto impuestoNuevo = new Impuesto(0,descripcion, valorPorcentaje); 
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				int idImpuesto = parCtrl.insertarImpuesto(impuestoNuevo);
+				int idImpuesto = parPro.insertarImpuesto(impuestoNuevo);
 				DefaultTableModel modelo = pintarImpuesto();
 				jTableImpuesto.setModel(modelo);
 				//Limpiamos el contenido de los campos
@@ -192,8 +190,7 @@ public class VentCRUDImpuesto extends JFrame {
 				String impuestoEliminar = (String) jTableImpuesto.getValueAt(filaSeleccionada, 1);
 				int idImpuesto = Integer.parseInt((String)jTableImpuesto.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el impuesto " +  impuestoEliminar , "Eliminacion Impuesto ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarImpuesto(idImpuesto);
+				parPro.eliminarImpuesto(idImpuesto);
 				DefaultTableModel modelo = pintarImpuesto();
 				jTableImpuesto.setModel(modelo);
 			}
@@ -238,8 +235,7 @@ public class VentCRUDImpuesto extends JFrame {
 				if (validar)
 				{
 					Impuesto impuestoEditado = new Impuesto(Integer.parseInt(jTextIDImpuesto.getText()),jTextDescripcion.getText(),Double.parseDouble(jTextValorPorcentaje.getText())); 
-					ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-					boolean respuesta = parCtrl.editarImpuesto(impuestoEditado);
+					boolean respuesta = parPro.editarImpuesto(impuestoEditado);
 					if (respuesta)
 					{
 						JOptionPane.showMessageDialog(null, "Se ha editado correctamente el registro " , "Confirmación Edición", JOptionPane.OK_OPTION);

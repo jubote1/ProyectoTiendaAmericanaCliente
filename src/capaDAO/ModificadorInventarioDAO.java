@@ -15,7 +15,7 @@ import capaModelo.ModificadorInventario;
 
 public class ModificadorInventarioDAO {
 	
-	public static int insertarIngresosInventarios(ArrayList <ModificadorInventario> ingresos, String fecha )
+	public static int insertarIngresosInventarios(ArrayList <ModificadorInventario> ingresos, String fecha, boolean auditoria )
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idIngresoInv = 0;
@@ -26,12 +26,19 @@ public class ModificadorInventarioDAO {
 			//Realizamos la inserción del IdInventario
 			Statement stm = con1.createStatement();
 			String insert = "insert into ingreso_inventario (fecha_sistema) values ('" + fecha + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idIngresoInv=rs.getInt(1);
-				logger.info("id Ingreso inventario insertada en bd " + idIngresoInv);
+				if(auditoria)
+				{
+					logger.info("id Ingreso inventario insertada en bd " + idIngresoInv);
+				}
+				
 	        }
 			//Realizamos el insert de los modificadores de inventario
 			if(idIngresoInv > 0)
@@ -71,7 +78,7 @@ public class ModificadorInventarioDAO {
 	 * @param idPedido el idPedido del cual se está registrando la información.
 	 * @return
 	 */
-	public static boolean insertarConsumoInventarios(ArrayList <ModificadorInventario> consumos, int idPedido )
+	public static boolean insertarConsumoInventarios(ArrayList <ModificadorInventario> consumos, int idPedido, boolean auditoria )
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -85,11 +92,17 @@ public class ModificadorInventarioDAO {
 				{
 					ModificadorInventario modTemp = consumos.get(i);
 					insert = "insert into consumo_inventario_pedido (idpedido,iditem,cantidad) values (" + idPedido+  "," +modTemp.getIdItem() + "," + modTemp.getCantidad()+ ")";
-					logger.info(insert);
+					if(auditoria)
+					{
+						logger.info(insert);
+					}
 					stm.executeUpdate(insert);
 					//Luego del insert actualizamos la cantidad del item de inventario retirado
 					update = "update item_inventario set cantidad = cantidad - " + modTemp.getCantidad() + " where iditem = " + modTemp.getIdItem();
-					logger.info(update);
+					if(auditoria)
+					{
+						logger.info(update);
+					}
 					stm.executeUpdate(update);
 				}
 			
@@ -110,7 +123,7 @@ public class ModificadorInventarioDAO {
 	}
 	
 	
-	public static int insertarRetirosInventarios(ArrayList <ModificadorInventario> retiros, String fecha )
+	public static int insertarRetirosInventarios(ArrayList <ModificadorInventario> retiros, String fecha, boolean auditoria )
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idRetiroInv = 0;
@@ -121,12 +134,19 @@ public class ModificadorInventarioDAO {
 			//Realizamos la inserción del IdInventario
 			Statement stm = con1.createStatement();
 			String insert = "insert into retiro_inventario (fecha_sistema) values ('" + fecha + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idRetiroInv=rs.getInt(1);
-				logger.info("id retiro inventario insertada en bd " + idRetiroInv);
+				if(auditoria)
+				{
+					logger.info("id retiro inventario insertada en bd " + idRetiroInv);
+				}
+				
 	        }
 			//Realizamos el insert de los modificadores de inventario
 			if(idRetiroInv > 0)
@@ -136,11 +156,17 @@ public class ModificadorInventarioDAO {
 				{
 					ModificadorInventario modTemp = retiros.get(i);
 					insert = "insert into retiro_inventario_detalle (idretiro_inventario,iditem,cantidad) values (" +idRetiroInv +  "," +modTemp.getIdItem() + "," + modTemp.getCantidad()+ ")";
-					logger.info(insert);
+					if(auditoria)
+					{
+						logger.info(insert);
+					}
 					stm.executeUpdate(insert);
 					//Luego del insert actualizamos la cantidad del item de inventario retirado
 					update = "update item_inventario set cantidad = cantidad - " + modTemp.getCantidad() + " where iditem = " + modTemp.getIdItem();
-					logger.info(update);
+					if(auditoria)
+					{
+						logger.info(update);
+					}
 					stm.executeUpdate(update);
 				}
 			}
@@ -160,7 +186,7 @@ public class ModificadorInventarioDAO {
 		return(idRetiroInv);
 	}
 	
-	public static int insertarVarianzaInventarios(ArrayList <ModificadorInventario> varianzas, String fecha )
+	public static int insertarVarianzaInventarios(ArrayList <ModificadorInventario> varianzas, String fecha, boolean auditoria )
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idInvVarianza = 0;
@@ -171,12 +197,19 @@ public class ModificadorInventarioDAO {
 			//Realizamos la inserción del IdInventario
 			Statement stm = con1.createStatement();
 			String insert = "insert into inventario_varianza (fecha_sistema) values ('" + fecha + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idInvVarianza=rs.getInt(1);
-				logger.info("id inventario varianza insertada en bd " + idInvVarianza);
+				if(auditoria)
+				{
+					logger.info("id inventario varianza insertada en bd " + idInvVarianza);
+				}
+				
 	        }
 			//Realizamos el insert de los modificadores de inventario
 			if(idInvVarianza > 0)
@@ -186,11 +219,17 @@ public class ModificadorInventarioDAO {
 				{
 					ModificadorInventario modTemp = varianzas.get(i);
 					insert = "insert into item_inventario_varianza (idinventario_varianza,iditem,cantidad) values (" +idInvVarianza +  "," +modTemp.getIdItem() + "," + modTemp.getCantidad()+ ")";
-					logger.info(insert);
+					if(auditoria)
+					{
+						logger.info(insert);
+					}
 					stm.executeUpdate(insert);
 					//Luego del insert actualizamos la cantidad del item de inventario
 					update = "update item_inventario set cantidad =  " + modTemp.getCantidad() + " where iditem = " + modTemp.getIdItem();
-					logger.info(update);
+					if(auditoria)
+					{
+						logger.info(update);
+					}
 					stm.executeUpdate(update);
 				}
 			}
@@ -210,7 +249,7 @@ public class ModificadorInventarioDAO {
 		return(idInvVarianza);
 	}
 
-	public static boolean seIngresoVarianza(String fecha)
+	public static boolean seIngresoVarianza(String fecha, boolean auditoria)
 	{
 		boolean respuesta = false;
 		Logger logger = Logger.getLogger("log_file");
@@ -222,7 +261,10 @@ public class ModificadorInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from inventario_varianza where fecha_sistema = '"+fecha+"'";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			
 			
@@ -236,7 +278,6 @@ public class ModificadorInventarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();

@@ -62,7 +62,7 @@ public class VentInvInventarios extends JDialog {
 	 */
 	public VentInvInventarios(java.awt.Frame parent, boolean modal) {
 		super(parent, modal);
-		PedidoCtrl pedCtrl = new PedidoCtrl();
+		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 		FechaSistema fechSistema = pedCtrl.obtenerFechasSistema();
 		String fecha = fechSistema.getFechaApertura();
 		/**

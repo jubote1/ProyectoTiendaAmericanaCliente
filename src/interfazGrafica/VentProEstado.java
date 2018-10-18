@@ -81,6 +81,7 @@ public class VentProEstado extends JFrame {
 	private JTextField txtRuta;
 	private byte[] icono;
 	private JLabel lblImagen;
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -176,7 +177,6 @@ public class VentProEstado extends JFrame {
 					TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
 					Estado estInsertar = new Estado(0,descripcion, descripcionCorta, tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb, impresion);
 					estInsertar.setImagen(icono);
-					PedidoCtrl pedCtrl = new PedidoCtrl();
 					pedCtrl.insertarEstado(estInsertar);
 					DefaultTableModel modelo = pintarEstado();
 					jTableEstados.setModel(modelo);
@@ -198,7 +198,6 @@ public class VentProEstado extends JFrame {
 				String estadoEliminar = (String) jTableEstados.getValueAt(filaSeleccionada, 1);
 				int idEstadoEl = Integer.parseInt((String)jTableEstados.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Estado " +  estadoEliminar , "Eliminacion Estado ", JOptionPane.YES_NO_OPTION);
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				pedCtrl.eliminarEstado(idEstadoEl);
 				DefaultTableModel modelo = pintarEstado();
 				jTableEstados.setModel(modelo);
@@ -231,7 +230,6 @@ public class VentProEstado extends JFrame {
 					TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
 					Estado estadoEditado = new Estado(idEstado, descripcion, descripcionCorta,tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb, impresion);
 					estadoEditado.setImagen(icono);
-					PedidoCtrl pedCtrl = new PedidoCtrl();
 					boolean respuesta = pedCtrl.editarEstado(estadoEditado);
 					if(respuesta)
 					{
@@ -274,7 +272,6 @@ public class VentProEstado extends JFrame {
 				idEstado = idEstadoEdi;
 				//Teniendo el producto y estando en la fase de carga podemos cargar los impuestos por producto
 				txtIdEstado.setText((String)jTableEstados.getValueAt(filaSeleccionada, 0));
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				Estado estadoEditar = pedCtrl.obtenerEstado(idEstadoEdi);
 				colorr= estadoEditar.getColorr();
 				colorg= estadoEditar.getColorg();
@@ -350,7 +347,6 @@ public class VentProEstado extends JFrame {
 					 EstadoAnterior p = modeloListaAnteriores.getEstadoAnterior(selection);
 					 //Creamos el estado anterior a insertar
 				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoAnterior(),p.getDescEstadoAnterior(), 0,"", false, false, 0,0,0, false);
-				     PedidoCtrl pedCtrl = new PedidoCtrl();
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.eliminarEstadoAnterior(p);
 				     if(resIns)
@@ -383,7 +379,6 @@ public class VentProEstado extends JFrame {
 					 Estado p = estListModel2.getEstado(selection);
 					 //Creamos el estado anterior a insertar
 				     EstadoPosterior estPosAdi = new EstadoPosterior(idEstado, p.getIdestado(), p.getDescripcion(), false);
-				     PedidoCtrl pedCtrl = new PedidoCtrl();
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.insertarEstadoPosterior(estPosAdi);
 				     if(resIns)
@@ -416,7 +411,6 @@ public class VentProEstado extends JFrame {
 					 EstadoPosterior p = modeloListaPosteriores.getEstadoPosterior(selection);
 					 //Creamos el estado anterior a insertar
 				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoPosterior(),p.getDescEstadoPosterior(),0,"", false, false,0,0,0, false);
-				     PedidoCtrl pedCtrl = new PedidoCtrl();
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.eliminarEstadoPosterior(p);
 				     if(resIns)
@@ -617,7 +611,6 @@ public class VentProEstado extends JFrame {
 					 Estado p = estListModel.getEstado(selection);
 					 //Creamos el estado anterior a insertar
 				     EstadoAnterior estAntAdi = new EstadoAnterior(idEstado, p.getIdestado(), p.getDescripcion());
-				     PedidoCtrl pedCtrl = new PedidoCtrl();
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.insertarEstadoAnterior(estAntAdi);
 				     if(resIns)
@@ -642,7 +635,6 @@ public class VentProEstado extends JFrame {
 	
 	public void llenarEstadosAnteriores()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<EstadoAnterior> estadosAnteriores = pedCtrl.obtenerEstadosAnteriores(idEstado);
 		for(int i = 0; i < estadosAnteriores.size(); i++)
 		{
@@ -653,7 +645,6 @@ public class VentProEstado extends JFrame {
 	
 	public void llenarEstadosAnterioresNoAsignados()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<Estado> estadosAnterioresNo = pedCtrl.obtenerEstadosAnterioresFaltantes(idEstado);
 		for(int i = 0; i < estadosAnterioresNo.size(); i++)
 		{
@@ -664,7 +655,6 @@ public class VentProEstado extends JFrame {
 	
 	public void llenarEstadosPosteriores()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<EstadoPosterior> estadosPosteriores = pedCtrl.obtenerEstadosPosteriores(idEstado);
 		
 		for(int i = 0; i < estadosPosteriores.size(); i++)
@@ -676,7 +666,6 @@ public class VentProEstado extends JFrame {
 	
 	public void llenarEstadosPosterioresNoAsignados()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<Estado> estadosPosterioresNo = pedCtrl.obtenerEstadosPosterioresFaltantes(idEstado);
 		
 		for(int i = 0; i < estadosPosterioresNo.size(); i++)
@@ -695,7 +684,6 @@ public class VentProEstado extends JFrame {
         columnsName[2] = "Tipo Pedido";
         columnsName[3] = "Id Tipo Pedido";
         columnsName[4] = "Descripción Corta";
-        PedidoCtrl pedCtrl = new  PedidoCtrl();
         ArrayList<Object> estados =  pedCtrl.obtenerEstado();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
@@ -714,7 +702,6 @@ public class VentProEstado extends JFrame {
 		String descripcionCorta = txtDescCorta.getText();
 		boolean estInicial = chckbxEstadoInicial.isSelected();
 		boolean estFinal = chckbxEstadoFinal.isSelected();
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		if(estInicial & estFinal)
 		{
 			JOptionPane.showMessageDialog(null, "Un estado no debería ser inicial y y final al mismo tiempo", "Información Incorrecto", JOptionPane.ERROR_MESSAGE);
@@ -787,7 +774,6 @@ public class VentProEstado extends JFrame {
 	
 	public void initComboTipoPedido()
 	{
-		PedidoCtrl pedCtrl = new PedidoCtrl();
 		ArrayList<TipoPedido> tiposPedido = pedCtrl.obtenerTiposPedidoNat();
 		for(int i = 0; i<tiposPedido.size();i++)
 		{

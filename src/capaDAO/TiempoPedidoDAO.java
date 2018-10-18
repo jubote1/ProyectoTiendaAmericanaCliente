@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 public class TiempoPedidoDAO {
 	
-	public static int retornarTiempoPedido()
+	public static int retornarTiempoPedido(boolean auditoria)
 	{
 		int tiempo = 0;
 		Logger logger = Logger.getLogger("log_file");
@@ -20,7 +20,10 @@ public class TiempoPedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select valornumerico from parametros where valorparametro = 'TIEMPOPEDIDO'";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				
@@ -52,7 +55,7 @@ public class TiempoPedidoDAO {
 		return(tiempo);
 	}
 	
-	public static boolean actualizarTiempoPedido(int nuevotiempo, int idtienda, String user)
+	public static boolean actualizarTiempoPedido(int nuevotiempo, int idtienda, String user, boolean auditoria)
 	{
 		boolean respuesta;
 		Logger logger = Logger.getLogger("log_file");
@@ -62,7 +65,10 @@ public class TiempoPedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String actualizacion = "update parametros set valornumerico = " + nuevotiempo +  " where valorparametro = 'TIEMPOPEDIDO'";
-			logger.info(actualizacion);
+			if(auditoria)
+			{
+				logger.info(actualizacion);
+			}
 			stm.executeUpdate(actualizacion);
 			String insercionLog = "insert into log_tiempo_tienda (idtienda, usuario, nuevotiempo) values (" + idtienda +" , '" + user + "' , " + nuevotiempo + ")" ;
 			logger.info(insercionLog);
@@ -73,7 +79,6 @@ public class TiempoPedidoDAO {
 			
 			try
 			{
-				System.out.println(e.toString());
 				con1.close();
 			}catch(Exception e1)
 			{

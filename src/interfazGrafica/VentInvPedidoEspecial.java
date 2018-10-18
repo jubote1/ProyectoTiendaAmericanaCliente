@@ -207,7 +207,7 @@ public class VentInvPedidoEspecial extends JDialog {
 		});
 		btnEliminarSolicitud.setBounds(323, 415, 150, 23);
 		contentPanePrincipal.add(btnEliminarSolicitud);
-		PedidoCtrl pedCtrl = new PedidoCtrl();
+		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 		FechaSistema fechSistema = pedCtrl.obtenerFechasSistema();
 		String fechTemporal = fechSistema.getFechaApertura();
 		fechaSistema = fechTemporal.substring(8,10)+"/"+fechTemporal.substring(5,7)+"/"+fechTemporal.substring(1,4);
@@ -246,7 +246,7 @@ public class VentInvPedidoEspecial extends JDialog {
 	
 	public void initComboBoxItemInv()
 	{
-		ParametrosProductoCtrl proCtrl = new ParametrosProductoCtrl();
+		ParametrosProductoCtrl proCtrl = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 		ArrayList<ItemInventario> items = proCtrl.obtenerItemsInventariosObj();
 		for(int i = 0; i<items.size();i++)
 		{

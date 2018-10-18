@@ -20,7 +20,7 @@ import capaModelo.Tienda;
 
 public class PedidoDAO {
 	
-	public static int InsertarEncabezadoPedido(int idtienda, int idcliente, String fechaPedido, String user)
+	public static int InsertarEncabezadoPedido(int idtienda, int idcliente, String fechaPedido, String user, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idPedidoInsertado = 0;
@@ -29,28 +29,24 @@ public class PedidoDAO {
 		Date fechaTemporal = new Date();
 		DateFormat formatoFinal = new SimpleDateFormat("yyyy-MM-dd");
 		String fechaPedidoFinal ="";
-//		try
-//		{
-//			fechaTemporal = new SimpleDateFormat("dd/MM/yyyy").parse(fechaPedido);
-//			fechaPedidoFinal = formatoFinal.format(fechaTemporal);
-//			
-//		}catch(Exception e){
-//			logger.error(e.toString());
-//			System.out.println(e.toString());
-//			return(0);
-//		}
-		
 		
 		try
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into pedido (idtienda,idcliente,fechapedido, usuariopedido) values (" + idtienda + ", " + idcliente + ", '" + fechaPedido  + "' , '" + user + "')"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idPedidoInsertado=rs.getInt(1);
-				System.out.println(idPedidoInsertado);
+				if(auditoria)
+				{
+					logger.info(idPedidoInsertado);
+				}
+				
 	        }
 	        rs.close();
 			stm.close();
@@ -58,7 +54,7 @@ public class PedidoDAO {
 		}
 		catch (Exception e){
 			logger.error(e.toString());
-			System.out.println(e.toString());
+			
 			try
 			{
 				con1.close();
@@ -76,7 +72,7 @@ public class PedidoDAO {
 	 * @param tiempopedido
 	 * @return
 	 */
-	public static boolean finalizarPedido(int idpedido,  double tiempopedido, int idTipoPedido)
+	public static boolean finalizarPedido(int idpedido,  double tiempopedido, int idTipoPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -87,7 +83,10 @@ public class PedidoDAO {
 			double valorImpuesto = 0;
 			Statement stm = con1.createStatement();
 			String consulta = "select sum(valorTotal), sum(valorimpuesto) from detalle_pedido where idpedidotienda = " + idpedido + " and cantidad >= 0  and idmotivoanulacion IS NULL"; 
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				valorTotal = rs.getDouble(1);
@@ -95,7 +94,10 @@ public class PedidoDAO {
 				break;
 			}
 			String update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto) + " , impuesto = " + valorImpuesto + " , total_neto =" + valorTotal + " , idtipopedido =" + idTipoPedido + " where idpedidotienda = " + idpedido;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			rs.close();
 			stm.close();
@@ -114,7 +116,7 @@ public class PedidoDAO {
 		return(true);
 	}
 	
-	public static double obtenerTotalBrutoPedido(int idpedido)
+	public static double obtenerTotalBrutoPedido(int idpedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -125,6 +127,10 @@ public class PedidoDAO {
 			
 			Statement stm = con1.createStatement();
 			String consulta = "select sum(valorTotal) from detalle_pedido where idpedidotienda = " + idpedido + " and cantidad >= 0 and idmotivoanulacion IS NULL" ; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			logger.info(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
@@ -155,7 +161,7 @@ public class PedidoDAO {
 	 * @param idEstadoPosterior
 	 * @return
 	 */
-	public static boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario)
+	public static boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -165,10 +171,16 @@ public class PedidoDAO {
 			double valorTotal = 0;
 			Statement stm = con1.createStatement();
 			String insert = "insert into cambios_estado_pedido (idpedidotienda, idestadoanterior, idestadoposterior, usuario) values (" + idPedido + " , " + idEstadoAnterior + " , " + idEstadoPosterior + " , '" + usuario + "')" ; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			String update = "update pedido set idestado =" + idEstadoPosterior + " where idpedidotienda= " + idPedido ;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();
@@ -187,7 +199,7 @@ public class PedidoDAO {
 	}
 	
 	
-	public static boolean eliminarPedido(int idPedido)
+	public static boolean eliminarPedido(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -197,7 +209,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from pedido  where idpedidotienda = " + idPedido ;
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			stm.close();
 			con1.close();
@@ -217,7 +232,7 @@ public class PedidoDAO {
 		
 	}
 	
-	public static boolean anularPedido(int idPedido, int idMotivoAnulacion)
+	public static boolean anularPedido(int idPedido, int idMotivoAnulacion, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -227,7 +242,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update pedido set total_neto = 0 , idmotivoanulacion = " + idMotivoAnulacion + " where idpedidotienda = " + idPedido ;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();
@@ -254,7 +272,7 @@ public class PedidoDAO {
 	 * @param fechaPedido Se recibe como parámetro la fecha para consultar los pedidos.
 	 * @return Se retorna un ArrayList con todos los pedidos del sistema para el parámetro de fecha.
 	 */
-	public static ArrayList obtenerPedidosTableConFinales(String fechaPedido)
+	public static ArrayList obtenerPedidosTableConFinales(String fechaPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -265,7 +283,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' order by a.fechainsercion desc";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -282,7 +303,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -300,7 +320,7 @@ public class PedidoDAO {
 	 * @param fechaPedido Se recibe como parámetro la fecha para consultar los pedidos.
 	 * @return Se retorna un ArrayList con todos los pedidos del sistema para el parámetro de fecha.
 	 */
-	public static ArrayList obtenerPedidosTable(String fechaPedido)
+	public static ArrayList obtenerPedidosTable(String fechaPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -311,7 +331,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and d.estado_final <> 1 and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' order by a.fechainsercion desc";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -328,7 +351,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -347,7 +369,7 @@ public class PedidoDAO {
 	 * @param fechaPedido fecha de apertura para la cual se realiza el pedido
 	 * @return Se retornar un ArrayList con todos los pedidos que cumplen las condiciones indicadas
 	 */
-	public static ArrayList obtenerPedidosPorTipo(int idTipoPedido, String fechaPedido)
+	public static ArrayList obtenerPedidosPorTipo(int idTipoPedido, String fechaPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -358,7 +380,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and d.estado_final <> 1 and a.idtipopedido = c.idtipopedido and a.idtipopedido = " + idTipoPedido + " and fechapedido = '" + fechaPedido + "' order by a.fechainsercion desc";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -377,7 +402,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -389,7 +413,7 @@ public class PedidoDAO {
 		
 	}
 	
-	public static Estado obtenerEstadoPedido(int idPedidoTienda)
+	public static Estado obtenerEstadoPedido(int idPedidoTienda, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -399,7 +423,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idestado, b.descripcion, c.descripcion as desc_tipo, a.idtipopedido, b.imagen  from pedido a, estado b, tipo_pedido c   where  a.idtipopedido = c.idtipopedido and a.idestado = b.idestado and a.idtipopedido = b.idtipopedido and idpedidotienda = " + idPedidoTienda + "";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idEstado = 0;
 			int idTipoPedido = 0;
@@ -421,7 +448,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -433,7 +459,7 @@ public class PedidoDAO {
 		
 	}
 	
-	public static Cliente obtenerClientePedido(int idPedido)
+	public static Cliente obtenerClientePedido(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -443,7 +469,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select b.idcliente, b.nombre, b.apellido, b.telefono  from pedido a, cliente b  where  a.idcliente = b.idcliente and  a.idpedidotienda = " + idPedido + "";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idCliente = 0;
 			String nombre = "";
@@ -461,7 +490,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -473,7 +501,7 @@ public class PedidoDAO {
 		
 	}
 	
-	public static int obtenerTipoPedido(int idPedido)
+	public static int obtenerTipoPedido(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -483,7 +511,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idtipopedido  from pedido a  where  a.idpedidotienda = " + idPedido + "";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			
 			while(rs.next()){
@@ -495,7 +526,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -513,7 +543,7 @@ public class PedidoDAO {
 	 * @param fecha Recibe una fecha determinada dado que se corre como parte de validación del cierre.
 	 * @return un valor booleano que indica un true si hay pedidos pendientes o un false en caso de no ser así.
 	 */
-	public static boolean validarEstadosFinalesPedido(String fecha)
+	public static boolean validarEstadosFinalesPedido(String fecha, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -524,7 +554,10 @@ public class PedidoDAO {
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idpedidotienda from pedido a where a.idmotivoanulacion IS NULL and a.fechapedido = '" + fecha + "' " 
 			+ "and a.idestado in(select b.idestado from estado b  where b.estado_final <> 1)" ;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next())
 			{
@@ -553,7 +586,7 @@ public class PedidoDAO {
 	 * @param fechaPedido Se recibe como parámetro la fecha del sistema.
 	 * @return se retornar un ArrayList con los totales por tipo de pedido
 	 */
-	public static ArrayList obtenerTotalesPedidosPorTipo(String fechaPedido)
+	public static ArrayList obtenerTotalesPedidosPorTipo(String fechaPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -564,7 +597,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select b.descripcion, sum(a.total_neto) from pedido a , tipo_pedido b where a.idmotivoanulacion IS NULL and  a.idtipopedido = b.idtipopedido and fechapedido = '" + fechaPedido +"' group by b.descripcion ";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -583,7 +619,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -602,7 +637,7 @@ public class PedidoDAO {
 	 * @param idTipoEmpleado
 	 * @return
 	 */
-	public static ArrayList obtenerPedidosVentanaComanda(String fechaPedido, int idTipoEmpleado)
+	public static ArrayList obtenerPedidosVentanaComanda(String fechaPedido, int idTipoEmpleado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -613,7 +648,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -630,7 +668,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -642,7 +679,7 @@ public class PedidoDAO {
 		
 	}
 	
-	public static ArrayList obtenerPedidosVentanaComandaTipPed(String fechaPedido, int idTipoEmpleado, int idTipoPedido)
+	public static ArrayList obtenerPedidosVentanaComandaTipPed(String fechaPedido, int idTipoEmpleado, int idTipoPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -653,7 +690,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido + " and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -670,7 +710,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -682,7 +721,7 @@ public class PedidoDAO {
 		
 	}
 	
-	public static Pedido obtenerPedido(int idPedidoTienda)
+	public static Pedido obtenerPedido(int idPedidoTienda, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -693,7 +732,10 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, a.total_bruto, a.total_neto, a.impuesto from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idpedidotienda = " + idPedidoTienda;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 					
 			while(rs.next()){
@@ -702,7 +744,7 @@ public class PedidoDAO {
 				pedRsta.setIdpedidotienda(idPedidoTienda);
 				String nombreCliente = rs.getString("nombres");
 				pedRsta.setNombreCliente(nombreCliente);
-				String tipoPedido = rs.getString("descripcion");
+				String tipoPedido = rs.getString("tipopedido");
 				pedRsta.setTipoPedido(tipoPedido);
 				String direccion = rs.getString("direccion");
 				pedRsta.setDirCliente(direccion);
@@ -719,7 +761,6 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();

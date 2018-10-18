@@ -63,7 +63,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	Thread h1;
 	private JTextField txtFechaSistema;
 	private String fechaSis;
-	private PedidoCtrl pedCtrl = new PedidoCtrl();
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -85,10 +85,10 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	 */
 	public VentPedComandaPedidos() {
 		setTitle("COMANDA PEDIDOS");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 1014, 700);
-		setUndecorated(true);
-		getRootPane().setWindowDecorationStyle(JRootPane.NONE);
+		//setUndecorated(true);
+		//getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 		this.setExtendedState(MAXIMIZED_BOTH);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -96,7 +96,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		contentPane.setLayout(null);
 		
 		JPanel panelFiltrosPedidos = new JPanel();
-		panelFiltrosPedidos.setBounds(1087, 11, 208, 295);
+		panelFiltrosPedidos.setBounds(831, 11, 167, 295);
 		contentPane.add(panelFiltrosPedidos);
 		panelFiltrosPedidos.setLayout(new GridLayout(4, 1, 0, 0));
 		
@@ -160,7 +160,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		});
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 11, 1051, 616);
+		scrollPane.setBounds(10, 11, 811, 579);
 		contentPane.add(scrollPane);
 		
 		tblMaestroPedidos =   new JTable();
@@ -172,19 +172,6 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		pintarPedidos();
 		scrollPane.setViewportView(tblMaestroPedidos);
 		
-		
-		tblMaestroPedidos.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-		    @Override
-		    public void valueChanged(ListSelectionEvent event) {
-		    	if( tblMaestroPedidos.getSelectedRows().length == 1 ) { 
-		    		  
-		    		  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
-					  int idPedidoHistoria = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
-					  DefaultTableModel modeloEstado = pintarHistoriaEstado(idPedidoHistoria);
-					 
-		         }
-		    }
-		});
 		
 		//Manejamos el evento de cuando damos doble clic sobre el pedido para avanzar de estado o cuando damos 3 veces para retroceder de estado
 		tblMaestroPedidos.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -199,7 +186,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		});
 		
 		JButton btnAvanzarEstado = new JButton("Avanzar Estado");
-		btnAvanzarEstado.setBounds(559, 656, 180, 44);
+		btnAvanzarEstado.setBounds(467, 602, 180, 44);
 		btnAvanzarEstado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				avanzarEstado();
@@ -208,7 +195,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		contentPane.add(btnAvanzarEstado);
 		
 		JButton btnRetrocederEstado = new JButton("Devolver Estado");
-		btnRetrocederEstado.setBounds(298, 654, 180, 46);
+		btnRetrocederEstado.setBounds(277, 601, 180, 46);
 		btnRetrocederEstado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
@@ -219,13 +206,13 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		contentPane.add(btnRetrocederEstado);
 		
 		JButton btnSalir = new JButton("Salir");
-		btnSalir.setBounds(1101, 656, 195, 44);
+		btnSalir.setBounds(826, 602, 172, 44);
 		contentPane.add(btnSalir);
 		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 11));
 		
 		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
 		lblFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 16));
-		lblFechaSistema.setBounds(10, 656, 133, 29);
+		lblFechaSistema.setBounds(10, 616, 133, 29);
 		contentPane.add(lblFechaSistema);
 		
 		txtFechaSistema = new JTextField();
@@ -234,24 +221,25 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		txtFechaSistema.setForeground(Color.RED);
 		txtFechaSistema.setEditable(false);
 		txtFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 16));
-		txtFechaSistema.setBounds(157, 656, 120, 29);
+		txtFechaSistema.setBounds(147, 616, 120, 29);
 		contentPane.add(txtFechaSistema);
 		txtFechaSistema.setColumns(10);
 		txtFechaSistema.setText(fechaSis);
 		
-		JButton btnNewButton = new JButton("<html><center>Ver Ubicaci\u00F3n Domicilios</center></html>");
-		btnNewButton.addActionListener(new ActionListener() {
+		JButton btnVerDomicilios = new JButton("<html><center>Ver Ubicaci\u00F3n Domicilios</center></html>");
+		btnVerDomicilios.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 			   
 			}
 		});
-		btnNewButton.setBounds(840, 656, 164, 44);
-		contentPane.add(btnNewButton);
+		btnVerDomicilios.setBounds(657, 601, 164, 44);
+		contentPane.add(btnVerDomicilios);
 		btnSalir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				dispose();
 				VentPrincipal ventPrincipal = new VentPrincipal();
 				ventPrincipal.setVisible(true);
-				dispose();
+				
 			}
 		});
 		addWindowListener(new WindowAdapter() {
@@ -278,7 +266,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 			dispose();
 		}
 		//Luego realizamos la validación de que dicho idUsuario si exista.
-		EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+		EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 		boolean validacion = empCtrl.validarExistenciaEmpleado(idUsuario);
 		if(!validacion)
 		{

@@ -62,7 +62,7 @@ public class VentSegCRUDMenuAgrupador extends JFrame {
         columnsName[0] = "Id ";
         columnsName[1] = "Menu";
         columnsName[2] = "Descripcion";
-        AutenticacionCtrl aut = new AutenticacionCtrl();
+        AutenticacionCtrl aut = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 		ArrayList<Object> menusAgrupador = aut.obtenerMenusAgrupador();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
@@ -180,7 +180,7 @@ public class VentSegCRUDMenuAgrupador extends JFrame {
 				}
 				
 				MenuAgrupador menuAgrNuevo = new MenuAgrupador(0,menu,descripcionMenu); 
-				AutenticacionCtrl autCtrl = new AutenticacionCtrl();
+				AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 				int idMenu = autCtrl.insertarMenuAgrupador(menuAgrNuevo);
 				DefaultTableModel modelo = pintarMenuAgrupador();
 				jTableMenuAgrupador.setModel(modelo);
@@ -201,7 +201,7 @@ public class VentSegCRUDMenuAgrupador extends JFrame {
 				String menuEliminar = (String) jTableMenuAgrupador.getValueAt(filaSeleccionada, 1);
 				int idMenu = Integer.parseInt((String)jTableMenuAgrupador.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Menú Agrupador " +  menuEliminar , "Eliminacion Menú Agrupador ", JOptionPane.YES_NO_OPTION);
-				AutenticacionCtrl auten = new AutenticacionCtrl();
+				AutenticacionCtrl auten = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 				auten.eliminarMenuAgrupador(idMenu);
 				DefaultTableModel modelo = pintarMenuAgrupador();
 				jTableMenuAgrupador.setModel(modelo);
@@ -258,7 +258,7 @@ public class VentSegCRUDMenuAgrupador extends JFrame {
 				if (validar)
 				{
 					MenuAgrupador menuAgrEditado = new MenuAgrupador(Integer.parseInt(jTextIDAgrupador.getText()),jTextMenu.getText(),jTextDescripcion.getText()); 
-					AutenticacionCtrl autCtrl = new AutenticacionCtrl();
+					AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 					boolean respuesta = autCtrl.editarMenuAgrupador(menuAgrEditado);
 					if (respuesta)
 					{

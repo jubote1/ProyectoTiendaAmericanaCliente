@@ -13,6 +13,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.FlowLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
@@ -50,6 +51,8 @@ import renderTable.CellRenderTransaccional;
 
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -59,11 +62,11 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	private JPanel contentPane;
 	private JTable tblMaestroPedidos;
 	private static int idTipoPedido = 0;
-	private JTable tableEstadosPedido;
-	private JTable tableDetallePedido;
 	private String fechaSis;
-	private PedidoCtrl pedCtrl = new PedidoCtrl();
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	Thread h1;
+	private JFrame ventanaPadre;
+	
 	private JTextField txtFechaSistema;
 	/**
 	 * Launch the application.
@@ -86,7 +89,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	 */
 	public VentPedTransaccional() {
 		setTitle("VENTANA TRANSACCIONAL");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 1014, 700);
 		setUndecorated(true);
 		getRootPane().setWindowDecorationStyle(JRootPane.NONE);
@@ -100,6 +103,9 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		panelBotones.setBounds(10, 603, 978, 92);
 		contentPane.add(panelBotones);
 		panelBotones.setLayout(new GridLayout(0, 6, 0, 0));
+		
+		//Llenamos con la ventana Padre la variable Window
+		ventanaPadre = this;
 		
 		JButton btnBuscar = new JButton("Buscar");
 		btnBuscar.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -178,23 +184,31 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				}
 				else
 				{
-					int idPedido = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
-					ReportesCtrl repCtrl = new ReportesCtrl();
-					repCtrl.generarFactura(idPedido);
+					int idPedidoTienda = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
+					//La nueva impresión de la factura se realiza de la siguiente manera
+					String strFactura = pedCtrl.generarStrImpresionFactura(idPedidoTienda);
+					Impresion imp = new Impresion();
+					imp.imprimirFactura(strFactura);
 				}
 			}
 		});
 		btnReimpresion.setFont(new Font("Tahoma", Font.BOLD, 11));
 		panelBotones.add(btnReimpresion);
 		
-		JButton btnSalir = new JButton("Salir");
-		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 11));
-		btnSalir.addActionListener(new ActionListener() {
+		JButton btnHistoriaDetalle = new JButton("Historia Detalle Pedido");
+		btnHistoriaDetalle.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnHistoriaDetalle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				dispose();
+				if( tblMaestroPedidos.getSelectedRows().length == 1 ) { 
+		    		  
+		    		  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+					  int idPedidoHistoria = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
+					  VentPedHisDetPedido ventHistoria = new VentPedHisDetPedido(ventanaPadre, true, idPedidoHistoria);
+					  ventHistoria.setVisible(true);
+		         }
 			}
 		});
-		panelBotones.add(btnSalir);
+		panelBotones.add(btnHistoriaDetalle);
 		
 		JButton btnRegresarMenu = new JButton("Regresar Men\u00FA");
 		btnRegresarMenu.addActionListener(new ActionListener() {
@@ -219,25 +233,25 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		panelBotones.add(btnTomarPedido);
 		
 		JPanel panelFiltrosPedidos = new JPanel();
-		panelFiltrosPedidos.setBounds(997, 11, 208, 280);
+		panelFiltrosPedidos.setBounds(839, 11, 161, 280);
 		contentPane.add(panelFiltrosPedidos);
 		panelFiltrosPedidos.setLayout(new GridLayout(5, 1, 0, 0));
 		
-		JButton btnPuntoDeVenta = new JButton("Punto de venta");
+		JButton btnPuntoDeVenta = new JButton("<html><center>Punto de venta</center></html>");
 		
 		panelFiltrosPedidos.add(btnPuntoDeVenta);
 		
-		JButton btnDomicilio = new JButton("Domicilio");
+		JButton btnDomicilio = new JButton("<html><center>Domicilio</center></html>");
 		
 		panelFiltrosPedidos.add(btnDomicilio);
 		
-		JButton btnParaLlevar = new JButton("Para Llevar");
+		JButton btnParaLlevar = new JButton("<html><center>Para Llevar</center></html>");
 		
 		panelFiltrosPedidos.add(btnParaLlevar);
 		
-		JButton btnTotal = new JButton("Total Sin Pedidos Finalizados");
+		JButton btnTotal = new JButton("<html><center>Total Sin Pedidos Finalizados</center></html>");
 		
-		JButton btnTotalConPedidos = new JButton("Total Con Pedidos Finalizados");
+		JButton btnTotalConPedidos = new JButton("<html><center>Total Con Pedidos Finalizados</center></html>");
 		btnTotal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				idTipoPedido = 0;
@@ -302,35 +316,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 			}
 		});
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setFont(new Font("Calibri", Font.PLAIN, 15));
-		tabbedPane.setBounds(10, 409, 978, 183);
-		contentPane.add(tabbedPane);
-		
-		JPanel panelEstadosPedido = new JPanel();
-		tabbedPane.addTab("Estado del pedido", null, panelEstadosPedido, null);
-		panelEstadosPedido.setLayout(null);
-		
-		JScrollPane scrollPaneEstPedido = new JScrollPane();
-		scrollPaneEstPedido.setBounds(86, 11, 779, 128);
-		panelEstadosPedido.add(scrollPaneEstPedido);
-		
-		tableEstadosPedido = new JTable();
-		scrollPaneEstPedido.setViewportView(tableEstadosPedido);
-		
-		JPanel panelDetallePedido = new JPanel();
-		tabbedPane.addTab("Detalle del pedido", null, panelDetallePedido, null);
-		panelDetallePedido.setLayout(null);
-		
-		JScrollPane scrollDetallePedido = new JScrollPane();
-		scrollDetallePedido.setBounds(25, 11, 805, 105);
-		panelDetallePedido.add(scrollDetallePedido);
-		
-		tableDetallePedido = new JTable();
-		scrollDetallePedido.setViewportView(tableDetallePedido);
-		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 11, 978, 314);
+		scrollPane.setBounds(10, 11, 819, 521);
 		contentPane.add(scrollPane);
 		
 		tblMaestroPedidos =   new JTable();
@@ -346,13 +333,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 		    @Override
 		    public void valueChanged(ListSelectionEvent event) {
-		    	if( tblMaestroPedidos.getSelectedRows().length == 1 ) { 
-		    		  
-		    		  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
-					  int idPedidoHistoria = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
-					  pintarHistoriaEstado(idPedidoHistoria);
-					  pintarDetallePedido(idPedidoHistoria);
-		         }
+		    	
 		    }
 		});
 		
@@ -374,7 +355,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				avanzarEstado();
 			}
 		});
-		btnAvanzarEstado.setBounds(517, 336, 180, 47);
+		btnAvanzarEstado.setBounds(586, 543, 180, 47);
 		contentPane.add(btnAvanzarEstado);
 		
 		JButton btnRetrocederEstado = new JButton("Devolver Estado");
@@ -385,12 +366,12 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				
 			}
 		});
-		btnRetrocederEstado.setBounds(302, 336, 180, 49);
+		btnRetrocederEstado.setBounds(371, 543, 180, 49);
 		contentPane.add(btnRetrocederEstado);
 		
 		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
 		lblFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 16));
-		lblFechaSistema.setBounds(20, 343, 139, 40);
+		lblFechaSistema.setBounds(89, 550, 139, 40);
 		contentPane.add(lblFechaSistema);
 		
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
@@ -399,7 +380,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		txtFechaSistema.setForeground(Color.RED);
 		txtFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 16));
 		txtFechaSistema.setEditable(false);
-		txtFechaSistema.setBounds(169, 349, 123, 34);
+		txtFechaSistema.setBounds(238, 556, 123, 34);
 		txtFechaSistema.setText(fechaSis);
 		contentPane.add(txtFechaSistema);
 		txtFechaSistema.setColumns(10);
@@ -510,66 +491,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
         }
     }
 	
-	public void pintarHistoriaEstado(int idPedido)
-	{
-		Object[] columnsName = new Object[3];
-        
-        columnsName[0] = "Fecha Cambio Estado";
-        columnsName[1] = "Estado Anterior";
-        columnsName[2] = "Estado Posterior";
-        ArrayList<Object> estadosPedido = new ArrayList();
-        estadosPedido = pedCtrl.obtenerHistoriaEstadoPedido(idPedido);
-        DefaultTableModel modelo = new DefaultTableModel(){
-       	    public boolean isCellEditable(int rowIndex,int columnIndex){
-       	    	return false;
-       	    }
-       	    
-       	    
-       	};
-		modelo.setColumnIdentifiers(columnsName);
-		for(int y = 0; y < estadosPedido.size();y++)
-		{
-			String[] fila =(String[]) estadosPedido.get(y);
-			modelo.addRow(fila);
-		}
-		tableEstadosPedido.setModel(modelo);
-	}
-	
-	public void pintarDetallePedido(int idPedido)
-	{
-		Object[] columnsName = new Object[5];
-        
-        columnsName[0] = "Id Detalle";
-        columnsName[1] = "Desc Producto";
-        columnsName[2] = "Cantidad";
-        columnsName[3] = "Valor Unitario";
-        columnsName[4] = "Valor Total";
-        ArrayList<DetallePedido> detsPedido = new ArrayList();
-        detsPedido = pedCtrl.obtenerDetallePedidoPintar(idPedido);
-        DefaultTableModel modelo = new DefaultTableModel(){
-       	    public boolean isCellEditable(int rowIndex,int columnIndex){
-       	    	return false;
-       	    }
-       	    
-       	    
-       	};
-		modelo.setColumnIdentifiers(columnsName);
-		String[] fila = new String[5];
-		DetallePedido detPedTemp;
-		for(int y = 0; y < detsPedido.size();y++)
-		{
-			detPedTemp = detsPedido.get(y);
-			fila = new String[6];
-			fila[0] = Integer.toString(detPedTemp.getIdDetallePedido());
-			fila[1] = detPedTemp.getDescripcioProducto();
-			fila[2] = Double.toString(detPedTemp.getCantidad());
-			fila[3] = Double.toString(detPedTemp.getValorUnitario());
-			fila[4] = Double.toString(detPedTemp.getValorTotal());
-			modelo.addRow(fila);
-		}
-		tableDetallePedido.setModel(modelo);
-	}
-	
+			
 	
 	public void run(){
 		 Thread ct = Thread.currentThread();

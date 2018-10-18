@@ -22,7 +22,7 @@ public class TiendaDAO {
  * Método que se encarga de retornar todas las entidades Tiendas definidas en la base de datos
  * @return Se retorna un ArrayList con todas las entidades Tiendas definidas en la base de datos.
  */
-	public static Tienda obtenerTienda()
+	public static Tienda obtenerTienda(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -32,7 +32,10 @@ public class TiendaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from tienda";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			String direccion, telefono, razonSocial, tipoContribuyente,resolucion, fechaResolucion, ubicacion,identificacion, fechaApertura, fechaUltimoCierre;
 			while(rs.next()){
@@ -67,7 +70,7 @@ public class TiendaDAO {
 		
 	}
 	
-	public static boolean ActualizarFechaSistemaApertura(String fecha)
+	public static boolean ActualizarFechaSistemaApertura(String fecha, boolean auditoria)
 	{
 		boolean respuesta = false;
 		Logger logger = Logger.getLogger("log_file");
@@ -77,7 +80,10 @@ public class TiendaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update tienda set fecha_apertura = '" +fecha +"'";
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();
@@ -94,7 +100,7 @@ public class TiendaDAO {
 		return(true);
 	}
 	
-	public static boolean actualizarFechaUltimoCierre()
+	public static boolean actualizarFechaUltimoCierre(boolean auditoria)
 	{
 		boolean respuesta = false;
 		Logger logger = Logger.getLogger("log_file");
@@ -104,7 +110,10 @@ public class TiendaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update tienda set fecha_ultimo_cierre = DATE_ADD(fecha_ultimo_cierre, INTERVAL 1 DAY)";
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();
@@ -121,7 +130,7 @@ public class TiendaDAO {
 		return(true);
 	}
 	
-	public static FechaSistema obtenerFechasSistema()
+	public static FechaSistema obtenerFechasSistema(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -131,7 +140,10 @@ public class TiendaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select fecha_apertura, fecha_ultimo_cierre from tienda";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			String fechaApertura = "";
 			String fechaUltimoCierre = "";
@@ -157,7 +169,7 @@ public class TiendaDAO {
 		return(fechaSistema);
 	}
 	
-	public static boolean actualizarTienda(Tienda tienda)
+	public static boolean actualizarTienda(Tienda tienda, boolean auditoria)
 	{
 		boolean respuesta = false;
 		Logger logger = Logger.getLogger("log_file");
@@ -167,7 +179,10 @@ public class TiendaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update tienda set nombretienda  = '" + tienda.getNombretienda() + "' , urlcontact = '" + tienda.getUrlContact() + "' , direccion = '"+ tienda.getDireccion() + "' , telefono = '" + tienda.getTelefono() + "' , razon_social = '" + tienda.getRazonSocial() + "' , tipo_contribuyente = '" + tienda.getTipoContribuyente() + "' , resolucion = '" + tienda.getResolucion() + "' , fecha_resolucion = '" + tienda.getFechaResolucion() + "' , ubicacion = '" + tienda.getUbicacion() + "' , identificacion = '" + tienda.getIdentificacion() + "'";
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();
@@ -184,7 +199,7 @@ public class TiendaDAO {
 		return(true);
 	}
 	
-	public static String verificarNumResolucion(int numInicial, int numFinal)
+	public static String verificarNumResolucion(int numInicial, int numFinal, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -195,7 +210,10 @@ public class TiendaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select count(*) from pedido where idpedidotienda >= " + numInicial + " and idpedidotienda <= " + numFinal;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				try
@@ -232,7 +250,7 @@ public class TiendaDAO {
 		
 	}
 	
-	public static String actualizarResolucionTienda(int numInicial, int numFinal)
+	public static String actualizarResolucionTienda(int numInicial, int numFinal, boolean auditoria)
 	{
 		String  respuesta = "";
 		Logger logger = Logger.getLogger("log_file");
@@ -245,7 +263,10 @@ public class TiendaDAO {
 			logger.info(update);
 			stm.executeUpdate(update);
 			update = "update tienda set numinicialresolucion = " + numInicial + " , numfinalresolucion = " + numFinal;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
  			stm.close();
 			con1.close();

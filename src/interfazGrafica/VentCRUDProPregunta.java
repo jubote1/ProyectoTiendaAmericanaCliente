@@ -55,6 +55,7 @@ public class VentCRUDProPregunta extends JFrame {
 	private JCheckBox checkEstadoPregunta;
 	private JComboBox comboBoxPrecio; 
 	private JCheckBox checkEstadoEleccion;
+	private ParametrosProductoCtrl par = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -86,8 +87,7 @@ public class VentCRUDProPregunta extends JFrame {
         columnsName[4] = "Estado";
         columnsName[5] = "Permite Dividir";
         columnsName[6] = "Descripcion";
-        ParametrosProductoCtrl par = new ParametrosProductoCtrl();
-		ArrayList<Object> items = par.obtenerPreguntas();
+        ArrayList<Object> items = par.obtenerPreguntas();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < items.size();y++)
@@ -113,8 +113,7 @@ public class VentCRUDProPregunta extends JFrame {
         columnsName[3] = "Producto";
         columnsName[4] = "Precio";
         columnsName[5] = "Estado";
-        ParametrosProductoCtrl par = new ParametrosProductoCtrl();
-		ArrayList<Object> items = par.obtenerEleccionForzadas(idPregunta);
+        ArrayList<Object> items = par.obtenerEleccionForzadas(idPregunta);
 		DefaultTableModel modeloPreguntas = new DefaultTableModel();
 		modeloPreguntas.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < items.size();y++)
@@ -183,8 +182,7 @@ public class VentCRUDProPregunta extends JFrame {
 				String preguntaEliminar = (String) jTablePreguntas.getValueAt(filaSeleccionada, 1);
 				int idPregunEli = Integer.parseInt((String)jTablePreguntas.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar la Pregunta " +  preguntaEliminar , "Eliminacion Pregunta ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarPregunta(idPregunEli);
+				par.eliminarPregunta(idPregunEli);
 				DefaultTableModel modelo = pintarPreguntas();
 				jTablePreguntas.setModel(modelo);
 				textTituloPregunta.setText("");
@@ -332,8 +330,7 @@ public class VentCRUDProPregunta extends JFrame {
 					idProducto = Integer.parseInt(strIdProducto);
 				}
 				EleccionForzada eleccionFor = new EleccionForzada(0, idProducto, "", idPregunta, precio,estado);
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				parCtrl.insertarEleccionForzada(eleccionFor);
+				par.insertarEleccionForzada(eleccionFor);
 				DefaultTableModel modeloEleccion = pintarEleccionesForzadas();
 				tableRespuestas.setModel(modeloEleccion);
 			}
@@ -350,8 +347,7 @@ public class VentCRUDProPregunta extends JFrame {
 				String eleccionEliminar = (String) tableRespuestas.getValueAt(filaSeleccionada, 2) + (String) tableRespuestas.getValueAt(filaSeleccionada, 4);
 				int idEleccion = Integer.parseInt((String)tableRespuestas.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el impuesto " +  eleccionEliminar , "Eliminacion Elección Forzada ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarEleccionForzada(idEleccion);
+				par.eliminarEleccionForzada(idEleccion);
 				DefaultTableModel modelo = pintarEleccionesForzadas();
 				tableRespuestas.setModel(modelo);
 			}
@@ -391,8 +387,7 @@ public class VentCRUDProPregunta extends JFrame {
 				idPregunta = Integer.parseInt((String)jTablePreguntas.getValueAt(filaSeleccionada, 0));
 				textIdPregunta.setText((String)jTablePreguntas.getValueAt(filaSeleccionada, 0));
 				//obtenemos el Objeto producto con el base en el idproducto recuperado del evento anterior
-				ParametrosProductoCtrl productoCtrl = new ParametrosProductoCtrl();
-				Pregunta preguntaEditar = productoCtrl.obtenerPregunta(idPregunta);
+				Pregunta preguntaEditar = par.obtenerPregunta(idPregunta);
 				textTituloPregunta.setText(preguntaEditar.getTituloPregunta());
 				textDescripcion.setText(preguntaEditar.getDescripcion());
 				textIdPregunta.setText(Integer.toString(preguntaEditar.getIdPregunta()));
@@ -440,8 +435,7 @@ public class VentCRUDProPregunta extends JFrame {
 						permiteDividir = 1;
 					}
 					Pregunta preguntaEditar = new Pregunta(idPregunta,tituloPregunta,obligaEleccion,numeroMaximoElecciones,estado,permiteDividir,descripcion); 
-					ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-					boolean respuesta = parCtrl.editarPregunta(preguntaEditar);
+					boolean respuesta = par.editarPregunta(preguntaEditar);
 					if (respuesta)
 					{
 						JOptionPane.showMessageDialog(null, "Se ha editado correctamente el registro " , "Confirmación Edición", JOptionPane.OK_OPTION);
@@ -491,8 +485,7 @@ public class VentCRUDProPregunta extends JFrame {
 					permiteDividir = 1;
 				} 
 				Pregunta preguntaNueva = new Pregunta(idPregunta,tituloPregunta,obligaEleccion,numeroMaximoElecciones,estado,permiteDividir,descripcion); 
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				int idPre = parCtrl.insertarPregunta(preguntaNueva);
+				int idPre = par.insertarPregunta(preguntaNueva);
 				DefaultTableModel modelo = pintarPreguntas();
 				jTablePreguntas.setModel(modelo);
 				idPregunta = idPre;
@@ -525,8 +518,7 @@ public boolean validarDatos()
 
 public void initComboBoxProducto()
 {
-	ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-	ArrayList productos = parCtrl.obtenerProductos();
+	ArrayList productos = par.obtenerProductos();
 	for(int i = 0; i<productos.size();i++)
 	{
 		String[] fila =  (String[]) productos.get(i);

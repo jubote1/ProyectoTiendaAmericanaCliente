@@ -10,7 +10,7 @@ import capaModelo.PedidoFormaPago;
 
 public class PedidoFormaPagoDAO {
 	
-	public static int  InsertarPedidoFormaPago(PedidoFormaPago pedFormaPago)
+	public static int  InsertarPedidoFormaPago(PedidoFormaPago pedFormaPago, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -19,9 +19,12 @@ public class PedidoFormaPagoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insertformapago = "insert pedido_forma_pago (idpedidotienda, idforma_pago, valortotal, valorformapago) values (" + pedFormaPago.getIdPedidoTienda() + " , " + pedFormaPago.getIdFormaPago() + " , " + pedFormaPago.getValorTotal() + " , " + pedFormaPago.getValorFormaPago() + ")";
-			logger.info(insertformapago);
-			stm.executeUpdate(insertformapago);
+			String insert = "insert pedido_forma_pago (idpedidotienda, idforma_pago, valortotal, valorformapago) values (" + pedFormaPago.getIdPedidoTienda() + " , " + pedFormaPago.getIdFormaPago() + " , " + pedFormaPago.getValorTotal() + " , " + pedFormaPago.getValorFormaPago() + ")";
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
+			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idInsertado = rs.getInt(1);
@@ -32,7 +35,6 @@ public class PedidoFormaPagoDAO {
 			con1.close();
 		}
 		catch (Exception e){
-			System.out.println(e.toString());
 			logger.error(e.toString());
 			try
 			{
@@ -45,7 +47,7 @@ public class PedidoFormaPagoDAO {
 		return(idInsertado);
 	}
 	
-	public static boolean existeFormaPago(int idPedido)
+	public static boolean existeFormaPago(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -55,7 +57,10 @@ public class PedidoFormaPagoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from pedido_forma_pago where idpedidotienda = " + idPedido; 
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next())
 			{
@@ -79,7 +84,7 @@ public class PedidoFormaPagoDAO {
 		return(respuesta);
 	}
 	
-	public static boolean eliminarPedidoFormaPago(int idPedido)
+	public static boolean eliminarPedidoFormaPago(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -89,7 +94,10 @@ public class PedidoFormaPagoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from pedido_forma_pago where idpedidotienda = " + idPedido; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();

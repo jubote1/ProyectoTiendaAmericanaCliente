@@ -105,6 +105,7 @@ public class VentCRUDProducto extends JFrame {
 	private JLabel lblImagen;
 	private JTextField txtRuta;
 	private byte[] icono;
+	private ParametrosProductoCtrl parPro = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -133,8 +134,7 @@ public class VentCRUDProducto extends JFrame {
         columnsName[1] = "Descripcion";
         columnsName[2] = "Impresion";
         columnsName[3] = "Texto Botón";
-        ParametrosProductoCtrl par = new ParametrosProductoCtrl();
-		ArrayList<Object> items = par.obtenerProductos();
+        ArrayList<Object> items = parPro.obtenerProductos();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < items.size();y++)
@@ -159,8 +159,7 @@ public class VentCRUDProducto extends JFrame {
         columnsName[2] = "Producto";
         columnsName[3] = "Id Impuesto";
         columnsName[4] = "Descripción Impuesto";
-        ParametrosProductoCtrl par = new ParametrosProductoCtrl();
-		ArrayList<Object> items = par.obtenerImpuestosProducto(idProducto);
+        ArrayList<Object> items = parPro.obtenerImpuestosProducto(idProducto);
 		DefaultTableModel modeloImpuestos = new DefaultTableModel();
 		modeloImpuestos.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < items.size();y++)
@@ -184,8 +183,7 @@ public class VentCRUDProducto extends JFrame {
         columnsName[2] = "Producto Incluido";
         columnsName[3] = "Cantidad";
         columnsName[4] = "Precio";
-        ParametrosProductoCtrl par = new ParametrosProductoCtrl();
-		ArrayList<Object> items = par.obtenerProductosIncluidos(idProducto);
+        ArrayList<Object> items = parPro.obtenerProductosIncluidos(idProducto);
 		DefaultTableModel modeloProductosIncluidos = new DefaultTableModel();
 		modeloProductosIncluidos.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < items.size();y++)
@@ -210,8 +208,7 @@ public class VentCRUDProducto extends JFrame {
         columnsName[2] = "Id Item";
         columnsName[3] = "Nombre Item";
         columnsName[4] = "Cantidad";
-        ParametrosProductoCtrl par = new ParametrosProductoCtrl();
-		ArrayList<Object> items = par.obtenerItemsInventarioProducto(idProducto);
+        ArrayList<Object> items = parPro.obtenerItemsInventarioProducto(idProducto);
 		DefaultTableModel modeloItems = new DefaultTableModel();
 		modeloItems .setColumnIdentifiers(columnsName);
 		for(int y = 0; y < items.size();y++)
@@ -270,8 +267,7 @@ public class VentCRUDProducto extends JFrame {
 				String productoEliminar = (String) jTableProductos.getValueAt(filaSeleccionada, 1);
 				int idProducto = Integer.parseInt((String)jTableProductos.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Producto " +  productoEliminar , "Eliminacion Producto ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarProducto(idProducto);
+				parPro.eliminarProducto(idProducto);
 				DefaultTableModel modelo = pintarProducto();
 				jTableProductos.setModel(modelo);
 				jTextDescripcion.setText("");
@@ -618,8 +614,7 @@ public class VentCRUDProducto extends JFrame {
 				}
 				System.out.println("id impuesto a adicionar " + idImpuesto);
 				ImpuestoProducto impProdu = new ImpuestoProducto(0, idImpuesto, idProducto);
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				parCtrl.insertarImpuestoProducto(impProdu);
+				parPro.insertarImpuestoProducto(impProdu);
 				DefaultTableModel modeloImpuesto = pintarImpuestosProducto();
 				//tableImpuestos.setModel(modeloImpuesto);
 				tableImpuestos.setModel(modeloImpuesto);
@@ -637,8 +632,7 @@ public class VentCRUDProducto extends JFrame {
 				String impuestoEliminar = (String) tableImpuestos.getValueAt(filaSeleccionada, 2) + (String) tableImpuestos.getValueAt(filaSeleccionada, 4);
 				int idImpuesto = Integer.parseInt((String)tableImpuestos.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el impuesto " +  impuestoEliminar , "Eliminacion Impuesto de Producto ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarImpuestoProducto(idImpuesto);
+				parPro.eliminarImpuestoProducto(idImpuesto);
 				DefaultTableModel modelo = pintarImpuestosProducto();
 				tableImpuestos.setModel(modelo);
 			}
@@ -705,8 +699,7 @@ public class VentCRUDProducto extends JFrame {
 					idproducto_incluido = Integer.parseInt(strIdProductoIncluido);
 				}
 				ProductoIncluido prodIncluido = new ProductoIncluido(0,idproducto_incluido,idProducto,cantidadIncluir, precioIncluir);
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				parCtrl.insertarProductoIncluido(prodIncluido);
+				parPro.insertarProductoIncluido(prodIncluido);
 				DefaultTableModel modeloProductoIncluido = pintarProductosIncluidos();
 				tableProductoIncluir.setModel(modeloProductoIncluido);
 			}
@@ -723,8 +716,7 @@ public class VentCRUDProducto extends JFrame {
 				String productoIncluido = " Producto Incluye " +  (String) tableProductoIncluir.getValueAt(filaSeleccionada, 1) + " Producto Incluido " +(String) tableProductoIncluir.getValueAt(filaSeleccionada, 2);
 				int idproducto_incluido = Integer.parseInt((String)tableProductoIncluir.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Producto Incluido " +  productoIncluido , "Eliminacion Impuesto de Producto ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarProductoIncluido(idproducto_incluido);
+				parPro.eliminarProductoIncluido(idproducto_incluido);
 				DefaultTableModel modeloProductoIncluido = pintarProductosIncluidos();
 				tableProductoIncluir.setModel(modeloProductoIncluido);
 			}
@@ -786,8 +778,7 @@ public class VentCRUDProducto extends JFrame {
 					idItem = Integer.parseInt(strIdItem);
 				}
 				ItemInventarioProducto impItemProducto = new ItemInventarioProducto(0, idItem, idProducto,cantidad);
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				parCtrl.insertarItemInventarioProducto(impItemProducto);
+				parPro.insertarItemInventarioProducto(impItemProducto);
 				DefaultTableModel modeloItem = pintarItemsInventarioProducto();
 				//tableImpuestos.setModel(modeloImpuesto);
 				textCantidadItem.setText("");
@@ -806,8 +797,7 @@ public class VentCRUDProducto extends JFrame {
 				String itemsEliminar = (String) tableItemsInventario.getValueAt(filaSeleccionada, 2) + (String) tableItemsInventario.getValueAt(filaSeleccionada, 4);
 				int idItem = Integer.parseInt((String)tableItemsInventario.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el item de Inventario " +  itemsEliminar , "Eliminacion Item de Inventario ", JOptionPane.YES_NO_OPTION);
-				ParametrosProductoCtrl parEliminar = new ParametrosProductoCtrl();
-				parEliminar.eliminarItemInventarioProducto(idItem);
+				parPro.eliminarItemInventarioProducto(idItem);
 				DefaultTableModel modelo = pintarItemsInventarioProducto();
 				tableItemsInventario.setModel(modelo);
 			}
@@ -934,7 +924,6 @@ public class VentCRUDProducto extends JFrame {
 		JButton btnAdicionarProductoCon = new JButton("Adicionar Producto Con");
 		btnAdicionarProductoCon.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				ParametrosProductoCtrl parProd = new ParametrosProductoCtrl();
 				if(idProducto != 0)
 				{
 					if(modProdCon)
@@ -948,7 +937,7 @@ public class VentCRUDProducto extends JFrame {
 						{
 							CantModCon = 0;
 						}
-						parProd.EditarCantProductoCon(idProducto, CantModCon);
+						parPro.EditarCantProductoCon(idProducto, CantModCon);
 						modProdCon = false;
 						txtCantModCon.setText("");
 						
@@ -958,7 +947,7 @@ public class VentCRUDProducto extends JFrame {
 					{
 						int idProductoCon =  proSel.getIdProducto();
 						ProductoModificadorCon prodMod = new ProductoModificadorCon(idProducto,idProductoCon);
-						parProd.insertarProdModificadoCon(prodMod);
+						parPro.insertarProdModificadoCon(prodMod);
 						inicializarProdModificadores();
 					}catch(NullPointerException e)
 					{
@@ -980,7 +969,6 @@ public class VentCRUDProducto extends JFrame {
 		JButton btnAdicionarProductoSin = new JButton("Adicionar Producto Sin");
 		btnAdicionarProductoSin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				ParametrosProductoCtrl parProd = new ParametrosProductoCtrl();
 				if(idProducto != 0)
 				{
 					if(modProdSin)
@@ -994,7 +982,7 @@ public class VentCRUDProducto extends JFrame {
 						{
 							CantModSin = 0;
 						}
-						parProd.EditarCantProductoSin(idProducto, CantModSin);
+						parPro.EditarCantProductoSin(idProducto, CantModSin);
 						modProdSin = false;
 						txtCantModSin.setText("");
 						
@@ -1004,7 +992,7 @@ public class VentCRUDProducto extends JFrame {
 					{
 						int idProductoSin =  proSel.getIdProducto();
 						ProductoModificadorSin prodMod = new ProductoModificadorSin(idProducto,idProductoSin);
-						parProd.insertarProdModificadoSin(prodMod);
+						parPro.insertarProdModificadoSin(prodMod);
 						inicializarProdModificadores();
 					}catch(NullPointerException e)
 					{
@@ -1048,8 +1036,7 @@ public class VentCRUDProducto extends JFrame {
 				//Teniendo el producto y estando en la fase de carga podemos cargar los impuestos por producto
 				jTextIDProducto.setText((String)jTableProductos.getValueAt(filaSeleccionada, 0));
 				//obtenemos el Objeto producto con el base en el idproducto recuperado del evento anterior
-				ParametrosProductoCtrl productoCtrl = new ParametrosProductoCtrl();
-				Producto productoEditar = productoCtrl.obtenerProducto(idProducto);
+				Producto productoEditar = parPro.obtenerProducto(idProducto);
 				//Obtenemos el idProducto y con este retornamos el valor recuperarmos el valor para editar.
 				jTextDescripcion.setText(productoEditar.getDescripcion());
 				jTextImpresion.setText(productoEditar.getImpresion());
@@ -1204,8 +1191,7 @@ public class VentCRUDProducto extends JFrame {
 					Producto productoEditar = new Producto(idProducto,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano()); 
 					productoEditar.setImagen(icono);
 					System.out.println("como va el icono " + icono);
-					ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-					boolean respuesta = parCtrl.editarProducto(productoEditar);
+					boolean respuesta = parPro.editarProducto(productoEditar);
 					if (respuesta)
 					{
 						JOptionPane.showMessageDialog(null, "Se ha editado correctamente el registro " , "Confirmación Edición", JOptionPane.OK_OPTION);
@@ -1314,8 +1300,7 @@ public class VentCRUDProducto extends JFrame {
 				Tamano tamano = (Tamano) comboBoxTamano.getSelectedItem();
 				Producto productoNuevo = new Producto(0,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano()); 
 				productoNuevo.setImagen(icono);
-				ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-				int idProdu = parCtrl.insertarProducto(productoNuevo);
+				int idProdu = parPro.insertarProducto(productoNuevo);
 				if(idProdu > 0)
 				{
 					JOptionPane.showMessageDialog(null, "Fue insertado el producto con idProducto  " + idProdu  , "Confirmación Inserción Registro ", JOptionPane.OK_OPTION);
@@ -1355,8 +1340,7 @@ public boolean validarDatos()
 
 public void initComboBoxImpuesto()
 {
-	ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-	ArrayList impuestos = parCtrl.obtenerImpuestos();
+	ArrayList impuestos = parPro.obtenerImpuestos();
 	for(int i = 0; i<impuestos.size();i++)
 	{
 		String[] fila =  (String[]) impuestos.get(i);
@@ -1366,8 +1350,7 @@ public void initComboBoxImpuesto()
 
 public void initComboBoxItems()
 {
-	ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-	ArrayList items = parCtrl.obtenerItemsInventarios();
+	ArrayList items = parPro.obtenerItemsInventarios();
 	for(int i = 0; i<items.size();i++)
 	{
 		String[] fila =  (String[]) items.get(i);
@@ -1377,8 +1360,7 @@ public void initComboBoxItems()
 
 public void initComboProductoIncluir()
 {
-	ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-	ArrayList items = parCtrl.obtenerProductos();
+	ArrayList items = parPro.obtenerProductos();
 	for(int i = 0; i<items.size();i++)
 	{
 		String[] fila =  (String[]) items.get(i);
@@ -1398,8 +1380,7 @@ public void initComboProductoIncluir()
 
 public void initCombosPreguntas()
 {
-	ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-	ArrayList preguntas = parCtrl.obtenerPreguntas();
+	ArrayList preguntas = parPro.obtenerPreguntas();
 	for(int i = 0; i<preguntas.size();i++)
 	{
 		String[] fila =  (String[]) preguntas.get(i);
@@ -1463,16 +1444,15 @@ public void inicializarProdModificadores()
 	//Debemos de limpiar los combos
 	cmbProdDisCon.removeAllItems();
 	cmbProdDisSin.removeAllItems();
-	ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl();
-	ArrayList modCon = parCtrl.obtenerProdModificadorCon(idProducto);
-	ArrayList modSin = parCtrl.obtenerProdModificadorSin(idProducto);
-	ArrayList<Producto> modPro = parCtrl.obtenerProdModificadorConFalta(idProducto);
+	ArrayList modCon = parPro.obtenerProdModificadorCon(idProducto);
+	ArrayList modSin = parPro.obtenerProdModificadorSin(idProducto);
+	ArrayList<Producto> modPro = parPro.obtenerProdModificadorConFalta(idProducto);
 	for(int i = 0; i<modPro.size();i++)
 	{
 		Producto  fila =  modPro.get(i);
 		cmbProdDisCon.addItem(fila);
 	}
-	modPro = parCtrl.obtenerProdModificadorSinFalta(idProducto);
+	modPro = parPro.obtenerProdModificadorSinFalta(idProducto);
 	for(int i = 0; i<modPro.size();i++)
 	{
 		Producto  fila =  modPro.get(i);

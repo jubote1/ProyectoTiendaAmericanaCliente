@@ -15,7 +15,7 @@ import capaModelo.DetallePedido;
 
 public class DetallePedidoDAO {
 	
-	public static int insertarDetallePedido(DetallePedido detPedido)
+	public static int insertarDetallePedido(DetallePedido detPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idDetalleInsertado = 0;
@@ -26,7 +26,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into detalle_pedido (idpedidotienda,idproducto,cantidad, valorunitario,valortotal,observacion, iddetalle_pedido_master, iddetalle_modificador) values (" + detPedido.getIdPedidoTienda() + ", " + detPedido.getIdProducto() + ", " + detPedido.getCantidad() + " , " + detPedido.getValorUnitario() + " , " + detPedido.getValorTotal() + " , '" + detPedido.getObservacion() + "' , " + detPedido.getIdDetallePedidoMaster() +" , " + detPedido.getIdDetalleModificador() + ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
@@ -50,7 +53,7 @@ public class DetallePedidoDAO {
 		return(idDetalleInsertado);
 	}
 
-	public static boolean eliminarDetallePedido(int idDetallePedido)
+	public static boolean eliminarDetallePedido(int idDetallePedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idDetalleInsertado = 0;
@@ -61,10 +64,16 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from detalle_pedido  where iddetalle_pedido = " + idDetallePedido ;
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			delete = "delete from detalle_pedido  where iddetalle_pedido_master = " + idDetallePedido;
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			stm.close();
 			con1.close();
@@ -84,7 +93,7 @@ public class DetallePedidoDAO {
 		
 	}
 	
-	public static boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion)
+	public static boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -94,10 +103,16 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update detalle_pedido set idmotivoanulacion =" + idMotivoAnulacion +" where iddetalle_pedido = " + idDetallePedido ;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			update = "update detalle_pedido set idmotivoanulacion = " + idMotivoAnulacion +"  where iddetalle_pedido_master = " + idDetallePedido;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();
@@ -117,7 +132,7 @@ public class DetallePedidoDAO {
 		
 	}
 	
-	public static boolean eliminarDetallesPedido(int idPedido)
+	public static boolean eliminarDetallesPedido(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idDetalleInsertado = 0;
@@ -128,7 +143,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from detalle_pedido  where idpedidotienda = " + idPedido ;
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			stm.close();
 			con1.close();
@@ -149,7 +167,7 @@ public class DetallePedidoDAO {
 	}
 	
 	
-	public static boolean AnularDetallesPedido(int idPedido)
+	public static boolean AnularDetallesPedido(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idDetalleInsertado = 0;
@@ -160,7 +178,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update detalle_pedido set cantidad = cantidad*-1 , valortotal = valortotal*-1 where idpedidotienda = " + idPedido ;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();
@@ -180,7 +201,7 @@ public class DetallePedidoDAO {
 		
 	}
 	
-	public static boolean ActualizarImpuestoDetallesPedido(int idDetallePedido, double valorImpuesto)
+	public static boolean ActualizarImpuestoDetallesPedido(int idDetallePedido, double valorImpuesto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -191,7 +212,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update detalle_pedido set valorimpuesto = " + valorImpuesto +" where iddetalle_pedido = " + idDetallePedido ;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();
@@ -212,7 +236,7 @@ public class DetallePedidoDAO {
 		
 	}
 	
-	public static boolean validarDetalleMaster(int idDetallePedido)
+	public static boolean validarDetalleMaster(int idDetallePedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -222,7 +246,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select iddetalle_pedido from detalle_pedido  where iddetalle_pedido_master = " + idDetallePedido ;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while (rs.next())
 			{
@@ -230,7 +257,10 @@ public class DetallePedidoDAO {
 				break;
 			}
 			consulta = "select iddetalle_pedido from detalle_pedido  where iddetalle_pedido = " + idDetallePedido + " and iddetalle_pedido_master =  0";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			rs = stm.executeQuery(consulta);
 			while (rs.next())
 			{
@@ -243,7 +273,6 @@ public class DetallePedidoDAO {
 		}
 		catch (Exception e){
 			logger.error(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -257,7 +286,7 @@ public class DetallePedidoDAO {
 	}
 	
 	
-	public static ArrayList<DetallePedido> obtenerDetallePedido(int idPedido)
+	public static ArrayList<DetallePedido> obtenerDetallePedido(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -268,7 +297,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from detalle_pedido  where idpedidotienda = " + idPedido ;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idDetallePedido,idProducto,idDetallePedidoMaster, idDetalleModificador, idMotivoAnulacion;
 			double cantidad,valorUnitario,valorTotal;
@@ -340,7 +372,7 @@ public class DetallePedidoDAO {
 	 * @param idPedido Se recibe el identificador del Pedido.
 	 * @return Se retornará un ArrayList con los detallesPedidos que cumplan los parámetros enviados de idDetallePedido y master.
 	 */
-	public static ArrayList<DetallePedido> obtenerDetallePedidoMaster(int idDetPedido, int idPedido)
+	public static ArrayList<DetallePedido> obtenerDetallePedidoMaster(int idDetPedido, int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -351,7 +383,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from detalle_pedido  where iddetalle_pedido = " + idDetPedido + " or iddetalle_pedido_master = " + idDetPedido ;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idDetallePedido,idProducto,idDetallePedidoMaster, idDetalleModificador,idMotivoAnulacion;
 			double cantidad,valorUnitario,valorTotal;
@@ -403,7 +438,6 @@ public class DetallePedidoDAO {
 		}
 		catch (Exception e){
 			logger.error(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -416,7 +450,7 @@ public class DetallePedidoDAO {
 		
 	}
 	
-	public static ArrayList<DetallePedido> obtenerDetallePedidoPintar(int idPedido)
+	public static ArrayList<DetallePedido> obtenerDetallePedidoPintar(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -427,8 +461,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.iddetalle_pedido, a.idproducto, b.descripcion, b.tipo_producto , b.tamano, b.impresion,  a.iddetalle_pedido_master, a.cantidad, a.valorunitario, a.valortotal, a.observacion, a.iddetalle_modificador, a.descargo_inventario, a.idmotivoanulacion from detalle_pedido a, producto b where a.idproducto = b.idproducto and a.idpedidotienda = " + idPedido ;
-			System.out.println(consulta);
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idDetallePedido,idProducto,idDetallePedidoMaster, idDetalleModificador, idMotivoAnulacion;
 			double cantidad,valorUnitario,valorTotal;
@@ -483,7 +519,6 @@ public class DetallePedidoDAO {
 		}
 		catch (Exception e){
 			logger.error(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -496,7 +531,7 @@ public class DetallePedidoDAO {
 		
 	}
 	
-	public static DetallePedido obtenerUnDetallePedido(int idDetalle)
+	public static DetallePedido obtenerUnDetallePedido(int idDetalle, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -506,7 +541,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from detalle_pedido  where iddetalle_pedido = " + idDetalle ;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idDetallePedido,idProducto,idDetallePedidoMaster, idMotivoAnulacion;
 			double cantidad,valorUnitario,valorTotal;
@@ -571,7 +609,7 @@ public class DetallePedidoDAO {
 	}
 	
 	
-	public static int obtenerIdDetalleMaster(int idDetallePedido)
+	public static int obtenerIdDetalleMaster(int idDetallePedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -581,7 +619,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select iddetalle_pedido_master from detalle_pedido  where iddetalle_pedido = " + idDetallePedido ;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while (rs.next())
 			{
@@ -595,7 +636,6 @@ public class DetallePedidoDAO {
 		}
 		catch (Exception e){
 			logger.error(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -613,7 +653,7 @@ public class DetallePedidoDAO {
 	 * @param idDetallePedido Se recibe como parámetro el idDetallePedido que se marcará como descargado del inventario
 	 * @return un valor de tipo booleano indicando si la marcación se pudo realizar o no.
 	 */
-	public static boolean descargarDetallePedido(int idDetallePedido)
+	public static boolean descargarDetallePedido(int idDetallePedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -623,7 +663,10 @@ public class DetallePedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update detalle_pedido set descargo_inventario = 'S'  where iddetalle_pedido = " + idDetallePedido ;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			stm.close();
 			con1.close();

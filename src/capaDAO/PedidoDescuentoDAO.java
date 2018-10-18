@@ -16,7 +16,7 @@ import capaModelo.PedidoDescuento;
 public class PedidoDescuentoDAO {
 	
 	
-	public static boolean insertarPedidoDescuento(PedidoDescuento descuento)
+	public static boolean insertarPedidoDescuento(PedidoDescuento descuento, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -25,7 +25,10 @@ public class PedidoDescuentoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into pedido_descuento (idpedido, descuentopesos, descuentoporcentaje) values (" + descuento.getIdpedido() + ", " + descuento.getDescuentoPesos() + " , " + descuento.getDescuentoPorcentaje() + ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			stm.close();
 			con1.close();
@@ -44,7 +47,7 @@ public class PedidoDescuentoDAO {
 	}
 	
 	
-	public static boolean eliminarPedidoDescuento(int idPedido)
+	public static boolean eliminarPedidoDescuento(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -54,7 +57,10 @@ public class PedidoDescuentoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from pedido_descuento where idpedido = " + idPedido; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -74,7 +80,7 @@ public class PedidoDescuentoDAO {
 		return(respuesta);
 	}
 	
-	public static PedidoDescuento obtenerPedidoDescuento(int idPedido)
+	public static PedidoDescuento obtenerPedidoDescuento(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -84,7 +90,10 @@ public class PedidoDescuentoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from pedido_descuento where idpedido = " + idPedido; 
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			double descuentoPesos = 0, descuentoPorcentaje = 0;
 			while(rs.next())
@@ -110,7 +119,7 @@ public class PedidoDescuentoDAO {
 		return(descuento);
 	}
 	
-	public static boolean existePedidoDescuento(int idPedido)
+	public static boolean existePedidoDescuento(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -120,7 +129,10 @@ public class PedidoDescuentoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from pedido_descuento where idpedido = " + idPedido; 
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next())
 			{

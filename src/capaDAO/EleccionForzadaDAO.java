@@ -24,7 +24,7 @@ public class EleccionForzadaDAO {
  * Método que se encarga de retonar todos las elecciones_forzadas parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerEleccionesForzadas(int idPregunta)
+	public static ArrayList obtenerEleccionesForzadas(int idPregunta, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -35,7 +35,10 @@ public class EleccionForzadaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.ideleccion_forzada, a.idpregunta, a.idproducto, b.descripcion, a.precio, a.estado from eleccion_forzada a , producto b  where a.idproducto = b.idproducto and  a.idpregunta = " + idPregunta;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -54,7 +57,6 @@ public class EleccionForzadaDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -66,7 +68,7 @@ public class EleccionForzadaDAO {
 		
 	}
 	
-	public static ArrayList<EleccionForzada> obtEleccionesForzadas(int idPreConsulta)
+	public static ArrayList<EleccionForzada> obtEleccionesForzadas(int idPreConsulta, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -77,7 +79,10 @@ public class EleccionForzadaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.ideleccion_forzada, a.idpregunta, a.idproducto, b.descripcion, a.precio, a.estado from eleccion_forzada a , producto b  where a.idproducto = b.idproducto and  a.idpregunta = " + idPreConsulta;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idEleccionForzada,idPregunta,idProducto,estado;
 			String descripcion, precio;
@@ -97,7 +102,6 @@ public class EleccionForzadaDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -114,7 +118,7 @@ public class EleccionForzadaDAO {
 	 * @param Recibe un objeto de eleccion_forzada del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el ideleccion_forzada creado en la base de datos
 	 */
-	public static int insertarEleccionForzada(EleccionForzada eleccionForzada)
+	public static int insertarEleccionForzada(EleccionForzada eleccionForzada, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idEleccionIns = 0;
@@ -124,7 +128,10 @@ public class EleccionForzadaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into eleccion_forzada (idproducto, idpregunta, precio, estado) values (" + eleccionForzada.getIdProducto() + ", " + eleccionForzada.getIdPregunta() + " , '" + eleccionForzada.getPrecio() + "' , " + eleccionForzada.getEstado() + ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
@@ -153,7 +160,7 @@ public class EleccionForzadaDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarEleccionForzada(int idEleccionForzada)
+	public static boolean eliminarEleccionForzada(int idEleccionForzada, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -163,7 +170,10 @@ public class EleccionForzadaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from eleccion_forzada where ideleccion_forzada = " + idEleccionForzada; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -188,7 +198,7 @@ public class EleccionForzadaDAO {
 	 * @param EleccionForzada Recibe como parámetro un objeto de la entidad EleccionForzada con base en el cual se realiza la modificación
 	 * @return Se retorna un valor booleano indicando si el proceso fue o no satisfactorio
 	 */
-	public static boolean EditarEleccionForzada(EleccionForzada eleccionForzada)
+	public static boolean EditarEleccionForzada(EleccionForzada eleccionForzada, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -198,7 +208,10 @@ public class EleccionForzadaDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update eleccion_forzada set idproducto = " + eleccionForzada.getIdProducto() + " , idpregunta = " + eleccionForzada.getIdPregunta() + " , precio = '" + eleccionForzada.getPrecio() + "' , estado = " + eleccionForzada.getEstado()  + " where ideleccion_forzada = " + eleccionForzada.getIdEleccionForzada() ; 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();

@@ -74,7 +74,7 @@ public class VentSegEmpleado extends JFrame {
         columnsName[2] = "Nombre Largo";
         columnsName[3] = "Administrador";
         columnsName[4] = "Tipo Inicio";
-        EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+        EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 		ArrayList<Object> empleados = empCtrl.obtenerEmpleados();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
@@ -222,7 +222,7 @@ public class VentSegEmpleado extends JFrame {
 					TipoEmpleado tipEmp = (TipoEmpleado) comboBoxTipoUsuario.getSelectedItem();
 					Usuario empleado = new Usuario(0, usuario, "", nombreLargo, tipEmp.getIdTipoEmpleado(),
 							tipoInicio, administrador);
-					EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+					EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 					int idTipoEmp = empCtrl.insertarEmpleado(empleado);
 					DefaultTableModel modelo = pintarEmpleados();
 					jTableEmpleado.setModel(modelo);
@@ -249,7 +249,7 @@ public class VentSegEmpleado extends JFrame {
 				String nombreUsuario = (String) jTableEmpleado.getValueAt(filaSeleccionada, 1);
 				int idEmpleado = Integer.parseInt((String)jTableEmpleado.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Empleado con usuario  " +  nombreUsuario , "Eliminacion de Empleado ", JOptionPane.YES_NO_OPTION);
-				EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+				EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 				empCtrl.eliminarEmpleado(idEmpleado);
 				DefaultTableModel modelo = pintarEmpleados();
 				jTableEmpleado.setModel(modelo);
@@ -267,7 +267,7 @@ public class VentSegEmpleado extends JFrame {
 				}
 				filaSeleccionada = jTableEmpleado.getSelectedRow();
 				int idEmpleado = Integer.parseInt((String)jTableEmpleado.getValueAt(filaSeleccionada, 0));
-				EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+				EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 				Usuario usuarioEditar = empCtrl.obtenerEmpleado(idEmpleado);
 				jTextIdUsuario.setText(Integer.toString(usuarioEditar.getIdUsuario()));
 				jTextUsuario.setText(usuarioEditar.getNombreUsuario());
@@ -307,7 +307,7 @@ public class VentSegEmpleado extends JFrame {
 					TipoEmpleado tipEmp = (TipoEmpleado) comboBoxTipoUsuario.getSelectedItem();
 					Usuario empEditar = new Usuario(idUsuario, usuario, "", nombreLargo, tipEmp.getIdTipoEmpleado(),
 							tipoInicio, administrador);
-					EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+					EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 					boolean respuesta = empCtrl.editarEmpleado(empEditar);
 					if (respuesta)
 					{
@@ -371,7 +371,7 @@ public void llenarComboTipoInicio()
 
 public void initComboBoxTipoUsuario()
 {
-	EmpleadoCtrl empCtrl = new EmpleadoCtrl();
+	EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 	ArrayList<TipoEmpleado> tiposEmpleado = empCtrl.obtenerTipoEmpleadoObj();
 	for(int i = 0; i<tiposEmpleado.size();i++)
 	{

@@ -26,7 +26,7 @@ public class TipoEmpleadoDAO {
  * Método que se encarga de retornar en un ArrayList los tipos de empleados definidos en el sistema.
  * @return
  */
-	public static ArrayList obtenerTipoEmpleado()
+	public static ArrayList obtenerTipoEmpleado(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -37,7 +37,10 @@ public class TipoEmpleadoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from tipo_empleado ";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -56,7 +59,6 @@ public class TipoEmpleadoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -69,7 +71,7 @@ public class TipoEmpleadoDAO {
 	}
 	
 	
-	public static ArrayList<TipoEmpleado> obtenerTipoEmpleadoObj()
+	public static ArrayList<TipoEmpleado> obtenerTipoEmpleadoObj(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -80,7 +82,10 @@ public class TipoEmpleadoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from tipo_empleado ";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int cajero = 0, domiciliario = 0, administrador = 0, hornero = 0, cocinero = 0;	
 			boolean esCajero = false, esDomiciliario = false, esAdministrador = false, esHornero = false, esCocinero = false;	
@@ -124,7 +129,6 @@ public class TipoEmpleadoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -144,7 +148,7 @@ public class TipoEmpleadoDAO {
  * a  insertar.
  * @return Se retorna un valor con idtipoempleado asignado por el sistema.
  */
-	public static int insertarTipoEmpleado(TipoEmpleado tipoEmpleado)
+	public static int insertarTipoEmpleado(TipoEmpleado tipoEmpleado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idTipoEmpleadoIns = 0;
@@ -175,12 +179,19 @@ public class TipoEmpleadoDAO {
 			}
 			Statement stm = con1.createStatement();
 			String insert = "insert into tipo_empleado (descripcion, es_cajero, es_domiciliario, es_administrador, es_hornero, es_cocinero) values ('" + tipoEmpleado.getDescriTipoEmpleado() + "' , " + cajero + " , " + domiciliario + " ," + administrador + ", " + hornero + " , " + cocinero + ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idTipoEmpleadoIns=rs.getInt(1);
-				logger.info("id impuesto insertada en bd " + idTipoEmpleadoIns);
+				if(auditoria)
+				{
+					logger.info("id impuesto insertada en bd " + idTipoEmpleadoIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -204,7 +215,7 @@ public class TipoEmpleadoDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarTipoEmpleado(int idTipoEmpleado)
+	public static boolean eliminarTipoEmpleado(int idTipoEmpleado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -214,7 +225,10 @@ public class TipoEmpleadoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from tipo_empleado where idtipoempleado = " + idTipoEmpleado; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -235,7 +249,7 @@ public class TipoEmpleadoDAO {
 	}
 	
 	
-	public static boolean editarTipoEmpleado(TipoEmpleado tipoEmpleadoEdi)
+	public static boolean editarTipoEmpleado(TipoEmpleado tipoEmpleadoEdi, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = false;
@@ -266,7 +280,10 @@ public class TipoEmpleadoDAO {
 			}
 			Statement stm = con1.createStatement();
 			String update = "update tipo_empleado set descripcion = '" + tipoEmpleadoEdi.getDescriTipoEmpleado()  +"' , es_cajero = "+ cajero +" , es_domiciliario ="+ domiciliario+" , es_administrador= "+ administrador +", es_hornero = "+ hornero+", es_cocinero=" + cocinero + " where idtipoempleado = " + tipoEmpleadoEdi.getIdTipoEmpleado();
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			respuesta = true;
 			stm.close();

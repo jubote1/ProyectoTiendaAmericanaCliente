@@ -69,6 +69,8 @@ public class VentProEleccionForzada extends JDialog {
 	int selMitad1 = 0;
 	int selMitad2 = 0;
 	boolean permiteDividir = false;
+	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private ParametrosProductoCtrl parProductoCtrl = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -102,7 +104,6 @@ public class VentProEleccionForzada extends JDialog {
 			public void windowClosing(WindowEvent arg0) {
 				//Trabajamos el evento de se cierre la ventan y no se haga la elección
 				//Con base en la pantalla de Toma pedidos del idDetallePedidoMaster realizamos la eliminación
-				PedidoCtrl pedCtrl = new PedidoCtrl();
 				pedCtrl.eliminarDetallePedido(VentPedTomarPedidos.idDetallePedidoMaster);
 				int idDetalleEliminar = VentPedTomarPedidos.idDetallePedidoMaster;
 				for(int j = 0; j < VentPedTomarPedidos.detallesPedido.size(); j++)
@@ -286,9 +287,7 @@ public class VentProEleccionForzada extends JDialog {
 		{
 			permiteDividir = false;
 		}
-		ParametrosProductoCtrl parProductoCtrl = new ParametrosProductoCtrl();
 		elecciones = parProductoCtrl.obtEleccionesForzadas(pregActual.getIdPregunta());
-		ParametrosProductoCtrl productoCtrl = new ParametrosProductoCtrl();
 		boolean esGaseosa = false;
 		//Adicionamos los botones con las preguntas forzadas
 		if(permiteDividir)
@@ -303,7 +302,7 @@ public class VentProEleccionForzada extends JDialog {
 				EleccionForzada eleccion = elecciones.get(j);
 				jButElecciones1 = new JButton("<html><center>" + eleccion.getDescripcion() + "</center></html>");
 				//En este punto nos traemos el producto para verfiicar si es un gaseosa
-				Producto prodPintar = productoCtrl.obtenerProducto(eleccion.getIdProducto());
+				Producto prodPintar = parProductoCtrl.obtenerProducto(eleccion.getIdProducto());
 				//Validamos si el producto es tipo gaseosa para prender el indicador
 				String command1 = Integer.toString(eleccion.getIdProducto());
 				String strCommand1 = Integer.toString(eleccion.getIdProducto()) + "-" + eleccion.getDescripcion();
@@ -588,7 +587,7 @@ public class VentProEleccionForzada extends JDialog {
 				EleccionForzada eleccion = elecciones.get(j);
 				jButElecciones1 = new JButton(eleccion.getDescripcion());
 				String command1 = Integer.toString(eleccion.getIdProducto());
-				Producto prodPintar = productoCtrl.obtenerProducto(eleccion.getIdProducto());
+				Producto prodPintar = parProductoCtrl.obtenerProducto(eleccion.getIdProducto());
 				String strCommand1 = Integer.toString(eleccion.getIdProducto()) + "-" + eleccion.getDescripcion();
 				boton1 = new EleccionForzadaBoton(jButElecciones1,preguntaActual+1,1,Integer.parseInt(command1),eleccion.getDescripcion() );
 				// Si es gaseosa entonces se adicionaran los iconos a los botones
@@ -756,7 +755,6 @@ public class VentProEleccionForzada extends JDialog {
 				if(colSelButton.equals(Color.YELLOW))
 				{
 					
-					PedidoCtrl pedCtrl = new PedidoCtrl();
 					precioProducto = elTemp.getPrecioProducto();
 					cantidad = elTemp.getCantidad();
 					idProducto = elTemp.getIdProducto();
@@ -825,9 +823,8 @@ public class VentProEleccionForzada extends JDialog {
 //							StringTokenizer StrTokenProducto = new StringTokenizer(txtJBut,"-");
 //							String strIdProducto = StrTokenProducto.nextToken();
 							int idProducto = Integer.parseInt(txtJBut);
-							ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
 							//Para obtener el precio deberíamos recorrer las elecciones de la pregunta y capturar el precio
-							double precioProducto = parProducto.obtenerPrecioEleccion(elecciones, idProducto);
+							double precioProducto = parProductoCtrl.obtenerPrecioEleccion(elecciones, idProducto);
 							double cantidad = 1/(double)permDividir;
 							EleccionForzadaTemporal eleTemp = new EleccionForzadaTemporal();
 							eleTemp.setBoton(jButTemp);
@@ -836,7 +833,7 @@ public class VentProEleccionForzada extends JDialog {
 							eleTemp.setIdProducto(idProducto);
 							eleTemp.setNumeroPregunta(preguntaActual-1);
 							eleTemp.setNumeroMitad(1);
-							String descProducto = parProducto.obtenerProducto(idProducto).getDescripcion();
+							String descProducto = parProductoCtrl.obtenerProducto(idProducto).getDescripcion();
 							eleTemp.setDescProducto(descProducto);
 							eleccionesTemporales.add(eleTemp);
 							
@@ -891,9 +888,8 @@ public class VentProEleccionForzada extends JDialog {
 //								StringTokenizer StrTokenProducto = new StringTokenizer(txtJBut,"-");
 //								String strIdProducto = StrTokenProducto.nextToken();
 								int idProducto = Integer.parseInt(txtJBut);
-								ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl();
 								//Para obtener el precio deberíamos recorrer las elecciones de la pregunta y capturar el precio
-								double precioProducto = parProducto.obtenerPrecioEleccion(elecciones, idProducto);
+								double precioProducto = parProductoCtrl.obtenerPrecioEleccion(elecciones, idProducto);
 								double cantidad = 1/(double)permDividir;
 								EleccionForzadaTemporal eleTemp = new EleccionForzadaTemporal();
 								eleTemp.setBoton(jButTemp);
@@ -902,7 +898,7 @@ public class VentProEleccionForzada extends JDialog {
 								eleTemp.setIdProducto(idProducto);
 								eleTemp.setNumeroPregunta(preguntaActual-1);
 								eleTemp.setNumeroMitad(2);
-								String descProducto = parProducto.obtenerProducto(idProducto).getDescripcion();
+								String descProducto = parProductoCtrl.obtenerProducto(idProducto).getDescripcion();
 								eleTemp.setDescProducto(descProducto);
 								eleccionesTemporales.add(eleTemp);
 								

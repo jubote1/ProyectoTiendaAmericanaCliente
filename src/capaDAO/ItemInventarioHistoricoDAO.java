@@ -13,7 +13,7 @@ import capaConexion.ConexionBaseDatos;
 
 public class ItemInventarioHistoricoDAO {
 	
-	public static void realizarInventarioHistorico(String fecha)
+	public static void realizarInventarioHistorico(String fecha, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -24,7 +24,10 @@ public class ItemInventarioHistoricoDAO {
 			Statement stm = con1.createStatement();
 			Statement stm2 = con1.createStatement();
 			String consulta = "select iditem,cantidad from item_inventario";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idItem = 0;
 			double cantidad;
@@ -40,7 +43,6 @@ public class ItemInventarioHistoricoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();

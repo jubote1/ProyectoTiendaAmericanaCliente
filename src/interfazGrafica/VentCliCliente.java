@@ -2,6 +2,7 @@ package interfazGrafica;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.FocusTraversalPolicy;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
@@ -63,7 +64,7 @@ public class VentCliCliente extends JFrame {
 	private JTextArea textObservacion;
 	private VentCliBuscarCliente ventBusCliente;
 	private int  idCliente = 0;
-
+	private ClienteCtrl cliCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -165,7 +166,7 @@ public class VentCliCliente extends JFrame {
 		textTelefono.setBounds(167, 33, 205, 20);
 		panelInfoBasica.add(textTelefono);
 		textTelefono.setColumns(10);
-		   
+		textTelefono.setNextFocusableComponent(textNombre);
 		comboNomenclatura = new JComboBox();
 		comboNomenclatura.setBounds(26, 185, 90, 20);
 		panelInfoBasica.add(comboNomenclatura);
@@ -214,6 +215,8 @@ public class VentCliCliente extends JFrame {
 		textObservacion = new JTextArea();
 		textObservacion.setLineWrap(true);
 		textObservacion.setBounds(167, 294, 264, 57);
+		//Ordenamos mediante setFocusTraversalPolicy para definir el focus del componente
+	
 		panelInfoBasica.add(textObservacion);
 		
 		btnSeleccionar = new JButton("Seleccionar");
@@ -245,11 +248,14 @@ public class VentCliCliente extends JFrame {
 				String num3 = textNum3.getText();
 				String zona = textZona.getText(); 
 				String observacion = textObservacion.getText();
-				observacion = observacion.substring(0, 200);
+				if(observacion.length() > 200)
+				{
+					observacion = observacion.substring(0, 200);
+				}
 				int idMunicipio = ((Municipio)comboMunicipio.getSelectedItem()).getIdmunicipio();
 				int idNomemclatura = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getIdnomemclatura();
 				Cliente crearCliente = new Cliente(0, telefono, nombre, apellido, compania, "", "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "");
-				ClienteCtrl clienteCtrl = new ClienteCtrl();
+				ClienteCtrl clienteCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
 				int idCliIns = clienteCtrl.insertarCliente(crearCliente);
 				if(idCliIns > 0)
 				{
@@ -298,9 +304,30 @@ public class VentCliCliente extends JFrame {
 					JOptionPane.showMessageDialog(null, "El campo telefono es númerico de 10 posiciones " , "Error en campo teléfono", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				ventBusCliente = new VentCliBuscarCliente(telefono);
-				ventBusCliente.setVisible(true);
-				dispose();
+				boolean exisCliente = cliCtrl.existeCliente(telefono);
+				if(exisCliente)
+				{
+					ventBusCliente = new VentCliBuscarCliente(telefono);
+					ventBusCliente.setVisible(true);
+					dispose();
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "El cliente con teléfono " + telefono + " no existe, debe ingresarlo" , "Cliente no existe", JOptionPane.INFORMATION_MESSAGE);
+					textIdCliente.setText("");
+					textTelefono.setText("");
+					textNombre.setText("");
+					textApellido.setText("");
+					textCompania.setText("");
+					textNumNomen1.setText("");
+					textNumNomen2.setText("");
+					textNum3.setText("");
+					textZona.setText("");
+					textObservacion.setText("");
+					comboMunicipio.setSelectedIndex(0);
+					comboNomenclatura.setSelectedIndex(0);
+					lblIdCliente.setText("");
+				}
 			}
 		});
 		initComboBoxMunicipios();
@@ -316,7 +343,6 @@ public class VentCliCliente extends JFrame {
 		else
 		{
 			btnCrearCliente.setEnabled(false);
-			ClienteCtrl cliCtrl = new ClienteCtrl();
 			Cliente clienteConsultado =  cliCtrl.obtenerClientePorId(idCliente);
 			textIdCliente.setText(Integer.toString(clienteConsultado.getIdcliente()));
 			textTelefono.setText(clienteConsultado.getTelefono());

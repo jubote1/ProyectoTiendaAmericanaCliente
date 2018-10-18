@@ -24,7 +24,7 @@ public class ProductoDAO {
  * Método que se encarga de retonar todos los productos parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerProducto()
+	public static ArrayList obtenerProducto(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -35,7 +35,10 @@ public class ProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from producto";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -54,7 +57,6 @@ public class ProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -71,7 +73,7 @@ public class ProductoDAO {
 	 * @param idProducto Se recibe como parámetro el idProducto al cual se le desea consultar el precio de pila
 	 * @return se retorna un valor double con precio.
 	 */
-	public static double obtenerPrecioPilaProducto(int idProducto)
+	public static double obtenerPrecioPilaProducto(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -81,7 +83,10 @@ public class ProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select precio1 from producto where idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				
@@ -93,7 +98,6 @@ public class ProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -105,7 +109,7 @@ public class ProductoDAO {
 		
 	}
 	
-	public static double obtenerPrecioProducto(int idProducto, String precio)
+	public static double obtenerPrecioProducto(int idProducto, String precio, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -115,7 +119,10 @@ public class ProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select "+ precio +" from producto where idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				
@@ -127,7 +134,6 @@ public class ProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -139,7 +145,7 @@ public class ProductoDAO {
 		
 	}
 	
-	public static double obtenerPrecioProducto(String precio, int idProducto)
+	public static double obtenerPrecioProducto(String precio, int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -150,7 +156,10 @@ public class ProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			consulta = "select " + precio + " from producto where idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			while(rs.next()){
 				
@@ -162,7 +171,6 @@ public class ProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString() + consulta);
 			try
 			{
 				con1.close();
@@ -174,7 +182,7 @@ public class ProductoDAO {
 		
 	}
 	
-	public static Producto obtenerProducto(int idProducto)
+	public static Producto obtenerProducto(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -185,7 +193,10 @@ public class ProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from producto where idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -249,7 +260,6 @@ public class ProductoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -261,12 +271,109 @@ public class ProductoDAO {
 		
 	}
 	
+	
+	
+	/**
+	 * Método que se encarga de retornar todos los productos parametrizados en el sistema,y con esto trabajar en pantalla
+	 * @param auditoria Se recibe parámetro de auditoría para definir si se guarda o no trazas
+	 * @return Se retorna un ArrayList con el listado de productos que se tienen parametrizados en el sistema.
+	 */
+	public static ArrayList<Producto> obtenerProductos(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<Producto> productos = new ArrayList();
+		Producto producto = new Producto();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from producto";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			int idProducto = 0;
+			String descripcion = "";
+			String impresion = "";
+			String textoBoton = "";
+			String colorBoton = "";
+			int idPreguntaForzada1 = 0;
+			int idPreguntaForzada2 = 0;
+			int idPreguntaForzada3 = 0;
+			int idPreguntaForzada4 = 0;
+			int idPreguntaForzada5 = 0;
+			Double precio1,precio2,precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10;
+			String impresionComanda = "";
+			String tipoProducto= "";
+			String tamano = "";
+			int modificadorCon;
+			int modificadorSin;
+			byte[] imagen = null;
+			while(rs.next()){
+				idProducto = rs.getInt("idproducto");
+				descripcion = rs.getString("descripcion");
+				impresion = rs.getString("impresion");
+				textoBoton = rs.getString("textoboton");
+				colorBoton = rs.getString("colorboton");
+				idPreguntaForzada1 = rs.getInt("idpreguntaforzada1");
+				idPreguntaForzada2 = rs.getInt("idpreguntaforzada2");
+				idPreguntaForzada3 = rs.getInt("idpreguntaforzada3");
+				idPreguntaForzada4 = rs.getInt("idpreguntaforzada4");
+				idPreguntaForzada5 = rs.getInt("idpreguntaforzada5");
+				precio1 = rs.getDouble("precio1");
+				precio2 = rs.getDouble("precio2");
+				precio3 = rs.getDouble("precio3");
+				precio4 = rs.getDouble("precio4");
+				precio5 = rs.getDouble("precio5");
+				precio6 = rs.getDouble("precio6");
+				precio7 = rs.getDouble("precio7");
+				precio8 = rs.getDouble("precio8");
+				precio9 = rs.getDouble("precio9");
+				precio10 = rs.getDouble("precio10");
+				impresionComanda = rs.getString("impresion_comanda");
+				tipoProducto = rs.getString("tipo_producto");
+				tamano = rs.getString("tamano");
+				modificadorCon = rs.getInt("modificadorcon");
+				modificadorSin = rs.getInt("modificadorsin");
+				try
+				{
+					imagen = rs.getBytes("imagen");
+				}catch(Exception e)
+				{
+					imagen = null;
+				}
+				producto = new Producto(idProducto, descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2,  idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2,precio3,precio4,precio5,precio6,precio7,precio8,precio9,precio10, impresionComanda, tipoProducto, tamano ); 
+				producto.setImagen(imagen);
+				producto.setModificadorSin(modificadorSin);
+				producto.setModificadorCon(modificadorCon);
+				productos.add(producto);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(productos);
+		
+	}
+	
 	/**
 	 * Método de la capa DAO que se encarga de insertar una entidad producto.
 	 * @param impuesto Recibe un objeto de tipo producto del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el idproducto creado en la base de datos
 	 */
-	public static int insertarProducto(Producto producto)
+	public static int insertarProducto(Producto producto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idProductoIns = 0;
@@ -277,12 +384,19 @@ public class ProductoDAO {
 			Statement stm = con1.createStatement();
 			String insert = "insert into producto (descripcion, impresion, textoboton, colorboton,idpreguntaforzada1,idpreguntaforzada2, idpreguntaforzada3,idpreguntaforzada4, idpreguntaforzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9 , precio10, impresion_comanda, tipo_producto, tamano, imagen) values ('" + producto.getDescripcion() + "', '" + producto.getImpresion() + "', '" + producto.getTextoBoton() + "', '" + producto.getColorBoton() + "' , " + producto.getIdPreguntaForzada1() + " , " + producto.getIdPreguntaForzada2() + " , " + producto.getIdPreguntaForzada3() + " , " + producto.getIdPreguntaForzada4() + " , " + producto.getIdPreguntaForzada5() 
 			+ " , " + producto.getPrecio1() + " , " + producto.getPrecio2() + " , " + producto.getPrecio3() + " , " + producto.getPrecio4() + " , " + producto.getPrecio5() + " , " + producto.getPrecio6() + " , " + producto.getPrecio7() + " , "  + producto.getPrecio8() + " , " + producto.getPrecio9() + " , " + producto.getPrecio10() + " , '" + producto.getImpresionComanda() + "' , '" + producto.getTipoProducto() + "' , '" + producto.getTamano() + "' , " + producto.getImagen() +" )"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idProductoIns=rs.getInt(1);
-				logger.info("id producto insertada en bd " + idProductoIns);
+				if(auditoria)
+				{
+					logger.info("id producto insertada en bd " + idProductoIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -306,7 +420,7 @@ public class ProductoDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarProducto(int idProducto)
+	public static boolean eliminarProducto(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -316,7 +430,10 @@ public class ProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from producto where idproducto = " + idProducto; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -341,7 +458,7 @@ public class ProductoDAO {
 	 * @param producto Recibe como parámetro un objeto de la entidad producto con base en el cual se realiza la modificación
 	 * @return Se retorna un valor booleano indicando si el proceso fue o no satisfactorio
 	 */
-	public static boolean EditarProducto(Producto producto)
+	public static boolean EditarProducto(Producto producto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -357,7 +474,10 @@ public class ProductoDAO {
 			PreparedStatement actualiz = null;
 			actualiz = con1.prepareStatement(update);
 			actualiz.setBytes(1, producto.getImagen());
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			actualiz.executeUpdate();
 			
 			stm.close();
@@ -376,7 +496,7 @@ public class ProductoDAO {
 		return(true);
 	}
 	
-	public static boolean EditarCantProductoCon(int idProducto, int cantidad)
+	public static boolean EditarCantProductoCon(int idProducto, int cantidad, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -386,7 +506,10 @@ public class ProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update producto set modificadorcon = " + cantidad + " where idproducto =" + idProducto ;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();
@@ -405,7 +528,7 @@ public class ProductoDAO {
 		return(true);
 	}
 	
-	public static boolean EditarCantProductoSin(int idProducto, int cantidad)
+	public static boolean EditarCantProductoSin(int idProducto, int cantidad, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -415,7 +538,10 @@ public class ProductoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update producto set modificadorsin = " + cantidad + " where idproducto =" + idProducto ;
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();

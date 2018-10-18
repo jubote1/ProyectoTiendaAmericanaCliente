@@ -27,7 +27,7 @@ public class EstadoPosteriorDAO {
  * Método que se encarga de retonar todos los productos parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList<EstadoPosterior> obtenerEstadosPos(int idEstado)
+	public static ArrayList<EstadoPosterior> obtenerEstadosPos(int idEstado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -38,7 +38,10 @@ public class EstadoPosteriorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta =  "select a.idestado, a.idestado_posterior, b.descripcion descripcion, b.impresion from estado_posterior a , estado b where a.idestado =" + idEstado + " and a.idestado_posterior = b.idestado";;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idEstadoPosterior;
 			int intImpresion;
@@ -61,7 +64,6 @@ public class EstadoPosteriorDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -78,7 +80,7 @@ public class EstadoPosteriorDAO {
 	
 	
 	
-	public static boolean insertarEstado(EstadoPosterior estadoPos)
+	public static boolean insertarEstado(EstadoPosterior estadoPos, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -87,7 +89,10 @@ public class EstadoPosteriorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into estado_posterior (idestado, idestado_posterior) values(" + estadoPos.getIdEstado() + " , " + estadoPos.getIdEstadoPosterior() + ")";
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			stm.close();
 			con1.close();
@@ -106,7 +111,7 @@ public class EstadoPosteriorDAO {
 	}
 	
 	
-	public static boolean eliminarEstadoPosterior(EstadoPosterior estadoPos)
+	public static boolean eliminarEstadoPosterior(EstadoPosterior estadoPos, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -116,7 +121,10 @@ public class EstadoPosteriorDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from estado_posterior where idestado = " + estadoPos.getIdEstado() + " and idestado_posterior = " + estadoPos.getIdEstadoPosterior(); 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();

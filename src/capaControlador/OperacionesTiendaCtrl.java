@@ -14,17 +14,24 @@ import capaModelo.Tienda;
 
 public class OperacionesTiendaCtrl {
 	
+	private boolean auditoria;
+	
+	public OperacionesTiendaCtrl(boolean auditoria)
+	{
+		this.auditoria = auditoria;
+	}
+	
 //APERTURA DEL DÍA
 	public boolean AvanzarFechaSistemaApertura(String fecha)
 	{
-		boolean respuesta = TiendaDAO.ActualizarFechaSistemaApertura(fecha);
+		boolean respuesta = TiendaDAO.ActualizarFechaSistemaApertura(fecha, auditoria);
 		return(respuesta);
 	}
 
 //VALIDAR SI EL DÍA ESTA ABIERTO O HAY QUE ABRIRLO
 public String validarEstadoFechaSistema()
 {
-	PedidoCtrl pedCtrl = new PedidoCtrl();
+	PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
 	FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
 	String fechaPOS = fechasSistema.getFechaApertura();
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -78,7 +85,7 @@ public boolean realizarAperturaDia(String fecha)
 //APERTURA DEL DÍA
 public void realizarInventarioHistorico(String fecha)
 {
-	ItemInventarioHistoricoDAO.realizarInventarioHistorico(fecha);
+	ItemInventarioHistoricoDAO.realizarInventarioHistorico(fecha, auditoria);
 }
 
 //FINALIZAR EL DÍA
@@ -92,12 +99,12 @@ public void realizarInventarioHistorico(String fecha)
 	public String validacionesPreCierre(String fecha)
 	{
 		String respuesta = "";
-		boolean respValEstPed = PedidoDAO.validarEstadosFinalesPedido(fecha);
+		boolean respValEstPed = PedidoDAO.validarEstadosFinalesPedido(fecha, auditoria);
 		if (respValEstPed)
 		{
 			respuesta = respuesta + "RESULTADO NO EXITOSO DEL PROCESO  Se tienen pedidos con estados no finales.";
 		}
-		boolean respInvVarianza = ModificadorInventarioDAO.seIngresoVarianza(fecha);
+		boolean respInvVarianza = ModificadorInventarioDAO.seIngresoVarianza(fecha, auditoria);
 		if (!respInvVarianza)
 		{
 			respuesta = respuesta + "NO SE HA INGRESADO LA VARIANZA para el día en cuestión.";
@@ -133,29 +140,29 @@ public void realizarInventarioHistorico(String fecha)
 //FINALIZAR EL DÍA
 	public boolean AvanzarFechaUltimoCierre()
 	{
-		boolean respuesta = TiendaDAO.actualizarFechaUltimoCierre();
+		boolean respuesta = TiendaDAO.actualizarFechaUltimoCierre(auditoria);
 		return(respuesta);
 	}
 
 	public Tienda obtenerTienda()
 	{
-		Tienda tienda = TiendaDAO.obtenerTienda();
+		Tienda tienda = TiendaDAO.obtenerTienda(auditoria);
 		return(tienda);
 	}
 	
 	public boolean actualizarTienda(Tienda tienda)
 	{
-		boolean respuesta = TiendaDAO.actualizarTienda(tienda);
+		boolean respuesta = TiendaDAO.actualizarTienda(tienda, auditoria);
 		return(respuesta);
 	}
 	
 	public String actualizarNumResolucion(int numInicial, int numFinal)
 	{
 		//Validar si no hay numeración de facturas en el rango dado para la facturación
-		String respuesta = TiendaDAO.verificarNumResolucion( numInicial, numFinal);
+		String respuesta = TiendaDAO.verificarNumResolucion( numInicial, numFinal, auditoria);
 		if(respuesta.equals(new String("OK")))
 		{
-			respuesta = TiendaDAO.actualizarResolucionTienda(numInicial, numFinal);
+			respuesta = TiendaDAO.actualizarResolucionTienda(numInicial, numFinal, auditoria);
 		}
 		return(respuesta);
 	}

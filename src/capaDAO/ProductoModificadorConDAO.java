@@ -23,7 +23,7 @@ import capaConexion.ConexionBaseDatos;
 public class ProductoModificadorConDAO {
 	
 	
-	public static ArrayList obtenerProdModificadorCon(int idProducto)
+	public static ArrayList obtenerProdModificadorCon(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -34,7 +34,10 @@ public class ProductoModificadorConDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idproducto, b.descripcion, a.idproductocon, c.descripcion from producto_modificador_con a, producto b, producto c where a.idproducto = b.idproducto and a.idproductocon = c.idproducto and a.idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -53,7 +56,6 @@ public class ProductoModificadorConDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -66,7 +68,7 @@ public class ProductoModificadorConDAO {
 	}
 	
 	
-	public static ArrayList<ProductoModificadorCon> obtenerProdModificadoresCon(int idProducto)
+	public static ArrayList<ProductoModificadorCon> obtenerProdModificadoresCon(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -77,7 +79,10 @@ public class ProductoModificadorConDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idproducto,  a.idproductocon, c.descripcion from producto_modificador_con a ,producto c where a.idproductocon = c.idproducto and a.idproducto = " + idProducto;
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idProductoCon;
 			String descProductoCon;
@@ -107,7 +112,7 @@ public class ProductoModificadorConDAO {
 	}
 	
 
-	public static ArrayList<Producto> obtenerProdModificadorConFalta(int idProd)
+	public static ArrayList<Producto> obtenerProdModificadorConFalta(int idProd, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -118,7 +123,10 @@ public class ProductoModificadorConDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.idproducto, a.descripcion from producto a where tipo_producto = 'MC' and a.idproducto not in (select idproductocon from producto_modificador_con b where b.idproducto = "+ idProd +")";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			int idProducto;
 			String descripcion;
@@ -134,7 +142,6 @@ public class ProductoModificadorConDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -148,7 +155,7 @@ public class ProductoModificadorConDAO {
 	
 
 
-	public static void insertarProdModificadoCon(ProductoModificadorCon prodMod)
+	public static void insertarProdModificadoCon(ProductoModificadorCon prodMod, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -157,7 +164,10 @@ public class ProductoModificadorConDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into producto_modificador_con (idproducto, idproductocon) values (" + prodMod.getIdProducto() + "," + prodMod.getIdProductoCon() +")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			stm.close();
 			con1.close();
@@ -177,7 +187,7 @@ public class ProductoModificadorConDAO {
 	
 	
 
-	public static boolean eliminarProdModifidadorCon(ProductoModificadorCon prodConEli)
+	public static boolean eliminarProdModifidadorCon(ProductoModificadorCon prodConEli, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -187,7 +197,10 @@ public class ProductoModificadorConDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from producto_modificador_con where idproducto = " + prodConEli.getIdProducto() + " and idproductocon=" + prodConEli.getIdProductoCon(); 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -207,7 +220,7 @@ public class ProductoModificadorConDAO {
 		return(respuesta);
 	}
 	
-	public static boolean tieneModificadorCon(int idProducto)
+	public static boolean tieneModificadorCon(int idProducto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -217,7 +230,10 @@ public class ProductoModificadorConDAO {
 		{
 			Statement stm = con1.createStatement();
 			String select = "select * from producto_modificador_con where idproducto =" + idProducto ;
-			logger.info(select);
+			if(auditoria)
+			{
+				logger.info(select);
+			}
 			ResultSet rs =stm.executeQuery(select);
 			while(rs.next())
 			{
