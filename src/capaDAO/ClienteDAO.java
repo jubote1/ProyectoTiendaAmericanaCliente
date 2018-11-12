@@ -236,7 +236,7 @@ import capaConexion.ConexionBaseDatos;
 				Statement stm = con1.createStatement();
 				if(clienteAct.getIdcliente() > 0)
 				{
-					String update = "update cliente set nombre = '" + clienteAct.getNombres() + "' , direccion = '" + clienteAct.getDireccion() + "' , idmunicipio = " + clienteAct.getIdMunicipio() + " , latitud = " + clienteAct.getLatitud() + " , longitud = " + clienteAct.getLontitud() + " , zona = '" + clienteAct.getZonaDireccion() + "' , observacion = '" + clienteAct.getObservacion() +"', apellido = '" + clienteAct.getApellidos() + "' , nombrecompania = '" + clienteAct.getNombreCompania() + "' , idnomenclatura = " + clienteAct.getIdnomenclatura() + " , num_nomencla1 = '" + clienteAct.getNumNomenclatura() + "' , num_nomencla2 = '" + clienteAct.getNumNomenclatura2() + "' , num3 =  '" + clienteAct.getNum3()  + "'  where idcliente = " + clienteAct.getIdcliente(); 
+					String update = "update cliente set telefono = '"+clienteAct.getTelefono()+"' , nombre = '" + clienteAct.getNombres() + "' , direccion = '" + clienteAct.getDireccion() + "' , idmunicipio = " + clienteAct.getIdMunicipio() + " , latitud = " + clienteAct.getLatitud() + " , longitud = " + clienteAct.getLontitud() + " , zona = '" + clienteAct.getZonaDireccion() + "' , observacion = '" + clienteAct.getObservacion() +"', apellido = '" + clienteAct.getApellidos() + "' , nombrecompania = '" + clienteAct.getNombreCompania() + "' , idnomenclatura = " + clienteAct.getIdnomenclatura() + " , num_nomencla1 = '" + clienteAct.getNumNomenclatura() + "' , num_nomencla2 = '" + clienteAct.getNumNomenclatura2() + "' , num3 =  '" + clienteAct.getNum3()  + "'  where idcliente = " + clienteAct.getIdcliente(); 
 					if(auditoria)
 					{
 						logger.info(update);
@@ -427,26 +427,69 @@ import capaConexion.ConexionBaseDatos;
 		 * @param telefono parámetro con base en el cual se sabe si un cliente existe o no.
 		 * @return Se retorna un valor booleano que indica si el cliente existe o no.
 		 */
-		public static boolean  existeCliente(String telefono, boolean auditoria)
+		//Cambiaremos el método existe cliente, para si
+		// el valor es 0 el cliente no siste
+		// el valor es 1 el cliente si existe y tiene 1 solo asociado
+		// el valor es 2 el cliente si existe y tiene varias direcciones
+		public static ArrayList<Cliente>  existeCliente(String telefono, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
-			ArrayList<Cliente> clientes = new ArrayList();
 			ConexionBaseDatos con = new ConexionBaseDatos();
 			Connection con1 = con.obtenerConexionBDLocal();
-			boolean respuesta = false;
+			ArrayList<Cliente> clientes = new ArrayList();
+			Cliente cliente = new Cliente();
+			//Iniciamos asumiendo que no hay ninguno
 			try
 			{
 				Statement stm = con1.createStatement();
-				String consulta = "select idcliente from cliente  where telefono = '"+ telefono + "'";
+				String consulta = "select a.idcliente, b.nombretienda nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, a.idmunicipio from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.telefono = '" + telefono +"'";
 				if(auditoria)
 				{
 					logger.info(consulta);
 				}
 				ResultSet rs = stm.executeQuery(consulta);
 				int idcliente;
+				String nombreTienda;
+				String nombreCliente;
+				String apellido;
+				String nombreCompania;
+				String direccion;
+				String zona;
+				String observacion;
+				String municipio;
+				int idMunicipio;
+				float latitud;
+				float longitud;
+				int idTienda;
+				int memcode;
+				int idnomenclatura;
+				String numNomenclatura1;
+				String numNomenclatura2;
+				String num3;
+				String nomenclatura;
 				while(rs.next()){
-					respuesta = true;
-					break;
+					idcliente = rs.getInt("idcliente");
+					nombreTienda = rs.getString("nombreTienda");
+					nombreCliente = rs.getString("nombre");
+					apellido = rs.getString("apellido");
+					nombreCompania = rs.getString("nombrecompania");
+					direccion = rs.getString("direccion");
+					zona = rs.getString("zona");
+					observacion = rs.getString("observacion");
+					telefono = rs.getString("telefono");
+					municipio = rs.getString("nombremunicipio");
+					idMunicipio = rs.getInt("idmunicipio");
+					latitud = rs.getFloat("latitud");
+					longitud = rs.getFloat("longitud");
+					idTienda = rs.getInt("idtienda");
+					memcode = rs.getInt("memcode");
+					idnomenclatura = rs.getInt("idnomenclatura");
+					numNomenclatura1 = rs.getString("num_nomencla1");
+					numNomenclatura2 = rs.getString("num_nomencla2");
+					num3 = rs.getString("num3");
+					nomenclatura = rs.getString("nomenclatura");
+					cliente = new Cliente( idcliente, telefono, nombreCliente,apellido, nombreCompania, direccion,municipio, idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda, memcode, idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura);
+					clientes.add(cliente);
 				}
 				rs.close();
 				stm.close();
@@ -460,7 +503,7 @@ import capaConexion.ConexionBaseDatos;
 				{
 				}
 			}
-			return(respuesta);
+			return(clientes);
 			
 		}
 

@@ -13,6 +13,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.FlowLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
@@ -39,17 +40,22 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import JTable.CellRenderTransaccional;
 import capaControlador.EmpleadoCtrl;
-import capaControlador.PedidoCtrl;
 import capaControlador.ReportesCtrl;
+import capaControlador.PedidoCtrl;
 import capaModelo.Cliente;
 import capaModelo.FechaSistema;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
-import renderTable.CellRenderTransaccional;
+import capaModelo.Usuario;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -62,8 +68,23 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	private static int idUsuario = 0;
 	Thread h1;
 	private JTextField txtFechaSistema;
+	JLabel lblTipoFiltro;
+	JLabel lblTipoEmpleado;
+	JLabel lblEmpleado;
 	private String fechaSis;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
+	ArrayList<Usuario> domiciliarios;
+	ArrayList<JButton> botDom  = new ArrayList();
+	//Fijamos el tipo de empleado
+	int idTipoEmpleado;
+	//Prendemos el indicador si es un domiciliario
+	boolean esDomiciliario;
+	//Para esta pantalla es vital saber que usuario esta logueado en el sistema
+	Usuario usuarioPantalla;
+	//Variable booleana para saber si se está consultando un domiciliario
+	boolean consDomi = false;
+	int idDomiCon = 0;
 	/**
 	 * Launch the application.
 	 */
@@ -80,23 +101,41 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
+
+	//Creamos constructor principal del JFrame de Comanda pedidos
 	public VentPedComandaPedidos() {
+		//Cuadramos la presentación del JFrame
 		setTitle("COMANDA PEDIDOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 1014, 700);
-		//setUndecorated(true);
-		//getRootPane().setWindowDecorationStyle(JRootPane.NONE);
+		setUndecorated(true);
+		getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 		this.setExtendedState(MAXIMIZED_BOTH);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		lblTipoFiltro = new JLabel("");
+		lblTipoEmpleado = new JLabel("");
+		lblEmpleado = new JLabel("");
+		//Igualamos el usuario del sistema
+		usuarioPantalla = empCtrl.obtenerEmpleado(Sesion.getIdUsuario());
+		//Obtenemos el tipo de empleado
+		idTipoEmpleado = usuarioPantalla.getidTipoEmpleado();
+		//Deberemos si el tipo de empleado es domicilio  y en caso de que lo sea
+		esDomiciliario = empCtrl.esDomicilario(idTipoEmpleado);
+		//En caso de que sea domiciliario o este consultando domiciliario fijamos el idDomiciliario
+		if(esDomiciliario)
+		{
+			idDomiCon = Sesion.getIdUsuario();
+			consDomi = true;
+		}
+		lblTipoFiltro.setText("EMPLEADO");
+		lblEmpleado.setText(usuarioPantalla.getNombreLargo());
+		//En caso de que sea domiciliario lo debemos de tener en cuenta para que muestre su vista
 		
 		JPanel panelFiltrosPedidos = new JPanel();
-		panelFiltrosPedidos.setBounds(831, 11, 167, 295);
+		panelFiltrosPedidos.setBounds(831, 11, 167, 189);
 		contentPane.add(panelFiltrosPedidos);
 		panelFiltrosPedidos.setLayout(new GridLayout(4, 1, 0, 0));
 		
@@ -112,55 +151,91 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		
 		panelFiltrosPedidos.add(btnParaLlevar);
 		
-		JButton btnTotal = new JButton("Total");
+		JButton btnTotal = new JButton("Todos los Pedidos");
 		btnTotal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				idTipoPedido = 0;
+				consDomi = false;
 				pintarPedidos();
 				btnTotal.setBackground(Color.YELLOW);
-				btnParaLlevar.setBackground(new Color(240,240,240));
-				btnDomicilio.setBackground(new Color(240,240,240));
-				btnPuntoDeVenta.setBackground(new Color(240,240,240));
+				btnParaLlevar.setBackground(null);
+				btnDomicilio.setBackground(null);
+				btnPuntoDeVenta.setBackground(null);
+				//Quitamos el color al filtro por domiciliario
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
+				lblTipoFiltro.setText(((JButton)arg0.getSource()).getText());
+				lblEmpleado.setText("");
 			}
 		});
-		btnTotal.setBackground(Color.YELLOW);
+		//btnTotal.setBackground(Color.YELLOW);
 		panelFiltrosPedidos.add(btnTotal);
 		
 		btnParaLlevar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				idTipoPedido = 3;
+				consDomi = false;
 				pintarPedidos();
-				btnTotal.setBackground(new Color(240,240,240));
+				btnTotal.setBackground(null);
 				btnParaLlevar.setBackground(Color.YELLOW);
-				btnDomicilio.setBackground(new Color(240,240,240));
-				btnPuntoDeVenta.setBackground(new Color(240,240,240));
+				btnDomicilio.setBackground(null);
+				btnPuntoDeVenta.setBackground(null);
+				//Quitamos el color al filtro por domiciliario
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
+				lblTipoFiltro.setText(((JButton)e.getSource()).getText());
+				lblEmpleado.setText("");
 			}
 		});
 		
 		btnDomicilio.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				idTipoPedido = 1;
+				consDomi = false;
 				pintarPedidos();
-				btnTotal.setBackground(new Color(240,240,240));
-				btnParaLlevar.setBackground(new Color(240,240,240));
+				btnTotal.setBackground(null);
+				btnParaLlevar.setBackground(null);
 				btnDomicilio.setBackground(Color.YELLOW);
-				btnPuntoDeVenta.setBackground(new Color(240,240,240));
+				btnPuntoDeVenta.setBackground(null);
+				//Quitamos el color al filtro por domiciliario
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
+				lblTipoFiltro.setText(((JButton)e.getSource()).getText());
+				lblEmpleado.setText("");
 			}
 		});
 		
 		btnPuntoDeVenta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				idTipoPedido = 2;
+				consDomi = false;
 				pintarPedidos();
-				btnTotal.setBackground(new Color(240,240,240));
-				btnParaLlevar.setBackground(new Color(240,240,240));
-				btnDomicilio.setBackground(new Color(240,240,240));
+				btnTotal.setBackground(null);
+				btnParaLlevar.setBackground(null);
+				btnDomicilio.setBackground(null);
 				btnPuntoDeVenta.setBackground(Color.YELLOW);
+				//Quitamos el color al filtro por domiciliario
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
+				lblTipoFiltro.setText(((JButton)e.getSource()).getText());
+				lblEmpleado.setText("");
 			}
 		});
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 11, 811, 579);
+		scrollPane.setBounds(10, 50, 811, 540);
 		contentPane.add(scrollPane);
 		
 		tblMaestroPedidos =   new JTable();
@@ -169,6 +244,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		//Aumentamos el tamaño de las celdas para que quede más amplia la información
 		tblMaestroPedidos.setRowHeight(25);
 		tblMaestroPedidos.setEnabled(true);
+		//Se realiza el pintar pedidos con lo que se tiene inicialmente
 		pintarPedidos();
 		scrollPane.setViewportView(tblMaestroPedidos);
 		
@@ -176,12 +252,11 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		//Manejamos el evento de cuando damos doble clic sobre el pedido para avanzar de estado o cuando damos 3 veces para retroceder de estado
 		tblMaestroPedidos.addMouseListener(new java.awt.event.MouseAdapter() {
 		      public void mouseClicked(java.awt.event.MouseEvent e) {
+		    	  Window ventanaPadre = SwingUtilities.getWindowAncestor(
+	                        (Component) e.getSource());
 		      if(e.getClickCount()==2){
-		    	  avanzarEstado();
+		    	  avanzarEstado((JFrame) ventanaPadre);
 		        }
-		      if(e.getClickCount()==3){
-		    	  devolverEstado();
-		       }
 		 }
 		});
 		
@@ -189,7 +264,9 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		btnAvanzarEstado.setBounds(467, 602, 180, 44);
 		btnAvanzarEstado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				avanzarEstado();
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
+				avanzarEstado((JFrame) ventanaPadre);
 			}
 		});
 		contentPane.add(btnAvanzarEstado);
@@ -198,8 +275,9 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		btnRetrocederEstado.setBounds(277, 601, 180, 46);
 		btnRetrocederEstado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
-				devolverEstado();
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
+				devolverEstado((JFrame) ventanaPadre);
 				
 			}
 		});
@@ -229,11 +307,75 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		JButton btnVerDomicilios = new JButton("<html><center>Ver Ubicaci\u00F3n Domicilios</center></html>");
 		btnVerDomicilios.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-			   
+				final WebEngine webEngine = new WebEngine(getClass().getResource("googlemap.html").toString());
+				final WebView webView = new WebView();
+				
 			}
 		});
 		btnVerDomicilios.setBounds(657, 601, 164, 44);
 		contentPane.add(btnVerDomicilios);
+		
+		JPanel panelFiltroDom = new JPanel();
+		panelFiltroDom.setBounds(831, 211, 167, 379);
+		contentPane.add(panelFiltroDom);
+		panelFiltroDom.setLayout(new GridLayout(10, 0, 0, 0));
+		
+		JButton btnQuitarFiltros = new JButton("Quitar Filtros");
+		btnQuitarFiltros.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//En este método realizaremos el reinicio de los filtros del sistema,cuando se inicia la pantalla que es por el usuario logueado
+				//Quitamos posible color Amarillo a los botones
+				btnTotal.setBackground(null);
+				btnParaLlevar.setBackground(null);
+				btnDomicilio.setBackground(null);
+				btnPuntoDeVenta.setBackground(null);
+				//Quitamos el color al filtro por domiciliario
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
+				//Igualamos el usuario del sistema
+				usuarioPantalla = empCtrl.obtenerEmpleado(Sesion.getIdUsuario());
+				//Obtenemos el tipo de empleado
+				idTipoEmpleado = usuarioPantalla.getidTipoEmpleado();
+				//Deberemos si el tipo de empleado es domicilio  y en caso de que lo sea
+				esDomiciliario = empCtrl.esDomicilario(idTipoEmpleado);
+				//En caso de que sea domiciliario o este consultando domiciliario fijamos el idDomiciliario
+				if(esDomiciliario)
+				{
+					idDomiCon = Sesion.getIdUsuario();
+				}
+				//En caso de que sea domiciliario lo debemos de tener en cuenta para que muestre su vista
+				lblTipoFiltro.setText("EMPLEADO");
+				lblEmpleado.setText(usuarioPantalla.getNombreLargo());
+				pintarPedidos();
+			}
+		});
+		btnQuitarFiltros.setBounds(667, 11, 154, 28);
+		contentPane.add(btnQuitarFiltros);
+		
+		
+		lblTipoFiltro.setForeground(new Color(0, 0, 0));
+		lblTipoFiltro.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblTipoFiltro.setBounds(148, 11, 172, 28);
+		contentPane.add(lblTipoFiltro);
+		
+		JLabel lblFiltroPantalla = new JLabel("FILTRO PANTALLA:");
+		lblFiltroPantalla.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblFiltroPantalla.setBounds(10, 11, 133, 28);
+		contentPane.add(lblFiltroPantalla);
+		
+		lblEmpleado.setForeground(Color.BLACK);
+		lblEmpleado.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblEmpleado.setBounds(345, 11, 172, 28);
+		contentPane.add(lblEmpleado);
+		
+		
+		lblTipoEmpleado.setForeground(Color.BLACK);
+		lblTipoEmpleado.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblTipoEmpleado.setBounds(520, 11, 146, 28);
+		contentPane.add(lblTipoEmpleado);
 		btnSalir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -242,6 +384,74 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 				
 			}
 		});
+		
+		
+		
+		//Vamos  a adicionar los domiciliarios del sistema
+		domiciliarios = empCtrl.obtenerDomiciliarios();
+		//Definimos las variables necesarias
+		Usuario emp;
+		JButton boton;
+		//Recorremos los arreglo de los domiciliarios
+		for(int i = 0; i < domiciliarios.size();i++)
+		{
+			//Llevamos el valor del domiciliario de turno a unavariable temporal
+			emp = domiciliarios.get(i);
+			//Creamos el botón
+			boton = new JButton(emp.getNombreLargo());
+			boton.setActionCommand(Integer.toString(emp.getIdUsuario()));
+			//Adicionammos el botón al panel
+			panelFiltroDom.add(boton);
+			botDom.add(boton);
+			boton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) 
+				{
+					//Extraemos el botón de la acción
+					JButton botAccion = ((JButton)arg0.getSource());
+					//Extraemos la acción del botón
+					String actCom =  botAccion.getActionCommand();
+					//Tomamos el color de fondo del botón
+					Color colorBut = botAccion.getBackground();
+					//Si el color es amarillo no debemos hacer nada
+					if(colorBut.equals(Color.YELLOW))
+					{
+						
+					}
+					else
+					{
+						//Debemos volver a la normalidad los botones quitarles el background
+						for(int i = 0; i < botDom.size(); i++)
+						{
+							//Quitamos el backgroung del botón 
+							botDom.get(i).setBackground(null);
+						}
+						botAccion.setBackground(Color.YELLOW);
+						//Prendemos el indicador de que es una consulta por domiciliario
+						consDomi = true;
+						//Debemos de ejecutar la consulta para el domiciliario en cuestión
+						//guardamos en la variable el idUsuario del domiciliario
+						idDomiCon = Integer.parseInt(actCom);
+						//Llamamos método para pintar pedidos
+						pintarPedidos();
+						//Quitamos el color al filtro por tipo de pedido
+						btnTotal.setBackground(null);
+						btnParaLlevar.setBackground(null);
+						btnDomicilio.setBackground(null);
+						btnPuntoDeVenta.setBackground(null);
+					}
+					lblTipoFiltro.setText(((JButton)arg0.getSource()).getText());
+					lblEmpleado.setText("");
+				}
+			});
+		}
+		
+		//Despues de agregada la anterior información de los botones con los domiciliarios, verificamos si el empleado ingresado
+		//es domiciliario, y en caso de que lo sea mostramos su vista, si no es así, mostramos la vista asociada al empleado
+		if(esDomiciliario)
+		{
+			
+		}
+		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
@@ -259,14 +469,13 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	
 	public void validarLogueo()
 	{
-		idUsuario = PrincipalLogueo.idUsuario;
+		idUsuario = Sesion.getIdUsuario();
 		if(idUsuario == 0)
 		{
 			JOptionPane.showMessageDialog(null, "Aparentemente el usuario no está logueado en el sistema esta ventana se cerrará " , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 			dispose();
 		}
 		//Luego realizamos la validación de que dicho idUsuario si exista.
-		EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 		boolean validacion = empCtrl.validarExistenciaEmpleado(idUsuario);
 		if(!validacion)
 		{
@@ -289,14 +498,24 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
         columnsName[7] = "idestado";
         columnsName[8] = "Tiempo";
         ArrayList<Object> pedidos = new ArrayList();
-        if(idTipoPedido == 0)
+        //La lógica de pintar pedidos debemos de dividirla en varios items
+        // Hay filtros de tipo pedido, en cuyo caso se cumple condición para que el sistema filtre por ellos
+        if(idTipoPedido >0)
         {
-        	pedidos = pedCtrl.obtenerPedidosVentanaComanda(idUsuario);
+        	pedidos = pedCtrl.obtenerPedidosVentanaComandaTipPed(0, idTipoPedido);
         }
-        else
+        // Hay filtros por domiciliario, esto significa que emepleado no es necesario domiciliario pero se debe ver 
+        // lo qeu ve un domiciliario, para lo cual validamos si se está consultando un domiciliario
+        if(consDomi)
         {
-        	pedidos = pedCtrl.obtenerPedidosVentanaComandaTipPed(idUsuario, idTipoPedido);
+        	pedidos = pedCtrl.obtenerPedidosVentanaComandaDom(idDomiCon);
         }
+        //La otra combinación de situaciones es que no se tenga filtro de tipo pedido y no filtre por domiciliario osea son todos los pedidos
+        if((idTipoPedido == 0)&&(!consDomi))
+        {
+        	pedidos = pedCtrl.obtenerPedidosVentanaComanda(0);
+        }
+      
         DefaultTableModel modelo = new DefaultTableModel(){
        	    public boolean isCellEditable(int rowIndex,int columnIndex){
        	    	return false;
@@ -366,26 +585,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
         }
     }
 	
-	public DefaultTableModel pintarHistoriaEstado(int idPedido)
-	{
-		Object[] columnsName = new Object[3];
-        
-        columnsName[0] = "Fecha Cambio Estado";
-        columnsName[1] = "Estado Anterior";
-        columnsName[2] = "Estado Posterior";
-        ArrayList<Object> estadosPedido = new ArrayList();
-        estadosPedido = pedCtrl.obtenerHistoriaEstadoPedido(idPedido);
-        DefaultTableModel modelo = new DefaultTableModel();
-		modelo.setColumnIdentifiers(columnsName);
-		for(int y = 0; y < estadosPedido.size();y++)
-		{
-			String[] fila =(String[]) estadosPedido.get(y);
-			modelo.addRow(fila);
-		}
-		return(modelo);
 		
-	}
-	
 	public void run(){
 		 Thread ct = Thread.currentThread();
 		 while(ct == h1) 
@@ -400,7 +600,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		 }
 	}
 	
-	public void avanzarEstado()
+	public void avanzarEstado(JFrame padre)
 	{
 		int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
 		if(filaSeleccionada == -1)
@@ -420,14 +620,14 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		}
 		else
 		{
-			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true);
+			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, padre, true, idDomiCon);
 			cambioEstado.setVisible(true);
 			pintarPedidos();
 		}
 		
 	}
 	
-	public void devolverEstado()
+	public void devolverEstado(JFrame padre)
 	{
 		int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
 		if(filaSeleccionada == -1)
@@ -447,7 +647,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		}
 		else
 		{
-			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true);
+			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, padre, true,idDomiCon);
 			cambioEstado.setVisible(true);
 			pintarPedidos();
 		}

@@ -16,7 +16,6 @@
 	<classpathentry kind="lib" path="commons-digester-2.1.jar"/>
 	<classpathentry kind="lib" path="commons-javaflow-20060411.jar"/>
 	<classpathentry kind="lib" path="commons-logging-1.1.1.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ProyectoTiendaAmericana"/>
 	<classpathentry kind="lib" path="C:/Users/JuanDavid/git/ProyectoTiendaAmericanaCliente/jogl-all-2.0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

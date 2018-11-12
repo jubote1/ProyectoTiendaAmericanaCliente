@@ -284,4 +284,45 @@ public class TiendaDAO {
 		return(respuesta);
 	}
 	
+	/**
+	 * Método en la capa DAO que se encarga de retornar el idTeinda del sistema con el fin de fijarlo y tenerlo como parámetro
+	 * @param auditoria
+	 * @return
+	 */
+	public static int obtenerIdTienda(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int idTienda = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select idtienda from tienda";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			String direccion, telefono, razonSocial, tipoContribuyente,resolucion, fechaResolucion, ubicacion,identificacion, fechaApertura, fechaUltimoCierre;
+			while(rs.next()){
+				idTienda = rs.getInt("idtienda");
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(idTienda);
+		
+	}
+	
 }

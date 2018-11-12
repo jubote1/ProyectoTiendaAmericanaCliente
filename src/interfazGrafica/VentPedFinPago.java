@@ -10,7 +10,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.parser.ParserDelegator;
 
 import capaControlador.InventarioCtrl;
+import capaControlador.ParametrosCtrl;
 import capaControlador.PedidoCtrl;
+import capaModelo.Parametro;
 import capaModelo.TipoPedido;
 
 import javax.swing.JTextPane;
@@ -35,7 +37,9 @@ import java.awt.GridLayout;
 import javax.swing.border.LineBorder;
 import javax.swing.ImageIcon;
 
-public class VentPedFinPago extends JDialog {
+//Implementamos runnable para crear un hilo que al momento de laconfirmación del pedido se cree un hilo paralelo
+//que se encargue de agregar la información de consumo de inventario
+public class VentPedFinPago extends JDialog implements Runnable {
 
 	private JPanel contentenorFinPago;
 	private final Action action = new SwingAction();
@@ -48,6 +52,7 @@ public class VentPedFinPago extends JDialog {
 	private JTextField displayTotal;
 	private boolean hayFormaPago = false;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	Thread hiloDescInventario;
 	public void clarearVarEstaticas()
 	{
 		Efectivo = 0;
@@ -116,7 +121,8 @@ public class VentPedFinPago extends JDialog {
 		super(parent, modal);
 		setTitle("FORMA DE PAGO DEL PEDIDO");
 		hayFormaPago = existeFormaPago;
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(0);
 		setBounds(0,0, 961, 636);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -286,62 +292,13 @@ public class VentPedFinPago extends JDialog {
 		displayPago.setBounds(222, 138, 230, 50);
 		contentenorFinPago.add(displayPago);
 		displayPago.setColumns(10);
-		
+		//Instanciamos el hilo que se va a encargar del descuento de inventario
+		hiloDescInventario = new Thread(this);
 		JButton btnFinalizar = new JButton("Finalizar");
 		btnFinalizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-//				//REALIZAMOS CONFIRMACIÓN DEL PEDIDO
-//				int confirmado = JOptionPane.showConfirmDialog(
-//						   null,"<html><center><b>A continuación la informacion para Confirmación del Pedido.</b><br>"
-//					                 + "<p>CLIENTE: "+ VentPedTomarPedidos.nombreCliente+" </p>" +
-//								   "<p>Por un valor TOTAL: " + Total  +"</p>" +
-//								   "<p>Con un Descuento: " + VentPedTomarPedidos.descuento  +"</p>" +
-//								   "<p>NÚMERO DE PEDIDO: " + VentPedTomarPedidos.idPedido +"</p>" 
-//								   
-//						   );
-//				if (JOptionPane.OK_OPTION == confirmado)
-//				{
-//					//Tomamos la información para insertar la forma de pago
-//					PedidoCtrl pedCtrl = new PedidoCtrl();
-//					//Si el pedido tenía forma de pago, deberemos de eliminar la forma de pago anterior
-//					if(hayFormaPago)
-//					{
-//						boolean respuesta = pedCtrl.eliminarPedidoFormaPago( VentPedTomarPedidos.idPedido);
-//					}
-//					// Se envían datos para la inserción de la forma de pago.
-//					boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, VentPedTomarPedidos.idPedido);
-//					if(resFormaPago)
-//					{
-//						//Ingresamos lógica para tomar el tipo de pedido 
-//						int idTipoPedido;
-//						try
-//						{
-//							TipoPedido tipPedido = VentPedTomarPedidos.tiposPedidos.get(VentPedTomarPedidos.numTipoPedidoAct);
-//							idTipoPedido = tipPedido.getIdTipoPedido();
-//						}catch(Exception e)
-//						{
-//							idTipoPedido = 0;
-//						}
-//						
-//						// En este punto finalizamos el pedido
-//						boolean resFinPedido = pedCtrl.finalizarPedido(VentPedTomarPedidos.idPedido, 30/*tiempoPedido*/, idTipoPedido);
-//						if (resFinPedido)
-//						{
-//							//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
-//							//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
-//							InventarioCtrl invCtrl = new InventarioCtrl();
-//							boolean reintInv = invCtrl.descontarInventarioPedido(VentPedTomarPedidos.idPedido);
-//							if(!reintInv)
-//							{
-//								JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
-//							}
-//							clarearVarEstaticas();
-//							VentPedTomarPedidos.clarearVarEstaticas();
-//							dispose();
-//						}
-//					}
-//				}
-//				
+
+				System.out.println("QUE PASA");
 				//Tomamos la información para insertar la forma de pago
 				//Si el pedido tenía forma de pago, deberemos de eliminar la forma de pago anterior
 				if(hayFormaPago)
@@ -349,9 +306,11 @@ public class VentPedFinPago extends JDialog {
 					pedCtrl.eliminarPedidoFormaPago( VentPedTomarPedidos.idPedido);
 				}
 				// Se envían datos para la inserción de la forma de pago.
+				System.out.println("QUE PASA 2");
 				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, VentPedTomarPedidos.idPedido);
 				if(resFormaPago)
 				{
+					
 					//Ingresamos lógica para tomar el tipo de pedido 
 					int idTipoPedido;
 					try
@@ -363,18 +322,26 @@ public class VentPedFinPago extends JDialog {
 						idTipoPedido = 0;
 					}
 					
+					//Aclaramos la informacion para el tiempo pedido
+					//Inicializamos la variable de habilitaAuditoria
+					ParametrosCtrl parCtrl = new ParametrosCtrl();
+					//Traemos de base de datos el valor del parametro de auditoria
+					Parametro parametroAud = parCtrl.obtenerParametro("TIEMPOPEDIDO");
+					//Extraemos el valor del campo de ValorTexto
+					int tiempoPedido;
+					try
+					{
+						tiempoPedido = parametroAud.getValorNumerico();
+					}catch(Exception e)
+					{
+						tiempoPedido = 0;
+					}
+					
+					
 					// En este punto finalizamos el pedido
-					boolean resFinPedido = pedCtrl.finalizarPedido(VentPedTomarPedidos.idPedido, 30/*tiempoPedido*/, idTipoPedido);
+					boolean resFinPedido = pedCtrl.finalizarPedido(VentPedTomarPedidos.idPedido, tiempoPedido, idTipoPedido);
 					if (resFinPedido)
 					{
-						//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
-						//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
-						InventarioCtrl invCtrl = new InventarioCtrl();
-						boolean reintInv = invCtrl.descontarInventarioPedido(VentPedTomarPedidos.idPedido);
-						if(!reintInv)
-						{
-							JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
-						}
 						clarearVarEstaticas();
 						VentPedTomarPedidos.clarearVarEstaticas();
 						parent.dispose();
@@ -545,6 +512,16 @@ public class VentPedFinPago extends JDialog {
 		btnPago1000.setFont(new Font("Calibri Light", Font.BOLD, 20));
 		panelPagoRapido.add(btnPago1000);
 		
+		JButton btnRetornar = new JButton("Retornar");
+		btnRetornar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnRetornar.setFont(new Font("Calibri", Font.BOLD, 35));
+		btnRetornar.setBounds(548, 534, 182, 53);
+		contentenorFinPago.add(btnRetornar);
+		
 		JButton btnIngRetornar = new JButton("Ingresar y Retornar");
 		btnIngRetornar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -653,6 +630,29 @@ public class VentPedFinPago extends JDialog {
 			putValue(SHORT_DESCRIPTION, "Some short description");
 		}
 		public void actionPerformed(ActionEvent e) {
+		}
+	}
+	
+	
+	//Implementamos la acción enfocada para el descuento de inventarios luego de la finalización del pedido
+	public void run(){
+		 Thread ct = Thread.currentThread();
+		 if(ct == hiloDescInventario) 
+		 {   
+			 descontarInventario();
+		 }
+	}
+	
+	public void descontarInventario()
+	{
+		//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
+		//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
+		InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
+		int idPedidoDescontar = VentPedTomarPedidos.idPedido;
+		boolean reintInv = invCtrl.descontarInventarioPedido(idPedidoDescontar);
+		if(!reintInv)
+		{
+			JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 }

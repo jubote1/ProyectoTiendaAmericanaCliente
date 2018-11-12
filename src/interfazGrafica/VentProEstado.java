@@ -16,6 +16,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import JTable.CellRenderNormal;
+import JTable.CellRenderTransaccional;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ParametrosProductoCtrl;
 import capaControlador.PedidoCtrl;
@@ -26,8 +28,6 @@ import capaModelo.ImpuestoProducto;
 import capaModelo.Municipio;
 import capaModelo.Producto;
 import capaModelo.TipoPedido;
-import renderTable.CellRenderNormal;
-import renderTable.CellRenderTransaccional;
 
 import java.awt.Color;
 import javax.swing.JTable;
@@ -75,6 +75,8 @@ public class VentProEstado extends JFrame {
 	JCheckBox chckbxEstadoInicial;
 	JCheckBox chckbxEstadoFinal;
 	JCheckBox chckbxReqImpresion;
+	JCheckBox chckbxEnRutaDomicilio;
+	JCheckBox chckbxEntregaDomicilio;
 	int colorr;
 	int colorg;
 	int colorb;
@@ -166,6 +168,8 @@ public class VentProEstado extends JFrame {
 				boolean estFinal = false;
 				boolean estInicial = false;
 				boolean impresion = false;
+				boolean rutaDomicilio = false;
+				boolean entregaDomicilio = false;
 				if (idEstado == 0)
 				{
 					estInicial = chckbxEstadoInicial.isSelected();
@@ -173,9 +177,11 @@ public class VentProEstado extends JFrame {
 					impresion = chckbxReqImpresion.isSelected();
 					descripcion = txtDescripcion.getText();
 					descripcionCorta = txtDescCorta.getText();
+					rutaDomicilio = chckbxEnRutaDomicilio.isSelected();
+					entregaDomicilio = chckbxEntregaDomicilio.isSelected();
 					capturarColor();
 					TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
-					Estado estInsertar = new Estado(0,descripcion, descripcionCorta, tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb, impresion);
+					Estado estInsertar = new Estado(0,descripcion, descripcionCorta, tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb, impresion,rutaDomicilio, entregaDomicilio);
 					estInsertar.setImagen(icono);
 					pedCtrl.insertarEstado(estInsertar);
 					DefaultTableModel modelo = pintarEstado();
@@ -219,16 +225,20 @@ public class VentProEstado extends JFrame {
 				boolean estInicial;
 				boolean estFinal;
 				boolean impresion;
+				boolean rutaDomicilio;
+				boolean entregaDomicilio;
 				if (validar)
 				{
 					estInicial = chckbxEstadoInicial.isSelected();
 					estFinal = chckbxEstadoFinal.isSelected();
 					impresion = chckbxReqImpresion.isSelected();
+					rutaDomicilio = chckbxEnRutaDomicilio.isSelected();
+					entregaDomicilio = chckbxEntregaDomicilio.isSelected();
 					String descripcion = txtDescripcion.getText();
 					String descripcionCorta = txtDescCorta.getText();
 					capturarColor();
 					TipoPedido tipPedSel = (TipoPedido) comboTipoPedido.getSelectedItem();
-					Estado estadoEditado = new Estado(idEstado, descripcion, descripcionCorta,tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb, impresion);
+					Estado estadoEditado = new Estado(idEstado, descripcion, descripcionCorta,tipPedSel.getIdTipoPedido(),tipPedSel.getDescripcion(), estInicial, estFinal, colorr, colorg, colorb, impresion,rutaDomicilio, entregaDomicilio);
 					estadoEditado.setImagen(icono);
 					boolean respuesta = pedCtrl.editarEstado(estadoEditado);
 					if(respuesta)
@@ -247,6 +257,9 @@ public class VentProEstado extends JFrame {
 						limpiarElementosListas();
 						chckbxEstadoInicial.setSelected(false);
 						chckbxEstadoFinal.setSelected(false);
+						chckbxReqImpresion.setSelected(false);;
+						chckbxEnRutaDomicilio.setSelected(false);
+						chckbxEntregaDomicilio.setSelected(false);
 						limpiarPantalla();
 					}
 				}
@@ -262,6 +275,7 @@ public class VentProEstado extends JFrame {
 		btnEditar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				limpiarElementosListas();
+				limpiarPantalla();
 				int filaSeleccionada = jTableEstados.getSelectedRow();
 				if(filaSeleccionada == -1)
 				{
@@ -303,6 +317,14 @@ public class VentProEstado extends JFrame {
 				if(estadoEditar.isImpresion())
 				{
 					chckbxReqImpresion.setSelected(true);
+				}
+				if(estadoEditar.isRutaDomicilio())
+				{
+					chckbxEnRutaDomicilio.setSelected(true);
+				}
+				if(estadoEditar.isEntregaDomicilio())
+				{
+					chckbxEntregaDomicilio.setSelected(true);
 				}
 				for (int i = 0; i < comboTipoPedido.getModel().getSize(); i++) {
 					TipoPedido object = (TipoPedido)comboTipoPedido.getModel().getElementAt(i);
@@ -346,7 +368,7 @@ public class VentProEstado extends JFrame {
 				     //Obtenemos el objeto estado seleccionado 
 					 EstadoAnterior p = modeloListaAnteriores.getEstadoAnterior(selection);
 					 //Creamos el estado anterior a insertar
-				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoAnterior(),p.getDescEstadoAnterior(), 0,"", false, false, 0,0,0, false);
+				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoAnterior(),p.getDescEstadoAnterior(), 0,"", false, false, 0,0,0, false, false, false);
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.eliminarEstadoAnterior(p);
 				     if(resIns)
@@ -410,7 +432,7 @@ public class VentProEstado extends JFrame {
 				     //Obtenemos el objeto estado seleccionado 
 					 EstadoPosterior p = modeloListaPosteriores.getEstadoPosterior(selection);
 					 //Creamos el estado anterior a insertar
-				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoPosterior(),p.getDescEstadoPosterior(),0,"", false, false,0,0,0, false);
+				     Estado estAdi = new Estado(p.getIdEstado(),p.getDescEstadoPosterior(),p.getDescEstadoPosterior(),0,"", false, false,0,0,0, false,false,false);
 				     //Realizamos la insercion en base de datos
 				     boolean resIns = pedCtrl.eliminarEstadoPosterior(p);
 				     if(resIns)
@@ -459,16 +481,24 @@ public class VentProEstado extends JFrame {
 		panelGeneral.add(comboTipoPedido);
 		
 		chckbxEstadoInicial = new JCheckBox("Estado Inicial");
-		chckbxEstadoInicial.setBounds(647, 108, 97, 23);
+		chckbxEstadoInicial.setBounds(589, 11, 97, 23);
 		panelGeneral.add(chckbxEstadoInicial);
 		
 		chckbxEstadoFinal = new JCheckBox("Estado Final");
-		chckbxEstadoFinal.setBounds(647, 135, 97, 23);
+		chckbxEstadoFinal.setBounds(589, 38, 97, 23);
 		panelGeneral.add(chckbxEstadoFinal);
 		
 		chckbxReqImpresion = new JCheckBox("Requiere Impresi\u00F3n");
-		chckbxReqImpresion.setBounds(647, 161, 124, 23);
+		chckbxReqImpresion.setBounds(589, 64, 124, 23);
 		panelGeneral.add(chckbxReqImpresion);
+		
+		chckbxEnRutaDomicilio = new JCheckBox("En ruta Domicilio");
+		chckbxEnRutaDomicilio.setBounds(717, 11, 124, 23);
+		panelGeneral.add(chckbxEnRutaDomicilio);
+		
+		chckbxEntregaDomicilio = new JCheckBox("Entrega Domicilio");
+		chckbxEntregaDomicilio.setBounds(717, 38, 124, 23);
+		panelGeneral.add(chckbxEntregaDomicilio);
 		
 		lblColorEstado = new JLabel("Color Estado");
 		lblColorEstado.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -595,8 +625,7 @@ public class VentProEstado extends JFrame {
 		panelGeneral.add(txtRuta);
 		txtRuta.setColumns(10);
 		
-		
-		
+			
 		
 		//Adición de las acciones de los botones para los estados
 		
@@ -812,6 +841,9 @@ public class VentProEstado extends JFrame {
 		txtIdEstado.setText("");
 		chckbxEstadoInicial.setSelected(false);
 		chckbxEstadoFinal.setSelected(false);
+		chckbxReqImpresion.setSelected(false);;
+		chckbxEnRutaDomicilio.setSelected(false);
+		chckbxEntregaDomicilio.setSelected(false);
 		lblImagen.setText("");
 		lblImagen.setIcon(null);
 	}

@@ -31,6 +31,18 @@ public class MenuCtrl {
 		return(confMenu);
 	}
 	
+	public boolean[] retornarSihayMultimenu()
+	{
+		boolean[] siHayMenus = ConfiguracionMenuDAO.retornarSihayMultimenu(auditoria);
+		return(siHayMenus);
+	}
+	
+	public String[] retornarNombresMultimenu( )
+	{
+		String[] respuesta = ConfiguracionMenuDAO.retornarNombresMultimenu(auditoria);
+		return(respuesta);
+	}
+	
 	/**
 	 * Método que encarga de retornar la configuración de los puntos y mesas configuradas en el sistema
 	 * y se encarga de retornarlo en un arreglo bidimensional, para este caso es la capa de lógica de negocio que para nuestro fin no hay

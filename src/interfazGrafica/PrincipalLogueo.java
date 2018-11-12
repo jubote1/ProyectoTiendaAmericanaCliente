@@ -25,9 +25,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.awt.event.ActionEvent;
-import capaControlador.AutenticacionCtrl;
+
 import capaControlador.EmpleadoCtrl;
 import capaControlador.OperacionesTiendaCtrl;
+import capaControlador.AutenticacionCtrl;
 import capaControlador.ParametrosCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
@@ -45,7 +46,9 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	private JTextField txtEstadoCierre;
 	private JLabel lblHora;
 	public static boolean habilitaAuditoria = false;
+	public static int idTienda = 0;
 	String hora,minutos,segundos,ampm;
+	OperacionesTiendaCtrl operTienda;
 	Calendar calendario;    
 	Thread h1;
 
@@ -70,7 +73,8 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	 */
 	public PrincipalLogueo() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(0,0, 450, 361);
+		//setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		setBounds(0,0, 450, 380);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 450, 361);
@@ -123,6 +127,14 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 		FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
 		boolean estaAperturado = pedCtrl.isSistemaAperturado();
+		//Fijamos el idTienda del sistema
+		operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
+		try{
+			idTienda = operTienda.obtenerIdTienda();
+		}catch(Exception exc)
+		{
+			idTienda = 1;
+		}
 		btnAutenticar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
@@ -178,6 +190,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 						}
 						//Fijamos el usuario que se está loguendo
 						Sesion.setUsuario(usuario);
+						Sesion.setIdUsuario(idUsuario);
 						if(objUsuario.getTipoInicio().equals("Ventana Menús"))
 						{
 							VentPrincipal ventPrincipal = new VentPrincipal();
@@ -201,11 +214,11 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 				}
 			}
 		});
-		btnAutenticar.setBounds(64, 288, 115, 24);
+		btnAutenticar.setBounds(46, 277, 134, 46);
 		contentPane.add(btnAutenticar);
 		
 		JButton btnCancelar = new JButton("Cancelar");
-		btnCancelar.setBounds(247, 289, 111, 23);
+		btnCancelar.setBounds(246, 277, 132, 46);
 		contentPane.add(btnCancelar);
 		
 		JLabel lblImagen = new JLabel("");

@@ -43,7 +43,9 @@ public class TipoEmpleadoEstadoDAO {
 			boolean estInicial = false;
 			boolean estFinal = false;
 			boolean impresion = false;
-			int intEstInicial, intEstFinal, intImpresion;
+			boolean rutaDomicilio = false;
+			boolean entregaDomicilio = false;
+			int intEstInicial, intEstFinal, intImpresion, intRutaDomicilio, intEntregaDomicilio;
 			int colorr=0, colorg=0, colorb=0;
 			while(rs.next()){
 				idestado = rs.getInt("idestado");
@@ -56,6 +58,8 @@ public class TipoEmpleadoEstadoDAO {
 				colorg = rs.getInt("colorg");
 				colorb = rs.getInt("colorb");
 				intImpresion = rs.getInt("impresion");
+				intEntregaDomicilio = rs.getInt("ruta_domicilio");
+				intRutaDomicilio = rs.getInt("entrega_domicilio");
 				if(intImpresion == 1)
 				{
 					impresion = true;
@@ -68,7 +72,15 @@ public class TipoEmpleadoEstadoDAO {
 				{
 					estFinal = true;
 				}
-				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido, "", estInicial, estFinal, colorr, colorg, colorb, impresion);
+				if(intEntregaDomicilio == 1)
+				{
+					entregaDomicilio = true;
+				}
+				if(intRutaDomicilio == 1)
+				{
+					rutaDomicilio = true;
+				}
+				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido, "", estInicial, estFinal, colorr, colorg, colorb, impresion,rutaDomicilio, entregaDomicilio);
 				estados.add(est);
 				
 			}

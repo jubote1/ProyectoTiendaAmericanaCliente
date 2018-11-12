@@ -15,6 +15,7 @@ import com.mysql.jdbc.ResultSetMetaData;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.Cliente;
 import capaModelo.Estado;
+import capaModelo.EstadoPedido;
 import capaModelo.Pedido;
 import capaModelo.Tienda;
 
@@ -198,6 +199,110 @@ public class PedidoDAO {
 		return(true);
 	}
 	
+	/**
+	 * Método que en la capaDAO se encarga de la actualización del pedido con un cliete determinado esto debido a qu que un cliente puede ser asociado cuando ya el pedido fuera entregado
+	 * @param idPedido
+	 * @param idCliente
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean actualizarClientePedido(int idPedido, int idCliente, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update pedido set idcliente =" + idCliente + " where idpedidotienda= " + idPedido ;
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
+	
+	/**
+	 * 
+	 * @param idPedido
+	 * @param idDomiciliario
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean actualizarDomiciliarioPedido(int idPedido, int idDomiciliario, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update pedido set iddomiciliario =" + idDomiciliario + " where idpedidotienda= " + idPedido ;
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
+	public static boolean quitarDomiciliarioPedido(int idPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update pedido set iddomiciliario = '' where idpedidotienda= " + idPedido ;
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
 	
 	public static boolean eliminarPedido(int idPedido, boolean auditoria)
 	{
@@ -418,7 +523,7 @@ public class PedidoDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		Estado estadoPedido = new Estado(0, "", "", 0, "", false, false, 0, 0, 0, false);
+		Estado estadoPedido = new Estado(0, "", "", 0, "", false, false, 0, 0, 0, false,false, false);
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -439,8 +544,9 @@ public class PedidoDAO {
 				descEstado = rs.getString("descripcion");
 				descTipo = rs.getString("desc_tipo");
 				imagen = rs.getBytes("imagen");
+				
 			}
-			estadoPedido = new Estado(idEstado,descEstado, descEstado, idTipoPedido, "", false, false, 0, 0, 0, false);
+			estadoPedido = new Estado(idEstado,descEstado, descEstado, idTipoPedido, "", false, false, 0, 0, 0, false, false,false);
 			estadoPedido.setImagen(imagen);
 			estadoPedido.setTipoPedido(descTipo);
 			rs.close();
@@ -456,6 +562,53 @@ public class PedidoDAO {
 			}
 		}
 		return(estadoPedido);
+		
+	}
+	
+	public static ArrayList<EstadoPedido> obtenerEstadoPedidosFecha(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<EstadoPedido> estadosPedidos = new ArrayList();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idpedidotienda, a.idestado, b.estado_final from pedido a, estado b  where a.idestado = b.idestado and a.fechapedido = '" + fecha + "'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idPedidoTienda = 0;
+			int idEstado = 0;
+			int intEstadoFinal = 0;
+			boolean estadoFinal = false;
+			EstadoPedido estPedido = new EstadoPedido(0,0,false);
+			while(rs.next()){
+				idPedidoTienda = rs.getInt("idpedidotienda");
+				idEstado = rs.getInt("idestado");
+				intEstadoFinal = rs.getInt("estado_final");
+				if(intEstadoFinal == 1)
+				{
+					estadoFinal = true;
+				}
+				estPedido = new EstadoPedido(idPedidoTienda, idEstado, estadoFinal);
+				estadosPedidos.add(estPedido);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(estadosPedidos);
 		
 	}
 	
@@ -647,7 +800,62 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
+			String consulta = "";
+			if(idTipoEmpleado != 0)
+			{
+				consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
+			}
+			else
+			{
+				consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "'  order by  a.idpedidotienda desc";
+			}
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
+	
+	public static ArrayList obtenerPedidosVentanaComandaDom(String fechaPedido, int idTipoEmpleado, int idDomiciliario, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = " (select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +")) "
+					+ " UNION " +
+					"(select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.ruta_domicilio = 1 and a.iddomiciliario = " + idDomiciliario  + ")"
+					+ " UNION " +
+					"(select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.entrega_domicilio = 1 and a.iddomiciliario = " + idDomiciliario + ") order by idpedidotienda desc";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -689,7 +897,15 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido + " and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
+			String consulta;
+			if(idTipoEmpleado != 0)
+			{
+				consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido + " and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
+			}
+			else
+			{
+				consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, '' from pedido a, cliente b, tipo_pedido c, estado d  where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido +" order by a.idpedidotienda desc";
+			}
 			if(auditoria)
 			{
 				logger.info(consulta);

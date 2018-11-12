@@ -80,5 +80,17 @@ public class EmpleadoCtrl {
 		boolean respuesta = UsuarioDAO.validarExistenciaUsuario(idUsuario, auditoria);
 		return(respuesta);
 	}
+	
+	public  ArrayList<Usuario> obtenerDomiciliarios()
+	{
+		ArrayList<Usuario> domiciliarios = UsuarioDAO.obtenerDomiciliarios(auditoria);
+		return(domiciliarios);
+	}
+	
+	public boolean esDomicilario(int idTipoEmpleado)
+	{
+		boolean respuesta = TipoEmpleadoDAO.esDomicilario(idTipoEmpleado, auditoria);
+		return(respuesta);
+	}
 
 }

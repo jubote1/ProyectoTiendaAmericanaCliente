@@ -142,7 +142,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnCreacionClientes = new JButton("Creacion Clientes");
 		btnCreacionClientes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCliCliente cliente  = new VentCliCliente(0);
+				VentCliCliente cliente  = new VentCliCliente(0, null, true);
 				cliente.setVisible(true);
 			}
 		});
@@ -171,7 +171,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnProductos = new JButton("Productos");
 		btnProductos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCRUDProducto producto = new VentCRUDProducto();
+				VentProCRUDProducto producto = new VentProCRUDProducto();
 				producto.setVisible(true);
 			}
 		});

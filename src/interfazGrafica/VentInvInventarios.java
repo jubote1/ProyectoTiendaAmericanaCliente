@@ -10,11 +10,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import JTable.CellRenderIngInventario;
+import JTable.CellRenderTransaccional;
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
-import renderTable.CellRenderIngInventario;
-import renderTable.CellRenderTransaccional;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -31,6 +31,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.Font;
 
 public class VentInvInventarios extends JDialog {
 
@@ -40,7 +41,8 @@ public class VentInvInventarios extends JDialog {
 	private JButton btnRealizarPedidoEspecial;
 	private JButton btnRealizarVarianzaCierre;
 	private JLabel lblImagen;
-
+	private JButton btnRetornarAMen;
+	InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -81,7 +83,8 @@ public class VentInvInventarios extends JDialog {
 			}
 		});
 		setTitle("VENTANA INVENTARIOS");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(0);
 		setBounds(0,0, 774, 571);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -160,6 +163,16 @@ public class VentInvInventarios extends JDialog {
 		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
 		lblImagen.setIcon(iconoEscalado);
 		contentPaneInventario.add(lblImagen);
+		
+		btnRetornarAMen = new JButton("Retornar a Men\u00FA");
+		btnRetornarAMen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnRetornarAMen.setFont(new Font("Tahoma", Font.BOLD, 13));
+		btnRetornarAMen.setBounds(10, 360, 191, 61);
+		contentPaneInventario.add(btnRetornarAMen);
 		pintarResumenInventario(fecha);
 	}
 	
@@ -173,8 +186,7 @@ public class VentInvInventarios extends JDialog {
         columnsName[3] = "Retiro";
         columnsName[4] = "Ingreso";
         columnsName[5] = "Consumo";
-        InventarioCtrl invCtrl = new InventarioCtrl();
-		ArrayList itemsResumen = invCtrl.obtenerItemInventarioResumen(fecha);
+       	ArrayList itemsResumen = invCtrl.obtenerItemInventarioResumen(fecha);
 		DefaultTableModel modeloItemResumen = new DefaultTableModel(){
        	    public boolean isCellEditable(int rowIndex,int columnIndex){
        	    	return false;

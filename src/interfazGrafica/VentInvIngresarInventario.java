@@ -1,31 +1,41 @@
 package interfazGrafica;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.EventObject;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.text.JTextComponent;
 
+import JTable.CellRenderIngInventario;
+import JTable.NextCellActioinRetInventarios;
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
 import capaModelo.ModificadorInventario;
-import renderTable.CellRenderIngInventario;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
@@ -33,6 +43,7 @@ import java.awt.Font;
 import java.awt.Image;
 
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 public class VentInvIngresarInventario extends JDialog {
 
@@ -41,6 +52,13 @@ public class VentInvIngresarInventario extends JDialog {
 	private JTextField txtFechaInventario;
 	String fechaSis;
 	ArrayList<ModificadorInventario> inventarioIngresar = new ArrayList();
+	InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
+	//Hilo para el JProgressBar
+	Thread hiloProgressBar = new Thread();
+	//Tendremos la definición de las variables de cantidadItems de Inventario y Cantidad Insertados que servirán
+	//para el JProgressBar
+	private int cantidadItems = 100;
+	private int cantAvance = 0 ;
 	/**
 	 * Launch the application.
 	 */
@@ -63,8 +81,9 @@ public class VentInvIngresarInventario extends JDialog {
 	public VentInvIngresarInventario(java.awt.Frame parent, boolean modal) {
 		super(parent, modal);
 		setTitle("INGRESAR INVENTARIOS");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(0,0, 800, 470);
+		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(0);
+		setBounds(0,0, 800, 496);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 800, 470);
@@ -79,20 +98,51 @@ public class VentInvIngresarInventario extends JDialog {
 		scrollPaneIngInventarios.setBounds(10, 11, 764, 297);
 		contentPanePrincipal.add(scrollPaneIngInventarios);
 		
-		tableIngInventarios = new JTable();
+		tableIngInventarios = new JTable(){
+			//En la creación del JTable nos permite que con el double clic nos remarque el contenido y así podamos editar más facil
+			 @Override // Always selectAll()
+			    public boolean editCellAt(int row, int column, EventObject e) {
+			        boolean result = super.editCellAt(row, column, e);
+			        final Component editor = getEditorComponent();
+			        if (editor == null || !(editor instanceof JTextComponent)) {
+			            return result;
+			        }
+			        if (e instanceof MouseEvent) {
+			            EventQueue.invokeLater(() -> {
+			                ((JTextComponent) editor).selectAll();
+			            });
+			        } else {
+			            ((JTextComponent) editor).selectAll();
+			        }
+			        return result;
+			    }
+		};
 		scrollPaneIngInventarios.setColumnHeaderView(tableIngInventarios);
 		scrollPaneIngInventarios.setViewportView(tableIngInventarios);
 		pintarItemsInventario();
+		
+		//Adicionamos acciones para el comportamiento de la tabla tab y enter
+				InputMap im = tableIngInventarios.getInputMap();
+				//Definimos que el enter será para la siguiente celda
+		        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "Action.NextCell");
+		        //Definimos que el tab será para la siguiente celda
+		        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "Action.NextCell");
+		        ActionMap am = tableIngInventarios.getActionMap();
+		        //Definimos el action map de nextcell para el jtable e implementamos clase
+		        am.put("Action.NextCell", new NextCellActioinRetInventarios(tableIngInventarios));
 		
 		
 		JButton btnConfirmarIngreso = new JButton("Confirmar Ingreso");
 		btnConfirmarIngreso.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				cantAvance = 1;
+				hiloProgressBar.start();
 				//Realizamos la desactivación de la edición del JTable
 				if(tableIngInventarios.isEditing())
 				{
 					tableIngInventarios.getCellEditor().stopCellEditing();
 				}
+				cantAvance = 10;
 				//Definición de variables necesarias para el proceso
 				int idItem;
 				int controladorIngreso = 0;
@@ -113,7 +163,7 @@ public class VentInvIngresarInventario extends JDialog {
 						return;
 					}
 				}
-				
+				cantAvance =  30;
 				//Recorre el jtable para ver si se modifico
 				for(int i = 0; i < tableIngInventarios.getRowCount(); i++)
 				{
@@ -121,7 +171,6 @@ public class VentInvIngresarInventario extends JDialog {
 					idItem =Integer.parseInt((String)tableIngInventarios.getValueAt(i, 0));
 					//Capturamos la cantidad
 					cantidad = Double.parseDouble((String)tableIngInventarios.getValueAt(i, 5));
-					System.out.println(cantidad);
 					if(cantidad > 0 )
 					{
 						//Creamos el objeto y lo ingresamos al ArrayList
@@ -132,14 +181,15 @@ public class VentInvIngresarInventario extends JDialog {
 					
 					
 				}
+				cantAvance = 40;
 				//Validamos si por lo menos hubo un ingreso
 				if(controladorIngreso>0)
 				{
 					//Realizamos la invocación para la inclusión de la información de inventarios
-					InventarioCtrl invCtrl = new InventarioCtrl();
 					int idIngreso = invCtrl.insertarIngresosInventarios(inventarioIngresar, fechaSis);
 					if(idIngreso > 0)
 					{
+						cantAvance = 100;
 						JOptionPane.showMessageDialog(null, "El inventario " + idIngreso + " fue ingresado correctamente." , "Ingreso de Inventario", JOptionPane.INFORMATION_MESSAGE);
 						dispose();
 					}
@@ -171,14 +221,14 @@ public class VentInvIngresarInventario extends JDialog {
 		
 		JLabel lblFechaIngresoInventario = new JLabel("FECHA INGRESO INVENTARIO");
 		lblFechaIngresoInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblFechaIngresoInventario.setBounds(62, 387, 240, 14);
+		lblFechaIngresoInventario.setBounds(62, 370, 240, 14);
 		contentPanePrincipal.add(lblFechaIngresoInventario);
 		
 		txtFechaInventario = new JTextField();
 		txtFechaInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtFechaInventario.setEnabled(false);
 		txtFechaInventario.setEditable(false);
-		txtFechaInventario.setBounds(355, 384, 135, 20);
+		txtFechaInventario.setBounds(355, 367, 135, 20);
 		contentPanePrincipal.add(txtFechaInventario);
 		txtFechaInventario.setColumns(10);
 		
@@ -195,6 +245,48 @@ public class VentInvIngresarInventario extends JDialog {
 		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
 		lblImagen.setIcon(iconoEscalado);
 		contentPanePrincipal.add(lblImagen);
+		//Creamos la barra de progreso que va a funcionar cuando ingresemos los inventarios
+				JProgressBar progressBar = new JProgressBar();
+				//Creamos el hilo encargado de llenar el ProgressBar
+				
+				hiloProgressBar = new Thread()
+				{
+					public void run()
+					{
+						//Definimos los parámetros de mínimo y máximo del JProgressBar
+						progressBar.setMinimum(0);
+						progressBar.setMaximum(cantidadItems);
+						
+						try
+						{
+							progressBar.setIndeterminate(true);
+							progressBar.setStringPainted(true);
+							progressBar.setBorderPainted(true);
+							//El ciclo que manejará se ejecutará mientras la cantidad de items sea menor igual a los insertados
+							// estas variables cambiarán en el hilo principal
+							while((cantAvance > 0) && (cantAvance < 100))
+							{
+								//Actualizamos el valor del JProgressBar
+				                SwingUtilities.invokeLater(new Runnable() {
+				                    public void run() {
+				                    	progressBar.setValue(cantAvance);
+				                    }
+				                  });
+								//Dormimos el hilo por un momento
+								hiloProgressBar.sleep(5);
+								System.out.println("ESTOY DENTRO " + cantAvance );
+							}
+							progressBar.setStringPainted(false);
+							progressBar.setBorderPainted(true);
+							progressBar.setIndeterminate(false);
+						}catch(Exception exc)
+						{
+							System.out.println(exc.toString());
+						}
+					}
+				};
+				progressBar.setBounds(161, 395, 292, 31);
+				contentPanePrincipal.add(progressBar);
 	}
 	
 	public void pintarItemsInventario()
@@ -207,7 +299,6 @@ public class VentInvIngresarInventario extends JDialog {
         columnsName[3] = "Cantidad x Canasta";
         columnsName[4] = "Nombre Contenedor";
         columnsName[5] = "Cantidad Ingresar";
-        InventarioCtrl invCtrl = new  InventarioCtrl();
         ArrayList<Object> itemsIng = new ArrayList();
         itemsIng = invCtrl.obtenerItemInventarioIngresar();
        	DefaultTableModel modelo = new DefaultTableModel(){

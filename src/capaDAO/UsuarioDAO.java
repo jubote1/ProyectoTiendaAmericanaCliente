@@ -382,4 +382,59 @@ public class UsuarioDAO {
 		
 	}
 	
+	/**
+	 * 
+	 * @param auditoria
+	 * @return
+	 */
+	public static ArrayList<Usuario> obtenerDomiciliarios( boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		Usuario empConsulta = new Usuario(0, "","","",0,"", false);
+		ArrayList<Usuario> domiciliarios = new ArrayList();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from usuario a, tipo_empleado b where a.idtipoempleado = b.idtipoempleado and b.es_domiciliario = 1" ;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			String nombre = "", nombreLargo ="", tipoInicio = "";
+			String strAdmin;
+			boolean administrador = false;
+			int idTipoEmpleado = 0, idEmpleado = 0;
+			while(rs.next()){
+				nombre = rs.getString("nombre");
+				nombreLargo = rs.getString("nombre_largo");
+				tipoInicio = rs.getString("tipoinicio");
+				strAdmin = rs.getString("administrador");
+				idEmpleado = rs.getInt("id");
+				if(strAdmin.equals(new String("S")))
+				{
+					administrador = true;
+				}
+				idTipoEmpleado = rs.getInt("idtipoempleado");
+				empConsulta = new Usuario(idEmpleado, nombre,"", nombreLargo, idTipoEmpleado,tipoInicio, administrador);
+				domiciliarios.add(empConsulta);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(domiciliarios);
+		
+	}
+	
 }

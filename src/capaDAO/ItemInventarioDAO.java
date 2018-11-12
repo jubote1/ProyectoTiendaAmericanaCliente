@@ -386,4 +386,47 @@ public class ItemInventarioDAO {
 		}
 		return(true);
 	}
+	
+	
+	/**
+	 * Método que se encarga de retornar la cantidad de items inventario que se tienen en el sistema, pricipalmente con 
+	 * el objetivo de poder manejar JProgressBar entre otras funciones
+	 * @param auditoria
+	 * @return
+	 */
+	public static int obtenerCantItemInventario( boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int cantItems = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select count(*) as resultado from item_inventario";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			if (rs.next()){
+				cantItems = rs.getInt("resultado");
+				
+	        }
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(0);
+		}
+		return(cantItems);
+	}
+	
 }

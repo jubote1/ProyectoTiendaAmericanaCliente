@@ -166,5 +166,11 @@ public void realizarInventarioHistorico(String fecha)
 		}
 		return(respuesta);
 	}
+	
+	public int obtenerIdTienda()
+	{
+		int idTienda = TiendaDAO.obtenerIdTienda(auditoria);
+		return(idTienda);
+	}
 
 }

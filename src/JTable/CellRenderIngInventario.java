@@ -3,14 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package renderTable;
+package JTable;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
@@ -21,7 +23,8 @@ import capaModelo.Estado;
 public class CellRenderIngInventario extends DefaultTableCellRenderer implements TableCellRenderer {
 
 	
-		
+	private final DecimalFormat formatter = new DecimalFormat("#.00");	
+	
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         //establecemos el fondo blanco o vacío
@@ -53,5 +56,8 @@ public class CellRenderIngInventario extends DefaultTableCellRenderer implements
         }
         return this;
     }
+    
+
+
 
 }

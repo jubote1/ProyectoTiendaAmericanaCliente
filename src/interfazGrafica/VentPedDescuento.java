@@ -15,6 +15,7 @@ import capaModelo.TipoPedido;
 
 import javax.swing.JTextPane;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.Color;
@@ -35,7 +36,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
-public class VentPedDescuento extends JFrame {
+public class VentPedDescuento extends JDialog {
 
 	private JPanel contentenorDescuento;
 	private final Action action = new SwingAction();
@@ -67,7 +68,7 @@ public class VentPedDescuento extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentPedDescuento frame = new VentPedDescuento();
+					VentPedDescuento frame = new VentPedDescuento(null, false);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -107,12 +108,11 @@ public class VentPedDescuento extends JFrame {
 	
 
 
-	/**
-	 * Create the frame.
-	 */
-	public VentPedDescuento() {
+	public VentPedDescuento(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("APLICAR DESCUENTOS");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(0);
 		setBounds(0,0, 961, 636);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -391,7 +391,7 @@ public class VentPedDescuento extends JFrame {
 		});
 		btnFinalizar.setEnabled(false);
 		btnFinalizar.setFont(new Font("Calibri", Font.BOLD, 40));
-		btnFinalizar.setBounds(733, 495, 202, 70);
+		btnFinalizar.setBounds(589, 494, 195, 70);
 		contentenorDescuento.add(btnFinalizar);
 		
 		JButton btnBorrar = new JButton("Borrar");
@@ -490,6 +490,16 @@ public class VentPedDescuento extends JFrame {
 		lblValorTotalFinal.setFont(new Font("Tahoma", Font.BOLD, 14));
 		lblValorTotalFinal.setBounds(36, 155, 137, 14);
 		contentenorDescuento.add(lblValorTotalFinal);
+		
+		JButton btnSalir = new JButton("Salir");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Calibri", Font.BOLD, 40));
+		btnSalir.setBounds(794, 494, 141, 70);
+		contentenorDescuento.add(btnSalir);
 		
 		btnDesPorcentaje.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

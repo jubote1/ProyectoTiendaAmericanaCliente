@@ -303,4 +303,45 @@ public class TipoEmpleadoDAO {
 		return(respuesta);
 	}
 	
+	/**
+	 * Método que se encarga de retornar un valor booleano que indica si un determinado tipo de empleado es de tipo domiciliario
+	 * si o no.
+	 * @param idTipoEmpleado Se recibe como parámetro el tipo de d empleado del cual se busca saber si es domiciliario o no
+	 * @param auditoria Se recibe parámetro que indica si deben o no haber trazas para el proceso.
+	 * @return
+	 */
+	public static boolean esDomicilario(int idTipoEmpleado, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from tipo_empleado where es_domiciliario = 1 and idtipoempleado = " + idTipoEmpleado;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				return(true);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+				return(false);
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(false);
+		
+	}
+	
 }

@@ -25,8 +25,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
-import capaControlador.ParametrosCtrl;
 import capaControlador.ParametrosProductoCtrl;
+import capaControlador.ParametrosCtrl;
 import capaModelo.ImpuestoProducto;
 import capaModelo.ItemInventario;
 import capaModelo.ItemInventarioProducto;
@@ -53,7 +53,7 @@ import java.awt.event.InputMethodEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
-public class VentCRUDProducto extends JFrame {
+public class VentProCRUDProducto extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField jTextIDProducto;
@@ -113,7 +113,7 @@ public class VentCRUDProducto extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCRUDProducto frame = new VentCRUDProducto();
+					VentProCRUDProducto frame = new VentProCRUDProducto();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -224,7 +224,7 @@ public class VentCRUDProducto extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de impuestor.
 	 */
-	public VentCRUDProducto() {
+	public VentProCRUDProducto() {
 		setTitle("MAESTRO DE ITEMS DE PRODUCTOS");
 		idProducto = 0;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -1124,63 +1124,63 @@ public class VentCRUDProducto extends JFrame {
 					}
 					try
 					{
-						precio2= Double.parseDouble(textPrecio1.getText());
+						precio2= Double.parseDouble(textPrecio2.getText());
 					}catch(Exception e)
 					{
 						precio2= 0.0;
 					}
 					try
 					{
-						precio3= Double.parseDouble(textPrecio1.getText());
+						precio3= Double.parseDouble(textPrecio3.getText());
 					}catch(Exception e)
 					{
 						precio3= 0.0;
 					}
 					try
 					{
-						precio4= Double.parseDouble(textPrecio1.getText());
+						precio4= Double.parseDouble(textPrecio4.getText());
 					}catch(Exception e)
 					{
 						precio4= 0.0;
 					}
 					try
 					{
-						precio5= Double.parseDouble(textPrecio1.getText());
+						precio5= Double.parseDouble(textPrecio5.getText());
 					}catch(Exception e)
 					{
 						precio5= 0.0;
 					}
 					try
 					{
-						precio6= Double.parseDouble(textPrecio1.getText());
+						precio6= Double.parseDouble(textPrecio6.getText());
 					}catch(Exception e)
 					{
 						precio6= 0.0;
 					}
 					try
 					{
-						precio7= Double.parseDouble(textPrecio1.getText());
+						precio7= Double.parseDouble(textPrecio7.getText());
 					}catch(Exception e)
 					{
 						precio7= 0.0;
 					}
 					try
 					{
-						precio8= Double.parseDouble(textPrecio1.getText());
+						precio8= Double.parseDouble(textPrecio8.getText());
 					}catch(Exception e)
 					{
 						precio8= 0.0;
 					}
 					try
 					{
-						precio9= Double.parseDouble(textPrecio1.getText());
+						precio9= Double.parseDouble(textPrecio9.getText());
 					}catch(Exception e)
 					{
 						precio9= 0.0;
 					}
 					try
 					{
-						precio10= Double.parseDouble(textPrecio1.getText());
+						precio10= Double.parseDouble(textPrecio10.getText());
 					}catch(Exception e)
 					{
 						precio10= 0.0;
@@ -1233,63 +1233,63 @@ public class VentCRUDProducto extends JFrame {
 				}
 				try
 				{
-					precio2= Double.parseDouble(textPrecio1.getText());
+					precio2= Double.parseDouble(textPrecio2.getText());
 				}catch(Exception e)
 				{
 					precio2= 0.0;
 				}
 				try
 				{
-					precio3= Double.parseDouble(textPrecio1.getText());
+					precio3= Double.parseDouble(textPrecio3.getText());
 				}catch(Exception e)
 				{
 					precio3= 0.0;
 				}
 				try
 				{
-					precio4= Double.parseDouble(textPrecio1.getText());
+					precio4= Double.parseDouble(textPrecio4.getText());
 				}catch(Exception e)
 				{
 					precio4= 0.0;
 				}
 				try
 				{
-					precio5= Double.parseDouble(textPrecio1.getText());
+					precio5= Double.parseDouble(textPrecio5.getText());
 				}catch(Exception e)
 				{
 					precio5= 0.0;
 				}
 				try
 				{
-					precio6= Double.parseDouble(textPrecio1.getText());
+					precio6= Double.parseDouble(textPrecio6.getText());
 				}catch(Exception e)
 				{
 					precio6= 0.0;
 				}
 				try
 				{
-					precio7= Double.parseDouble(textPrecio1.getText());
+					precio7= Double.parseDouble(textPrecio7.getText());
 				}catch(Exception e)
 				{
 					precio7= 0.0;
 				}
 				try
 				{
-					precio8= Double.parseDouble(textPrecio1.getText());
+					precio8= Double.parseDouble(textPrecio8.getText());
 				}catch(Exception e)
 				{
 					precio8= 0.0;
 				}
 				try
 				{
-					precio9= Double.parseDouble(textPrecio1.getText());
+					precio9= Double.parseDouble(textPrecio9.getText());
 				}catch(Exception e)
 				{
 					precio9= 0.0;
 				}
 				try
 				{
-					precio10= Double.parseDouble(textPrecio1.getText());
+					precio10= Double.parseDouble(textPrecio10.getText());
 				}catch(Exception e)
 				{
 					precio10= 0.0;
@@ -1406,6 +1406,8 @@ public void initcomboTipoProducto()
 	tipProducto = new TipoProducto("MS", "MODIFICADOR SIN");
 	comboBoxTipoProducto.addItem(tipProducto);
 	tipProducto = new TipoProducto("O", "OTRO PRODUCTO");
+	comboBoxTipoProducto.addItem(tipProducto);
+	tipProducto = new TipoProducto("G", "GASEOSA");
 	comboBoxTipoProducto.addItem(tipProducto);
 	Tamano tam = new Tamano("NA", "NO APLICA");
 	comboBoxTamano.addItem(tam);

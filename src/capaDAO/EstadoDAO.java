@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.Estado;
+import capaModelo.EstadoPedido;
 import capaModelo.Impuesto;
 import capaModelo.MenuAgrupador;
 import capaModelo.Producto;
@@ -119,6 +120,66 @@ public class EstadoDAO {
 		
 	}
 	
+
+		public static ArrayList obtenerHistoriaEstadoPedidosFecha(String fecha, boolean auditoria)
+		{
+			Logger logger = Logger.getLogger("log_file");
+			ConexionBaseDatos con = new ConexionBaseDatos();
+			Connection con1 = con.obtenerConexionBDLocal();
+			ArrayList historiaEstados = new ArrayList();
+			int idEstado = 0;
+			try
+			{
+				//Rediseñamos el método base para traer todos los pedidos del dia con sus estados
+				ArrayList<EstadoPedido>	estadosPedido = PedidoDAO.obtenerEstadoPedidosFecha(fecha, auditoria);
+				Statement stm = con1.createStatement();
+				String consulta = "select a.fechacambio, IFNULL(b.descripcion, 'Tomando Pedido'), IFNULL(c.descripcion, 'Tomando Pedido'), d.idpedidotienda from pedido d, cambios_estado_pedido a left outer join  estado b on a.idestadoanterior = b.idestado left outer join estado c on a.idestadoposterior = c.idestado where  a.idpedidotienda = d.idpedidotienda and d.fechapedido = '" + fecha + "' order by a.idpedidotienda, a.fechacambio asc";
+				if(auditoria)
+				{
+					logger.info(consulta);
+				}
+				ResultSet rs = stm.executeQuery(consulta);
+				ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+				int numeroColumnas = rsMd.getColumnCount() ;
+				int idPedidoTienda = 0;
+				while(rs.next()){
+					String [] fila = new String[numeroColumnas + 1];
+					for(int y = 0; y < numeroColumnas; y++)
+					{
+						fila[y] = rs.getString(y+1);
+						if(y == (numeroColumnas - 1))
+						{
+							idPedidoTienda = Integer.parseInt(fila[y]);
+						}
+					}
+					//Debemos realizar la busqueda del estado del idPedidoTienda
+					for(int i = 0; i < estadosPedido.size(); i++)
+					{
+						if(estadosPedido.get(i).getIdPedidoTienda() == idPedidoTienda)
+						{
+							fila[numeroColumnas] = Boolean.toString(estadosPedido.get(i).isEsFinal());
+							break;
+						}
+					}
+					historiaEstados.add(fila);
+					
+				}
+				rs.close();
+				stm.close();
+				con1.close();
+			}catch (Exception e){
+				logger.info(e.toString());
+				try
+				{
+					con1.close();
+				}catch(Exception e1)
+				{
+				}
+			}
+			return(historiaEstados);
+			
+		}
+	
 	public static boolean esEstadoFinal(int idEstado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -176,7 +237,9 @@ public class EstadoDAO {
 			boolean estInicial = false;
 			boolean estFinal = false;
 			boolean impresion = false;
-			int intEstInicial, intEstFinal, intImpresion;
+			boolean rutaDomicilio = false;
+			boolean entregaDomicilio = false;
+			int intEstInicial, intEstFinal, intImpresion, intRutaDomicilio, intEntregaDomicilio;
 			int colorr=0, colorg=0, colorb=0;
 			while(rs.next()){
 				idestado = rs.getInt("idestado");
@@ -189,6 +252,8 @@ public class EstadoDAO {
 				colorg = rs.getInt("colorg");
 				colorb = rs.getInt("colorb");
 				intImpresion = rs.getInt("impresion");
+				intEntregaDomicilio = rs.getInt("ruta_domicilio");
+				intRutaDomicilio = rs.getInt("entrega_domicilio");
 				if(intImpresion == 1)
 				{
 					impresion = true;
@@ -201,7 +266,15 @@ public class EstadoDAO {
 				{
 					estFinal = true;
 				}
-				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido, "", estInicial, estFinal, colorr, colorg, colorb, impresion);
+				if(intEntregaDomicilio == 1)
+				{
+					entregaDomicilio = true;
+				}
+				if(intRutaDomicilio == 1)
+				{
+					rutaDomicilio = true;
+				}
+				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido, "", estInicial, estFinal, colorr, colorg, colorb, impresion,rutaDomicilio, entregaDomicilio);
 				estados.add(est);
 				
 			}
@@ -251,7 +324,9 @@ public class EstadoDAO {
 			boolean estInicial = false;
 			boolean estFinal = false;
 			boolean impresion = false;
-			int intEstInicial, intEstFinal, intImpresion;	
+			boolean rutaDomicilio = false;
+			boolean entregaDomicilio = false;
+			int intEstInicial, intEstFinal, intImpresion, intRutaDomicilio, intEntregaDomicilio;	
 			int colorr=0, colorg=0, colorb=0;
 			byte[] imagen = null;
 			while(rs.next()){
@@ -265,6 +340,8 @@ public class EstadoDAO {
 				colorg = rs.getInt("colorg");
 				colorb = rs.getInt("colorb");
 				imagen = rs.getBytes("imagen");
+				intEntregaDomicilio = rs.getInt("entrega_domicilio");
+				intRutaDomicilio = rs.getInt("ruta_domicilio");
 				if(intImpresion == 1)
 				{
 					impresion = true;
@@ -277,7 +354,15 @@ public class EstadoDAO {
 				{
 					estFinal = true;
 				}
-				estado = new Estado(idEstado, descripcion, descripcionCorta,idTipoPedido, "", estInicial, estFinal,colorr,colorg,colorb, impresion);
+				if(intEntregaDomicilio == 1)
+				{
+					entregaDomicilio = true;
+				}
+				if(intRutaDomicilio == 1)
+				{
+					rutaDomicilio = true;
+				}
+				estado = new Estado(idEstado, descripcion, descripcionCorta,idTipoPedido, "", estInicial, estFinal,colorr,colorg,colorb, impresion, rutaDomicilio, entregaDomicilio);
 				estado.setImagen(imagen);
 			}
 			rs.close();
@@ -309,6 +394,8 @@ public class EstadoDAO {
 			int estadoInicial = 0;
 			int estadoFinal = 0;
 			int impresion = 0;
+			int rutaDomicilio = 0;
+			int entregaDomicilio = 0;
 			if(estado.isImpresion())
 			{
 				impresion = 1;
@@ -321,7 +408,15 @@ public class EstadoDAO {
 			{
 				estadoInicial= 1;
 			}
-			String insert = "insert into estado (descripcion, descripcion_corta, estado_inicial, estado_final, colorr, colorg, colorb, idtipopedido, impresion, imagen) values('" + estado.getDescripcion() + "' , '" + estado.getDescripcionCorta() + "', "+ estadoInicial + " ," + estadoFinal + " , " + estado.getColorr() + " , " + estado.getColorg() + " , " + estado.getColorb() + ", " + estado.getIdTipoPedido() +", " + impresion + " , " + estado.getImagen() +")";
+			if(estado.isRutaDomicilio())
+			{
+				rutaDomicilio = 1;
+			}
+			if(estado.isEntregaDomicilio())
+			{
+				entregaDomicilio = 1;
+			}
+			String insert = "insert into estado (descripcion, descripcion_corta, estado_inicial, estado_final, colorr, colorg, colorb, idtipopedido, impresion, imagen, ruta_domicilio, entrega_domicilio) values('" + estado.getDescripcion() + "' , '" + estado.getDescripcionCorta() + "', "+ estadoInicial + " ," + estadoFinal + " , " + estado.getColorr() + " , " + estado.getColorg() + " , " + estado.getColorb() + ", " + estado.getIdTipoPedido() +", " + impresion + " , " + estado.getImagen() + " , " + rutaDomicilio + " , " + entregaDomicilio +")";
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -398,6 +493,8 @@ public class EstadoDAO {
 			int estadoInicial = 0;
 			int estadoFinal = 0;
 			int impresion = 0;
+			int rutaDomicilio = 0;
+			int entregaDomicilio = 0;
 			if(estado.isImpresion())
 			{
 				impresion = 1;
@@ -410,8 +507,16 @@ public class EstadoDAO {
 			{
 				estadoInicial= 1;
 			}
+			if(estado.isRutaDomicilio())
+			{
+				rutaDomicilio = 1;
+			}
+			if(estado.isEntregaDomicilio())
+			{
+				entregaDomicilio = 1;
+			}
 			Statement stm = con1.createStatement();
-			String update = "update estado set descripcion = '" + estado.getDescripcion() + "' , descripcion_corta = '" + estado.getDescripcionCorta() + "' , estado_inicial =" + estadoInicial + " , estado_final = " + estadoFinal + ", colorr =  " + estado.getColorr() + " , colorg =" + estado.getColorg() + " , colorb = " + estado.getColorb() + " , impresion =" + impresion + " , imagen = ? where idEstado = " + estado.getIdestado();  
+			String update = "update estado set descripcion = '" + estado.getDescripcion() + "' , descripcion_corta = '" + estado.getDescripcionCorta() + "' , estado_inicial =" + estadoInicial + " , estado_final = " + estadoFinal + ", colorr =  " + estado.getColorr() + " , colorg =" + estado.getColorg() + " , ruta_domicilio =" + rutaDomicilio + " , entrega_domicilio = " + entregaDomicilio + " , colorb = " + estado.getColorb() + " , impresion =" + impresion + " , imagen = ? where idEstado = " + estado.getIdestado();  
 			PreparedStatement actualiz = null;
 			actualiz = con1.prepareStatement(update);
 			actualiz.setBytes(1, estado.getImagen());
@@ -565,7 +670,7 @@ public class EstadoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select idestado from estado  where estado_inicial = 1 and idtipopedido = " + idTipoPedido;
+			String consulta = "select * from estado  where estado_inicial = 1 and idtipopedido = " + idTipoPedido;
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -576,7 +681,9 @@ public class EstadoDAO {
 			boolean estInicial = false;
 			boolean estFinal = false;
 			boolean impresion = false;
-			int intEstInicial, intEstFinal, intImpresion;	
+			boolean rutaDomicilio = false;
+			boolean entregaDomicilio = false;
+			int intEstInicial, intEstFinal, intImpresion, intRutaDomicilio, intEntregaDomicilio;	
 			int colorr=0, colorg=0, colorb=0;
 			byte[] imagen = null;
 			
@@ -591,6 +698,8 @@ public class EstadoDAO {
 				colorg = rs.getInt("colorg");
 				colorb = rs.getInt("colorb");
 				imagen = rs.getBytes("imagen");
+				intEntregaDomicilio = rs.getInt("ruta_domicilio");
+				intRutaDomicilio = rs.getInt("entrega_domicilio");
 				if(intImpresion == 1)
 				{
 					impresion = true;
@@ -603,7 +712,15 @@ public class EstadoDAO {
 				{
 					estFinal = true;
 				}
-				estado = new Estado(estadoInicial, descripcion, descripcionCorta,idTipoPedido, "", estInicial, estFinal,colorr,colorg,colorb, impresion);
+				if(intEntregaDomicilio == 1)
+				{
+					entregaDomicilio = true;
+				}
+				if(intRutaDomicilio == 1)
+				{
+					rutaDomicilio = true;
+				}
+				estado = new Estado(estadoInicial, descripcion, descripcionCorta,idTipoPedido, "", estInicial, estFinal,colorr,colorg,colorb, impresion, rutaDomicilio, entregaDomicilio);
 				estado.setImagen(imagen);
 				break;
 			}
@@ -682,6 +799,41 @@ public class EstadoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from estado where idtipopedido =" + idTipoPedido + " and idestado = " + idEstado + " and estado_final = 1";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(respuesta);
+		
+	}
+	public static boolean esEstadoRutaDomicilio( int idEstado, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from estado where  idestado = " + idEstado + " and ruta_domicilio = 1";
 			if(auditoria)
 			{
 				logger.info(consulta);

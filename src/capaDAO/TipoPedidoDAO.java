@@ -320,4 +320,43 @@ public class TipoPedidoDAO {
 		}
 		return(true);
 	}
+	
+	//Método que se encarga de retornar cual es el tipo de pedido asociado a domicilio
+	
+	public static int obtenerTipoPedidoDomicilio(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int idTipoDomicilio = 0;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select idtipopedido from tipo_pedido where esdomicilio = 1";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+		
+			while(rs.next()){
+				idTipoDomicilio = rs.getInt("idtipopedido");
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(idTipoDomicilio);
+		
+	}
 }

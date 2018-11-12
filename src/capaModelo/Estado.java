@@ -9,6 +9,8 @@ public class Estado {
 	private String tipoPedido;
 	private boolean estadoInicial;
 	private boolean estadoFinal;
+	private boolean rutaDomicilio;
+	private boolean entregaDomicilio;
 	private int colorr;
 	private int colorg;
 	private int colorb;
@@ -17,6 +19,18 @@ public class Estado {
 	
 	
 	
+	public boolean isRutaDomicilio() {
+		return rutaDomicilio;
+	}
+	public void setRutaDomicilio(boolean rutaDomicilio) {
+		this.rutaDomicilio = rutaDomicilio;
+	}
+	public boolean isEntregaDomicilio() {
+		return entregaDomicilio;
+	}
+	public void setEntregaDomicilio(boolean entregaDomicilio) {
+		this.entregaDomicilio = entregaDomicilio;
+	}
 	public byte[] getImagen() {
 		return imagen;
 	}
@@ -98,8 +112,11 @@ public class Estado {
 	{
 		
 	}
+	
+	
+	
 	public Estado(int idestado, String descripcion, String descripcionCorta, int idTipoPedido, String tipoPedido,
-			boolean estadoInicial, boolean estadoFinal, int colorr, int colorg, int colorb, boolean impresion) {
+			boolean estadoInicial, boolean estadoFinal, int colorr, int colorg, int colorb, boolean impresion, boolean rutaDomicilio, boolean entregaDomicilio) {
 		super();
 		this.idestado = idestado;
 		this.descripcion = descripcion;
@@ -112,6 +129,8 @@ public class Estado {
 		this.colorg = colorg;
 		this.colorb = colorb;
 		this.impresion = impresion;
+		this.rutaDomicilio = rutaDomicilio;
+		this.entregaDomicilio = entregaDomicilio;
 	}
 
 	

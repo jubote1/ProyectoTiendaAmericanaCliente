@@ -71,6 +71,7 @@ public class VentProEleccionForzada extends JDialog {
 	boolean permiteDividir = false;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private ParametrosProductoCtrl parProductoCtrl = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
+	ArrayList<Producto> productos =parProductoCtrl.obtenerProductosCompleto();
 	/**
 	 * Launch the application.
 	 */
@@ -176,7 +177,7 @@ public class VentProEleccionForzada extends JDialog {
 						}
 						else
 						{
-							JOptionPane.showMessageDialog(null, "La pregunta obliga la selección de  " + numMaxElecciones + " por División y tienes seleccionado " + selMitad1 +" opciones en la mitad1 y " + selMitad2 +" opciones en la mitad 2 , esto último no se está respetando MITAD/MITAD." , " Falta Selección de Opciones", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(null, "La pregunta obliga la selección de  " + numMaxElecciones + " opción/es por División y tienes seleccionado " + selMitad1 +" opción/es en la mitad1 y " + selMitad2 +" opción/es. en la mitad 2 , esto último no se está respetando MITAD/MITAD." , " Falta Selección de Opciones", JOptionPane.ERROR_MESSAGE);
 							return;
 						}
 					}
@@ -188,7 +189,7 @@ public class VentProEleccionForzada extends JDialog {
 						}
 						else
 						{
-							JOptionPane.showMessageDialog(null, "La pregunta obliga la selección de  " + numMaxElecciones + " en la única división y tienes seleccionado " + selMitad1 + " opciones, esto último no se está respetando ENTERA." , " Falta Selección de Opciones", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(null, "La pregunta obliga la selección de  " + numMaxElecciones + " opción/es y solo tienes seleccionado " + selMitad1 + " opción/es." , " Falta Selección de Opciones", JOptionPane.ERROR_MESSAGE);
 							return;
 						}
 					}
@@ -302,7 +303,21 @@ public class VentProEleccionForzada extends JDialog {
 				EleccionForzada eleccion = elecciones.get(j);
 				jButElecciones1 = new JButton("<html><center>" + eleccion.getDescripcion() + "</center></html>");
 				//En este punto nos traemos el producto para verfiicar si es un gaseosa
-				Producto prodPintar = parProductoCtrl.obtenerProducto(eleccion.getIdProducto());
+				//Realizamos optimizacion para evitar la ida  base de datos por cada producto
+				//definimos el objeto Receptor
+				Producto prodPintar = new Producto();
+				//Recorremos el arrayList con los productos traídos de la base de datos
+				for(int z = 0; z < productos.size(); z++)
+				{
+					Producto proTemp = productos.get(z);
+					//Si se encuentra el objeto en el arrelgo tomamos el objeto y salimos del ciclo for
+					if(proTemp.getIdProducto() == eleccion.getIdProducto())
+					{
+						prodPintar = proTemp;
+						break;
+					}
+				}
+				//Producto prodPintar = parProductoCtrl.obtenerProducto(eleccion.getIdProducto());
 				//Validamos si el producto es tipo gaseosa para prender el indicador
 				String command1 = Integer.toString(eleccion.getIdProducto());
 				String strCommand1 = Integer.toString(eleccion.getIdProducto()) + "-" + eleccion.getDescripcion();
@@ -587,7 +602,21 @@ public class VentProEleccionForzada extends JDialog {
 				EleccionForzada eleccion = elecciones.get(j);
 				jButElecciones1 = new JButton(eleccion.getDescripcion());
 				String command1 = Integer.toString(eleccion.getIdProducto());
-				Producto prodPintar = parProductoCtrl.obtenerProducto(eleccion.getIdProducto());
+				//Realizamos optimizacion para evitar la ida  base de datos por cada producto
+				//definimos el objeto Receptor
+				Producto prodPintar = new Producto();
+				//Recorremos el arrayList con los productos traídos de la base de datos
+				for(int z = 0; z < productos.size(); z++)
+				{
+					Producto proTemp = productos.get(z);
+					//Si se encuentra el objeto en el arrelgo tomamos el objeto y salimos del ciclo for
+					if(proTemp.getIdProducto() == eleccion.getIdProducto())
+					{
+						prodPintar = proTemp;
+						break;
+					}
+				}
+				//Producto prodPintar = parProductoCtrl.obtenerProducto(eleccion.getIdProducto());
 				String strCommand1 = Integer.toString(eleccion.getIdProducto()) + "-" + eleccion.getDescripcion();
 				boton1 = new EleccionForzadaBoton(jButElecciones1,preguntaActual+1,1,Integer.parseInt(command1),eleccion.getDescripcion() );
 				// Si es gaseosa entonces se adicionaran los iconos a los botones
@@ -744,22 +773,31 @@ public class VentProEleccionForzada extends JDialog {
 			/**
 			 * Se realiza la adición con base en el arrayList que es a donde se han ido adicionando las diferentes selecciones de preguntas forzadas.
 			 */
+			//Realizamos un ordenamiento del las elecciones de manera qeu primero lo de pregunta 1, luego la 2 y asi sucesitamvente
 			ordenarEleccionesTemporales();
 			double precioProducto = 0, cantidad = 0;
 			int idProducto = 0;
+			//Se hace un recorrido de las elecciones forzadas seleccionadas por mitad 
 			for(int m = 0; m < eleccionesTemporales.size(); m++)
 			{
+				//Se trae cada elección de manera temporal
 				EleccionForzadaTemporal elTemp = eleccionesTemporales.get(m);
+				//Obtenemos el botón seleccionado por el usuario
 				JButton jButTemp= elTemp.getBoton();
+				//Tomamos el color del botón seleccionado con el fin de terminar de constatar que si sea seleccionado
 				Color colSelButton = jButTemp.getBackground();
 				if(colSelButton.equals(Color.YELLOW))
 				{
-					
+					//Traemos el precio seleccionado
 					precioProducto = elTemp.getPrecioProducto();
+					//Traemos la cantidad del producto
 					cantidad = elTemp.getCantidad();
 					idProducto = elTemp.getIdProducto();
+					//Creamos el objeto detalle pedido para la inserción
 					DetallePedido detPedido = new DetallePedido(0,VentPedTomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", VentPedTomarPedidos.idDetallePedidoMaster,"N","", VentPedTomarPedidos.contadorDetallePedido);
+					//Obtenemos el idDetalle luego de la inserción
 					int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
+					//Se lo asignamos al objeto para posteriormente llenar el arrayList de la pantalla de toma pedidos
 					detPedido.setIdDetallePedido(idDetalle);
 					if(idDetalle > 0)
 					{
@@ -833,8 +871,9 @@ public class VentProEleccionForzada extends JDialog {
 							eleTemp.setIdProducto(idProducto);
 							eleTemp.setNumeroPregunta(preguntaActual-1);
 							eleTemp.setNumeroMitad(1);
-							String descProducto = parProductoCtrl.obtenerProducto(idProducto).getDescripcion();
-							eleTemp.setDescProducto(descProducto);
+							Producto prod = parProductoCtrl.obtenerProducto(idProducto);
+							eleTemp.setDescProducto(prod.getDescripcion());
+							eleTemp.setTipoProducto(prod.getTipoProducto());
 							eleccionesTemporales.add(eleTemp);
 							
 							
@@ -898,8 +937,9 @@ public class VentProEleccionForzada extends JDialog {
 								eleTemp.setIdProducto(idProducto);
 								eleTemp.setNumeroPregunta(preguntaActual-1);
 								eleTemp.setNumeroMitad(2);
-								String descProducto = parProductoCtrl.obtenerProducto(idProducto).getDescripcion();
-								eleTemp.setDescProducto(descProducto);
+								Producto prod = parProductoCtrl.obtenerProducto(idProducto);
+								eleTemp.setDescProducto(prod.getDescripcion());
+								eleTemp.setTipoProducto(prod.getTipoProducto());
 								eleccionesTemporales.add(eleTemp);
 								
 							}
@@ -923,15 +963,18 @@ public class VentProEleccionForzada extends JDialog {
 	}
 	
 	/**
-	 * Método que se encarga de ordenar el arrelgo de eleccionesTemporales, para luego realizar la adición al detalle pedido
+	 * Método que se encarga de ordenar el arrelgo de eleccionesTemporales, para luego realizar la adición al detalle pedido, este método es la base para insertar el 
+	 * pedido de una forma ordenanada, dejando la relación junta de producto adicion y dejando el líquido en última posición.
 	 */
 	public void ordenarEleccionesTemporales()
 	{
+		//Creamos un arreglo para recorrer e ir borrando
 		ArrayList<EleccionForzadaTemporal> eleTemp =(ArrayList)eleccionesTemporales.clone();
+		//Este arreglo será el final quien al final sustituiera el arreglo inicial
 		ArrayList<EleccionForzadaTemporal> eleFinal = new ArrayList();
 		int contPregunta = 0;
 		/**
-		 * Se ejecutará mientras el contador de preguntas sea menor o igual
+		 * Se ejecutará mientras el contador de preguntas sea menor o igual y se recorrera agregando las mitade uno en orden sin agregar gaseosa
 		 */
 		while(contPregunta <= numPreguntas)
 		{
@@ -941,7 +984,7 @@ public class VentProEleccionForzada extends JDialog {
 			for(int i = 0; i < eleTemp.size(); i++)
 			{
 				EleccionForzadaTemporal elemenTemp = eleTemp.get(i);
-				if((elemenTemp.getNumeroPregunta() == contPregunta)&&elemenTemp.getNumeroMitad() == 1)
+				if((elemenTemp.getNumeroPregunta() == contPregunta)&&elemenTemp.getNumeroMitad() == 1 &&(!elemenTemp.getTipoProducto().equals(new String("G"))))
 				{
 					eleFinal.add(elemenTemp);
 					eleTemp.remove(i);
@@ -953,7 +996,7 @@ public class VentProEleccionForzada extends JDialog {
 		
 		contPregunta = 0;
 		/**
-		 * Se ejecutará mientras el contador de preguntas sea menor o igual
+		 * Se ejecutará mientras el contador de preguntas sea menor o igual y se recorrera agregando las mitade dos en orden sin agregar gaseosa
 		 */
 		while(contPregunta <= numPreguntas)
 		{
@@ -963,7 +1006,7 @@ public class VentProEleccionForzada extends JDialog {
 			for(int i = 0; i < eleTemp.size(); i++)
 			{
 				EleccionForzadaTemporal elemenTemp = eleTemp.get(i);
-				if((elemenTemp.getNumeroPregunta() == contPregunta)&&elemenTemp.getNumeroMitad() == 2)
+				if((elemenTemp.getNumeroPregunta() == contPregunta)&&elemenTemp.getNumeroMitad() == 2 &&(!elemenTemp.getTipoProducto().equals(new String("G"))))
 				{
 					eleFinal.add(elemenTemp);
 					eleTemp.remove(i);
@@ -973,6 +1016,19 @@ public class VentProEleccionForzada extends JDialog {
 			//Avanzamos la pregunta.
 			contPregunta++;
 		}
+		
+		contPregunta = 0;
+		//En el último ciclo agregamos los productos tipo gaseosa con el fin de que queden en el orden correcto
+		//Realizaremos el recorrido pero no haremos ninguna validación dado que son las gaseosas las únicos que faltan
+		// y se deberán agregar a lo último.
+		for(int i = 0; i < eleTemp.size(); i++)
+		{
+			EleccionForzadaTemporal elemenTemp = eleTemp.get(i);
+			eleFinal.add(elemenTemp);
+			eleTemp.remove(i);
+			i--;
+		}
+
 	/*
 	 * llevamos al arreglo importante el arreglo ya ordenado.
 	 */

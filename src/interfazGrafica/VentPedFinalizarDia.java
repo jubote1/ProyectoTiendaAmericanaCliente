@@ -12,8 +12,8 @@ import javax.swing.table.DefaultTableModel;
 import capaConexion.ConexionBaseDatos;
 import capaControlador.InventarioCtrl;
 import capaControlador.OperacionesTiendaCtrl;
-import capaControlador.PedidoCtrl;
 import capaControlador.ReportesCtrl;
+import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
 import capaModelo.ModificadorInventario;
 import reportes.AbstractJasperReports;
@@ -50,6 +50,7 @@ public class VentPedFinalizarDia extends JDialog {
 	private JTextField txtTotalVendido;
 	private double totalVendido = 0;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -280,7 +281,6 @@ public class VentPedFinalizarDia extends JDialog {
         columnsName[3] = "Cantidad x Canasta";
         columnsName[4] = "Nombre Contenedor";
         columnsName[5] = "Cantidad Ingresar";
-        InventarioCtrl invCtrl = new  InventarioCtrl();
         ArrayList<Object> itemsIng = new ArrayList();
         itemsIng = invCtrl.obtenerItemInventarioIngresar();
        	DefaultTableModel modelo = new DefaultTableModel(){

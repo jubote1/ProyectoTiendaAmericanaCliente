@@ -23,6 +23,10 @@ import java.util.StringTokenizer;
 import java.awt.event.ActionEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+
+import JTable.CellRenderPedido;
+import JTable.CellRenderTransaccional;
+
 import java.awt.Component;
 import java.awt.Window;
 import javax.swing.SwingUtilities;
@@ -41,8 +45,6 @@ import capaModelo.Pregunta;
 import capaModelo.Producto;
 import capaModelo.ProductoIncluido;
 import capaModelo.TipoPedido;
-import renderTable.CellRenderPedido;
-import renderTable.CellRenderTransaccional;
 
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
@@ -63,6 +65,7 @@ import javax.swing.JDialog;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JScrollPane;
+import java.awt.SystemColor;
 
 public class VentPedTomarPedidos extends JFrame {
 
@@ -82,8 +85,8 @@ public class VentPedTomarPedidos extends JFrame {
 	private JButton btnTipoPedido;
 	JButton btnProductoCon;
 	JButton btnProductoSin;
-	JLabel lblIdCliente;
 	JLabel lblNombreCliente;
+	JLabel lDireccion;
 	private JTable tableDetallePedido;
 	//TODAS LAS VARIABLES ESTÁTICAS DEL ESTE JFRAME
 	//Parï¿½metros que se tendrï¿½n en Tomador Pedidos para la selecciï¿½n de clientes
@@ -97,6 +100,9 @@ public class VentPedTomarPedidos extends JFrame {
 	public static String nombreCliente = "";
 	public static int idDetallePedidoMaster = 0;
 	public static ArrayList<DetallePedido> detallesPedido = new ArrayList();
+	public static String direccion;
+	public static String zona;
+	public static String observacion;
 	static int numTipoPedido = 0;
 	static int numTipoPedidoAct = 0;
 	static ArrayList<TipoPedido> tiposPedidos;
@@ -109,15 +115,22 @@ public class VentPedTomarPedidos extends JFrame {
 	public static int contadorDetallePedido = 1;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private ParametrosProductoCtrl parPro = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
+	private MenuCtrl menuCtrl = new MenuCtrl();
 	ArrayList<Producto> productos =parPro.obtenerProductosCompleto();
+	String[] nombresMultimenus;
+	JFrame framePrincipal;
 	/**
 	 * Launch the application.
 	 */
 	public static void clarearVarEstaticas()
 	{
 		idCliente = 0;
+		nombreCliente = "";
+		direccion = "";
+		zona = "";
+		observacion = "";
 		idPedido = 0;
-		idTienda = 0;
 		totalPedido = 0;
 		descuento = 0;
 		usuario = "";
@@ -128,7 +141,7 @@ public class VentPedTomarPedidos extends JFrame {
 		numTipoPedidoAct = 0;
 		tieneFormaPago = false;
 		tieneDescuento = false;
-		btnFinalizarPedido.setBackground(null);
+		btnFinalizarPedido.setBackground(Color.LIGHT_GRAY);
 		btnDescuento.setBackground(null);
 		esAnulado = false;
 		
@@ -139,8 +152,8 @@ public class VentPedTomarPedidos extends JFrame {
 	{
 		totalPedido = 0;
 		descuento = 0;
-		nombreCliente = "";
 		idDetallePedidoMaster = 0;
+
 	}
 	
 	public void clarearVarNoEstaticas(boolean cerrarVentana)
@@ -151,6 +164,8 @@ public class VentPedTomarPedidos extends JFrame {
 		txtNroPedido.setText("");
 		esReabierto = false;
 		esAnulado = false;
+		lblNombreCliente.setText("");
+		lDireccion.setText("");
 		if(cerrarVentana)
 		{
 			dispose();
@@ -162,7 +177,9 @@ public class VentPedTomarPedidos extends JFrame {
 		txtValorPedidoSD.setText("0");
 		txtDescuento.setText("0");
 		txtValorTotal.setText("0");
-
+		lblNombreCliente.setText("");
+		lDireccion.setText("");
+		
 	}
 	
 	public static void main(String[] args) {
@@ -205,6 +222,7 @@ public class VentPedTomarPedidos extends JFrame {
 		setUndecorated(true);
 		getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 		this.setExtendedState(MAXIMIZED_BOTH);
+		framePrincipal = this;
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -236,7 +254,6 @@ public class VentPedTomarPedidos extends JFrame {
 				}
 				// Se captura el valor del idDetalle que se desea eliminar
 				int idDetalleEliminar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
-				InventarioCtrl invCtrl = new InventarioCtrl();
 				//Se obtiene en un boolean si el idDetalle es maestro o no, sino lo es, no se puede eliminar, pues se debe
 				//eliminar el master
 				boolean esMaster = pedCtrl.validarDetalleMaster(idDetalleEliminar);
@@ -404,20 +421,90 @@ public class VentPedTomarPedidos extends JFrame {
 		panelAgrupadorMenu.setLayout(new GridLayout(1, 0, 0, 0));
 		comboMotivoAnulacion = new JComboBox();
 		initComboMotivoAnulacion(); 
-		JButton btnMultimenu_1 = new JButton("Multimenu 1");
-		JButton btnMultimenu_2 = new JButton("Multimenu 2");
-		JButton btnMultimenu_3 = new JButton("Multimenu 3");
-		JButton btnMultimenu_4 = new JButton("Multimenu 4");
-		JButton btnMultimenu_5 = new JButton("Multimenu 5");
-		JButton btnMultimenu_6 = new JButton("Multimenu 6");
+		//Recuperamos si hay menús en cada opción para el pintar
+		boolean[] siHayMenu = menuCtrl.retornarSihayMultimenu();
+		nombresMultimenus = menuCtrl.retornarNombresMultimenu();
+		JButton btnMultimenu_1;
+		JButton btnMultimenu_2;
+		JButton btnMultimenu_3;
+		JButton btnMultimenu_4;
+		JButton btnMultimenu_5;
+		JButton btnMultimenu_6;
+		//Multimenú 1
+		if(siHayMenu[1])
+		{
+			btnMultimenu_1 = new JButton(nombresMultimenus[1]);
+		}else
+		{
+			btnMultimenu_1 = new JButton("");
+			btnMultimenu_1.setOpaque(false);
+			btnMultimenu_1.setBorderPainted(false);
+			btnMultimenu_1.setContentAreaFilled(false);
+		}
+		
+		//Multimenú 2
+		if(siHayMenu[2])
+		{
+			btnMultimenu_2 = new JButton(nombresMultimenus[2]);
+		}else
+		{
+			btnMultimenu_2 = new JButton("");
+			btnMultimenu_2.setOpaque(false);
+			btnMultimenu_2.setBorderPainted(false);
+			btnMultimenu_2.setContentAreaFilled(false);
+		}
+		//Multimenú 3
+		if(siHayMenu[3])
+		{
+			btnMultimenu_3 = new JButton(nombresMultimenus[3]);
+		}else
+		{
+			btnMultimenu_3 = new JButton("");
+			btnMultimenu_3.setOpaque(false);
+			btnMultimenu_3.setBorderPainted(false);
+			btnMultimenu_3.setContentAreaFilled(false);
+		}
+		//Multimenú 4
+		if(siHayMenu[4])
+		{
+			btnMultimenu_4 = new JButton(nombresMultimenus[4]);
+		}else
+		{
+			btnMultimenu_4 = new JButton("");
+			btnMultimenu_4.setOpaque(false);
+			btnMultimenu_4.setBorderPainted(false);
+			btnMultimenu_4.setContentAreaFilled(false);
+		}
+		//Multimenú 5
+		if(siHayMenu[5])
+		{
+			btnMultimenu_5 = new JButton(nombresMultimenus[5]);
+		}else
+		{
+			btnMultimenu_5 = new JButton("");
+			btnMultimenu_5.setOpaque(false);
+			btnMultimenu_5.setBorderPainted(false);
+			btnMultimenu_5.setContentAreaFilled(false);
+		}
+		//Multimenú 6
+		if(siHayMenu[6])
+		{
+			btnMultimenu_6 = new JButton(nombresMultimenus[6]);
+		}else
+		{
+			btnMultimenu_6 = new JButton("");
+			btnMultimenu_6.setOpaque(false);
+			btnMultimenu_6.setBorderPainted(false);
+			btnMultimenu_6.setContentAreaFilled(false);
+		}
 		btnMultimenu_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				btnMultimenu_1.setBackground(Color.YELLOW);
-				btnMultimenu_2.setBackground(new Color(240,240,240));
-				btnMultimenu_3.setBackground(new Color(240,240,240));
-				btnMultimenu_4.setBackground(new Color(240,240,240));
-				btnMultimenu_5.setBackground(new Color(240,240,240));
-				btnMultimenu_6.setBackground(new Color(240,240,240));
+				btnMultimenu_2.setBackground(null);
+				btnMultimenu_3.setBackground(null);
+				btnMultimenu_4.setBackground(null);
+				btnMultimenu_5.setBackground(null);
+				btnMultimenu_6.setBackground(null);
 				cargarConfiguracionMenu(1);
 			}
 		});
@@ -429,11 +516,11 @@ public class VentPedTomarPedidos extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				btnMultimenu_2.setBackground(Color.YELLOW);
-				btnMultimenu_1.setBackground(new Color(240,240,240));
-				btnMultimenu_3.setBackground(new Color(240,240,240));
-				btnMultimenu_4.setBackground(new Color(240,240,240));
-				btnMultimenu_5.setBackground(new Color(240,240,240));
-				btnMultimenu_6.setBackground(new Color(240,240,240));
+				btnMultimenu_1.setBackground(null);
+				btnMultimenu_3.setBackground(null);
+				btnMultimenu_4.setBackground(null);
+				btnMultimenu_5.setBackground(null);
+				btnMultimenu_6.setBackground(null);
 				cargarConfiguracionMenu(2);
 			}
 		});
@@ -443,11 +530,11 @@ public class VentPedTomarPedidos extends JFrame {
 		btnMultimenu_3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				btnMultimenu_3.setBackground(Color.YELLOW);
-				btnMultimenu_1.setBackground(new Color(240,240,240));
-				btnMultimenu_2.setBackground(new Color(240,240,240));
-				btnMultimenu_4.setBackground(new Color(240,240,240));
-				btnMultimenu_5.setBackground(new Color(240,240,240));
-				btnMultimenu_6.setBackground(new Color(240,240,240));
+				btnMultimenu_1.setBackground(null);
+				btnMultimenu_2.setBackground(null);
+				btnMultimenu_4.setBackground(null);
+				btnMultimenu_5.setBackground(null);
+				btnMultimenu_6.setBackground(null);
 				cargarConfiguracionMenu(3);
 			}
 		});
@@ -457,11 +544,11 @@ public class VentPedTomarPedidos extends JFrame {
 		btnMultimenu_4.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				btnMultimenu_4.setBackground(Color.YELLOW);
-				btnMultimenu_1.setBackground(new Color(240,240,240));
-				btnMultimenu_2.setBackground(new Color(240,240,240));
-				btnMultimenu_3.setBackground(new Color(240,240,240));
-				btnMultimenu_5.setBackground(new Color(240,240,240));
-				btnMultimenu_6.setBackground(new Color(240,240,240));
+				btnMultimenu_1.setBackground(null);
+				btnMultimenu_2.setBackground(null);
+				btnMultimenu_3.setBackground(null);
+				btnMultimenu_5.setBackground(null);
+				btnMultimenu_6.setBackground(null);
 				cargarConfiguracionMenu(4);
 			}
 		});
@@ -472,11 +559,11 @@ public class VentPedTomarPedidos extends JFrame {
 		btnMultimenu_5.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				btnMultimenu_5.setBackground(Color.YELLOW);
-				btnMultimenu_1.setBackground(new Color(240,240,240));
-				btnMultimenu_2.setBackground(new Color(240,240,240));
-				btnMultimenu_3.setBackground(new Color(240,240,240));
-				btnMultimenu_4.setBackground(new Color(240,240,240));
-				btnMultimenu_6.setBackground(new Color(240,240,240));
+				btnMultimenu_1.setBackground(null);
+				btnMultimenu_2.setBackground(null);
+				btnMultimenu_3.setBackground(null);
+				btnMultimenu_4.setBackground(null);
+				btnMultimenu_6.setBackground(null);
 				cargarConfiguracionMenu(5);
 			}
 		});
@@ -486,11 +573,11 @@ public class VentPedTomarPedidos extends JFrame {
 		btnMultimenu_6.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				btnMultimenu_6.setBackground(Color.YELLOW);
-				btnMultimenu_2.setBackground(new Color(240,240,240));
-				btnMultimenu_3.setBackground(new Color(240,240,240));
-				btnMultimenu_4.setBackground(new Color(240,240,240));
-				btnMultimenu_5.setBackground(new Color(240,240,240));
-				btnMultimenu_1.setBackground(new Color(240,240,240));
+				btnMultimenu_2.setBackground(null);
+				btnMultimenu_3.setBackground(null);
+				btnMultimenu_4.setBackground(null);
+				btnMultimenu_5.setBackground(null);
+				btnMultimenu_1.setBackground(null);
 				cargarConfiguracionMenu(6);
 			}
 		});
@@ -507,11 +594,12 @@ public class VentPedTomarPedidos extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				//Se deberï¿½a crear una nueva ventana para la asignaciï¿½n y creaciï¿½n de clientes
 				//Al momento de instanciar VentCliente se le pasarï¿½ como parï¿½metro el idCliente del pedido
-				VentCliCliente cliente = new VentCliCliente(idCliente);
+				
+				VentCliCliente cliente = new VentCliCliente(idCliente,framePrincipal, true);
 				cliente.setVisible(true);
 			}
 		});
-		btnAsignarCliente.setBounds(66, 11, 140, 47);
+		btnAsignarCliente.setBounds(10, 11, 140, 47);
 		panelAcciones.add(btnAsignarCliente);
 		
 		JButton btnAnularPedido = new JButton("Anular Pedido");
@@ -524,12 +612,14 @@ public class VentPedTomarPedidos extends JFrame {
 				}
 			}
 		});
-		btnAnularPedido.setBounds(216, 11, 140, 47);
+		btnAnularPedido.setBounds(160, 11, 140, 47);
 		panelAcciones.add(btnAnularPedido);
 		
 		btnDescuento = new JButton("Descuento");
 		btnDescuento.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
 				if (idPedido > 0)
 				{
 					boolean hayDescuentos = pedCtrl.existePedidoDescuento(idPedido);
@@ -549,7 +639,7 @@ public class VentPedTomarPedidos extends JFrame {
 							boolean respuesta = pedCtrl.eliminarPedidoDescuento(idPedido);
 							if(respuesta)
 							{
-								VentPedDescuento ventDescuento = new VentPedDescuento();
+								VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
 								ventDescuento.setVisible(true);
 								descuento = 0;
 							}
@@ -562,7 +652,7 @@ public class VentPedTomarPedidos extends JFrame {
 					}
 					else
 					{
-						VentPedDescuento ventDescuento = new VentPedDescuento();
+						VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
 						ventDescuento.setVisible(true);
 					}
 				}
@@ -576,12 +666,14 @@ public class VentPedTomarPedidos extends JFrame {
 			}
 		});
 		
-		btnDescuento.setBounds(366, 11, 140, 47);
+		btnDescuento.setBounds(310, 11, 140, 47);
 		panelAcciones.add(btnDescuento);
 		
 		btnFinalizarPedido = new JButton("Finalizar Pedido");
+		btnFinalizarPedido.setFont(new Font("Tahoma", Font.BOLD, 13));
+		btnFinalizarPedido.setBackground(Color.LIGHT_GRAY);
 
-		btnFinalizarPedido.setBounds(516, 11, 140, 47);
+		btnFinalizarPedido.setBounds(460, 11, 196, 47);
 
 		btnFinalizarPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -668,6 +760,7 @@ public class VentPedTomarPedidos extends JFrame {
 				}
 				VentPrincipal ventPrincipal = new VentPrincipal();
 				ventPrincipal.setVisible(true);
+				idCliente = 0;
 				dispose();
 			}
 		});
@@ -709,7 +802,6 @@ public class VentPedTomarPedidos extends JFrame {
 					{
 						//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
 						//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
-						InventarioCtrl invCtrl = new InventarioCtrl();
 						boolean reintInv = invCtrl.descontarInventarioPedido(idPedido);
 						if(!reintInv)
 						{
@@ -772,7 +864,7 @@ public class VentPedTomarPedidos extends JFrame {
 				}
 				else
 				{
-					btnFinalizarPedido.setBackground(null);
+					btnFinalizarPedido.setBackground(Color.LIGHT_GRAY);
 					
 				}
 				if(tieneDescuento)
@@ -794,11 +886,6 @@ public class VentPedTomarPedidos extends JFrame {
 				
 			}
 		});
-		
-		lblIdCliente = new JLabel("Id Cliente");
-		lblIdCliente.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblIdCliente.setBounds(77, 496, 108, 20);
-		contentPane.add(lblIdCliente);
 		
 		lblNombreCliente = new JLabel("Nombre Cliente");
 		lblNombreCliente.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -877,19 +964,47 @@ public class VentPedTomarPedidos extends JFrame {
 		btnProductoCon.setEnabled(false);
 		btnProductoSin.setEnabled(false);
 		
+		JLabel lblDireccion = new JLabel("Direcci\u00F3n");
+		lblDireccion.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblDireccion.setBounds(77, 527, 108, 20);
+		contentPane.add(lblDireccion);
+		
+		lDireccion = new JLabel("direccion");
+		lDireccion.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lDireccion.setBounds(206, 527, 390, 17);
+		contentPane.add(lDireccion);
+		
+		JLabel lblNombreCliente_1 = new JLabel("Nombre Cliente");
+		lblNombreCliente_1.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblNombreCliente_1.setBounds(77, 497, 119, 20);
+		contentPane.add(lblNombreCliente_1);
+		//Inicializamos la variable idTienda para la toma de pedidos
+		if(idTienda == 0)
+		{
+			try{
+				idTienda = PrincipalLogueo.idTienda;
+				if(idTienda == 0)
+				{
+					idTienda = 1;
+				}
+			}catch(Exception exc)
+			{
+				idTienda = 1;
+			}
+		}
+		
 	}
 	
 	public void fijarCliente()
 	{
-		lblIdCliente.setText(Integer.toString(idCliente));
 		lblNombreCliente.setText(nombreCliente);
+		lDireccion.setText(direccion);
 	}
 	
 	public void cargarConfiguracionMenu(int intMultimenu)
 	{
 		//Realizamos optimización sobre este método para no ir por cada producto sino
 		//que los traemos todos en un ArrayList y de esta manera interactuamos con ellos
-		MenuCtrl menuCtrl = new MenuCtrl();
 		confiMenu = menuCtrl.obtenerConfMenu(intMultimenu);
 		//Aqui deberï¿½a pintarse el menï¿½
 		JButton btn = new JButton();
@@ -914,7 +1029,21 @@ public class VentPedTomarPedidos extends JFrame {
 				else
 				{
 					objConfMenu = (ConfiguracionMenu) objGenerico;
-					Producto prodBoton = parPro.obtenerProducto(objConfMenu.getIdProducto());
+					//Realizamos optimizacion para evitar la ida  base de datos por cada producto
+					//definimos el objeto Receptor
+					Producto prodBoton = new Producto();
+					//Recorremos el arrayList con los productos traídos de la base de datos
+					for(int z = 0; z < productos.size(); z++)
+					{
+						Producto proTemp = productos.get(z);
+						//Si se encuentra el objeto en el arrelgo tomamos el objeto y salimos del ciclo for
+						if(proTemp.getIdProducto() == objConfMenu.getIdProducto())
+						{
+							prodBoton = proTemp;
+							break;
+						}
+					}
+					//prodBoton = parPro.obtenerProducto(objConfMenu.getIdProducto());
 					btn = new JButton();
 					btn.setText("<html><center>"+ prodBoton.getIdProducto() + "- <br> " + prodBoton.getDescripcion()+"</center></html>");
 					btn.setActionCommand(prodBoton.getIdProducto() + "-" + prodBoton.getDescripcion());
@@ -1072,7 +1201,19 @@ public class VentPedTomarPedidos extends JFrame {
 		for(int i = 0; i < detallesPedido.size();i++)
 		{
 			DetallePedido det = detallesPedido.get(i);
-			Producto proDet = parPro.obtenerProducto(det.getIdProducto());
+			Producto proDet = new Producto();
+			//Recorremos el arrayList con los productos traídos de la base de datos
+			for(int z = 0; z < productos.size(); z++)
+			{
+				Producto proTemp = productos.get(z);
+				//Si se encuentra el objeto en el arrelgo tomamos el objeto y salimos del ciclo for
+				if(proTemp.getIdProducto() == det.getIdProducto())
+				{
+					proDet = proTemp;
+					break;
+				}
+			}
+			//Producto proDet = parPro.obtenerProducto(det.getIdProducto());
 			String [] object = new String[]{Integer.toString(det.getIdDetallePedido()),Double.toString(det.getCantidad()),proDet.getDescripcion(),Double.toString(det.getValorTotal()), Integer.toString(det.getIdDetallePedidoMaster()), Integer.toString(det.getIdDetalleModificador()), det.getEstado(), Integer.toString(det.getContadorDetallePedido())};
 			modeloDetalle.addRow(object);
 		}
@@ -1160,7 +1301,6 @@ public class VentPedTomarPedidos extends JFrame {
 				//validamos si la anulación fue correcta y el tipo de anulación descuenta pedido
 				if((anuDetallePedido) &&(motAnu.getDescuentaInventario().equals(new String("S"))))
 				{
-					InventarioCtrl invCtrl = new InventarioCtrl();
 					//Realizamos el descuento de inventarios
 					boolean reintInv = invCtrl.reintegrarInventarioPedido(idPedido);
 					if(!reintInv)

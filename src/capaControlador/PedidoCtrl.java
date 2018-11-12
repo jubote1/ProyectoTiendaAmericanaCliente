@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.JOptionPane;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -48,19 +50,31 @@ import capaModelo.Producto;
 import capaModelo.ProductoModificadorCon;
 import capaModelo.ProductoModificadorSin;
 import capaModelo.RespuestaPedidoPixel;
+import capaModelo.TiempoPedido;
 import capaModelo.Tienda;
 import capaModelo.TipoPedido;
 import capaModelo.Usuario;
 import interfazGrafica.Impresion;
+import interfazGrafica.PrincipalLogueo;
 import interfazGrafica.Sesion;
 import interfazGrafica.VentPedTomarPedidos;
 
-public class PedidoCtrl {
+public class PedidoCtrl implements Runnable {
 	
 	private boolean auditoria;
+	//Definimos el hilo que paralelizará la inserción de impuestos
+	Thread hiloImpuestos;
+	Thread hiloInventarios;
+	Thread hiloEstadoPedido;
+	//Tendremos un idPedido definido para poder paralelizar
+	private int idPedidoActual;
+	private int idTipoPedidoActual;
 	public PedidoCtrl(boolean auditoria)
 	{
 		this.auditoria = auditoria;
+		hiloImpuestos = new Thread(this);
+		hiloInventarios = new Thread(this);
+		hiloEstadoPedido = new Thread(this);
 	}
 	
 	
@@ -152,7 +166,15 @@ public class PedidoCtrl {
 	
 	public boolean insertarPedidoFormaPago(double efectivo, double tarjeta, double valorTotal, double cambio, int idPedidoTienda)
 	{
+		
 		int resIdEfe = 0, resIdTar = 0;
+		//Realizamos una validación especial si el valor del pedido es cero, entonces realizamos la inserción
+		if(valorTotal == 0)
+		{
+			PedidoFormaPago forEfectivo = new PedidoFormaPago(0,idPedidoTienda,1,valorTotal,efectivo);
+			resIdEfe = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forEfectivo, auditoria);
+			return(true);
+		}
 		if(efectivo > 0)
 		{
 			PedidoFormaPago forEfectivo = new PedidoFormaPago(0,idPedidoTienda,1,valorTotal,efectivo);
@@ -192,19 +214,18 @@ public class PedidoCtrl {
 		//Clareamos los impuestos liquidados, si existe con anterioridad
 		DetallePedidoImpuestoDAO.eliminarDetallePedidoImpuesto(idPedido, auditoria);
 		//Realizamos la liquidación de los impuestos para el pedido
-		ImpuestoCtrl impCtrl = new ImpuestoCtrl(auditoria);
-		impCtrl.liquidarImpuestosPedido(idPedido);
+		//Podemos paralelizar con otro hilo el descuento de los impuestos, para lo cual aqui lo haremos
+		//Definimos para la clase cual es el idPedido bajo  el cual trabajaremos
+		this.idPedidoActual = idPedido;
+		this.idTipoPedidoActual = idTipoPedido;
+		//Arrancamos el hilo que se encarga de descontar inventarios
+		hiloImpuestos.start();
+		//Arrancamos el hilo que hace descuento de inventarios
+		hiloInventarios.start();
+		//Arrancamos hilo que se encarga de dejar consistente el estado del pedido
+		hiloEstadoPedido.start();
 		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido, idTipoPedido, auditoria);
-		Estado estadoIni = EstadoDAO.obtenerEstadoInicial(idTipoPedido, auditoria);
-		int idEstadoPostIni = estadoIni.getIdestado();
-		PedidoDAO.ActualizarEstadoPedido(idPedido, 0 , idEstadoPostIni,Sesion.getUsuario(), auditoria);
 		//En este punto debemos de validar si este estado requiere de impresión
-		if(estadoIni.isImpresion())
-		{
-			String strFactura = generarStrImpresionFactura(idPedido);
-			Impresion imp = new Impresion();
-			imp.imprimirFactura(strFactura);
-		}
 		return(respuesta);
 	}
 	
@@ -432,11 +453,25 @@ public class PedidoCtrl {
 			{
 				pedidos = PedidoDAO.obtenerPedidosPorTipo(idTipoPedido, fechaSistema.getFechaApertura(), auditoria);
 				int idPedido = 0;
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
 					String[]fila = (String[]) pedidos.get(i);
 					idPedido =Integer.parseInt(fila[0]);
-					String tiempoPedido = calcularTiempoPedido(idPedido);
+					// Recorremos el ArrayList de los tiempos pedidos.
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
 					fila[fila.length-1] = tiempoPedido;
 					pedidos.set(i, fila);
 				}
@@ -452,11 +487,24 @@ public class PedidoCtrl {
 			{
 				pedidos = PedidoDAO.obtenerPedidosTable(fechaSistema.getFechaApertura(), auditoria);
 				int idPedido = 0;
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
 					String[]fila = (String[]) pedidos.get(i);
 					idPedido =Integer.parseInt(fila[0]);
-					String tiempoPedido = calcularTiempoPedido(idPedido);
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
 					fila[fila.length-1] = tiempoPedido;
 					pedidos.set(i, fila);
 				}
@@ -476,11 +524,24 @@ public class PedidoCtrl {
 			{
 				pedidos = PedidoDAO.obtenerPedidosTableConFinales(fechaSistema.getFechaApertura(), auditoria);
 				int idPedido = 0;
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
 					String[]fila = (String[]) pedidos.get(i);
 					idPedido =Integer.parseInt(fila[0]);
-					String tiempoPedido = calcularTiempoPedido(idPedido);
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
 					fila[fila.length-1] = tiempoPedido;
 					pedidos.set(i, fila);
 				}
@@ -509,10 +570,57 @@ public class PedidoCtrl {
 			return(estadoPedido);
 		}
 		
-		public boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario)
+		/**
+		 * Método que se encarga de la actualización de un estado en los pedidos, para estados posteriores o anteriores
+		 * @param idPedido La identificación del pedido qeu se va a cambiar de estado.
+		 * @param idEstadoAnterior El estado anterior del cual parte el pedido
+		 * @param idEstadoPosterior El estado posterior para el cual va el producto
+		 * @param usuario Usuario que está realizando el cambio de estado
+		 * @param estadoPosterior parámetro booleano que indica si el pedido está avanzando de estado o retrocedieno de estasdo
+		 * @return Se retorna un valor booleano indicando como resulto el proceso.
+		 */
+		public boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario, boolean estadoPosterior, int idDomiciliario)
 		{
+			if(estadoPosterior)
+			{
+				//Debemos de validar si el estado Posterior es Ruta Domicilio, en cuyo caso debe asignar 
+				boolean esRutDom = EstadoDAO.esEstadoRutaDomicilio(idEstadoPosterior,auditoria);
+				//EN caso de ser ruta domicilio, deberemos de asignarle al pedido el domiciliario
+				if(esRutDom)
+				{
+					boolean pedAct = PedidoDAO.actualizarDomiciliarioPedido(idPedido, idDomiciliario, auditoria);
+				}
+			}
+			else
+			{
+				//Debemos de validar si el estado del que viene es Ruta Domicilio, en cuyo caso debe asignar 
+				boolean esRutDom = EstadoDAO.esEstadoRutaDomicilio(idEstadoAnterior,auditoria);
+				//EN caso de ser ruta domicilio, deberemos dequitarle al pedido el domiciliario
+				if(esRutDom)
+				{
+					boolean pedAct = PedidoDAO.quitarDomiciliarioPedido(idPedido, auditoria);
+				}
+			}
 			boolean respuesta = PedidoDAO.ActualizarEstadoPedido(idPedido, idEstadoAnterior, idEstadoPosterior, usuario, auditoria);
 			return(respuesta);
+		}
+		
+		public boolean esEstadoRutaDomicilio( int idEstado)
+		{
+			boolean respuesta = EstadoDAO.esEstadoRutaDomicilio(idEstado, auditoria);
+			return(respuesta);
+		}
+		
+		public boolean actualizarDomiciliarioPedido(int idPedido, int idDomiciliario)
+		{
+			boolean pedAct = PedidoDAO.actualizarDomiciliarioPedido(idPedido, idDomiciliario, auditoria);
+			return(pedAct);
+		}
+		
+		public  boolean quitarDomiciliarioPedido(int idPedido)
+		{
+			boolean pedAct = PedidoDAO.quitarDomiciliarioPedido(idPedido, auditoria);
+			return(pedAct);
 		}
 		
 		public boolean tieneEstadoFinal( int idTipoPedido, int idEstado)
@@ -625,6 +733,19 @@ public class PedidoCtrl {
 		}
 		
 		/**
+		 * Método que en la capaDAO se encarga de la actualización del pedido con un cliete determinado esto debido a qu que un cliente puede ser asociado cuando ya el pedido fuera entregado
+		 * @param idPedido
+		 * @param idCliente
+		 * @param auditoria
+		 * @return
+		 */
+		public boolean actualizarClientePedido(int idPedido, int idCliente)
+		{
+			boolean actCliente = PedidoDAO.actualizarClientePedido(idPedido, idCliente, auditoria);
+			return(actCliente);
+		}
+		
+		/**
 		 * Método que se encarga de calcular el tiempo del pedido y traerlo como un String para mostrarlos en los maestros
 		 * de pedidos
 		 * @param idPedido
@@ -672,7 +793,6 @@ public class PedidoCtrl {
 			{
 				String[] fila = (String[]) hisEstPedido.get(0);
 				String strFecPedido = fila[0];
-				System.out.println("FECHA INICIAL PARA CÁLCULO " + strFecPedido);
 				Date datFecPedido = new Date();
 				try
 				{
@@ -737,6 +857,154 @@ public class PedidoCtrl {
 		}
 		
 		/**
+		 * Método que se encarga de retorar un arreglo de retornar un arreglo con los tiempos que llevan los pedidos de una fecha determinada
+		 * buscando mayor agilidad y evitando hacer el ca´clulo en base a consultas uno a uno en base de datos
+		 * @param fecha Se recibe como parámetro la fecha para hacer el cálculo para todos los pedidos de un día determinado
+		 * @return Realiza el retorno de un arreglo de objeto tipo TiempoPedido de los pedidos de un día determinado.
+		 */
+		public ArrayList<TiempoPedido> calcularTiemposPedidos(String fecha)
+		{
+			//Instanciamos el arreglo donde tendremos la respuesta
+			ArrayList<TiempoPedido> tiemposPedidos = new ArrayList();
+			//Obtenemos el arreglo con todos los estados
+			ArrayList hisEstadosPedidos = EstadoDAO.obtenerHistoriaEstadoPedidosFecha(fecha, auditoria);
+			//el ciclo tendrá vida mientras existe estados de historia de pedido a procesar
+			ArrayList hisEstPedido;
+			int idPedidoActual = 0;
+			boolean indicador = true;
+			//Es la variable donde se calcular cada tiempo Pedido
+			String respuesta = "";
+			while(hisEstadosPedidos.size() > 0)
+			{
+				//Debemos de extraer la historia pedido de cada uno particular
+				//Instanciamos el temporal para extraer la historia de cada pedido particular
+				hisEstPedido = new ArrayList();
+				//Extraemos el idPedido que vamos a tratar para esta iteración
+				String[] filaHistoria = (String[])hisEstadosPedidos.get(0);
+				idPedidoActual = Integer.parseInt(filaHistoria[filaHistoria.length - 2]);
+				hisEstPedido.add(filaHistoria);
+				//Removemos el primer elemento que ya procesamos
+				hisEstadosPedidos.remove(0);
+				while(indicador)
+				{
+					filaHistoria = (String[])hisEstadosPedidos.get(0);
+					int idPedidoTemp = Integer.parseInt(filaHistoria[filaHistoria.length - 2]);
+					if(idPedidoTemp == idPedidoActual)
+					{
+						hisEstPedido.add(filaHistoria);
+						hisEstadosPedidos.remove(0);
+					}
+					else
+					{
+						indicador = false;
+					}
+				}
+				//En este punto ya podemos realizar validación si el estado es final o no y de acuerdo a esto tomar ciertas
+				//determinaciones.
+				int cantHist  = hisEstPedido.size();
+				boolean esEstadoFinal = false;
+				if(cantHist > 0 )
+				{
+					String[] fila = (String[]) hisEstPedido.get(0);
+					//Retornamos si es estado final
+					esEstadoFinal = Boolean.parseBoolean(fila[fila.length -1]);
+					
+				}
+				Date fechaActual = new Date();
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd H:m:s");
+				int difTiempo = 0;
+				int minutos = 0;
+				int tamEstados = hisEstPedido.size();
+				if(tamEstados == 1)
+				{
+					//Tomar la fecha
+					String[] fila = (String[]) hisEstPedido.get(0);
+					String strFecPedido = fila[0];
+					Date datFecPedido = new Date();
+					try
+					{
+						datFecPedido = dateFormat.parse(strFecPedido);
+						
+					}catch(Exception e)
+					{
+						 datFecPedido = new Date();
+					}
+					difTiempo =(int) (fechaActual.getTime() - datFecPedido.getTime());
+					Math.abs(minutos = (int)TimeUnit.MILLISECONDS.toMinutes(difTiempo ));
+					respuesta = "Actual: " + minutos + " Total: " + minutos;
+				}
+				else if(tamEstados > 1)
+				{
+					String[] fila = (String[]) hisEstPedido.get(0);
+					String strFecPedido = fila[0];
+					Date datFecPedido = new Date();
+					try
+					{
+						datFecPedido = dateFormat.parse(strFecPedido);
+						
+					}catch(Exception e)
+					{
+						 datFecPedido = new Date();
+					}
+					
+					difTiempo =Math.abs((int) (datFecPedido.getTime() - fechaActual.getTime() ));
+					Math.abs(minutos = (int)TimeUnit.MILLISECONDS.toMinutes(difTiempo ));
+					String[] filaAnterior;
+					String[] filaFinal;
+					if(esEstadoFinal)
+					{
+						filaAnterior =(String[]) hisEstPedido.get(0);
+						filaFinal =(String[]) hisEstPedido.get(tamEstados-1);
+						String strFecEstAnterior = filaAnterior[0];
+						String strFecEstFinal = filaFinal[0];
+						Date datEstAnt, datEstFin;
+						try
+						{
+							datEstAnt = dateFormat.parse(strFecEstAnterior);
+							datEstFin = dateFormat.parse(strFecEstFinal);
+							
+						}catch(Exception e)
+						{
+							datEstAnt = new Date();
+							datEstFin = new Date();
+						}
+						difTiempo =(int) (datEstFin.getTime() - datEstAnt.getTime());
+						Math.abs(minutos = (int)TimeUnit.MILLISECONDS.toMinutes(difTiempo ));
+						respuesta = respuesta + " TOTAL: " + minutos;
+					}
+					else
+					{
+						respuesta = "Total: " + minutos;
+						//Para el estado actual
+						filaAnterior =(String[]) hisEstPedido.get(tamEstados-2);
+						filaFinal =(String[]) hisEstPedido.get(tamEstados-1);
+						//String strFecEstAnterior = filaAnterior[0];
+						String strFecEstFinal = filaFinal[0];
+						Date datEstAnt, datEstFin;
+						try
+						{
+							//datEstAnt = dateFormat.parse(strFecEstAnterior);
+							datEstFin = dateFormat.parse(strFecEstFinal);
+							
+						}catch(Exception e)
+						{
+							//datEstAnt = new Date();
+							datEstFin = new Date();
+						}
+						difTiempo =Math.abs((int) (fechaActual.getTime() - datEstFin.getTime()));
+						minutos = (int)TimeUnit.MILLISECONDS.toMinutes(difTiempo );
+						respuesta = respuesta + " Actual: " + minutos;
+					}
+					
+				}
+				TiempoPedido tiemPedido = new TiempoPedido(idPedidoActual, respuesta);
+				tiemposPedidos.add(tiemPedido);
+			}
+			return(tiemposPedidos);
+		}
+		
+		
+		/**
 		 * Método que se encarga de retornar resumen por tipo de pedido de los totales de pedido
 		 * @param fechaPedido Se recibe un string con la fecha a consultar y resumir los totales.
 		 * @return Se retorna un arraylist con los totales resumidos
@@ -793,8 +1061,65 @@ public class PedidoCtrl {
 			return(respuesta);
 		}
 		
+		/**
+		 * Este médodo se encarga de realizar la consulta de los pedidos, dado un empleado, y con el tipo, se debe diferenciar si es domiciliario.
+		 * @param idEmpleado se recibe como parámetro el idEmpleado con base en el cual se va a realizar la consulta de los pedidos
+		 * @return Se retorna un arrayList con los pedidos e acuerdo a los parámetros enviados
+		 */
 		public ArrayList obtenerPedidosVentanaComanda(int idEmpleado)
 		{
+			//Cuando el empleado es domiciliario, se deberán mostrar los pedidos propios del tipo domiciliario, ddeberán mostrar los pedidos que ha llevado y con los que salío
+			//hace poco para llevar.
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema( auditoria);
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				//Obtenemos el tipo de Usuario del usuario logueado
+				if(idEmpleado != 0)
+				{
+					Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
+					int idTipoEmpActual = usuActual.getidTipoEmpleado();
+					//Distinguimos cuando no es domiciliario
+					pedidos = PedidoDAO.obtenerPedidosVentanaComanda(fechaSistema.getFechaApertura(), idTipoEmpActual, auditoria );
+				}else
+				{
+					pedidos = PedidoDAO.obtenerPedidosVentanaComanda(fechaSistema.getFechaApertura(), 0, auditoria );
+				}
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
+				
+				int idPedido = 0;
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
+				//Recorremos el resultado de los pedidos para ir agregando el tiempo de pedido
+				for(int i = 0 ; i < pedidos.size(); i++)
+				{
+					//Sacamos cada fila del pedido
+					String[]fila = (String[]) pedidos.get(i);
+					//Extraemos el idPedido
+					idPedido =Integer.parseInt(fila[0]);
+					// Recorremos el ArrayList de los tiempos pedidos.
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
+					fila[fila.length-1] = tiempoPedido;
+					pedidos.set(i, fila);
+				}
+			}
+			return(pedidos);
+		}
+		
+		public ArrayList obtenerPedidosVentanaComandaDom(int idEmpleado)
+		{
+			//Cuando el empleado es domiciliario, se deberán mostrar los pedidos propios del tipo domiciliario, ddeberán mostrar los pedidos que ha llevado y con los que salío
+			//hace poco para llevar.
 			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema( auditoria);
 			ArrayList pedidos = new ArrayList();
 			if(sePuedeFacturar(fechaSistema))
@@ -802,13 +1127,27 @@ public class PedidoCtrl {
 				//Obtenemos el tipo de Usuario del usuario logueado
 				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
 				int idTipoEmpActual = usuActual.getidTipoEmpleado();
-				pedidos = PedidoDAO.obtenerPedidosVentanaComanda(fechaSistema.getFechaApertura(), idTipoEmpActual, auditoria );
+				//Distinguimos cuando no es domiciliario
+				pedidos = PedidoDAO.obtenerPedidosVentanaComandaDom(fechaSistema.getFechaApertura(), idTipoEmpActual, idEmpleado, auditoria );
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
 				int idPedido = 0;
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
 					String[]fila = (String[]) pedidos.get(i);
 					idPedido =Integer.parseInt(fila[0]);
-					String tiempoPedido = calcularTiempoPedido(idPedido);
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
 					fila[fila.length-1] = tiempoPedido;
 					pedidos.set(i, fila);
 				}
@@ -823,15 +1162,35 @@ public class PedidoCtrl {
 			if(sePuedeFacturar(fechaSistema))
 			{
 				//Obtenemos el tipo de Usuario del usuario logueado
-				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
-				int idTipoEmpActual = usuActual.getidTipoEmpleado();
-				pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), idTipoEmpActual, idTipoPedido, auditoria );
+				if(idEmpleado != 0)
+				{
+					Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
+					int idTipoEmpActual = usuActual.getidTipoEmpleado();
+					pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), idTipoEmpActual, idTipoPedido, auditoria );
+				}else
+				{
+					pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), 0, idTipoPedido, auditoria );
+				}
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
+				
 				int idPedido = 0;
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
 					String[]fila = (String[]) pedidos.get(i);
 					idPedido =Integer.parseInt(fila[0]);
-					String tiempoPedido = calcularTiempoPedido(idPedido);
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
 					fila[fila.length-1] = tiempoPedido;
 					pedidos.set(i, fila);
 				}
@@ -1008,6 +1367,43 @@ public class PedidoCtrl {
 		{
 			ArrayList <Estado> estados = EstadoDAO.obtenerTodosEstado(auditoria);
 			return (estados);
+		}
+
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			Thread ct = Thread.currentThread();
+			//Validamos si el hilo es de impuestos con el fin de poder arrancar el hilo que descuenta de inventarios
+			System.out.println("antes de liquidar impuestos");
+			if(ct == hiloImpuestos) 
+			{   
+				 ImpuestoCtrl impCtrl = new ImpuestoCtrl(auditoria);
+				 impCtrl.liquidarImpuestosPedido(idPedidoActual);
+				 System.out.println("Si entre a liquidar impuestos");
+			}else if(ct == hiloInventarios) 
+			{
+				//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
+				//el pedido es neceseario clarear las variables del jFrame de TomarPedidos
+				InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
+				boolean reintInv = invCtrl.descontarInventarioPedido(idPedidoActual);
+				if(!reintInv)
+				{
+					JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
+				}
+			}else if(ct == hiloEstadoPedido) 
+			{
+				Estado estadoIni = EstadoDAO.obtenerEstadoInicial(idTipoPedidoActual, auditoria);
+				int idEstadoPostIni = estadoIni.getIdestado();
+				PedidoDAO.ActualizarEstadoPedido(idPedidoActual, 0 , idEstadoPostIni,Sesion.getUsuario(), auditoria);
+				if(estadoIni.isImpresion())
+				{
+					String strFactura = generarStrImpresionFactura(idPedidoActual);
+					Impresion imp = new Impresion();
+					imp.imprimirFactura(strFactura);
+				}
+			}
+				
 		}
 		
 		

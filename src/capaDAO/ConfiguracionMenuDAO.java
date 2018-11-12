@@ -236,4 +236,103 @@ public class ConfiguracionMenuDAO {
 		}
 		return(true);
 	}
+	
+	/**
+	 * Método que se encarga de retornar un arreglo con valores booleanos qeu indican si un Multimenu tiene o no tiene elementos lo anterior
+	 * con el objetivo de tomar una acción al momento de pintar los multimenus en la pantalla de toma de peddios
+	 * @param auditoria Se recibe valor booleano que indica si  se debe o no guardar auditoría de las sentencias de base de datos.
+	 * @return Se retorna un arreglo booleano indicando si un multimenú tiene o no elementos.
+	 */
+	public static boolean[] retornarSihayMultimenu( boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean[] siHayMenus = new boolean[7];
+	
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from configuracion_menu";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			//Inicializamos el arreglo con false
+			for(int i = 1; i <= 6; i++)
+			{
+				siHayMenus[i] = false;
+			}
+			//Posteriormente realizamos el llenado del arreglo
+			int multimenu;
+			while(rs.next()){
+				//recuperamos los valores del fila y columna
+				multimenu = rs.getInt("multimenu");
+				if(multimenu <=6)
+				{
+					siHayMenus[multimenu] = true;
+				}
+				//validamos los valores de fila y columna
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(siHayMenus);
+	}
+	
+	/**
+	 * Método qeu se encarga de retornar los nombres de los multimenús para ser desplegados en pantalla para la toma de pedidos.
+	 * @param auditoria
+	 * @return
+	 */
+	public static String[] retornarNombresMultimenu( boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		String[] nombresMenus = new String[7];
+	
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from nombre_multimenu order by idmultimenu";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			//Posteriormente realizamos el llenado del arreglo
+			String nombreMenu = "";
+			int multimenu = 0;
+			while(rs.next()){
+				//recuperamos los valores del nombre Menu
+				nombreMenu = rs.getString("nombre");
+				multimenu = rs.getInt("idmultimenu");
+			    nombresMenus[multimenu] = nombreMenu;
+				//validamos los valores de fila y columna
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(nombresMenus);
+	}
 }

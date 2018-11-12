@@ -40,14 +40,16 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import capaControlador.PedidoCtrl;
+import JTable.CellRenderTransaccional;
+import capaControlador.EmpleadoCtrl;
 import capaControlador.ReportesCtrl;
+import capaControlador.PedidoCtrl;
 import capaModelo.Cliente;
 import capaModelo.DetallePedido;
 import capaModelo.FechaSistema;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
-import renderTable.CellRenderTransaccional;
+import capaModelo.Usuario;
 
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
@@ -64,10 +66,15 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	private static int idTipoPedido = 0;
 	private String fechaSis;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 	Thread h1;
 	private JFrame ventanaPadre;
-	
+	ArrayList<Usuario> domiciliarios;
+	ArrayList<JButton> botDom  = new ArrayList();
 	private JTextField txtFechaSistema;
+	//Variable booleana para saber si se está consultando un domiciliario
+	boolean consDomi = false;
+	int idDomiCon = 0;
 	/**
 	 * Launch the application.
 	 */
@@ -233,7 +240,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		panelBotones.add(btnTomarPedido);
 		
 		JPanel panelFiltrosPedidos = new JPanel();
-		panelFiltrosPedidos.setBounds(839, 11, 161, 280);
+		panelFiltrosPedidos.setBounds(839, 11, 161, 222);
 		contentPane.add(panelFiltrosPedidos);
 		panelFiltrosPedidos.setLayout(new GridLayout(5, 1, 0, 0));
 		
@@ -248,12 +255,13 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		JButton btnParaLlevar = new JButton("<html><center>Para Llevar</center></html>");
 		
 		panelFiltrosPedidos.add(btnParaLlevar);
-		
+		JButton btnTotalConPedidos = new JButton("<html><center>Total Con Pedidos Finalizados</center></html>");
 		JButton btnTotal = new JButton("<html><center>Total Sin Pedidos Finalizados</center></html>");
 		
-		JButton btnTotalConPedidos = new JButton("<html><center>Total Con Pedidos Finalizados</center></html>");
 		btnTotal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				idDomiCon = 0;
+				consDomi = false;
 				idTipoPedido = 0;
 				pintarPedidos();
 				btnTotal.setBackground(Color.YELLOW);
@@ -261,12 +269,22 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				btnDomicilio.setBackground(null);
 				btnPuntoDeVenta.setBackground(null);
 				btnTotalConPedidos.setBackground(null);
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
 			}
 		});
+		
+		
+
 		
 		btnTotalConPedidos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Prendemos un indicador que buscará traer todos los tipos de tipos pedidos sin importar el estado
+				idDomiCon = 0;
+				consDomi = false;
 				idTipoPedido = -1;
 				pintarPedidos();
 				btnTotalConPedidos.setBackground(Color.YELLOW);
@@ -274,6 +292,11 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				btnParaLlevar.setBackground(null);
 				btnDomicilio.setBackground(null);
 				btnPuntoDeVenta.setBackground(null);
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
 			}
 		});
 		panelFiltrosPedidos.add(btnTotalConPedidos);
@@ -282,6 +305,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		
 		btnParaLlevar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				idDomiCon = 0;
+				consDomi = false;
 				idTipoPedido = 3;
 				pintarPedidos();
 				btnTotal.setBackground(null);
@@ -289,11 +314,18 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				btnDomicilio.setBackground(null);
 				btnPuntoDeVenta.setBackground(null);
 				btnTotalConPedidos.setBackground(null);
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
 			}
 		});
 		
 		btnDomicilio.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				idDomiCon = 0;
+				consDomi = false;
 				idTipoPedido = 1;
 				pintarPedidos();
 				btnTotal.setBackground(null);
@@ -301,11 +333,18 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				btnDomicilio.setBackground(Color.YELLOW);
 				btnPuntoDeVenta.setBackground(null);
 				btnTotalConPedidos.setBackground(null);
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
 			}
 		});
 		
 		btnPuntoDeVenta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				idDomiCon = 0;
+				consDomi = false;
 				idTipoPedido = 2;
 				pintarPedidos();
 				btnTotal.setBackground(null);
@@ -313,6 +352,11 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				btnDomicilio.setBackground(null);
 				btnPuntoDeVenta.setBackground(Color.YELLOW);
 				btnTotalConPedidos.setBackground(null);
+				for(int i = 0; i < botDom.size(); i++)
+				{
+					//Quitamos el backgroung del botón 
+					botDom.get(i).setBackground(null);
+				}
 			}
 		});
 		
@@ -384,10 +428,81 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		txtFechaSistema.setText(fechaSis);
 		contentPane.add(txtFechaSistema);
 		txtFechaSistema.setColumns(10);
+		
+		JScrollPane scrollPaneDomiciliarios = new JScrollPane();
+		scrollPaneDomiciliarios.setBounds(842, 244, 158, 348);
+		contentPane.add(scrollPaneDomiciliarios);
+		
+		JPanel panelDomiciliario = new JPanel();
+		scrollPaneDomiciliarios.setViewportView(panelDomiciliario);
+		panelDomiciliario.setLayout(new GridLayout(11, 0, 0, 0));
+		
+		//Agregamos los botones dinámicos de domiciliarios
+		//Vamos  a adicionar los domiciliarios del sistema
+				domiciliarios = empCtrl.obtenerDomiciliarios();
+				//Definimos las variables necesarias
+				Usuario emp;
+				JButton boton;
+				//Recorremos los arreglo de los domiciliarios
+				for(int i = 0; i < domiciliarios.size();i++)
+				{
+					//Llevamos el valor del domiciliario de turno a unavariable temporal
+					emp = domiciliarios.get(i);
+					//Creamos el botón
+					boton = new JButton(emp.getNombreLargo());
+					boton.setActionCommand(Integer.toString(emp.getIdUsuario()));
+					//Adicionammos el botón al panel
+					panelDomiciliario.add(boton);
+					botDom.add(boton);
+					boton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) 
+						{
+							idTipoPedido = 0;
+							//Extraemos el botón de la acción
+							JButton botAccion = ((JButton)arg0.getSource());
+							//Extraemos la acción del botón
+							String actCom =  botAccion.getActionCommand();
+							//Tomamos el color de fondo del botón
+							Color colorBut = botAccion.getBackground();
+							//Si el color es amarillo no debemos hacer nada
+							if(colorBut.equals(Color.YELLOW))
+							{
+								
+							}
+							else
+							{
+								//Debemos volver a la normalidad los botones quitarles el background
+								for(int i = 0; i < botDom.size(); i++)
+								{
+									//Quitamos el backgroung del botón 
+									botDom.get(i).setBackground(null);
+								}
+								botAccion.setBackground(Color.YELLOW);
+								//Prendemos el indicador de que es una consulta por domiciliario
+								consDomi = true;
+								//Debemos de ejecutar la consulta para el domiciliario en cuestión
+								//guardamos en la variable el idUsuario del domiciliario
+								idDomiCon = Integer.parseInt(actCom);
+								//Llamamos método para pintar pedidos
+								pintarPedidos();
+								//Quitamos el color al filtro por tipo de pedido
+								btnTotal.setBackground(null);
+								btnParaLlevar.setBackground(null);
+								btnDomicilio.setBackground(null);
+								btnPuntoDeVenta.setBackground(null);
+								btnTotalConPedidos.setBackground(null);
+							}
+							
+						}
+					});
+				}
+		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
-				pintarPedidos();
+				//De aqui puede venir nuestro desangre, por temas de tiempos y consultas a la base de datos
+				//Por el momento lo suspenderemos, mientras optimizamos
+				//pintarPedidos();
 			}
 		});
 		//h1 = new Thread(this);
@@ -412,15 +527,18 @@ public class VentPedTransaccional extends JFrame implements Runnable{
         {
         	//Se invoca de la capa Controladora la forma de observar los pedidos por un total
         	pedidos = pedCtrl.obtenerPedidosTableConFinales();
-        }else if(idTipoPedido == 0)
-        {
-        	//Se invoca de la capa Controladora la forma de observar los pedidos por un total
-        	pedidos = pedCtrl.obtenerPedidosTableSinFinales();
-        }
-        else if(idTipoPedido > 0)
+        }else if(idTipoPedido > 0)
         {
         	//Se invoca de la capa controladora la forma de ver los pedidos por tipo
         	pedidos = pedCtrl.obtenerPedidosPorTipo(idTipoPedido);
+        }else if((idTipoPedido == 0)&&(idDomiCon == 0))
+        {
+        	//Se invoca de la capa Controladora la forma de observar los pedidos por un total
+        	pedidos = pedCtrl.obtenerPedidosTableSinFinales();
+        }else if((idTipoPedido == 0)&&(idDomiCon > 0))
+        {
+        	//Se invoca de la capa Controladora la forma de observar los pedidos por un domiciliario
+        	pedidos = pedCtrl.obtenerPedidosVentanaComandaDom(idDomiCon);
         }
         DefaultTableModel modelo = new DefaultTableModel(){
        	    public boolean isCellEditable(int rowIndex,int columnIndex){
@@ -530,7 +648,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		}
 		else
 		{
-			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true);
+			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true,/* OJO HAY QUE NORMALIZAR*/0);
 			cambioEstado.setVisible(true);
 			pintarPedidos();
 		}
@@ -559,7 +677,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		}
 		else
 		{
-			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true);
+			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true,/* OJO HAY QUE NORMALIZAR*/0);
 			cambioEstado.setVisible(true);
 			pintarPedidos();
 		}

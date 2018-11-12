@@ -52,6 +52,7 @@ public class VentInvPedidoEspecial extends JDialog {
 	private Date datFechaSistema;
 	private JDateChooser fechaSolPedido;
 	private JDateChooser fechaConsultaSolicitudes;
+	InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -129,7 +130,6 @@ public class VentInvPedidoEspecial extends JDialog {
 					ItemInventario itemSel = (ItemInventario)comboBoxItemInv.getSelectedItem();
 					int idItem = itemSel.getIdItem();
 					PedidoEspecial pedEsp = new PedidoEspecial(0,idItem,cantidad,fechaSol);
-					InventarioCtrl invCtrl = new InventarioCtrl();
 					int idPedEspIns = invCtrl.insertarPedidoEspecial(pedEsp);
 					if(idPedEspIns > 0)
 					{
@@ -192,7 +192,6 @@ public class VentInvPedidoEspecial extends JDialog {
 				String itemEliminar = (String) tableSolPedido.getValueAt(filaSeleccionada, 2);
 				int idPedEspELi = Integer.parseInt((String)tableSolPedido.getValueAt(filaSeleccionada, 0));
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el Pedido Especial " +  itemEliminar , "Eliminacion Pedido Especial ", JOptionPane.YES_NO_OPTION);
-				InventarioCtrl invCtrl = new InventarioCtrl();
 				boolean resEli  = invCtrl.eliminarItemInventario(idPedEspELi);
 				if(resEli)
 				{
@@ -299,8 +298,7 @@ public class VentInvPedidoEspecial extends JDialog {
         columnsName[3] = "Cantidad";
         columnsName[4] = "Unidad";
         columnsName[5] = "Fecha Solicitud";
-        InventarioCtrl invCtrl = new InventarioCtrl();
-		ArrayList pedidosEspeciales = invCtrl.obtenerPedidosEspeciales(fecha);
+        ArrayList pedidosEspeciales = invCtrl.obtenerPedidosEspeciales(fecha);
         DefaultTableModel modeloPedidos= new DefaultTableModel();
         modeloPedidos .setColumnIdentifiers(columnsName);
 		for(int y = 0; y < pedidosEspeciales.size();y++)

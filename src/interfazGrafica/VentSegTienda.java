@@ -20,10 +20,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
-import capaControlador.AutenticacionCtrl;
 import capaControlador.OperacionesTiendaCtrl;
-import capaControlador.ParametrosCtrl;
 import capaControlador.ParametrosProductoCtrl;
+import capaControlador.AutenticacionCtrl;
+import capaControlador.ParametrosCtrl;
 import capaModelo.Impuesto;
 import capaModelo.MenuAgrupador;
 import capaModelo.Parametro;

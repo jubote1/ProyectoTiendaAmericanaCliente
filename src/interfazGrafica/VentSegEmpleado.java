@@ -13,9 +13,9 @@ import javax.swing.JTextField;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import capaControlador.AutenticacionCtrl;
 import capaControlador.EmpleadoCtrl;
 import capaControlador.ParametrosDireccionCtrl;
+import capaControlador.AutenticacionCtrl;
 import capaModelo.MenuAgrupador;
 import capaModelo.Municipio;
 import capaModelo.TipoEmpleado;

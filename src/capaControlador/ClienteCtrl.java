@@ -36,10 +36,20 @@ public class ClienteCtrl {
 		this.auditoria = auditoria;
 	}
 	
-	public boolean  existeCliente(String telefono)
+	//Cambiaremos el método existe cliente, para si
+	// el valor es 0 el cliente no siste
+	// el valor es 1 el cliente si existe y tiene 1 solo asociado
+	// el valor es 2 el cliente si existe y tiene varias direcciones
+	public ArrayList<Cliente> existeCliente(String telefono)
 	{
-		boolean respuesta = ClienteDAO.existeCliente(telefono, auditoria);
+		ArrayList<Cliente> respuesta = ClienteDAO.existeCliente(telefono, auditoria);
 		return(respuesta);
+	}
+	
+	public int actualizarCliente(Cliente clienteAct)
+	{
+		int idClienteAct = ClienteDAO.actualizarCliente(clienteAct, auditoria);
+		return(idClienteAct);
 	}
 	
 

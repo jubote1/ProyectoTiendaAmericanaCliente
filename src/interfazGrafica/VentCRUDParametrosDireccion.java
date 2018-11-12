@@ -20,9 +20,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
-import capaControlador.ParametrosCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ParametrosProductoCtrl;
+import capaControlador.ParametrosCtrl;
 import capaModelo.ImpuestoProducto;
 import capaModelo.ItemInventario;
 import capaModelo.ItemInventarioProducto;

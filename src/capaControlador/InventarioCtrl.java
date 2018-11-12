@@ -13,7 +13,7 @@ import capaModelo.PedidoEspecial;
 
 public class InventarioCtrl {
 	private boolean auditoria;
-	public InventarioCtrl()
+	public InventarioCtrl(boolean auditoria)
 	{
 		this.auditoria = auditoria;
 	}
@@ -51,6 +51,13 @@ public class InventarioCtrl {
 	{
 		ArrayList pedidosEspeciales = PedidoEspecialDAO.obtenerPedidosEspeciales(fecha, auditoria);
 		return(pedidosEspeciales);
+	}
+	
+	public  int obtenerCantItemInventario( )
+	{
+		int cantItems = ItemInventarioDAO.obtenerCantItemInventario(auditoria);
+		return(cantItems);
+		
 	}
 	
 	public ArrayList obtenerItemInventarioResumen(String fecha)

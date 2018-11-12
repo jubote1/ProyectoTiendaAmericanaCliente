@@ -9,8 +9,8 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import capaControlador.ParametrosDireccionCtrl;
-import capaControlador.PedidoCtrl;
 import capaControlador.ReportesCtrl;
+import capaControlador.PedidoCtrl;
 import capaModelo.Estado;
 import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPosterior;
@@ -51,7 +51,7 @@ public class VentPedCambioEstado extends JDialog {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentPedCambioEstado frame = new VentPedCambioEstado(0, false, false, null, true);
+					VentPedCambioEstado frame = new VentPedCambioEstado(0, false, false, null, true,0);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -63,7 +63,7 @@ public class VentPedCambioEstado extends JDialog {
 	/**
 	 * Create the frame.
 	 */
-	public VentPedCambioEstado(int idPedido, boolean anterior, boolean posterior, java.awt.Frame parent, boolean modal ) {
+	public VentPedCambioEstado(int idPedido, boolean anterior, boolean posterior, java.awt.Frame parent, boolean modal , int idDomiciliario ) {
 		super(parent, modal);
 		this.anterior = anterior;
 		this.posterior = posterior;
@@ -115,11 +115,11 @@ public class VentPedCambioEstado extends JDialog {
 				if (anterior)
 				{
 					estAnt = (EstadoAnterior) cmbEstadoObjetivo.getSelectedItem();
-					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estAnt.getIdEstadoAnterior(),Sesion.getUsuario());
+					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estAnt.getIdEstadoAnterior(),Sesion.getUsuario(),false, idDomiciliario);
 				}else if(posterior)
 				{
 					estPos = (EstadoPosterior) cmbEstadoObjetivo.getSelectedItem();
-					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior(),Sesion.getUsuario());
+					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior(),Sesion.getUsuario(),true, idDomiciliario);
 					if(estPos.isImprimeEstPosterior())
 					{
 //						ReportesCtrl repCtrl = new ReportesCtrl();
