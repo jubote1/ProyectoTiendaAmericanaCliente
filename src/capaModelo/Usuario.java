@@ -14,7 +14,22 @@ public class Usuario {
 	private int idTipoEmpleado;
 	private String tipoInicio;
 	private boolean administrador;
+	private int estadoDomiciliario;
 	
+	
+	
+	public int getIdTipoEmpleado() {
+		return idTipoEmpleado;
+	}
+	public void setIdTipoEmpleado(int idTipoEmpleado) {
+		this.idTipoEmpleado = idTipoEmpleado;
+	}
+	public int getEstadoDomiciliario() {
+		return estadoDomiciliario;
+	}
+	public void setEstadoDomiciliario(int estadoDomiciliario) {
+		this.estadoDomiciliario = estadoDomiciliario;
+	}
 	public String getNombreUsuario() {
 		return nombreUsuario;
 	}

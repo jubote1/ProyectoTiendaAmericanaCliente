@@ -92,5 +92,14 @@ public class EmpleadoCtrl {
 		boolean respuesta = TipoEmpleadoDAO.esDomicilario(idTipoEmpleado, auditoria);
 		return(respuesta);
 	}
+	
+	public void entradaDomiciliario(int idEmpleado)
+	{
+		UsuarioDAO.entradaDomiciliario(idEmpleado, auditoria);
+	}
 
+	public void salidaDomiciliario(int idEmpleado)
+	{
+		UsuarioDAO.salidaDomiciliario(idEmpleado, auditoria);
+	}
 }

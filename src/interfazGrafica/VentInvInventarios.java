@@ -84,7 +84,7 @@ public class VentInvInventarios extends JDialog {
 		});
 		setTitle("VENTANA INVENTARIOS");
 		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setDefaultCloseOperation(0);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(0,0, 774, 571);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -93,8 +93,8 @@ public class VentInvInventarios extends JDialog {
 		contentPaneInventario.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPaneInventario);
 		contentPaneInventario.setLayout(null);
-		
-				
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JScrollPane scrPaneItemsInv = new JScrollPane();
 		scrPaneItemsInv.setBounds(10, 11, 537, 270);
 		contentPaneInventario.add(scrPaneItemsInv);
@@ -149,7 +149,7 @@ public class VentInvInventarios extends JDialog {
 		btnRealizarVarianzaCierre = new JButton("Realizar Varianza Cierre");
 		btnRealizarVarianzaCierre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentIngresarVarianza ingVarianza = new VentIngresarVarianza(null, true);
+				VentInvIngresarVarianza ingVarianza = new VentInvIngresarVarianza(null, true);
 				ingVarianza.setVisible(true);
 			}
 		});

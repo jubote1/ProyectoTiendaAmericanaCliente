@@ -17,5 +17,7 @@
 	<classpathentry kind="lib" path="commons-javaflow-20060411.jar"/>
 	<classpathentry kind="lib" path="commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/JuanDavid/git/ProyectoTiendaAmericanaCliente/jogl-all-2.0.2.jar"/>
+	<classpathentry kind="lib" path="NefAnimacion_V2.1_jdk18.jar"/>
+	<classpathentry kind="lib" path="license.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

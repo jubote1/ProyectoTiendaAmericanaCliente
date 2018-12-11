@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
@@ -22,15 +23,17 @@ import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTable;
 import java.awt.Font;
 
-public class VentSegConfMenu extends JFrame {
+public class VentSegConfMenu extends JDialog {
 
 	private JPanel contentPane;
 	private JPanel panelBotonesMenu;
@@ -44,6 +47,8 @@ public class VentSegConfMenu extends JFrame {
 	private Object[][] botones;
 	private JButton btnEliminarRelacinProducto;
 	private ParametrosProductoCtrl parCtrl = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private JButton btnSalir;
+	int multimenuActivo;
 	/**
 	 * Launch the application.
 	 */
@@ -51,7 +56,7 @@ public class VentSegConfMenu extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentSegConfMenu frame = new VentSegConfMenu();
+					VentSegConfMenu frame = new VentSegConfMenu(null, false);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -63,20 +68,22 @@ public class VentSegConfMenu extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentSegConfMenu() {
-		
+	public VentSegConfMenu(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("CONFIGURACI\u00D3N DE MEN\u00DAS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(0,0, 864, 504);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 864, 504);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		contentPane.setLayout(null);
-		setExtendedState(MAXIMIZED_BOTH);
-		
+		this.setSize(this.getToolkit().getScreenSize()); 
+		//setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 864, 504);
 		panelBotonesMenu = new JPanel();
 		panelBotonesMenu.setBounds(200, 0, 769, 315);
 		contentPane.add(panelBotonesMenu);
@@ -180,7 +187,7 @@ public class VentSegConfMenu extends JFrame {
 				//
 				comboBoxProducto.setSelectedIndex(0);
 				comboBoxMenu.setSelectedIndex(0);
-				comboBoxMultiMenu.setSelectedIndex(0);
+				//comboBoxMultiMenu.setSelectedIndex(0);
 			}
 		});
 		btnAsociarProductoMen.setBounds(35, 240, 143, 23);
@@ -232,6 +239,16 @@ public class VentSegConfMenu extends JFrame {
 		btnEliminarRelacinProducto.setFont(new Font("Tahoma", Font.BOLD, 8));
 		btnEliminarRelacinProducto.setBounds(20, 274, 170, 23);
 		panelComandos.add(btnEliminarRelacinProducto);
+		
+		btnSalir = new JButton("SALIR");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnSalir.setBounds(380, 338, 143, 36);
+		contentPane.add(btnSalir);
 		
 		
 //		for(int i = 1; i <= 20; i++)

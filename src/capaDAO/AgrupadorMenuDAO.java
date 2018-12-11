@@ -7,7 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;
 import com.mysql.jdbc.ResultSetMetaData;
@@ -16,7 +16,7 @@ import com.mysql.jdbc.ResultSetMetaData;
  * @author JuanDavid
  *
  */
-public class MenuAgrupadorDAO {
+public class AgrupadorMenuDAO {
 	
 /**
  * Método que se encarga de retornar todas las entidades Tiendas definidas en la base de datos
@@ -28,7 +28,7 @@ public class MenuAgrupadorDAO {
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
 		ArrayList menus = new ArrayList();
-		MenuAgrupador menuAgru = new MenuAgrupador(0, "", "");
+		AgrupadorMenu menuAgru = new AgrupadorMenu(0, "", "");
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -70,8 +70,55 @@ public class MenuAgrupadorDAO {
 		
 	}
 	
+	/**
+	 * Método que retorna un ArrayList con todos los Agrupadores Menús definidos en el sistema en un arraylist
+	 * @param auditoria
+	 * @return
+	 */
+	public static ArrayList<AgrupadorMenu> obtenerMenusAgrupadorObj(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList menus = new ArrayList();
+		AgrupadorMenu menuAgru = new AgrupadorMenu(0, "", "");
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from agrupador_menu";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				
+				int idmenuagrupador = rs.getInt("idmenuagrupador");
+				String menu_agrupador = rs.getString("menu_agrupador");
+				String descripcion = rs.getString("descripcion");
+				menuAgru = new AgrupadorMenu(idmenuagrupador, menu_agrupador,descripcion);
+				menus.add(menuAgru);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(menus);
+		
+	}
 	
-	public static int insertarMenuAgrupador(MenuAgrupador menu, boolean auditoria)
+	public static int insertarMenuAgrupador(AgrupadorMenu menu, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idMenuAgrupadorIns = 0;
@@ -144,7 +191,7 @@ public class MenuAgrupadorDAO {
 		return(respuesta);
 	}
 	
-	public static boolean EditarMenuAgrupador(MenuAgrupador menu, boolean auditoria)
+	public static boolean EditarMenuAgrupador(AgrupadorMenu menu, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;

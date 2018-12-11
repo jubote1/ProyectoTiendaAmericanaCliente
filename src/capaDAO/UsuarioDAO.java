@@ -407,18 +407,21 @@ public class UsuarioDAO {
 			String strAdmin;
 			boolean administrador = false;
 			int idTipoEmpleado = 0, idEmpleado = 0;
+			int estadoDomiciliario = 0;
 			while(rs.next()){
 				nombre = rs.getString("nombre");
 				nombreLargo = rs.getString("nombre_largo");
 				tipoInicio = rs.getString("tipoinicio");
 				strAdmin = rs.getString("administrador");
 				idEmpleado = rs.getInt("id");
+				estadoDomiciliario = rs.getInt("estadodomiciliario");
 				if(strAdmin.equals(new String("S")))
 				{
 					administrador = true;
 				}
 				idTipoEmpleado = rs.getInt("idtipoempleado");
 				empConsulta = new Usuario(idEmpleado, nombre,"", nombreLargo, idTipoEmpleado,tipoInicio, administrador);
+				empConsulta.setEstadoDomiciliario(estadoDomiciliario);
 				domiciliarios.add(empConsulta);
 			}
 			rs.close();
@@ -437,4 +440,68 @@ public class UsuarioDAO {
 		
 	}
 	
+	public static void salidaDomiciliario(int idEmpleado, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = false;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update usuario set estadodomiciliario = 1 where id = " + idEmpleado;
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			respuesta = true;
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			respuesta = false;
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+	}
+	
+	
+	public static void entradaDomiciliario(int idEmpleado, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = false;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update usuario set estadodomiciliario = 0 where id = " + idEmpleado;
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			respuesta = true;
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			respuesta = false;
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+	}
 }

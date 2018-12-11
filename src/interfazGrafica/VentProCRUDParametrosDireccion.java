@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -34,9 +35,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import java.awt.Font;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JScrollBar;
 
-public class VentCRUDParametrosDireccion extends JFrame {
+public class VentProCRUDParametrosDireccion extends JDialog {
 
 	private JPanel contentPane;
 	private JTextField jTextIDMunicipio;
@@ -56,7 +58,7 @@ public class VentCRUDParametrosDireccion extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCRUDParametrosDireccion frame = new VentCRUDParametrosDireccion();
+					VentProCRUDParametrosDireccion frame = new VentProCRUDParametrosDireccion(null, false);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -95,10 +97,11 @@ public class VentCRUDParametrosDireccion extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de impuestor.
 	 */
-	public VentCRUDParametrosDireccion() {
+	public VentProCRUDParametrosDireccion(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("PARAMETROS DIRECCION");
 		idMunicipio = 0;
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(0,0, 617, 474);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -113,7 +116,8 @@ public class VentCRUDParametrosDireccion extends JFrame {
 		tabPanelParametros.setBorder(new LineBorder(new Color(0, 0, 0), 3));
 		tabPanelParametros.setBounds(20, 11, 580, 408);
 		contentPane.add(tabPanelParametros);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JPanel panelMunicipios = new JPanel();
 		tabPanelParametros.addTab("Municipio", null, panelMunicipios, null);
 		panelMunicipios.setLayout(null);

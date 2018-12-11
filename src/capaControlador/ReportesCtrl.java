@@ -1,5 +1,7 @@
 package capaControlador;
 
+import java.awt.Window;
+
 import capaDAO.ParametrosDAO;
 import capaDAO.ReportesDAO;
 import capaDAO.TiendaDAO;
@@ -13,10 +15,10 @@ public class ReportesCtrl {
 		this.auditoria = auditoria;
 	}
 	
-	public void generarReporteVentasDiario()
+	public void generarReporteVentasDiario(Window ventanaPadre)
 	{
 		String ruta = ParametrosDAO.retornarValorAlfanumerico("REPORTEVENTASDIARIO", auditoria);
-		ReportesDAO.generarReporteVentasDiario(ruta);
+		ReportesDAO.generarReporteVentasDiario(ruta, ventanaPadre);
 	}
 
 	public void generarFactura(int idPedido)
@@ -25,30 +27,30 @@ public class ReportesCtrl {
 		ReportesDAO.generarFactura(ruta, idPedido);
 	}
 	
-	public void generarReporteInventarioCon()
+	public void generarReporteInventarioCon(Window ventanaPadre)
 	{
 		String ruta = ParametrosDAO.retornarValorAlfanumerico("REPORTEINVCONSUMIDO", auditoria);
 		FechaSistema fecha = TiendaDAO.obtenerFechasSistema( auditoria);
-		ReportesDAO.generarReporteInventarioCon(ruta, fecha.getFechaApertura());
+		ReportesDAO.generarReporteInventarioCon(ruta, fecha.getFechaApertura(), ventanaPadre);
 	}
 	
-	public void generarReporteInventarioAct()
+	public void generarReporteInventarioAct(Window ventanaPadre)
 	{
 		String ruta = ParametrosDAO.retornarValorAlfanumerico("REPORTEINVACTUAL", auditoria);
-		ReportesDAO.generarReporteInventarioAct(ruta);
+		ReportesDAO.generarReporteInventarioAct(ruta, ventanaPadre);
 	}
 	
-	public void generarReporteCaja()
+	public void generarReporteCaja(Window ventanaPadre)
 	{
 		String ruta = ParametrosDAO.retornarValorAlfanumerico("REPORTECAJA", auditoria);
 		FechaSistema fecha = TiendaDAO.obtenerFechasSistema( auditoria);
-		ReportesDAO.generarReporteCaja(ruta, fecha.getFechaApertura());
+		ReportesDAO.generarReporteCaja(ruta, fecha.getFechaApertura(), ventanaPadre);
 	}
 	
-	public void generarReporteCajaDet()
+	public void generarReporteCajaDet(Window ventanaPadre)
 	{
 		String ruta = ParametrosDAO.retornarValorAlfanumerico("REPORTECAJADETALLADO", auditoria);
 		FechaSistema fecha = TiendaDAO.obtenerFechasSistema( auditoria);
-		ReportesDAO.generarReporteCajaDetallado(ruta, fecha.getFechaApertura());
+		ReportesDAO.generarReporteCajaDetallado(ruta, fecha.getFechaApertura(), ventanaPadre	);
 	}
 }

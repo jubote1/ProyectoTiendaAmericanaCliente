@@ -28,7 +28,11 @@ public class OperacionesTiendaCtrl {
 		return(respuesta);
 	}
 
-//VALIDAR SI EL DÍA ESTA ABIERTO O HAY QUE ABRIRLO
+
+/**
+ * Método qeu se encarga de retornar la información de los días que se podrían aperturar en el sistema
+ * @return
+ */
 public String validarEstadoFechaSistema()
 {
 	PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
@@ -39,13 +43,15 @@ public String validarEstadoFechaSistema()
 	Date fechaPosDate = new Date();
 	try {
 		fechaPosDate = sdf.parse(fechaPOS);
-		fechaHoy = sdf.parse(fechaHoy.toString());
+		//NO es necesario ya fechaHoy tiene la fecha actual
+		fechaHoy = sdf.parse(sdf.format(new Date()));
 	} catch (ParseException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
 	//Se realiza resta en días para saber la diferencia
-	int dias =(int) (fechaHoy.getTime() - fechaPosDate.getTime())/86400000;;
+	int dias =Math.abs((int) (fechaHoy.getTime() - fechaPosDate.getTime())/86400000);
+	
 	if(dias >= 2)
 	{
 		return(sdf.format(fechaHoy));

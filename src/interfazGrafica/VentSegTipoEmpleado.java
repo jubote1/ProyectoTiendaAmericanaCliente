@@ -20,13 +20,14 @@ import capaDAO.EstadoDAO;
 import capaModelo.Estado;
 import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPosterior;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.TipoEmpleado;
 
 import javax.swing.JScrollPane;
 import java.awt.Color;
 import javax.swing.border.LineBorder;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -34,11 +35,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JScrollBar;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JRadioButton;
 import javax.swing.JList;
 import java.awt.Font;
 
-public class VentSegTipoEmpleado extends JFrame {
+public class VentSegTipoEmpleado extends JDialog {
 
 	private JPanel contentPane;
 	private JTextField jTextIdTipo;
@@ -58,7 +60,7 @@ public class VentSegTipoEmpleado extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentSegTipoEmpleado frame = new VentSegTipoEmpleado();
+					VentSegTipoEmpleado frame = new VentSegTipoEmpleado(null, false);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -100,7 +102,8 @@ public class VentSegTipoEmpleado extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de menú Agrupador.
 	 */
-	public VentSegTipoEmpleado() {
+	public VentSegTipoEmpleado(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("TIPO EMPLEADO");
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -109,7 +112,7 @@ public class VentSegTipoEmpleado extends JFrame {
 			}
 		});
 		
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(0,0, 703, 457);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -120,8 +123,10 @@ public class VentSegTipoEmpleado extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-	
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JPanel panelDatos = new JPanel();
+		panelDatos.setBorder(new LineBorder(new Color(0, 0, 0), 5));
 		panelDatos.setBounds(22, 11, 655, 241);
 		contentPane.add(panelDatos);
 		panelDatos.setLayout(null);
@@ -147,6 +152,7 @@ public class VentSegTipoEmpleado extends JFrame {
 		
 		//Se crea Panel que  contendrá el Jtable y los botones
 		JPanel panelJtable = new JPanel();
+		panelJtable.setBorder(new LineBorder(new Color(0, 0, 0), 5));
 		panelJtable.setBounds(22, 263, 655, 156);
 		contentPane.add(panelJtable);
 		panelJtable.setLayout(null);
@@ -161,17 +167,17 @@ public class VentSegTipoEmpleado extends JFrame {
 		 * Método que implementará la acción cuando se de click sobre el botón Insertar
 		 */
 		JButton btnEliminar = new JButton("Eliminar");
-		btnEliminar.setBounds(175, 133, 89, 23);
+		btnEliminar.setBounds(133, 121, 89, 23);
 		panelJtable.add(btnEliminar);
 		
 		JButton btnEditar = new JButton("Editar");
 		
-		btnEditar.setBounds(298, 133, 89, 23);
+		btnEditar.setBounds(247, 121, 89, 23);
 		panelJtable.add(btnEditar);
 		
 		JButton btnGrabarEdicion = new JButton("Grabar Edicion");
 		
-		btnGrabarEdicion.setBounds(427, 133, 123, 23);
+		btnGrabarEdicion.setBounds(356, 121, 123, 23);
 		panelJtable.add(btnGrabarEdicion);
 		btnGrabarEdicion.setEnabled(false);
 		
@@ -350,8 +356,18 @@ public class VentSegTipoEmpleado extends JFrame {
 				}
 			}
 		});
-		btnInsertar.setBounds(52, 133, 89, 23);
+		btnInsertar.setBounds(23, 121, 89, 23);
 		panelJtable.add(btnInsertar);
+		
+		JButton btnSalir = new JButton("SALIR");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnSalir.setBounds(502, 121, 123, 23);
+		panelJtable.add(btnSalir);
 		
 		//Evento para definir las acciones para eliminar
 		btnEliminar.addActionListener(new ActionListener() {

@@ -20,6 +20,7 @@ import reportes.AbstractJasperReports;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 
@@ -74,15 +75,17 @@ public class VentPedFinalizarDia extends JDialog {
 		super(parent, modal);
 		this.setAlwaysOnTop(true);
 		setTitle("FINALIZAR DIA");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(0,0, 800, 450);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 800, 450);
+		//setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 800, 450);
+	    this.setSize(this.getToolkit().getScreenSize());
 		contentPanePrincipal = new JPanel();
 		contentPanePrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPanePrincipal);
 		contentPanePrincipal.setLayout(null);
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		DefaultTableModel modelo = pintarItemsInventario();
 		
 		JButton btnCierreDia = new JButton("Finalizar D\u00EDa");
@@ -90,14 +93,15 @@ public class VentPedFinalizarDia extends JDialog {
 		btnCierreDia.setBounds(110, 239, 152, 37);
 		contentPanePrincipal.add(btnCierreDia);
 		
-		JButton btnCancelar = new JButton("Cancelar");
+		JButton btnCancelar = new JButton("Cancelar/Salir");
+		btnCancelar.setFont(new Font("Tahoma", Font.BOLD, 12));
 		btnCancelar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				dispose();
 			}
 		});
-		btnCancelar.setBounds(481, 239, 146, 37);
+		btnCancelar.setBounds(455, 239, 201, 37);
 		contentPanePrincipal.add(btnCancelar);
 		
 		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
@@ -162,11 +166,12 @@ public class VentPedFinalizarDia extends JDialog {
 		JButton btnReporteUsoInventario = new JButton("Reporte uso Inventario");
 		btnReporteUsoInventario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				//Acción para la generación inventario consumido
-				dispose();
+				//dispose();
 				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteInventarioCon();
+				repCtrl.generarReporteInventarioCon(ventanaPadre);
 			}
 		});
 		btnReporteUsoInventario.setBounds(10, 45, 182, 23);
@@ -175,11 +180,12 @@ public class VentPedFinalizarDia extends JDialog {
 		JButton btnCorteDeCaja = new JButton("Corte de Caja");
 		btnCorteDeCaja.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
 				//Acción para la generación de reporte de caja
-				dispose();
+				//dispose();
 				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteCaja();
+				repCtrl.generarReporteCaja(ventanaPadre);
 			}
 		});
 		btnCorteDeCaja.setBounds(204, 45, 184, 23);
@@ -188,11 +194,12 @@ public class VentPedFinalizarDia extends JDialog {
 		JButton btnNewButton = new JButton("Corte de Caja Detallada");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
 				//Acción para la generación de reporte de caja detallado
-				dispose();
+				//dispose();
 				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteCajaDet();
+				repCtrl.generarReporteCajaDet(ventanaPadre);
 			}
 		});
 		btnNewButton.setBounds(204, 79, 184, 23);
@@ -201,11 +208,12 @@ public class VentPedFinalizarDia extends JDialog {
 		JButton btnNewButton_1 = new JButton("Inventario Actual");
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				//Acción para la generación de reporte inventario actual
-				dispose();
+				//dispose();
 				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteInventarioAct();
+				repCtrl.generarReporteInventarioAct(ventanaPadre);
 			}
 		});
 		btnNewButton_1.setBounds(10, 79, 182, 23);
@@ -244,9 +252,11 @@ public class VentPedFinalizarDia extends JDialog {
 		contentPanePrincipal.add(btnValidarCierre);
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				//Acción para la generación de reporte general de ventas
 				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteVentasDiario();
+				repCtrl.generarReporteVentasDiario(ventanaPadre);
 								
 			}
 		});
@@ -255,13 +265,16 @@ public class VentPedFinalizarDia extends JDialog {
 				
 				OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 				String resp = operTienda.finalizarDia(fechaSis);
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				if(resp.equals(new String("PROCESO EXITOSO")))
 				{
-					JOptionPane.showMessageDialog(null, "El cierre ha finalizado correctamente " , "El cierre ha finalizado", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(ventanaPadre, "El cierre ha finalizado correctamente " , "El cierre ha finalizado, la aplicación se cerrará.", JOptionPane.INFORMATION_MESSAGE);
+					System.exit(0);
 				}
 				else
 				{
-					JOptionPane.showMessageDialog(null, "El cierre no ha finalizado se presentaron errores" , "El cierre NO ha finalizado", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(ventanaPadre, "El cierre no ha finalizado se presentaron errores" , "El cierre NO ha finalizado", JOptionPane.ERROR_MESSAGE);
 				}
 				txtPaneResCierre.setText(resp);
 			}

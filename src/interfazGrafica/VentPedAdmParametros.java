@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -24,8 +25,9 @@ import capaControlador.ParametrosProductoCtrl;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.ParametrosCtrl;
 import capaModelo.Impuesto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Parametro;
+import java.awt.Font;
 
 public class VentPedAdmParametros extends JDialog {
 
@@ -35,7 +37,7 @@ public class VentPedAdmParametros extends JDialog {
 	private JTextField jTextValorTexto;
 	private JScrollPane scrollPane;
 	private JTable jTableParametro;
-
+	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -63,8 +65,7 @@ public class VentPedAdmParametros extends JDialog {
         columnsName[0] = "Valor Parametro";
         columnsName[1] = "Valor Numerico";
         columnsName[2] = "Valor Texto";
-        ParametrosCtrl par = new ParametrosCtrl();
-		ArrayList<Object> parametros = par.obtenerParametros();
+        ArrayList<Object> parametros = parCtrl.obtenerParametros();
 		DefaultTableModel modelo = new DefaultTableModel();
 		modelo.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < parametros.size();y++)
@@ -84,16 +85,17 @@ public class VentPedAdmParametros extends JDialog {
 		super(frame, modal);
 		setTitle("ADMINISTRACI\u00D3N DE PAR\u00C1METROS");
 		
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(0,0, 773, 392);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 773, 392);
+		//setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 773, 392);
+		this.setSize(this.getToolkit().getScreenSize());
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JPanel panelDatos = new JPanel();
 		panelDatos.setBounds(22, 11, 699, 125);
 		contentPane.add(panelDatos);
@@ -148,7 +150,6 @@ public class VentPedAdmParametros extends JDialog {
 				String valorParametro = jTextValorParametro.getText();
 				String valorTexto = jTextValorTexto.getText();
 				int valorNumerico = Integer.parseInt(jTextValorNumerico.getText());
-				ParametrosCtrl parCtrl = new ParametrosCtrl();
 				Parametro par = new Parametro(valorParametro,valorNumerico, valorTexto);
 				parCtrl.insertarParametro(par);
 				DefaultTableModel modelo = pintarParametro();
@@ -169,8 +170,7 @@ public class VentPedAdmParametros extends JDialog {
 				//Hacemos la validación para decidir si se elimina o no
 				String parametroEliminar = (String) jTableParametro.getValueAt(filaSeleccionada, 0);
 				JOptionPane.showMessageDialog(null, "Esta seguro que se desea eliminar el parámetro " +  parametroEliminar, "Eliminacion Impuesto ", JOptionPane.YES_NO_OPTION);
-				ParametrosCtrl parEliminar = new ParametrosCtrl();
-				parEliminar.eliminarParametro(parametroEliminar);
+				parCtrl.eliminarParametro(parametroEliminar);
 				DefaultTableModel modelo = pintarParametro();
 				jTableParametro.setModel(modelo);
 			}
@@ -199,6 +199,16 @@ public class VentPedAdmParametros extends JDialog {
 		jTableParametro.setBorder(new LineBorder(new Color(0, 0, 0)));
 		jTableParametro.setBackground(Color.WHITE);
 		this.jTableParametro.setModel(modelo);
+		
+		JButton btnSalir = new JButton("SALIR");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnSalir.setBounds(576, 133, 115, 23);
+		panelJtable.add(btnSalir);
 		jTextValorNumerico.setText("");
 		jTextValorTexto.setText("");
 		
@@ -226,7 +236,6 @@ public class VentPedAdmParametros extends JDialog {
 				if (validar)
 				{
 					Parametro parametroEditado = new Parametro(jTextValorParametro.getText(), Integer.parseInt(jTextValorNumerico.getText()), jTextValorTexto.getText());
-					ParametrosCtrl parCtrl = new ParametrosCtrl();
 					boolean respuesta = parCtrl.EditarParametro(parametroEditado);
 					if (respuesta)
 					{

@@ -41,6 +41,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import java.awt.Font;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JScrollBar;
 import java.awt.event.InputMethodListener;
@@ -52,8 +53,9 @@ import java.io.InputStream;
 import java.awt.event.InputMethodEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import javax.swing.JCheckBox;
 
-public class VentProCRUDProducto extends JFrame {
+public class VentProCRUDProducto extends JDialog {
 
 	private JPanel contentPane;
 	private JTextField jTextIDProducto;
@@ -100,6 +102,7 @@ public class VentProCRUDProducto extends JFrame {
 	private JTextField txtCantModSin;
 	private JTable jtabProductoCon;
 	private JTable jtabProductoSin;
+	private JCheckBox chckbxModConPregunta;
 	private boolean modProdCon = false;
 	private boolean modProdSin = false;
 	private JLabel lblImagen;
@@ -113,7 +116,7 @@ public class VentProCRUDProducto extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentProCRUDProducto frame = new VentProCRUDProducto();
+					VentProCRUDProducto frame = new VentProCRUDProducto(null, false);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -224,10 +227,11 @@ public class VentProCRUDProducto extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de impuestor.
 	 */
-	public VentProCRUDProducto() {
+	public VentProCRUDProducto(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("MAESTRO DE ITEMS DE PRODUCTOS");
 		idProducto = 0;
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(0,0, 833, 646);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -236,7 +240,8 @@ public class VentProCRUDProducto extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		//Se crea Panel que  contendrá el Jtable y los botones
 		JPanel panelJtable = new JPanel();
 		panelJtable.setBorder(new LineBorder(new Color(0, 0, 0), 3));
@@ -299,6 +304,16 @@ public class VentProCRUDProducto extends JFrame {
 		jTableProductos.setBorder(new LineBorder(new Color(0, 0, 0)));
 		jTableProductos.setBackground(Color.WHITE);
 		this.jTableProductos.setModel(modelo);
+		
+		JButton btnSalir = new JButton("SALIR");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnSalir.setBounds(567, 133, 123, 23);
+		panelJtable.add(btnSalir);
 		
 		JTabbedPane tabPanelProductos = new JTabbedPane(JTabbedPane.TOP);
 		tabPanelProductos.setBorder(new LineBorder(new Color(0, 0, 0), 3));
@@ -455,7 +470,7 @@ public class VentProCRUDProducto extends JFrame {
 		
 		JPanel panelPreguntasForzadas = new JPanel();
 		panelPreguntasForzadas.setBorder(new LineBorder(new Color(0, 0, 0), 2));
-		panelPreguntasForzadas.setBounds(365, 22, 368, 169);
+		panelPreguntasForzadas.setBounds(369, 12, 368, 169);
 		panelProductos.add(panelPreguntasForzadas);
 		panelPreguntasForzadas.setLayout(null);
 		
@@ -524,7 +539,7 @@ public class VentProCRUDProducto extends JFrame {
 		panelProductos.add(panel);
 		
 		lblImagen = new JLabel("");
-		lblImagen.setBounds(365, 205, 368, 69);
+		lblImagen.setBounds(369, 205, 368, 69);
 		panelProductos.add(lblImagen);
 		
 		JButton btnCargarImagen = new JButton("Cargar Imagen");
@@ -562,6 +577,10 @@ public class VentProCRUDProducto extends JFrame {
 		txtRuta.setBounds(209, 245, 140, 20);
 		panelProductos.add(txtRuta);
 		txtRuta.setColumns(10);
+		
+		chckbxModConPregunta = new JCheckBox("Maneja Modificador Con Pregunta");
+		chckbxModConPregunta.setBounds(446, 188, 192, 23);
+		panelProductos.add(chckbxModConPregunta);
 		
 		
 		
@@ -1052,6 +1071,10 @@ public class VentProCRUDProducto extends JFrame {
 				textPrecio8.setText(Double.toString(productoEditar.getPrecio8()));
 				textPrecio9.setText(Double.toString(productoEditar.getPrecio9()));
 				textPrecio10.setText(Double.toString(productoEditar.getPrecio10()));
+				if(productoEditar.isModConPregunta())
+				{
+					chckbxModConPregunta.setSelected(true);
+				}
 				//Debemos de recuperar la imagen en jlabel de lblimagen
 				//Fijamos el tipo de producto del producto
 				try
@@ -1188,7 +1211,8 @@ public class VentProCRUDProducto extends JFrame {
 					String impresionComanda = ""; 
 					TipoProducto tipoProducto =(TipoProducto) comboBoxTipoProducto.getSelectedItem();
 					Tamano tamano = (Tamano) comboBoxTamano.getSelectedItem();
-					Producto productoEditar = new Producto(idProducto,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano()); 
+					boolean modConPregunta = chckbxModConPregunta.isSelected();
+					Producto productoEditar = new Producto(idProducto,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano(),modConPregunta ); 
 					productoEditar.setImagen(icono);
 					System.out.println("como va el icono " + icono);
 					boolean respuesta = parPro.editarProducto(productoEditar);
@@ -1295,10 +1319,11 @@ public class VentProCRUDProducto extends JFrame {
 					precio10= 0.0;
 				}
 				String impresionComanda = ""; 
+				boolean modConPregunta = chckbxModConPregunta.isSelected();
 				//Capturamos el tipoProudcto
 				TipoProducto tipoProducto =(TipoProducto) comboBoxTipoProducto.getSelectedItem();
 				Tamano tamano = (Tamano) comboBoxTamano.getSelectedItem();
-				Producto productoNuevo = new Producto(0,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano()); 
+				Producto productoNuevo = new Producto(0,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano(), modConPregunta); 
 				productoNuevo.setImagen(icono);
 				int idProdu = parPro.insertarProducto(productoNuevo);
 				if(idProdu > 0)
@@ -1515,6 +1540,7 @@ public void limpiarCampos()
 	comboBoxPreForzada3.setSelectedIndex(0);
 	comboBoxPreForzada4.setSelectedIndex(0);
 	comboBoxPreForzada5.setSelectedIndex(0);
+	chckbxModConPregunta.setSelected(false);
 	btnEliminar.setEnabled(true);
 	btnInsertar.setEnabled(true);
 	btnGrabarEdicion.setEnabled(false);

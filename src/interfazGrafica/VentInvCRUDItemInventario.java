@@ -91,7 +91,7 @@ public class VentInvCRUDItemInventario extends JDialog {
 		super(parent, modal);
 		setTitle("MAESTRO DE ITEMS DE INVENTARIOS");
 		
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(0,0, 773, 511);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -100,7 +100,9 @@ public class VentInvCRUDItemInventario extends JDialog {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 			
 		JPanel panelDatos = new JPanel();
 		panelDatos.setBounds(22, 11, 699, 262);

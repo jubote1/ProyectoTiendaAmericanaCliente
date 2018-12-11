@@ -12,6 +12,7 @@ import javax.swing.text.html.parser.ParserDelegator;
 import capaControlador.InventarioCtrl;
 import capaControlador.ParametrosCtrl;
 import capaControlador.PedidoCtrl;
+import capaModelo.DetallePedido;
 import capaModelo.Parametro;
 import capaModelo.TipoPedido;
 
@@ -52,6 +53,7 @@ public class VentPedFinPago extends JDialog implements Runnable {
 	private JTextField displayTotal;
 	private boolean hayFormaPago = false;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	Thread hiloDescInventario;
 	public void clarearVarEstaticas()
 	{
@@ -131,7 +133,8 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		contentenorFinPago.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentenorFinPago);
 		contentenorFinPago.setLayout(null);
-				
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JButton btnNum_1 = new JButton("1");
 		btnNum_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -298,15 +301,52 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		btnFinalizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 
-				System.out.println("QUE PASA");
 				//Tomamos la información para insertar la forma de pago
 				//Si el pedido tenía forma de pago, deberemos de eliminar la forma de pago anterior
 				if(hayFormaPago)
 				{
 					pedCtrl.eliminarPedidoFormaPago( VentPedTomarPedidos.idPedido);
 				}
+				
+				//Realizamos validaciones para revisar si se da la situación de un pedido que se va a finalizar sin ningún detalle y fue anulado
+				//Validamos que el pedido no haya sido reabierto
+				if(!VentPedTomarPedidos.esReabierto)
+				{
+					//Si el pedido  fue anulado sin descontar
+					if(VentPedTomarPedidos.esAnuladoSinDescontar)
+					{
+						//Validamos si no hay ningún item de pedido, verificando que el tamaño del arreglo sea cero
+						if(VentPedTomarPedidos.detallesPedido.size() == 0)
+						{
+							//Cumpliendo estás condiciones anulamos el pedido
+							boolean anuDetallePedido = pedCtrl.anularPedidoSinDetalle( VentPedTomarPedidos.idPedido);
+						}
+						
+					}
+				}
+				//Realizamos validaciones relacionadas con si el pedido es anulado y tiene items pedido
+				if(VentPedTomarPedidos.esAnulado)
+				{
+					//Definimos variable que nos ayudará a determinar si debemos de quitar la anulación del pedido
+					boolean noAnulado = false;
+					//recorremos el arreglo de detalles pedido
+					for(int j = 0; j < VentPedTomarPedidos.detallesPedido.size(); j++)
+					{
+						DetallePedido detCadaPedido = VentPedTomarPedidos.detallesPedido.get(j);
+						//Verificamos si por lo menos un item del pedido no está anulado
+						if(!detCadaPedido.getEstado().equals(new String("A")))
+						{
+							noAnulado = true;
+							break;
+						}
+					}
+					//Validamos si noAnulado está en true para quitar la anulación del pedido
+					if(noAnulado)
+					{
+						pedCtrl.quitarAnulacionPedido(VentPedTomarPedidos.idPedido);
+					}
+				}
 				// Se envían datos para la inserción de la forma de pago.
-				System.out.println("QUE PASA 2");
 				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, VentPedTomarPedidos.idPedido);
 				if(resFormaPago)
 				{
@@ -324,7 +364,6 @@ public class VentPedFinPago extends JDialog implements Runnable {
 					
 					//Aclaramos la informacion para el tiempo pedido
 					//Inicializamos la variable de habilitaAuditoria
-					ParametrosCtrl parCtrl = new ParametrosCtrl();
 					//Traemos de base de datos el valor del parametro de auditoria
 					Parametro parametroAud = parCtrl.obtenerParametro("TIEMPOPEDIDO");
 					//Extraemos el valor del campo de ValorTexto

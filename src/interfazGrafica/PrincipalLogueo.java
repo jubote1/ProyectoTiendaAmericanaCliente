@@ -51,6 +51,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	OperacionesTiendaCtrl operTienda;
 	Calendar calendario;    
 	Thread h1;
+	AutenticacionCtrl aut = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 
 	/**
 	 * Launch the application.
@@ -85,7 +86,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		contentPane.setLayout(null);
 		
 		//Inicializamos la variable de habilitaAuditoria
-		ParametrosCtrl parCtrl = new ParametrosCtrl();
+		ParametrosCtrl parCtrl = new ParametrosCtrl(true);
 		//Traemos de base de datos el valor del parametro de auditoria
 		Parametro parametroAud = parCtrl.obtenerParametro("AUDITORIA");
 		//Extraemos el valor del campo de ValorTexto
@@ -102,7 +103,8 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		lblNombreSistema.setFont(new Font("Traditional Arabic", Font.BOLD, 17));
 		lblNombreSistema.setBounds(64, 11, 338, 40);
 		contentPane.add(lblNombreSistema);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 				
 		JLabel lbUsuario = new JLabel("Usuario:");
 		lbUsuario.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -154,7 +156,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 					JOptionPane.showMessageDialog(null, "Usuario en Blanco", "Debes Ingresar el nombre de Usuario", JOptionPane.ERROR_MESSAGE);
 				}else
 				{
-					AutenticacionCtrl aut = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+					
 					objUsuario = new Usuario(0,usuario, claveFinal, "", 0,"" , false);
 					boolean  resultado = aut.autenticarUsuario(objUsuario);
 					
@@ -191,6 +193,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 						//Fijamos el usuario que se está loguendo
 						Sesion.setUsuario(usuario);
 						Sesion.setIdUsuario(idUsuario);
+						Sesion.setAccesosMenus(aut.obtenerAccesosPorMenuUsuario(usuario));
 						if(objUsuario.getTipoInicio().equals("Ventana Menús"))
 						{
 							VentPrincipal ventPrincipal = new VentPrincipal();

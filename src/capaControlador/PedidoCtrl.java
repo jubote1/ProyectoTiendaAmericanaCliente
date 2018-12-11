@@ -229,6 +229,12 @@ public class PedidoCtrl implements Runnable {
 		return(respuesta);
 	}
 	
+	/**
+	 * Método que realiza anulación de un pedido, teniendo en cuenta que tiene un pedido y detalles de pedido
+	 * @param idPedido, se recibe la identificación del pedido que se desea eliminar
+	 * @param idMotivoAnulacion Se recibe un motivo de anulación para realizar el descuento o no de inventarios
+	 * @return se retorna un valor boolean con el respultado del proceso
+	 */
 	public boolean anularPedido(int idPedido, int idMotivoAnulacion)
 	{
 		//boolean respuesta = DetallePedidoDAO.AnularDetallesPedido(idPedido);
@@ -250,6 +256,35 @@ public class PedidoCtrl implements Runnable {
 		return(false);
 	}
 	
+	/**
+	 * Método qeu se encarga de anular un pedido que no tiene detalle pedido
+	 * @param idPedido
+	 * @return
+	 */
+	public boolean anularPedidoSinDetalle(int idPedido)
+	{
+		boolean respuesta = true;
+		if(respuesta)
+		{
+			//Realizamos solo la eliminación de pedido el idMotivoAnulacion, lo quemamos en este momento deberemos
+			//tomada de un variable qeu se carga al tomar pedidos
+			respuesta = PedidoDAO.anularPedido(idPedido, 2, auditoria);
+		}
+		return(respuesta);
+	}
+	
+	public boolean quitarAnulacionPedido(int idPedido)
+	{
+		boolean respuesta = true;
+		if(respuesta)
+		{
+			//Realizamos solo la eliminación de pedido el idMotivoAnulacion, lo quemamos en este momento deberemos
+			//tomada de un variable qeu se carga al tomar pedidos
+			respuesta = PedidoDAO.quitarAnulacionPedido(idPedido,auditoria);
+		}
+		return(respuesta);
+	}
+	
 	public boolean anularPedidoEliminar(int idPedido)
 	{
 		boolean respuesta = DetallePedidoDAO.eliminarDetallesPedido(idPedido, auditoria);
@@ -257,6 +292,17 @@ public class PedidoCtrl implements Runnable {
 		{
 			respuesta = PedidoDAO.eliminarPedido(idPedido, auditoria);
 		}
+		if(respuesta)
+		{
+			return(true);
+		}
+		return(false);
+	}
+	
+	//Método que soporta la anulación del pedido en medio de la primera toma, borra los detalles pero no el encabezado del pedido
+	public boolean anularBorrarDetallePedido(int idPedido)
+	{
+		boolean respuesta = DetallePedidoDAO.eliminarDetallesPedido(idPedido, auditoria);
 		if(respuesta)
 		{
 			return(true);
@@ -510,6 +556,62 @@ public class PedidoCtrl implements Runnable {
 				}
 			}
 			return(pedidos);
+		}
+		
+		
+		public String obtenerPedidosEmpacadosDomicilio()
+		{
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema(auditoria);
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				pedidos = PedidoDAO.obtenerPedidosEmpacadosDomicilio(fechaSistema.getFechaApertura(),auditoria);
+				int idPedido = 0;
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
+				//Adicionamos los tiempos pedidos
+				for(int i = 0 ; i < pedidos.size(); i++)
+				{
+					String[]fila = (String[]) pedidos.get(i);
+					idPedido =Integer.parseInt(fila[0]);
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
+					fila[fila.length-1] = tiempoPedido;
+					pedidos.set(i, fila);
+				}
+			}
+			//Luego de esto recorreremos el ArrayList de pedidos para formatearlo en JSON
+			JSONArray listJSON = new JSONArray();
+			JSONObject cadaPedidoJSON = new JSONObject();
+			for(int i = 0; i < pedidos.size(); i++)
+			{
+				
+				cadaPedidoJSON = new JSONObject();
+				String[] fila =(String[]) pedidos.get(i);
+				cadaPedidoJSON.put("idpedidotienda", fila[0]);
+				cadaPedidoJSON.put("fechapedido", fila[1]);
+				cadaPedidoJSON.put("nombres", fila[2]);
+				cadaPedidoJSON.put("tipopedido", fila[3]);
+				cadaPedidoJSON.put("estadopedido", fila[4]);
+				cadaPedidoJSON.put("direccion", fila[5]);
+				cadaPedidoJSON.put("idtipopedido", fila[6]);
+				cadaPedidoJSON.put("idestado", fila[7]);
+				cadaPedidoJSON.put("latitud", fila[8]);
+				cadaPedidoJSON.put("longitud", fila[9]);
+				cadaPedidoJSON.put("tiempopedido", fila[8]);
+				listJSON.add(cadaPedidoJSON);
+			}
+			return(listJSON.toJSONString());
 		}
 		
 		/**
@@ -887,6 +989,11 @@ public class PedidoCtrl implements Runnable {
 				hisEstadosPedidos.remove(0);
 				while(indicador)
 				{
+					//Validamos si el arreglo de historia de estado tiene elementos, si no los tiene nos salimos
+					if(hisEstadosPedidos.size()== 0)
+					{
+						break;
+					}
 					filaHistoria = (String[])hisEstadosPedidos.get(0);
 					int idPedidoTemp = Integer.parseInt(filaHistoria[filaHistoria.length - 2]);
 					if(idPedidoTemp == idPedidoActual)
@@ -1097,7 +1204,7 @@ public class PedidoCtrl implements Runnable {
 					//Sacamos cada fila del pedido
 					String[]fila = (String[]) pedidos.get(i);
 					//Extraemos el idPedido
-					idPedido =Integer.parseInt(fila[0]);
+					idPedido =Integer.parseInt(fila[1]);
 					// Recorremos el ArrayList de los tiempos pedidos.
 					for(int j = 0; j < tiemposPedido.size(); j++)
 					{
@@ -1115,6 +1222,46 @@ public class PedidoCtrl implements Runnable {
 			}
 			return(pedidos);
 		}
+		
+		public ArrayList obtenerPedidosVentanaComandaDomEnRuta(int idEmpleado)
+		{
+			//Cuando el empleado es domiciliario, se deberán mostrar los pedidos propios del tipo domiciliario, ddeberán mostrar los pedidos que ha llevado y con los que salío
+			//hace poco para llevar.
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema( auditoria);
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				//Obtenemos el tipo de Usuario del usuario logueado
+				Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
+				int idTipoEmpActual = usuActual.getidTipoEmpleado();
+				//Distinguimos cuando no es domiciliario
+				pedidos = PedidoDAO.obtenerPedidosVentanaComandaDomEnRuta(fechaSistema.getFechaApertura(), idTipoEmpActual, idEmpleado, auditoria );
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
+				int idPedido = 0;
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
+				for(int i = 0 ; i < pedidos.size(); i++)
+				{
+					String[]fila = (String[]) pedidos.get(i);
+					idPedido =Integer.parseInt(fila[1]);
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
+					fila[fila.length-1] = tiempoPedido;
+					pedidos.set(i, fila);
+				}
+			}
+			return(pedidos);
+		}
+		
 		
 		public ArrayList obtenerPedidosVentanaComandaDom(int idEmpleado)
 		{
@@ -1137,7 +1284,7 @@ public class PedidoCtrl implements Runnable {
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
 					String[]fila = (String[]) pedidos.get(i);
-					idPedido =Integer.parseInt(fila[0]);
+					idPedido =Integer.parseInt(fila[1]);
 					for(int j = 0; j < tiemposPedido.size(); j++)
 					{
 						tiempoPedidoTemp = tiemposPedido.get(j);
@@ -1161,15 +1308,22 @@ public class PedidoCtrl implements Runnable {
 			ArrayList pedidos = new ArrayList();
 			if(sePuedeFacturar(fechaSistema))
 			{
-				//Obtenemos el tipo de Usuario del usuario logueado
-				if(idEmpleado != 0)
+				//Realizamos validación si el idTipoPedido = 100, en cuyo caso traeremos todos los pedidos en estado entregado
+				if(idTipoPedido == 100)
 				{
-					Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
-					int idTipoEmpActual = usuActual.getidTipoEmpleado();
-					pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), idTipoEmpActual, idTipoPedido, auditoria );
+					pedidos = PedidoDAO.ObtenerPedidosVentanaComandaHistorial(fechaSistema.getFechaApertura(), auditoria);
 				}else
 				{
-					pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), 0, idTipoPedido, auditoria );
+					//Obtenemos el tipo de Usuario del usuario logueado
+					if(idEmpleado != 0)
+					{
+						Usuario usuActual = UsuarioDAO.obtenerEmpleado(idEmpleado, auditoria);
+						int idTipoEmpActual = usuActual.getidTipoEmpleado();
+						pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), idTipoEmpActual, idTipoPedido, auditoria );
+					}else
+					{
+						pedidos = PedidoDAO.obtenerPedidosVentanaComandaTipPed(fechaSistema.getFechaApertura(), 0, idTipoPedido, auditoria );
+					}
 				}
 				//Obtenemos los tiempos de Pedido
 				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
@@ -1180,7 +1334,7 @@ public class PedidoCtrl implements Runnable {
 				for(int i = 0 ; i < pedidos.size(); i++)
 				{
 					String[]fila = (String[]) pedidos.get(i);
-					idPedido =Integer.parseInt(fila[0]);
+					idPedido =Integer.parseInt(fila[1]);
 					for(int j = 0; j < tiemposPedido.size(); j++)
 					{
 						tiempoPedidoTemp = tiemposPedido.get(j);
@@ -1232,6 +1386,12 @@ public class PedidoCtrl implements Runnable {
 			return(prodMods);
 		}
 		
+		public ArrayList<ProductoModificadorCon> obtenerModificadoresConProducto(int idProducto)
+		{
+			ArrayList<ProductoModificadorCon> prodMods = ProductoModificadorConDAO.obtenerProdModificadoresCon(idProducto, auditoria);
+			return(prodMods);
+		}
+		
 		public ArrayList<ProductoModificadorSin> obtenerModificadoresSin(int idDetalle)
 		{
 			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
@@ -1243,6 +1403,12 @@ public class PedidoCtrl implements Runnable {
 		{
 			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
 			Producto pro = ProductoDAO.obtenerProducto(detPedido.getIdProducto(), auditoria);
+			return(pro.getModificadorCon());
+		}
+		
+		public int obtenerMaxModificadorConProducto(int idProducto)
+		{
+			Producto pro = ProductoDAO.obtenerProducto(idProducto, auditoria);
 			return(pro.getModificadorCon());
 		}
 		

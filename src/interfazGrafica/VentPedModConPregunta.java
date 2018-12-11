@@ -13,6 +13,7 @@ import javax.swing.border.EmptyBorder;
 import capaModelo.DetallePedido;
 import capaModelo.EleccionForzada;
 import capaModelo.EleccionForzadaTemporal;
+import capaModelo.ModificadorConPregunta;
 import capaModelo.Pregunta;
 import capaModelo.ProductoModificadorCon;
 import capaModelo.ProductoModificadorSin;
@@ -40,7 +41,7 @@ import java.awt.event.ActionEvent;
  * @author Juan David Botero Duque
  *
  */
-public class VentPedModificador extends JDialog {
+public class VentPedModConPregunta extends JDialog {
 
 	/**
 	 * Se definen las variables de presentación como variables privadas
@@ -55,13 +56,14 @@ public class VentPedModificador extends JDialog {
 	/**
 	 * Variables importantes y públicas para el manejo y la coumunicación de los modificadores
 	 */
-	int idDetallePedido = 0;
+	int idProducto = 0;
 	int maxSelecciones = 0;
 	int seleccion = 0;
-	boolean modCon = false;
-	boolean modSin = false;
-	private int contadorDetallePedido;
+	int numPregunta = 0;
+	int mitad = 0;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
+		
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -81,19 +83,9 @@ public class VentPedModificador extends JDialog {
 	 * @param preguntas se recibe un ArrayList con las preguntas forzadas que se van a controlar
 	 * @param idProducto se recibe el producto al cual se le están aplicando la Elección Forzada.
 	 */
-	public VentPedModificador(java.awt.Frame parent, boolean modal, int idDetPedido, boolean modificadorCon, boolean modificadorSin, int contadorDetPedido) {
+	public VentPedModConPregunta(java.awt.Frame parent, boolean modal, int idProd, int pregActual, int mit) {
 		super(parent, modal);
-		contadorDetallePedido = contadorDetPedido;
-		if(modificadorCon)
-		{
-			setTitle("SELECCIÓN MODIFICADORES CON");
-		}else if(modificadorSin)
-		{
-			setTitle("SELECCIÓN MODIFICADORES SIN");
-		}
-
-		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
-		setIconImage(img.getImage());
+		setTitle("SELECCIÓN MODIFICADORES CON PARA ELECCIÓN FORZADA");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(0,0, 684, 610);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
@@ -103,6 +95,8 @@ public class VentPedModificador extends JDialog {
 		contenedorPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contenedorPrincipal);
 		contenedorPrincipal.setLayout(null);
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		arregloBotPan1 = new ArrayList();
 		panelModificadores = new JPanel();
 		panelModificadores.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
@@ -125,9 +119,9 @@ public class VentPedModificador extends JDialog {
 		btnConfirmar.setBounds(342, 547, 304, 23);
 		contenedorPrincipal.add(btnConfirmar);
 		//Cargamos con la primera sección enviada
-		idDetallePedido = idDetPedido;
-		modCon = modificadorCon;
-		modSin = modificadorSin;
+		idProducto = idProd;
+		numPregunta = pregActual;
+		mitad = mit;
 		cargarModificadores();
 		
 		
@@ -144,54 +138,36 @@ public class VentPedModificador extends JDialog {
 		panelModificadores.repaint();
 		//Definimos las variables necesarias para el proceso
 		ArrayList<ProductoModificadorCon> prodModificadores;
-		ArrayList<ProductoModificadorSin> prodModificadoresSin;
-		if(modCon)
+		prodModificadores = pedCtrl.obtenerModificadoresConProducto(idProducto);
+		maxSelecciones = pedCtrl.obtenerMaxModificadorConProducto(idProducto);
+		for(int i = 0; i < prodModificadores.size(); i++)
 		{
-			prodModificadores = pedCtrl.obtenerModificadoresCon(idDetallePedido);
-			maxSelecciones = pedCtrl.obtenerMaxModificadorCon(idDetallePedido);
-			for(int i = 0; i < prodModificadores.size(); i++)
+			ProductoModificadorCon modTemp = prodModificadores.get(i);
+			jButElecciones1 = new JButton("<html><center>" + modTemp.getNombreProductoCon() + "</center></html>");
+			jButElecciones1.setActionCommand(Integer.toString(modTemp.getIdProductoCon()));
+			arregloBotPan1.add(jButElecciones1);
+			jButElecciones1.addActionListener(new ActionListener() 
 			{
-				ProductoModificadorCon modTemp = prodModificadores.get(i);
-				jButElecciones1 = new JButton("<html><center>" + modTemp.getNombreProductoCon() + "</center></html>");
-				jButElecciones1.setActionCommand(Integer.toString(modTemp.getIdProductoCon()));
-				arregloBotPan1.add(jButElecciones1);
-				jButElecciones1.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						
-						JButton selButton = (JButton) arg0.getSource();
-						Color colSelButton = selButton.getBackground();
-						if(maxSelecciones != 0)
+				public void actionPerformed(ActionEvent arg0) 
+				{
+					JButton selButton = (JButton) arg0.getSource();
+					Color colSelButton = selButton.getBackground();
+					if(maxSelecciones != 0)
+					{
+						if(seleccion == maxSelecciones)
 						{
-							if(seleccion == maxSelecciones)
+							if(colSelButton.equals(Color.YELLOW))
 							{
-								if(colSelButton.equals(Color.YELLOW))
-								{
-									selButton.setBackground(new Color(238, 238, 238));
-									seleccion--;
-								}
-								else
-								{
-									JOptionPane.showMessageDialog(null, "No se deben seleccionar más opciones " , " Máximo de Elecciones", JOptionPane.ERROR_MESSAGE);
-									return;
-								}
+								selButton.setBackground(new Color(238, 238, 238));
+								seleccion--;
 							}
 							else
 							{
-								
-								
-								if(colSelButton.equals(new Color(238, 238, 238)))
-								{
-									selButton.setBackground(Color.YELLOW);
-									seleccion++;
-								}
-								else if(colSelButton.equals(Color.YELLOW))
-								{
-									selButton.setBackground(new Color(238, 238, 238));
-									seleccion--;
-								}
-								
+								JOptionPane.showMessageDialog(null, "No se deben seleccionar más opciones " , " Máximo de Elecciones", JOptionPane.ERROR_MESSAGE);
+								return;
 							}
-						}else
+						}
+						else
 						{
 							if(colSelButton.equals(new Color(238, 238, 238)))
 							{
@@ -203,80 +179,26 @@ public class VentPedModificador extends JDialog {
 								selButton.setBackground(new Color(238, 238, 238));
 								seleccion--;
 							}
+									
 						}
-						
-					}
-				});
-				panelModificadores.add(jButElecciones1);
-			}
-		}else if (modSin)
-		{
-			prodModificadoresSin = pedCtrl.obtenerModificadoresSin(idDetallePedido);
-			maxSelecciones = pedCtrl.obtenerMaxModificadorSin(idDetallePedido);
-			for(int i = 0; i < prodModificadoresSin.size(); i++)
-			{
-				ProductoModificadorSin modTemp = prodModificadoresSin.get(i);
-				jButElecciones1 = new JButton("<html><center>" + modTemp.getNombreProductoSin() + "</center></html>");
-				jButElecciones1.setActionCommand(Integer.toString(modTemp.getIdProductoSin()));
-				arregloBotPan1.add(jButElecciones1);
-				jButElecciones1.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						
-						JButton selButton = (JButton) arg0.getSource();
-						Color colSelButton = selButton.getBackground();
-						if(maxSelecciones != 0)
+					}else
+					{
+						if(colSelButton.equals(new Color(238, 238, 238)))
 						{
-							if(seleccion == maxSelecciones)
-							{
-								if(colSelButton.equals(Color.YELLOW))
-								{
-									selButton.setBackground(new Color(238, 238, 238));
-									seleccion--;
-								}
-								else
-								{
-									JOptionPane.showMessageDialog(null, "No se deben seleccionar más opciones " , " Máximo de Elecciones", JOptionPane.ERROR_MESSAGE);
-									return;
-								}
-							}
-							else
-							{
-								
-								
-								if(colSelButton.equals(new Color(238, 238, 238)))
-								{
-									selButton.setBackground(Color.YELLOW);
-									seleccion++;
-								}
-								else if(colSelButton.equals(Color.YELLOW))
-								{
-									selButton.setBackground(new Color(238, 238, 238));
-									seleccion--;
-								}
-								
-					
-							}
-						}else
-						{
-							if(colSelButton.equals(new Color(238, 238, 238)))
-							{
-								selButton.setBackground(Color.YELLOW);
-								seleccion++;
-							}
-							else if(colSelButton.equals(Color.YELLOW))
-							{
-								selButton.setBackground(new Color(238, 238, 238));
-								seleccion--;
-							}
+							selButton.setBackground(Color.YELLOW);
+							seleccion++;
 						}
-						
+						else if(colSelButton.equals(Color.YELLOW))
+						{
+							selButton.setBackground(new Color(238, 238, 238));
+							seleccion--;
+						}
 					}
-				});
+							
+				}
+			});
 				panelModificadores.add(jButElecciones1);
-			}
 		}
-		
-		
 	}
 	
 	
@@ -286,35 +208,29 @@ public class VentPedModificador extends JDialog {
 	public void incluirProductos()
 	{
 		//Realizamos adición de los productos, lo primero es validar si esta dividida
+			ModificadorConPregunta modConPre = new ModificadorConPregunta();
 			for(int m = 0; m < arregloBotPan1.size(); m++)
 			{
+				//Recorremos uno a uno los botones del panel
 				JButton jButTemp= arregloBotPan1.get(m);
+				//Tomamos el color de fondo del botón
 				Color colSelButton = jButTemp.getBackground();
+				//Si el color de fondo es amarillo, es poruqe es seleccionado
 				if(colSelButton.equals(Color.YELLOW))
 				{
-					
 						String txtJBut = jButTemp.getActionCommand();
-//						StringTokenizer StrTokenProducto = new StringTokenizer(txtJBut,"-");
-//						String strIdProducto = StrTokenProducto.nextToken();
-						int idProducto = Integer.parseInt(txtJBut);
-						ParametrosProductoCtrl parProducto = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
+						//Transformamos a un entero el idProducto seleccionado como modificador con
+						int idProdMod = Integer.parseInt(txtJBut);
 						//Para obtener el precio deberíamos recorrer las elecciones de la pregunta y capturar el precio
-						double precioProducto = parProducto.obtenerPrecioPilaProducto(idProducto);
+						double precioProducto = parProducto.obtenerPrecioPilaProducto(idProdMod);
 						double cantidad = 0.5;
-						//OJO ACA SERÁ NECEASARIO INTERVENCIÓN
-						int idDetalleMaster = pedCtrl.obtenerIdDetalleMaster(idDetallePedido);
-						DetallePedido detPedido = new DetallePedido(0,VentPedTomarPedidos.idPedido,idProducto,cantidad,precioProducto, cantidad*precioProducto, "", idDetalleMaster,"N","",contadorDetallePedido);
-						detPedido.setIdDetalleModificador(idDetallePedido);
-						int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
-						detPedido.setIdDetallePedido(idDetalle);
-						if(idDetalle > 0)
-						{
-							VentPedTomarPedidos.detallesPedido.add(detPedido);
-							
-							VentPedTomarPedidos.totalPedido = VentPedTomarPedidos.totalPedido + detPedido.getValorTotal();
-							//Para pintar la nueva adición de producto y fijar el nuevo valor se ejecutará cuando se active la ventana
-						}
+						//Creamos el objeto modificador para consolidarlo en ArrayList y dejarlo en la elección forzada
+						modConPre = new ModificadorConPregunta(idProducto, numPregunta, mitad, idProdMod, precioProducto, cantidad);
+						//Hacemos la adición al arreglo
+						VentProEleccionForzada.modConPregunta.add(modConPre);
+						//Eliminamos el botón procesado
 						arregloBotPan1.remove(m);
+						//Disminuimos el contador que controla el ciclo
 						m--;
 					
 				}
@@ -330,4 +246,5 @@ public class VentPedModificador extends JDialog {
 			dispose();
 
 	}
+	
 }

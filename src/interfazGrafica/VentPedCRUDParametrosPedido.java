@@ -167,6 +167,16 @@ public class VentPedCRUDParametrosPedido extends JFrame {
 		panelParametrosPedido.add(btnGrabarEdicion);
 		btnGrabarEdicion.setEnabled(false);
 		
+		JButton btnSalir = new JButton("SALIR");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnSalir.setBounds(218, 308, 89, 35);
+		panelParametrosPedido.add(btnSalir);
+		
 		btnGrabarEdicion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				boolean validar = validarDatos();

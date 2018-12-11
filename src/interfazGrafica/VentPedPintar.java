@@ -93,6 +93,8 @@ public class VentPedPintar extends JDialog {
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 632, 448);
 		getContentPane().setLayout(new BorderLayout());
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		//Se realiza el llenado del ArrayList una sola vez
 		//Instanciamos objeto de la capa controladora
 		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);

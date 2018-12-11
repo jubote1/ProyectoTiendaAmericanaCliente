@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.Impuesto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Producto;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;
@@ -216,6 +216,8 @@ public class ProductoDAO {
 			int modificadorCon;
 			int modificadorSin;
 			byte[] imagen = null;
+			int intModConPregunta = 0;
+			boolean modConPregunta = false;
 			while(rs.next()){
 				
 				descripcion = rs.getString("descripcion");
@@ -249,7 +251,15 @@ public class ProductoDAO {
 				{
 					imagen = null;
 				}
-				producto = new Producto(idProducto, descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2,  idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2,precio3,precio4,precio5,precio6,precio7,precio8,precio9,precio10, impresionComanda, tipoProducto, tamano ); 
+				intModConPregunta = rs.getInt("mod_con_pregunta");
+				if(intModConPregunta == 1)
+				{
+					modConPregunta = true;
+				}else
+				{
+					modConPregunta = false;
+				}
+				producto = new Producto(idProducto, descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2,  idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2,precio3,precio4,precio5,precio6,precio7,precio8,precio9,precio10, impresionComanda, tipoProducto, tamano, modConPregunta ); 
 				producto.setImagen(imagen);
 				producto.setModificadorSin(modificadorSin);
 				producto.setModificadorCon(modificadorCon);
@@ -313,6 +323,8 @@ public class ProductoDAO {
 			int modificadorCon;
 			int modificadorSin;
 			byte[] imagen = null;
+			int intModConPregunta = 0;
+			boolean modConPregunta = false;
 			while(rs.next()){
 				idProducto = rs.getInt("idproducto");
 				descripcion = rs.getString("descripcion");
@@ -346,7 +358,15 @@ public class ProductoDAO {
 				{
 					imagen = null;
 				}
-				producto = new Producto(idProducto, descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2,  idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2,precio3,precio4,precio5,precio6,precio7,precio8,precio9,precio10, impresionComanda, tipoProducto, tamano ); 
+				intModConPregunta = rs.getInt("mod_con_pregunta");
+				if(intModConPregunta == 1)
+				{
+					modConPregunta = true;
+				}else
+				{
+					modConPregunta = false;
+				}
+				producto = new Producto(idProducto, descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2,  idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2,precio3,precio4,precio5,precio6,precio7,precio8,precio9,precio10, impresionComanda, tipoProducto, tamano, modConPregunta ); 
 				producto.setImagen(imagen);
 				producto.setModificadorSin(modificadorSin);
 				producto.setModificadorCon(modificadorCon);
@@ -379,11 +399,16 @@ public class ProductoDAO {
 		int idProductoIns = 0;
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
+		int intModConPregunta = 0;
+		if(producto.isModConPregunta())
+		{
+			intModConPregunta = 1;
+		}
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into producto (descripcion, impresion, textoboton, colorboton,idpreguntaforzada1,idpreguntaforzada2, idpreguntaforzada3,idpreguntaforzada4, idpreguntaforzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9 , precio10, impresion_comanda, tipo_producto, tamano, imagen) values ('" + producto.getDescripcion() + "', '" + producto.getImpresion() + "', '" + producto.getTextoBoton() + "', '" + producto.getColorBoton() + "' , " + producto.getIdPreguntaForzada1() + " , " + producto.getIdPreguntaForzada2() + " , " + producto.getIdPreguntaForzada3() + " , " + producto.getIdPreguntaForzada4() + " , " + producto.getIdPreguntaForzada5() 
-			+ " , " + producto.getPrecio1() + " , " + producto.getPrecio2() + " , " + producto.getPrecio3() + " , " + producto.getPrecio4() + " , " + producto.getPrecio5() + " , " + producto.getPrecio6() + " , " + producto.getPrecio7() + " , "  + producto.getPrecio8() + " , " + producto.getPrecio9() + " , " + producto.getPrecio10() + " , '" + producto.getImpresionComanda() + "' , '" + producto.getTipoProducto() + "' , '" + producto.getTamano() + "' , " + producto.getImagen() +" )"; 
+			String insert = "insert into producto (descripcion, impresion, textoboton, colorboton,idpreguntaforzada1,idpreguntaforzada2, idpreguntaforzada3,idpreguntaforzada4, idpreguntaforzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9 , precio10, impresion_comanda, tipo_producto, tamano, imagen, mod_con_pregunta) values ('" + producto.getDescripcion() + "', '" + producto.getImpresion() + "', '" + producto.getTextoBoton() + "', '" + producto.getColorBoton() + "' , " + producto.getIdPreguntaForzada1() + " , " + producto.getIdPreguntaForzada2() + " , " + producto.getIdPreguntaForzada3() + " , " + producto.getIdPreguntaForzada4() + " , " + producto.getIdPreguntaForzada5() 
+			+ " , " + producto.getPrecio1() + " , " + producto.getPrecio2() + " , " + producto.getPrecio3() + " , " + producto.getPrecio4() + " , " + producto.getPrecio5() + " , " + producto.getPrecio6() + " , " + producto.getPrecio7() + " , "  + producto.getPrecio8() + " , " + producto.getPrecio9() + " , " + producto.getPrecio10() + " , '" + producto.getImpresionComanda() + "' , '" + producto.getTipoProducto() + "' , '" + producto.getTamano() + "' , " + producto.getImagen() + " , " + intModConPregunta + " )"; 
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -464,10 +489,15 @@ public class ProductoDAO {
 		boolean respuesta;
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
+		int intModConPregunta = 0;
+		if(producto.isModConPregunta())
+		{
+			intModConPregunta = 1;
+		}
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update producto set descripcion = '" + producto.getDescripcion() + "' , impresion = '" + producto.getImpresion() + "' , textoboton = '" + producto.getTextoBoton() + "' , colorboton = '" 
+			String update = "update producto set mod_con_pregunta = " + intModConPregunta + " , descripcion = '" + producto.getDescripcion() + "' , impresion = '" + producto.getImpresion() + "' , textoboton = '" + producto.getTextoBoton() + "' , colorboton = '" 
 			+ producto.getColorBoton() + "' , idpreguntaforzada1 = " + producto.getIdPreguntaForzada1() + " , idpreguntaforzada2 = " + producto.getIdPreguntaForzada2() + " , idpreguntaforzada3 = " + producto.getIdPreguntaForzada3() + " , idpreguntaforzada4 = " + producto.getIdPreguntaForzada4() 
 			+  " , idpreguntaforzada5 = " + producto.getIdPreguntaForzada5() + " , precio1 = " + producto.getPrecio1() + " , precio2 = " + producto.getPrecio2() + " , precio3 =  " + producto.getPrecio3() + " , precio4 =  " + producto.getPrecio4()
 			+ " , precio5 = " + producto.getPrecio5() + " , precio6 =  " + producto.getPrecio6() + " , precio7 = " + producto.getPrecio7() + " , precio8 =  " + producto.getPrecio8() + " , precio9 =  " + producto.getPrecio9() + " , precio10 =  " + producto.getPrecio10() + " , impresion_comanda =  '" + producto.getImpresionComanda() + "' , tipo_producto = '" +producto.getTipoProducto() + "' , tamano = '" + producto.getTamano() + "' , imagen = ? where idproducto = " + producto.getIdProducto() ; 
@@ -560,7 +590,48 @@ public class ProductoDAO {
 		return(true);
 	}
 	
-	
+	public static boolean tieneModConPregunta(int idProducto, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = false;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String select = "select mod_con_pregunta from producto where idproducto =" + idProducto ;
+			int intModConPregunta = 0;
+			if(auditoria)
+			{
+				logger.info(select);
+			}
+			ResultSet rs = stm.executeQuery(select);
+			while(rs.next())
+			{
+				intModConPregunta = rs.getInt("mod_con_pregunta");
+				if(intModConPregunta == 1)
+				{
+					respuesta = true;
+				}else
+				{
+					respuesta = false;
+				}
+			}
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
 	
 	
 }

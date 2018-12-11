@@ -12,9 +12,16 @@ public class EleccionForzadaTemporal {
 	private int numeroMitad;
 	private String descProducto;
 	private String tipoProducto;
+	private int idProductoModificadorCon;
 	
 	
 	
+	public int getIdProductoModificadorCon() {
+		return idProductoModificadorCon;
+	}
+	public void setIdProductoModificadorCon(int idProductoModificadorCon) {
+		this.idProductoModificadorCon = idProductoModificadorCon;
+	}
 	public String getTipoProducto() {
 		return tipoProducto;
 	}

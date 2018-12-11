@@ -44,11 +44,11 @@ from item_inventario a]]>
 	<group name="Categoria">
 		<groupExpression><![CDATA[$F{categoria}]]></groupExpression>
 		<groupHeader>
-			<band height="33">
+			<band height="31">
 				<textField>
 					<reportElement x="190" y="0" width="203" height="30" uuid="d4d52348-c320-4cf7-aa85-9f88f64c6274"/>
 					<textElement textAlignment="Center">
-						<font size="18" isBold="true"/>
+						<font size="16" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression>
 				</textField>
@@ -106,21 +106,21 @@ from item_inventario a]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="25" splitType="Stretch">
+		<band height="16" splitType="Stretch">
 			<textField>
-				<reportElement x="-10" y="2" width="71" height="21" uuid="8bc1c6c1-0d82-4912-8c45-f6bbfe59e962"/>
+				<reportElement x="-10" y="2" width="71" height="14" uuid="8bc1c6c1-0d82-4912-8c45-f6bbfe59e962"/>
 				<textFieldExpression><![CDATA[$F{iditem}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="70" y="0" width="221" height="21" uuid="0e4ed7fb-042c-46df-8afa-44f47ab7456f"/>
+				<reportElement x="70" y="0" width="221" height="14" uuid="0e4ed7fb-042c-46df-8afa-44f47ab7456f"/>
 				<textFieldExpression><![CDATA[$F{nombre_item}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="300" y="0" width="151" height="21" uuid="82b60c47-9831-43df-82aa-85c37dbb94ec"/>
+				<reportElement x="300" y="0" width="151" height="14" uuid="82b60c47-9831-43df-82aa-85c37dbb94ec"/>
 				<textFieldExpression><![CDATA[$F{consumo}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="460" y="0" width="121" height="21" uuid="e57041e8-b527-4d3e-a2cc-5fc4bf653d0d"/>
+				<reportElement x="460" y="0" width="121" height="14" uuid="e57041e8-b527-4d3e-a2cc-5fc4bf653d0d"/>
 				<textFieldExpression><![CDATA[$F{unidad_medida}]]></textFieldExpression>
 			</textField>
 		</band>

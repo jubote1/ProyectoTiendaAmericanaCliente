@@ -1,11 +1,14 @@
 package capaControlador;
 
-import capaModelo.MenuAgrupador;
+import capaModelo.AccesosPorMenu;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Usuario;
+import interfazGrafica.Sesion;
 
 import java.util.ArrayList;
 
-import capaDAO.MenuAgrupadorDAO;
+import capaDAO.AccesosPorMenuDAO;
+import capaDAO.AgrupadorMenuDAO;
 import capaDAO.UsuarioDAO;
 
 /**
@@ -70,26 +73,80 @@ public class AutenticacionCtrl {
 	 */
 	public ArrayList<Object> obtenerMenusAgrupador()
 	{
-		ArrayList<Object>  menus = MenuAgrupadorDAO.obtenerMenusAgrupador(auditoria);
+		ArrayList<Object>  menus = AgrupadorMenuDAO.obtenerMenusAgrupador(auditoria);
 		return(menus);
 	}
 	
-	public int insertarMenuAgrupador(MenuAgrupador menu)
+	public ArrayList<AgrupadorMenu> obtenerMenusAgrupadorObj()
 	{
-		int idMenu = MenuAgrupadorDAO.insertarMenuAgrupador(menu, auditoria);
+		ArrayList<AgrupadorMenu> agrMenus = AgrupadorMenuDAO.obtenerMenusAgrupadorObj(auditoria);
+		return(agrMenus);
+	}
+	
+	public int insertarMenuAgrupador(AgrupadorMenu menu)
+	{
+		int idMenu = AgrupadorMenuDAO.insertarMenuAgrupador(menu, auditoria);
 		return(idMenu);
 	}
 	
-	public boolean editarMenuAgrupador(MenuAgrupador menu)
+	public boolean editarMenuAgrupador(AgrupadorMenu menu)
 	{
-		boolean respuesta  = MenuAgrupadorDAO.EditarMenuAgrupador(menu, auditoria);
+		boolean respuesta  = AgrupadorMenuDAO.EditarMenuAgrupador(menu, auditoria);
 		return(respuesta);
 	}
 	
 	public boolean eliminarMenuAgrupador(int idMenu)
 	{
-		boolean respuesta = MenuAgrupadorDAO.eliminarMenuAgrupador(idMenu, auditoria);
+		boolean respuesta = AgrupadorMenuDAO.eliminarMenuAgrupador(idMenu, auditoria);
 		return(respuesta);
 	}
+	
+	//Acciones para la entidad AccesosPorMenu
+	
+	public ArrayList obtenerAccesosAgrupador()
+	{
+		ArrayList accesos = AccesosPorMenuDAO.obtenerAccesosPorMenu(auditoria);
+		return(accesos);
+	}
+	
+	public ArrayList<AccesosPorMenu> obtenerAccesosPorMenuObj()
+	{
+		ArrayList<AccesosPorMenu> accesos = AccesosPorMenuDAO.obtenerAccesosPorMenuObj(auditoria);
+		return(accesos);
+	}
+	
+	public int insertarAccesosPorMenu(AccesosPorMenu acceso)
+	{
+		int idAccesoIns = AccesosPorMenuDAO.insertarAccesosPorMenu(acceso, auditoria);
+		return(idAccesoIns);
+	}
 
+	public boolean eliminarAccesosPorMenu(int idAccesoMenu)
+	{
+		boolean respuesta = AccesosPorMenuDAO.eliminarAccesosPorMenu(idAccesoMenu, auditoria);
+		return(respuesta);
+	}
+	
+	public ArrayList<AccesosPorMenu> obtenerAccesosPorMenuUsuario( String nombreUsuario )
+	{
+		ArrayList<AccesosPorMenu> accesos = AccesosPorMenuDAO.obtenerAccesosPorMenuUsuario(nombreUsuario, auditoria);
+		return(accesos);
+	}
+	
+	//Creamos un método para validar el acceso del usuario a un menú determinado
+	public boolean validarAccesoMenu(int menu, ArrayList<AccesosPorMenu> accesos )
+	{
+		boolean tieneAcceso = false;
+		AccesosPorMenu accesoTemp;
+		for(int i = 0; i < accesos.size(); i++)
+		{
+			accesoTemp = accesos.get(i);
+			if(accesoTemp.getIdAgrupadorMenu() == menu)
+			{
+				tieneAcceso = true;
+				break;
+			}
+		}
+		return(tieneAcceso);
+	}
 }

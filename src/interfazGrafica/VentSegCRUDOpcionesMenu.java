@@ -14,7 +14,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import capaControlador.AutenticacionCtrl;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 
 import javax.swing.JScrollPane;
 import java.awt.Color;
@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JScrollBar;
+import java.awt.Font;
 
 public class VentSegCRUDOpcionesMenu extends JFrame {
 
@@ -150,7 +151,7 @@ public class VentSegCRUDOpcionesMenu extends JFrame {
 		
 		//Se crea Panel que  contendrá el Jtable y los botones
 		JPanel panelJtable = new JPanel();
-		panelJtable.setBounds(20, 147, 701, 167);
+		panelJtable.setBounds(20, 147, 701, 196);
 		contentPane.add(panelJtable);
 		panelJtable.setLayout(null);
 		DefaultTableModel modelo = pintarMenuAgrupador();
@@ -179,7 +180,7 @@ public class VentSegCRUDOpcionesMenu extends JFrame {
 					return;
 				}
 				
-				MenuAgrupador menuAgrNuevo = new MenuAgrupador(0,menu,descripcionMenu); 
+				AgrupadorMenu menuAgrNuevo = new AgrupadorMenu(0,menu,descripcionMenu); 
 				AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 				int idMenu = autCtrl.insertarMenuAgrupador(menuAgrNuevo);
 				DefaultTableModel modelo = pintarMenuAgrupador();
@@ -189,7 +190,7 @@ public class VentSegCRUDOpcionesMenu extends JFrame {
 				jTextDescripcion.setText("");
 			}
 		});
-		btnInsertar.setBounds(52, 133, 89, 23);
+		btnInsertar.setBounds(22, 162, 89, 23);
 		panelJtable.add(btnInsertar);
 		JButton btnEliminar = new JButton("Eliminar");
 		//Evento para definir las acciones para eliminar
@@ -207,17 +208,17 @@ public class VentSegCRUDOpcionesMenu extends JFrame {
 				jTableMenuAgrupador.setModel(modelo);
 			}
 		});
-		btnEliminar.setBounds(175, 133, 89, 23);
+		btnEliminar.setBounds(139, 162, 89, 23);
 		panelJtable.add(btnEliminar);
 		
 		JButton btnEditar = new JButton("Editar");
 		
-		btnEditar.setBounds(298, 133, 89, 23);
+		btnEditar.setBounds(252, 162, 89, 23);
 		panelJtable.add(btnEditar);
 		
 		JButton btnGrabarEdicion = new JButton("Grabar Edicion");
 		
-		btnGrabarEdicion.setBounds(427, 133, 123, 23);
+		btnGrabarEdicion.setBounds(371, 162, 123, 23);
 		panelJtable.add(btnGrabarEdicion);
 		btnGrabarEdicion.setEnabled(false);
 		
@@ -231,6 +232,16 @@ public class VentSegCRUDOpcionesMenu extends JFrame {
 		jTableMenuAgrupador.setBorder(new LineBorder(new Color(0, 0, 0)));
 		jTableMenuAgrupador.setBackground(Color.WHITE);
 		this.jTableMenuAgrupador.setModel(modelo);
+		
+		JButton btnSalir = new JButton("SALIR");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnSalir.setBounds(522, 162, 134, 23);
+		panelJtable.add(btnSalir);
 		jTextMenu.setText("");
 		jTextDescripcion.setText("");
 		
@@ -257,7 +268,7 @@ public class VentSegCRUDOpcionesMenu extends JFrame {
 				boolean validar = validarDatos();
 				if (validar)
 				{
-					MenuAgrupador menuAgrEditado = new MenuAgrupador(Integer.parseInt(jTextIDAgrupador.getText()),jTextMenu.getText(),jTextDescripcion.getText()); 
+					AgrupadorMenu menuAgrEditado = new AgrupadorMenu(Integer.parseInt(jTextIDAgrupador.getText()),jTextMenu.getText(),jTextDescripcion.getText()); 
 					AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 					boolean respuesta = autCtrl.editarMenuAgrupador(menuAgrEditado);
 					if (respuesta)

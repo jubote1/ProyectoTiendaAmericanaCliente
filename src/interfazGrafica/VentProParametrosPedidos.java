@@ -22,10 +22,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 
-public class VentProParametrosPedidos extends JFrame {
+import java.awt.Font;
+
+public class VentProParametrosPedidos extends JDialog {
 
 	private JPanel ContenedorPrincipal;
 	private JTextField txtIdTipoPedido;
@@ -42,7 +46,7 @@ public class VentProParametrosPedidos extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentProParametrosPedidos frame = new VentProParametrosPedidos();
+					VentProParametrosPedidos frame = new VentProParametrosPedidos(null, false);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -54,9 +58,10 @@ public class VentProParametrosPedidos extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentProParametrosPedidos() {
+	public VentProParametrosPedidos(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("PARAMETROS PEDIDOS");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(0,0,  557, 482);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -69,7 +74,8 @@ public class VentProParametrosPedidos extends JFrame {
 		JTabbedPane tabParametros = new JTabbedPane(JTabbedPane.TOP);
 		tabParametros.setBounds(41, 47, 464, 386);
 		ContenedorPrincipal.add(tabParametros);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JPanel panel = new JPanel();
 		tabParametros.addTab("Tipos Pedido", null, panel, null);
 		panel.setLayout(null);
@@ -245,6 +251,16 @@ public class VentProParametrosPedidos extends JFrame {
 		JLabel lblEsDomicilio = new JLabel("Es Domicilio");
 		lblEsDomicilio.setBounds(77, 151, 99, 14);
 		panel.add(lblEsDomicilio);
+		
+		JButton btnSalir = new JButton("SALIR");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnSalir.setBounds(191, 335, 89, 23);
+		panel.add(btnSalir);
 	}
 	
 	

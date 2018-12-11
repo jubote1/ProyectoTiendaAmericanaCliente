@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -73,7 +74,8 @@ public class VentPedHisDetPedido extends JDialog {
 		tabbedPane.setFont(new Font("Calibri", Font.PLAIN, 15));
 		tabbedPane.setBounds(10, 73, 764, 245);
 		contentPanel.add(tabbedPane);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JPanel panelEstadosPedido = new JPanel();
 		tabbedPane.addTab("Estado del pedido", null, panelEstadosPedido, null);
 		panelEstadosPedido.setLayout(null);

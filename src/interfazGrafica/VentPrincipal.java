@@ -3,7 +3,7 @@ package interfazGrafica;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.EventQueue;
-
+import capaModelo.AccesosPorMenu;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -12,12 +12,17 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.Color;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.GridLayout;
 import javax.swing.border.LineBorder;
+
+import capaControlador.AutenticacionCtrl;
+import capaControlador.ParametrosCtrl;
+import capaModelo.Parametro;
 
 public class VentPrincipal extends JFrame {
 
@@ -28,7 +33,16 @@ public class VentPrincipal extends JFrame {
 	private JPanel PanelClientes = new JPanel();
 	private JPanel PanelProductos = new JPanel();
 	private JPanel PanelSeguridad = new JPanel();
+	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
+	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+	private int menuPedidos;
+	private int menuClientes;
+	private int menuInventarios;
+	private int menuSeguridad;
+	private int menuProductos;
+	
 	CardLayout cl = new CardLayout();
+	JFrame ventPrincipal;
 
 
 	/**
@@ -54,10 +68,13 @@ public class VentPrincipal extends JFrame {
 		setTitle("MEN\u00DA PRINCIPAL");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 800, 444);
+		//Inicializamos las contantes de los menús en la tabla de parámetros del sistema
+		inicializarConstantesMenus();
 		this.setExtendedState(MAXIMIZED_BOTH);
 		//PanelPrincipal.setBackground(Color.WHITE);
 		PanelPrincipal.setBorder(new LineBorder(new Color(0, 0, 0), 2));
 		setContentPane(PanelPrincipal);
+		ventPrincipal = this;
 		PanelPrincipal.setLayout(null);
 		PanelFachada.setBounds(0, 95, 774, 300);
 		PanelFachada.setLayout(cl);
@@ -72,13 +89,16 @@ public class VentPrincipal extends JFrame {
 		PanelFachada.add(PanelProductos,"5");
 		PanelProductos.setLayout(new GridLayout(0, 2, 100, 0));
 		cl.show(PanelFachada, "1");
+
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		//Agregamos al panel al final - primero debemos agregar la Jtoolbar
 		
 		
 		JButton btnSeguridadMenAgrupador = new JButton("Seguridad Men\u00FA Agrupador");
 		btnSeguridadMenAgrupador.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentSegCRUDMenuAgrupador MenuAgrupa = new VentSegCRUDMenuAgrupador();
+				VentSegCRUDMenuAgrupador MenuAgrupa = new VentSegCRUDMenuAgrupador(ventPrincipal, true);
 				MenuAgrupa.setVisible(true);
 			}
 		});
@@ -88,7 +108,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnSegEmpleado = new JButton("Definici\u00F3n de Empleados");
 		btnSegEmpleado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentSegEmpleado emp = new VentSegEmpleado ();
+				VentSegEmpleado emp = new VentSegEmpleado (ventPrincipal,true);
 				emp.setVisible(true);
 			}
 		});
@@ -97,7 +117,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnSegTipoEmpleado = new JButton("Definici\u00F3n Tipo Empleado");
 		btnSegTipoEmpleado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentSegTipoEmpleado tipEmp = new VentSegTipoEmpleado();
+				VentSegTipoEmpleado tipEmp = new VentSegTipoEmpleado(ventPrincipal, true);
 				tipEmp.setVisible(true);
 			}
 		});
@@ -122,7 +142,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnEleccionForzada = new JButton("Eleccion Forzada");
 		btnEleccionForzada.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCRUDProPregunta EleccionForzada = new VentCRUDProPregunta();
+				VentProCRUDPregunta EleccionForzada = new VentProCRUDPregunta();
 				EleccionForzada.setVisible(true);
 			}
 		});
@@ -132,7 +152,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnImpuestos = new JButton("Impuestos");
 		btnImpuestos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCRUDImpuesto impuesto = new VentCRUDImpuesto();
+				VentProCRUDImpuesto impuesto = new VentProCRUDImpuesto();
 				impuesto.setVisible(true);
 			}
 		});
@@ -171,7 +191,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnProductos = new JButton("Productos");
 		btnProductos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentProCRUDProducto producto = new VentProCRUDProducto();
+				VentProCRUDProducto producto = new VentProCRUDProducto(ventPrincipal, true);
 				producto.setVisible(true);
 			}
 		});
@@ -181,7 +201,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnDefinicinEstadosDe = new JButton("Definici\u00F3n Estados de Productos");
 		btnDefinicinEstadosDe.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentProEstado ventEst = new VentProEstado();
+				VentProEstado ventEst = new VentProEstado(ventPrincipal, true);
 				ventEst.setVisible(true);
 			}
 		});
@@ -190,7 +210,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnParmetrosDireccin = new JButton("Par\u00E1metros Direcci\u00F3n");
 		btnParmetrosDireccin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCRUDParametrosDireccion parDir = new VentCRUDParametrosDireccion();
+				VentProCRUDParametrosDireccion parDir = new VentProCRUDParametrosDireccion(ventPrincipal, true);
 				parDir.setVisible(true);
 			}
 		});
@@ -200,7 +220,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnConfiguracionMenu = new JButton("Configuracion Menu");
 		btnConfiguracionMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentSegConfMenu confMenu = new VentSegConfMenu();
+				VentSegConfMenu confMenu = new VentSegConfMenu(ventPrincipal, true);
 				confMenu.setVisible(true);
 			}
 		});
@@ -210,7 +230,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnFinalizarDa = new JButton("Finalizar D\u00EDa");
 		btnFinalizarDa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentPedFinalizarDia finDia = new VentPedFinalizarDia(null, true);
+				VentPedFinalizarDia finDia = new VentPedFinalizarDia(ventPrincipal, true);
 				finDia.setVisible(true);
 			}
 		});
@@ -239,7 +259,7 @@ public class VentPrincipal extends JFrame {
 		JButton btnParmetrosGenerales = new JButton("Par\u00E1metros Generales");
 		btnParmetrosGenerales.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentPedAdmParametros ventParametros = new VentPedAdmParametros(null, true);
+				VentPedAdmParametros ventParametros = new VentPedAdmParametros(ventPrincipal, true);
 				ventParametros.setVisible(true);
 			}
 		});
@@ -264,7 +284,11 @@ public class VentPrincipal extends JFrame {
 		JButton btnPedidos = new JButton("PEDIDOS");
 		btnPedidos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				cl.show(PanelFachada, "1");
+				boolean acceso = autCtrl.validarAccesoMenu(menuPedidos, Sesion.getAccesosMenus());
+				if(acceso)
+				{
+					cl.show(PanelFachada, "1");
+				}
 			}
 		});
 		btnPedidos.setBackground(Color.WHITE);
@@ -276,8 +300,12 @@ public class VentPrincipal extends JFrame {
 		JButton btnInventarios = new JButton("INVENTARIOS");
 		btnInventarios.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				boolean acceso = autCtrl.validarAccesoMenu(menuInventarios, Sesion.getAccesosMenus());
+				if(acceso)
+				{
+					cl.show(PanelFachada, "2");
+				}
 				
-				cl.show(PanelFachada, "2");
 			}
 		});
 		btnInventarios.setBackground(Color.WHITE);
@@ -289,7 +317,12 @@ public class VentPrincipal extends JFrame {
 		JButton btnClientes = new JButton("CLIENTES");
 		btnClientes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				cl.show(PanelFachada, "3");
+				boolean acceso = autCtrl.validarAccesoMenu(menuClientes, Sesion.getAccesosMenus());
+				if(acceso)
+				{
+					cl.show(PanelFachada, "3");
+				}
+				
 			}
 		});
 		btnClientes.setBackground(Color.WHITE);
@@ -302,7 +335,12 @@ public class VentPrincipal extends JFrame {
 		btnSeguridad.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				cl.show(PanelFachada, "4");
+				boolean acceso = autCtrl.validarAccesoMenu(menuSeguridad, Sesion.getAccesosMenus());
+				if(acceso)
+				{
+					cl.show(PanelFachada, "4");
+				}
+				
 			}
 		});
 		btnSeguridad.setBackground(Color.WHITE);
@@ -314,7 +352,12 @@ public class VentPrincipal extends JFrame {
 		JButton btnProductos_1 = new JButton("PRODUCTOS");
 		btnProductos_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				cl.show(PanelFachada, "5");
+				boolean acceso = autCtrl.validarAccesoMenu(menuProductos, Sesion.getAccesosMenus());
+				if(acceso)
+				{
+					cl.show(PanelFachada, "5");
+				}
+				
 			}
 		});
 		btnProductos_1.setHorizontalAlignment(SwingConstants.TRAILING);
@@ -325,4 +368,62 @@ public class VentPrincipal extends JFrame {
 		//
 		PanelPrincipal.add(PanelFachada);
 	}
+	
+	public void inicializarConstantesMenus()
+	{
+		Parametro parametro = parCtrl.obtenerParametro("MENUPEDIDOS");
+		int valNum = 0;
+		try
+		{
+			valNum = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE MENUPEDIDOS");
+			valNum = 0;
+		}
+		menuPedidos = valNum;
+		parametro = parCtrl.obtenerParametro("MENUCLIENTES");
+		try
+		{
+			valNum = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE MENUCLIENTES");
+			valNum = 0;
+		}
+		menuClientes = valNum;
+		parametro = parCtrl.obtenerParametro("MENUINVENTARIOS");
+		try
+		{
+			valNum = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE MENUINVENTARIOS");
+			valNum = 0;
+		}
+		menuInventarios = valNum;
+		parametro = parCtrl.obtenerParametro("MENUSEGURIDAD");
+		try
+		{
+			valNum = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE MENUSEGURIDAD");
+			valNum = 0;
+		}
+		menuSeguridad = valNum;
+		parametro = parCtrl.obtenerParametro("MENUPRODUCTOS");
+		try
+		{
+			valNum = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE MENUPRODUCTOS");
+			valNum = 0;
+		}
+		menuProductos = valNum;
+		
+	}
+	
+
 }

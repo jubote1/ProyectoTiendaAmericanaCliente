@@ -40,6 +40,20 @@ public class CellRenderPedido extends DefaultTableCellRenderer implements TableC
         //Se realiza una validación inicial para saber si el detalle pedido esta anulado para pintar de rojo toda la fila
         if(((String)table.getValueAt(row, 6)).equals(new String("A")))
         {
+        	if(((String)table.getValueAt(row, 3)).substring(0, 1).equals(new String("(")))
+        	{
+        		
+        	}else
+        	{
+        		table.setValueAt("(" + (String)table.getValueAt(row, 3) + ")", row, 3);
+        	}
+        	if(((String)table.getValueAt(row, 2)).substring(0, 1).equals(new String("*")))
+        	{
+        		
+        	}else
+        	{
+        		table.setValueAt("***" + (String)table.getValueAt(row, 2) , row, 2);
+        	}
         	setBackground(Color.RED);
         	setForeground(Color.WHITE);
         	return this;

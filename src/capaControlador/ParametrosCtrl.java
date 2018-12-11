@@ -20,7 +20,7 @@ import utilidades.ControladorEnvioCorreo;
 public class ParametrosCtrl {
 	
 	private boolean auditoria;
-	public ParametrosCtrl()
+	public ParametrosCtrl(boolean auditoria)
 	{
 		this.auditoria = auditoria;
 	}

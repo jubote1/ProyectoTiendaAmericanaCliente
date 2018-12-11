@@ -87,7 +87,7 @@ from item_inventario a]]>
 				<textElement textAlignment="Left">
 					<font isBold="true"/>
 				</textElement>
-				<text><![CDATA[Descripción]]></text>
+				<text><![CDATA[Descripcion]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="360" y="0" width="71" height="20" uuid="f73d88f5-97dc-4bff-bd1a-05b5bcfdeba9"/>
@@ -106,23 +106,23 @@ from item_inventario a]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="36" splitType="Stretch">
+		<band height="17" splitType="Stretch">
 			<textField>
-				<reportElement x="0" y="10" width="71" height="20" uuid="6f0a1aee-b1c5-4365-bc23-411c65f75358"/>
+				<reportElement x="0" y="0" width="71" height="15" uuid="6f0a1aee-b1c5-4365-bc23-411c65f75358"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$F{iditem}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="90" y="10" width="251" height="21" uuid="df141d2a-cce8-48a2-b51a-4547d52ac944"/>
+				<reportElement x="90" y="0" width="251" height="15" uuid="df141d2a-cce8-48a2-b51a-4547d52ac944"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$F{nombre_item}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="360" y="10" width="71" height="21" uuid="22d899bd-e224-4909-a349-a58c2e624962"/>
+				<reportElement x="360" y="0" width="71" height="15" uuid="22d899bd-e224-4909-a349-a58c2e624962"/>
 				<textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="460" y="10" width="71" height="21" uuid="35a13596-e42d-403d-a73f-430887350d0f"/>
+				<reportElement x="460" y="0" width="71" height="15" uuid="35a13596-e42d-403d-a73f-430887350d0f"/>
 				<textFieldExpression><![CDATA[$F{unidad_medida}]]></textFieldExpression>
 			</textField>
 		</band>

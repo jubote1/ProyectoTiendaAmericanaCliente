@@ -249,6 +249,8 @@ public class VentCliCliente extends JFrame {
 		btnSeleccionar = new JButton("Seleccionar");
 		btnSeleccionar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				//actualizamos si es el caso el cliente
+				actualizarCliente(false);
 				//En este botón seleccionar se instanciará un objeto de la ventana tomador de pedidos y se fijarán los valores de los parámetros de cliente
 				VentPedTomarPedidos ventFijarParCliente = new VentPedTomarPedidos();
 				int idClienSel = Integer.parseInt(textIdCliente.getText());
@@ -324,32 +326,7 @@ public class VentCliCliente extends JFrame {
 		btnActualizarCliente.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Acciones relacionadas con la actualización del un cliente que son muy similares a la inserción
-				String telefono = textTelefono.getText();
-				String nombre = textNombre.getText();
-				String apellido = textApellido.getText();
-				String compania = textCompania.getText();
-				String numNomen1 = textNumNomen1.getText();
-				String numNomen2 = textNumNomen2.getText();
-				String num3 = textNum3.getText();
-				String zona = textZona.getText(); 
-				String observacion = textObservacion.getText();
-				if(observacion.length() > 200)
-				{
-					observacion = observacion.substring(0, 200);
-				}
-				int idMunicipio = ((Municipio)comboMunicipio.getSelectedItem()).getIdmunicipio();
-				int idNomemclatura = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getIdnomemclatura();
-				String direccion = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getNomenclatura() + " " + numNomen1 + " # " + numNomen2 + " - " + num3;
-				Cliente actCliente = new Cliente(idCliente, telefono, nombre, apellido, compania, direccion, "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "");
-				//Esto lo realizaremos de manera transitoria mientra hacemos algo estándar en el ingreso de la tienda
-				actCliente.setIdtienda(1);
-				ClienteCtrl clienteCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
-				int idClienteAct = clienteCtrl.actualizarCliente(actCliente);
-				if(idClienteAct > 0)
-				{
-					JOptionPane.showMessageDialog(null, "El cliente fue actualizado correctamente " , "Actualización de Cliente ", JOptionPane.OK_OPTION);
-
-				}
+				actualizarCliente(true);
 			}
 		});
 		btnActualizarCliente.setBounds(458, 412, 133, 29);
@@ -566,6 +543,39 @@ public class VentCliCliente extends JFrame {
 			NomenclaturaDireccion object = (NomenclaturaDireccion)comboNomenclatura.getModel().getElementAt(i);
 			if(object.getIdnomemclatura() == idNomencla){
 				comboNomenclatura.setSelectedItem(object);
+			}
+		}
+	}
+	
+	public void actualizarCliente(boolean mostrarMensaje)
+	{
+		//Acciones relacionadas con la actualización del un cliente que son muy similares a la inserción
+		String telefono = textTelefono.getText();
+		String nombre = textNombre.getText();
+		String apellido = textApellido.getText();
+		String compania = textCompania.getText();
+		String numNomen1 = textNumNomen1.getText();
+		String numNomen2 = textNumNomen2.getText();
+		String num3 = textNum3.getText();
+		String zona = textZona.getText(); 
+		String observacion = textObservacion.getText();
+		if(observacion.length() > 200)
+		{
+			observacion = observacion.substring(0, 200);
+		}
+		int idMunicipio = ((Municipio)comboMunicipio.getSelectedItem()).getIdmunicipio();
+		int idNomemclatura = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getIdnomemclatura();
+		String direccion = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getNomenclatura() + " " + numNomen1 + " # " + numNomen2 + " - " + num3;
+		Cliente actCliente = new Cliente(idCliente, telefono, nombre, apellido, compania, direccion, "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "");
+		//Esto lo realizaremos de manera transitoria mientra hacemos algo estándar en el ingreso de la tienda
+		actCliente.setIdtienda(1);
+		ClienteCtrl clienteCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
+		int idClienteAct = clienteCtrl.actualizarCliente(actCliente);
+		if(idClienteAct > 0)
+		{
+			if(mostrarMensaje)
+			{
+				JOptionPane.showMessageDialog(null, "El cliente fue actualizado correctamente " , "Actualización de Cliente ", JOptionPane.OK_OPTION);
 			}
 		}
 	}

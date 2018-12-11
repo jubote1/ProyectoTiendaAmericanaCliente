@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.Impuesto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Tienda;
 import capaModelo.TipoPedido;
 

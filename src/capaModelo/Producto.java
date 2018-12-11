@@ -28,9 +28,17 @@ public class Producto {
 	private int modificadorCon;
 	private int modificadorSin;
 	private byte[] imagen;
-	
+	private boolean modConPregunta;
 	
 		
+	
+	
+	public boolean isModConPregunta() {
+		return modConPregunta;
+	}
+	public void setModConPregunta(boolean modConPregunta) {
+		this.modConPregunta = modConPregunta;
+	}
 	public byte[] getImagen() {
 		return imagen;
 	}
@@ -201,7 +209,7 @@ public class Producto {
 	public Producto(int idProducto, String descripcion, String impresion, String textoBoton, String colorBoton,
 			int idPreguntaForzada1, int idPreguntaForzada2, int idPreguntaForzada3, int idPreguntaForzada4,
 			int idPreguntaForzada5, double precio1, double precio2, double precio3, double precio4, double precio5,
-			double precio6, double precio7, double precio8, double precio9, double precio10, String impresionComanda, String tipoProducto, String tamano) {
+			double precio6, double precio7, double precio8, double precio9, double precio10, String impresionComanda, String tipoProducto, String tamano, boolean modConPregunta) {
 		super();
 		this.idProducto = idProducto;
 		this.descripcion = descripcion;
@@ -226,6 +234,7 @@ public class Producto {
 		this.impresionComanda = impresionComanda;
 		this.tipoProducto = tipoProducto;
 		this.tamano = tamano;
+		this.modConPregunta = modConPregunta;
 	}
 	public Producto(int idProducto, String descripcion) {
 		super();

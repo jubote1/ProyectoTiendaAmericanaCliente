@@ -58,6 +58,7 @@ import javax.swing.SwingUtilities;
 import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 public class VentPedTransaccional extends JFrame implements Runnable{
 
@@ -105,7 +106,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JPanel panelBotones = new JPanel();
 		panelBotones.setBounds(10, 603, 978, 92);
 		contentPane.add(panelBotones);
@@ -149,6 +151,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 					Cliente clientePedido = pedCtrl.obtenerClientePedido(idPedido);
 					VentPedTomarPedidos.idCliente = clientePedido.getIdcliente();
 					VentPedTomarPedidos.nombreCliente = clientePedido.getNombres() + " " + clientePedido.getApellidos();
+					VentPedTomarPedidos.direccion = clientePedido.getDireccion();
+					System.out.println("OJO LOS DATOS DE CLIENTE QUE ESTAMOS FIJANDO " + VentPedTomarPedidos.direccion );
 					boolean tieneFormaPago = pedCtrl.existeFormaPago(idPedido);
 					if(tieneFormaPago)
 					{
@@ -255,7 +259,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		JButton btnParaLlevar = new JButton("<html><center>Para Llevar</center></html>");
 		
 		panelFiltrosPedidos.add(btnParaLlevar);
-		JButton btnTotalConPedidos = new JButton("<html><center>Total Con Pedidos Finalizados</center></html>");
+		JButton btnTotalConPedidos = new JButton("<html><center>TODOS LOS PEDIDOS</center></html>");
 		JButton btnTotal = new JButton("<html><center>Total Sin Pedidos Finalizados</center></html>");
 		
 		btnTotal.addActionListener(new ActionListener() {
@@ -511,7 +515,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	
 	public void pintarPedidos()
 	{
-		Object[] columnsName = new Object[9];
+		Object[] columnsName = new Object[10];
         
         columnsName[0] = "Id Pedido Tienda";
         columnsName[1] = "Fecha Pedido";
@@ -521,7 +525,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
         columnsName[5] = "Dirección";
         columnsName[6] = "id Tipo Pedido";
         columnsName[7] = "idestado";
-        columnsName[8] = "Tiempo";
+        columnsName[8] = "Domiciliario";
+        columnsName[9] = "Tiempo";
         ArrayList<Object> pedidos = new ArrayList();
         if(idTipoPedido == -1)
         {
@@ -560,8 +565,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getColumnModel().getColumn(1).setMaxWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(1).setMinWidth(0);
 		//Modificamos el ancho de la columna nombre
-		tblMaestroPedidos.getColumnModel().getColumn(2).setMinWidth(170);
-		tblMaestroPedidos.getColumnModel().getColumn(2).setMaxWidth(170);
+		tblMaestroPedidos.getColumnModel().getColumn(2).setMinWidth(150);
+		tblMaestroPedidos.getColumnModel().getColumn(2).setMaxWidth(150);
 		//Modificamos ancho del tipo de pedido
 		tblMaestroPedidos.getColumnModel().getColumn(3).setMinWidth(110);
 		tblMaestroPedidos.getColumnModel().getColumn(3).setMaxWidth(110);
@@ -572,9 +577,11 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getColumnModel().getColumn(6).setMinWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(7).setMaxWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(7).setMinWidth(0);
+		tblMaestroPedidos.getColumnModel().getColumn(8).setMinWidth(90);
+		tblMaestroPedidos.getColumnModel().getColumn(8).setMaxWidth(90);
 		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getColumnModel().getColumn(8).setMinWidth(180);
-		tblMaestroPedidos.getColumnModel().getColumn(8).setMaxWidth(180);
+		tblMaestroPedidos.getColumnModel().getColumn(9).setMinWidth(150);
+		tblMaestroPedidos.getColumnModel().getColumn(9).setMaxWidth(150);
 		
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMaxWidth(70);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMinWidth(70);
@@ -582,8 +589,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(0);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(1).setMinWidth(0);
 		//Modificamos el ancho de la columna nombre
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMinWidth(170);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMaxWidth(170);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMinWidth(150);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMaxWidth(150);
 		//Modificamos ancho del tipo de pedido
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(3).setMinWidth(110);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(110);
@@ -594,9 +601,12 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(6).setMinWidth(0);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(7).setMaxWidth(0);	
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(7).setMinWidth(0);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMinWidth(90);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(90);
 		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMinWidth(180);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(180);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMinWidth(150);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMaxWidth(150);
+		tblMaestroPedidos.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		setCellRender(tblMaestroPedidos);
 		
 	}

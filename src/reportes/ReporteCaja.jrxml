@@ -6,14 +6,13 @@
 	<parameter name="fecha" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{fecha}]]></defaultValueExpression>
 	</parameter>
-	<parameter name="Parameter1" class="java.lang.String"/>
 	<queryString language="SQL">
-		<![CDATA[select sum(total_neto), d.usuario from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 1 and a.fechapedido = $P{fecha} group by usuario
+		<![CDATA[select total_neto, d.usuario from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 1 and a.fechapedido = $P{fecha} group by total_neto, usuario
 union
-select sum(total_neto), 'CAJA' from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 0 and a.fechapedido = $P{fecha} group by usuario]]>
+select total_neto, 'CAJA' from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 0 and a.fechapedido = $P{fecha} group by total_neto, usuario]]>
 	</queryString>
-	<field name="sum(total_neto)" class="java.lang.Double">
-		<property name="com.jaspersoft.studio.field.label" value="sum(total_neto)"/>
+	<field name="total_neto" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="total_neto"/>
 	</field>
 	<field name="usuario" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="usuario"/>
@@ -65,9 +64,9 @@ select sum(total_neto), 'CAJA' from pedido a , tipo_pedido b, estado c, cambios_
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="26" splitType="Stretch">
+		<band height="18" splitType="Stretch">
 			<textField>
-				<reportElement x="110" y="2" width="100" height="18" uuid="6703467e-7c70-41eb-8ea7-532e4b46407c">
+				<reportElement x="110" y="2" width="100" height="16" uuid="6703467e-7c70-41eb-8ea7-532e4b46407c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="2874cbfb-4488-40e2-9425-2bf312df6c02"/>
 				</reportElement>
 				<textElement textAlignment="Center">
@@ -76,13 +75,10 @@ select sum(total_neto), 'CAJA' from pedido a , tipo_pedido b, estado c, cambios_
 				<textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="340" y="-3" width="133" height="23" uuid="da5e53aa-ad10-41dd-8424-d2b6c8aada60">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dc7c7b26-75f8-48a1-8d62-b3b042bfb41b"/>
+				<reportElement x="339" y="3" width="100" height="13" uuid="7e46ca4d-1ccc-46de-a7c1-16fc3615d512">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d6404231-ff4f-413f-a822-b49f8a72ecec"/>
 				</reportElement>
-				<textElement textAlignment="Center">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum(total_neto)}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{total_neto}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

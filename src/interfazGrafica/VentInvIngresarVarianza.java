@@ -47,7 +47,7 @@ import java.awt.Image;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
-public class VentIngresarVarianza extends JDialog {
+public class VentInvIngresarVarianza extends JDialog {
 
 	private JPanel contentPanePrincipal;
 	private JTable tableIngVarianza;
@@ -68,7 +68,7 @@ public class VentIngresarVarianza extends JDialog {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentIngresarVarianza frame = new VentIngresarVarianza(null, true);
+					VentInvIngresarVarianza frame = new VentInvIngresarVarianza(null, true);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -80,7 +80,7 @@ public class VentIngresarVarianza extends JDialog {
 	/**
 	 * Create the frame.
 	 */
-	public VentIngresarVarianza(java.awt.Frame parent, boolean modal) {
+	public VentInvIngresarVarianza(java.awt.Frame parent, boolean modal) {
 		super(parent, modal);
 		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();

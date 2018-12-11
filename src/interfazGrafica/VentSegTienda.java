@@ -25,11 +25,12 @@ import capaControlador.ParametrosProductoCtrl;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.ParametrosCtrl;
 import capaModelo.Impuesto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Parametro;
 import capaModelo.Tienda;
 
 import javax.swing.JComboBox;
+import java.awt.Font;
 
 public class VentSegTienda extends JDialog {
 
@@ -212,7 +213,8 @@ public class VentSegTienda extends JDialog {
 		lblTipoContribuyente.setBounds(61, 293, 93, 14);
 		panelDatos.add(lblTipoContribuyente);
 		
-		JButton btnSalir = new JButton("Salir");
+		JButton btnSalir = new JButton("SALIR");
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 12));
 		btnSalir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				

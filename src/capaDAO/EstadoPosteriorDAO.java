@@ -11,7 +11,7 @@ import capaModelo.Estado;
 import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPosterior;
 import capaModelo.Impuesto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Producto;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;

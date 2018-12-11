@@ -7,7 +7,7 @@ import capaDAO.ImpuestoDAO;
 import capaDAO.ImpuestoProductoDAO;
 import capaDAO.ItemInventarioDAO;
 import capaDAO.ItemInventarioProductoDAO;
-import capaDAO.MenuAgrupadorDAO;
+import capaDAO.AgrupadorMenuDAO;
 import capaDAO.PreguntaDAO;
 import capaDAO.ProductoDAO;
 import capaDAO.ProductoIncluidoDAO;
@@ -18,7 +18,7 @@ import capaModelo.Impuesto;
 import capaModelo.ImpuestoProducto;
 import capaModelo.ItemInventario;
 import capaModelo.ItemInventarioProducto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Pregunta;
 import capaModelo.Producto;
 import capaModelo.ProductoIncluido;
@@ -264,6 +264,13 @@ public class ParametrosProductoCtrl {
 		{
 			int idProducto = ProductoDAO.insertarProducto(producto, auditoria);
 			return(idProducto);
+		}
+		
+		
+		public boolean tieneModConPregunta(int idProducto)
+		{
+			boolean respuesta = ProductoDAO.tieneModConPregunta(idProducto, auditoria);
+			return(respuesta);
 		}
 		
 		/**

@@ -22,9 +22,9 @@ import javax.swing.table.DefaultTableModel;
 import capaControlador.ParametrosProductoCtrl;
 import capaControlador.AutenticacionCtrl;
 import capaModelo.Impuesto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 
-public class VentCRUDImpuesto extends JFrame {
+public class VentProCRUDImpuesto extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField jTextIDImpuesto;
@@ -40,7 +40,7 @@ public class VentCRUDImpuesto extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentCRUDImpuesto frame = new VentCRUDImpuesto();
+					VentProCRUDImpuesto frame = new VentProCRUDImpuesto();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -77,7 +77,7 @@ public class VentCRUDImpuesto extends JFrame {
 	 * Create the frame.
 	 * Se documentan todas las acciones  a seguir cuando se instancia el frame para el CRUD de impuestor.
 	 */
-	public VentCRUDImpuesto() {
+	public VentProCRUDImpuesto() {
 		setTitle("MAESTRO DE IMPUESTOS");
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

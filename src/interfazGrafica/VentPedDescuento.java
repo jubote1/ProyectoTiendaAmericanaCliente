@@ -121,7 +121,8 @@ public class VentPedDescuento extends JDialog {
 		contentenorDescuento.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentenorDescuento);
 		contentenorDescuento.setLayout(null);
-				
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		
 		JButton btnNum_1 = new JButton("1");
 		btnNum_1.addActionListener(new ActionListener() {

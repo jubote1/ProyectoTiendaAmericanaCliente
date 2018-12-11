@@ -109,8 +109,12 @@ public class VentPedTomarPedidos extends JFrame {
 	static boolean tieneFormaPago = false;
 	static boolean tieneDescuento = false;
 	public static int colorDetalle = 0;
-	public boolean esReabierto = false;
+	//Manejamos variable booleana que nos indicará si el pedido es no es reabierto
+	public static boolean esReabierto = false;
+	//Manejamos variable booleanda que nos indicá si al pedido completo se le realizó anulación completa
 	public static boolean esAnulado = false;
+	//Variable que indica que el pedido es anulado sin haber descontado algún item de inventario
+	public static boolean esAnuladoSinDescontar = false;
 	private JComboBox comboMotivoAnulacion;
 	public static int contadorDetallePedido = 1;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
@@ -144,7 +148,7 @@ public class VentPedTomarPedidos extends JFrame {
 		btnFinalizarPedido.setBackground(Color.LIGHT_GRAY);
 		btnDescuento.setBackground(null);
 		esAnulado = false;
-		
+		esReabierto = false;
 
 	}
 	
@@ -153,7 +157,8 @@ public class VentPedTomarPedidos extends JFrame {
 		totalPedido = 0;
 		descuento = 0;
 		idDetallePedidoMaster = 0;
-
+		//SI es un pedido anulado completo continua con su situación de reabierto o no por lo tanto se coloca comentario sobre la linea
+		//esReabierto = false;
 	}
 	
 	public void clarearVarNoEstaticas(boolean cerrarVentana)
@@ -162,7 +167,6 @@ public class VentPedTomarPedidos extends JFrame {
 		txtDescuento.setText("0");
 		txtValorTotal.setText("0");
 		txtNroPedido.setText("");
-		esReabierto = false;
 		esAnulado = false;
 		lblNombreCliente.setText("");
 		lDireccion.setText("");
@@ -177,8 +181,9 @@ public class VentPedTomarPedidos extends JFrame {
 		txtValorPedidoSD.setText("0");
 		txtDescuento.setText("0");
 		txtValorTotal.setText("0");
-		lblNombreCliente.setText("");
-		lDireccion.setText("");
+		//Comentamos lo siguiente porque se continuará en pantalla de pedidos
+		//lblNombreCliente.setText("");
+		//lDireccion.setText("");
 		
 	}
 	
@@ -216,7 +221,7 @@ public class VentPedTomarPedidos extends JFrame {
 			}
 		});
 		setTitle("TOMADOR DE PEDIDOS");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(100, 100, 1024, 770);
 		setUndecorated(true);
@@ -230,7 +235,7 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		JPanel panelPedido = new JPanel();
 		panelPedido.setBorder(new CompoundBorder(new LineBorder(new Color(0, 0, 0), 3), null));
-		panelPedido.setBounds(0, 0, 225, 315);
+		panelPedido.setBounds(0, 0, 247, 431);
 		contentPane.add(panelPedido);
 		panelPedido.setLayout(null);
 		
@@ -239,7 +244,7 @@ public class VentPedTomarPedidos extends JFrame {
 		panelPedido.add(table);
 		
 		JLabel lblValorTotalSD = new JLabel("Valor Total SD");
-		lblValorTotalSD.setBounds(10, 200, 83, 14);
+		lblValorTotalSD.setBounds(10, 312, 83, 14);
 		panelPedido.add(lblValorTotalSD);
 		
 		JButton btnAnularItem = new JButton("Anular Item");
@@ -318,40 +323,40 @@ public class VentPedTomarPedidos extends JFrame {
 				
 			}
 		});
-		btnAnularItem.setBounds(51, 272, 112, 36);
+		btnAnularItem.setBounds(51, 384, 147, 36);
 		panelPedido.add(btnAnularItem);
 		
 		txtValorPedidoSD = new JTextField();
 		txtValorPedidoSD.setEditable(false);
-		txtValorPedidoSD.setBounds(97, 197, 118, 20);
+		txtValorPedidoSD.setBounds(97, 309, 140, 20);
 		panelPedido.add(txtValorPedidoSD);
 		txtValorPedidoSD.setColumns(10);
 		
 		JLabel lblDescuento = new JLabel("Descuento");
-		lblDescuento.setBounds(10, 225, 83, 14);
+		lblDescuento.setBounds(10, 337, 83, 14);
 		panelPedido.add(lblDescuento);
 		
 		txtDescuento = new JTextField();
 		txtDescuento.setEditable(false);
-		txtDescuento.setBounds(97, 222, 118, 20);
+		txtDescuento.setBounds(97, 334, 140, 20);
 		panelPedido.add(txtDescuento);
 		txtDescuento.setColumns(10);
 		
 		JLabel lblValorTotal = new JLabel("Valor Total");
-		lblValorTotal.setBounds(10, 250, 83, 14);
+		lblValorTotal.setBounds(10, 362, 83, 14);
 		panelPedido.add(lblValorTotal);
 		
 		txtValorTotal = new JTextField();
 		txtValorTotal.setEditable(false);
 		txtValorTotal.setColumns(10);
-		txtValorTotal.setBounds(97, 250, 118, 20);
+		txtValorTotal.setBounds(97, 362, 140, 20);
 		panelPedido.add(txtValorTotal);
 		
 		txtDescuento.setText(Double.toString(descuento));
 		txtValorTotal.setText(Double.toString(totalPedido - descuento));
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 11, 205, 178);
+		scrollPane.setBounds(10, 11, 227, 290);
 		panelPedido.add(scrollPane);
 		
 		
@@ -392,18 +397,18 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		JPanel panelMenu = new JPanel();
 		panelMenu.setBorder(new LineBorder(new Color(0, 0, 0), 3));
-		panelMenu.setBounds(235, 0, 769, 315);
+		panelMenu.setBounds(257, 0, 747, 431);
 		contentPane.add(panelMenu);
 		panelMenu.setLayout(null);
 		
 		tableMenu = new JTable();
 		tableMenu.setShowGrid(false);
 		tableMenu.setBorder(null);
-		tableMenu.setBounds(10, 11, 749, 282);
+		tableMenu.setBounds(10, 11, 732, 409);
 		tableMenu.setCellSelectionEnabled(true);
 		tableMenu.setDefaultRenderer(Object.class, new ButtonRenderer());
 		tableMenu.setCellEditor(new ButtonEditor());
-		tableMenu.setRowHeight(46);
+		tableMenu.setRowHeight(67);
 		tableMenu.setOpaque(false);
 		JButton btn;
 			
@@ -416,7 +421,7 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		JPanel panelAgrupadorMenu = new JPanel();
 		panelAgrupadorMenu.setBorder(new LineBorder(new Color(0, 0, 0), 3));
-		panelAgrupadorMenu.setBounds(235, 314, 769, 69);
+		panelAgrupadorMenu.setBounds(235, 441, 769, 69);
 		contentPane.add(panelAgrupadorMenu);
 		panelAgrupadorMenu.setLayout(new GridLayout(1, 0, 0, 0));
 		comboMotivoAnulacion = new JComboBox();
@@ -585,7 +590,7 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		JPanel panelAcciones = new JPanel();
 		panelAcciones.setBorder(new LineBorder(new Color(0, 0, 0), 3));
-		panelAcciones.setBounds(0, 433, 1004, 69);
+		panelAcciones.setBounds(0, 569, 1004, 69);
 		contentPane.add(panelAcciones);
 		panelAcciones.setLayout(null);
 		
@@ -608,6 +613,7 @@ public class VentPedTomarPedidos extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				if(idPedido > 0)
 				{
+					//Invocamamos el método qeu se encarga de realizar la verificacion para la anulación del pedido
 					anularPedido(false);
 				}
 			}
@@ -677,17 +683,20 @@ public class VentPedTomarPedidos extends JFrame {
 
 		btnFinalizarPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//Validamos si el pedido es anulado y se dio en finalizar terminamos
-				if(esAnulado)
-				{
-					clarearVarEstaticas();
-					clarearVarNoEstaticas(false);
-					dispose();
-					return;
-				}
+				
 				//traemos la ventana padre para el JDialog de FinalizarPedido
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
                         (Component) arg0.getSource());
+				//Al momento de finalizar pedido validaremos que si el tipo de pedido es domicilio se tenga un cliente asociado
+				TipoPedido tipPedido = VentPedTomarPedidos.tiposPedidos.get(numTipoPedidoAct);
+				if(tipPedido.isEsDomicilio())
+				{
+					if(VentPedTomarPedidos.idCliente == 0)
+					{
+						JOptionPane.showMessageDialog(ventanaPadre, "No se puede finalizar pedido, dado que es tipo domicilio y no tiene asociado un cliente." , "Falta Cliente para Pedido Tipo Domicilio", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+				}
 				if (idPedido > 0)
 				{
 					boolean hayFormaPago = pedCtrl.existeFormaPago(idPedido);
@@ -727,24 +736,25 @@ public class VentPedTomarPedidos extends JFrame {
 				}
 				else
 				{
-					int seleccion = JOptionPane.showOptionDialog(
-							null,
-							"Actualmente se está tomando un pedido y no ha sido finalizado, desea anular el pedido e ir a la pantalla transaccional?",
-							"Pedido sin Finalizar",
-							JOptionPane.YES_NO_CANCEL_OPTION,
-							JOptionPane.QUESTION_MESSAGE,
-							null,
-							new Object[]{"Anular el Pedido e ir a pantalla transaccional","No Salir de esta Pantalla"},
-							"Anular el Pedido e ir a pantalla transaccional");
-					if(seleccion == 0)
+					int idPedidoTemp = idPedido;
+					anularPedido(true);
+					if(idPedido == 0)
 					{
-						anularPedido(true);
 						VentPedTransaccional transacciones = new VentPedTransaccional();
 						transacciones.setVisible(true);
+						idCliente = 0;
+						//Preguntamos si es anulado sin descontar signfica que si entro y debe anular el pedido
+						//Se valida aca porque normalmente cuando se invoca desde el botón anular que no es donde se sale la idea es que no anule todavía el pedido, mientras acá si 
+						// lo deberá anular.
+						if(esAnuladoSinDescontar)
+						{
+							//Anulamos el pedido con el detalle de cambio de opinion del cliente
+							pedCtrl.anularPedidoSinDetalle(idPedidoTemp);
+							esAnuladoSinDescontar = false;
+						}
 						dispose();
 					}
 				}
-				
 			}
 		});
 		btnMaestroPedidos.setBounds(666, 11, 140, 47);
@@ -754,14 +764,26 @@ public class VentPedTomarPedidos extends JFrame {
 		btnSalirSistema.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Validamos la variable idPedido si esta es mayor a cero es porque el pedido ya comenzó a tomarse
+				int idPedidoTemp = idPedido;
 				if(idPedido > 0)
 				{
 					anularPedido(true);
 				}
-				VentPrincipal ventPrincipal = new VentPrincipal();
-				ventPrincipal.setVisible(true);
-				idCliente = 0;
-				dispose();
+				//Es porque se dijo que si en la anulación, si saldriamos en esta situación
+				if(idPedido == 0)
+				{
+					VentPrincipal ventPrincipal = new VentPrincipal();
+					ventPrincipal.setVisible(true);
+					idCliente = 0;
+					//Preguntamos si es anulado sin descontar signfica que si entro y debe anular el pedido
+					if(esAnuladoSinDescontar)
+					{
+						//Anulamos el pedido con el detalle de cambio de opinion del cliente
+						pedCtrl.anularPedidoSinDetalle(idPedidoTemp);
+						esAnuladoSinDescontar = false;
+					}
+					dispose();
+				}
 			}
 		});
 		btnSalirSistema.setBounds(816, 11, 140, 47);
@@ -820,7 +842,7 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		
 		JPanel panel = new JPanel();
-		panel.setBounds(0, 317, 225, 116);
+		panel.setBounds(0, 442, 225, 116);
 		contentPane.add(panel);
 		panel.setLayout(null);
 		
@@ -889,7 +911,7 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		lblNombreCliente = new JLabel("Nombre Cliente");
 		lblNombreCliente.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblNombreCliente.setBounds(206, 499, 390, 17);
+		lblNombreCliente.setBounds(208, 649, 390, 17);
 		contentPane.add(lblNombreCliente);
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
@@ -914,7 +936,7 @@ public class VentPedTomarPedidos extends JFrame {
 		txtNroPedido.setColumns(10);
 		
 		JPanel panelModificadores = new JPanel();
-		panelModificadores.setBounds(235, 389, 769, 37);
+		panelModificadores.setBounds(235, 521, 769, 37);
 		contentPane.add(panelModificadores);
 		panelModificadores.setLayout(null);
 		
@@ -966,17 +988,17 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		JLabel lblDireccion = new JLabel("Direcci\u00F3n");
 		lblDireccion.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblDireccion.setBounds(77, 527, 108, 20);
+		lblDireccion.setBounds(79, 677, 108, 20);
 		contentPane.add(lblDireccion);
 		
 		lDireccion = new JLabel("direccion");
 		lDireccion.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lDireccion.setBounds(206, 527, 390, 17);
+		lDireccion.setBounds(208, 677, 390, 17);
 		contentPane.add(lDireccion);
 		
 		JLabel lblNombreCliente_1 = new JLabel("Nombre Cliente");
 		lblNombreCliente_1.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblNombreCliente_1.setBounds(77, 497, 119, 20);
+		lblNombreCliente_1.setBounds(79, 647, 119, 20);
 		contentPane.add(lblNombreCliente_1);
 		//Inicializamos la variable idTienda para la toma de pedidos
 		if(idTienda == 0)
@@ -1137,11 +1159,7 @@ public class VentPedTomarPedidos extends JFrame {
 		if (preguntasProducto.size() == 0)
 		{
 			contadorDetallePedido++;
-			if(esAnulado)
-			{
-				esAnulado = false;
-			}
-			
+						
 		}
 		else
 		{
@@ -1267,29 +1285,46 @@ public class VentPedTomarPedidos extends JFrame {
 		if(!esReabierto)
 		{
 			//Mostramos la pantalla de confirmación para validar si deseamos o no la anulación
-			int resp = JOptionPane.showConfirmDialog(null, "¿Está seguro que desea Eliminar el Pedido que se está tomando?");
+			int resp = JOptionPane.showConfirmDialog(null, "¿Está seguro que desea Eliminar el Pedido que se está tomando?", "Confirmación de Salida de Pantalla" , JOptionPane.YES_NO_OPTION);
 			if (resp == 0)
 			{
-				// Si selecciona que si se desea anular procedemos a realizar la eliminación del pedido
-				boolean eliDetallePedido = pedCtrl.anularPedidoEliminar(idPedido);
-				//Realizamos el limpiado de las variables de la pantalla de pedidos
+				// Si selecciona que si se desea anular procedemos a realizar la eliminación del detalle pedido, no realizamos todavía la anulación del pedido
+				boolean eliDetallePedido = pedCtrl.anularBorrarDetallePedido(idPedido);
+				//Prendremos la variable que indica qeu se anulo el pedido completo sin descontar
+				esAnuladoSinDescontar = true;
+				//En este punto se debe realizar la reacomodación de la pantalla con la información eliminada
+				//La lógica seguida es CUANDO EL PEDIDO NO ES REABIERTO
+				//Con este ciclo FOR se realiza el borrado y ajuste en pantala
+				for(int j = 0; j < detallesPedido.size(); j++)
+				{
+					DetallePedido detCadaPedido = detallesPedido.get(j);
+					// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
+					double valorItem = detCadaPedido.getValorTotal();
+					detallesPedido.remove(j);
+					// j se reduce en uno teniendo en cuenta que se eliminó un elemento
+					j--;
+					totalPedido = totalPedido - valorItem;
+					txtValorPedidoSD.setText(Double.toString(totalPedido));
+					txtValorTotal.setText(Double.toString(totalPedido - descuento));
+					}
+				//Validamos si se debe salir o no de la ventana, que viene en la variable que se recibe como paraémtro
 				if(salirVentana)
 				{
 					clarearVarEstaticas();
 					clarearVarNoEstaticas(false);
-				}else
-				{
-					clarearVarEstaticasNoSalir();
-					detallesPedido = new ArrayList();
-					pintarDetallePedido();
-					clarearVarNoEstaticasNoSalir();
-					//Marcamos que fue anulado el pedido y se quitará esta marca en caso de agregar un producto
-					esAnulado = true;
+					VentPedTransaccional transacciones = new VentPedTransaccional();
+					transacciones.setVisible(true);
+					dispose();
+					return;
 				}
+			}else
+			{
+				return;
 			}
+			
 			//En caso del que el pedido hay sido reabierto
 		}else if(esReabierto)
-		{
+		{	
 			//Desplegamos para que el usuario seleccione el motivo de anulación
 			int resp = JOptionPane.showConfirmDialog(null, comboMotivoAnulacion, "Selecciona Motivo de Anulación.",JOptionPane.YES_NO_OPTION);
 			if (resp == 0)

@@ -9,7 +9,7 @@ import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.Impuesto;
 import capaModelo.ImpuestoProducto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.ProductoIncluido;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;

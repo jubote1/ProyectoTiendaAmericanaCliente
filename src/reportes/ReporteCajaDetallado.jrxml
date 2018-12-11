@@ -52,25 +52,25 @@ select a.total_neto, 'CAJA', a.idpedidotienda from pedido a , tipo_pedido b, est
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="50">
+			<band height="38">
 				<textField>
-					<reportElement x="331" y="10" width="100" height="30" uuid="d95f51be-aa54-40a3-bc67-491c56d2b151"/>
+					<reportElement x="330" y="0" width="100" height="30" uuid="d95f51be-aa54-40a3-bc67-491c56d2b151"/>
 					<textElement textAlignment="Center">
 						<font size="12" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_neto1}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="50" y="10" width="80" height="31" uuid="660eeb3f-532f-4f5a-9625-976eac02ad83"/>
+					<reportElement x="40" y="0" width="80" height="31" uuid="660eeb3f-532f-4f5a-9625-976eac02ad83"/>
 					<textElement>
 						<font size="14" isBold="true"/>
 					</textElement>
 					<text><![CDATA[TOTAL]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="130" y="10" width="160" height="30" uuid="ff0ef728-c4cc-47e9-b602-4bf499e9d82f"/>
+					<reportElement x="130" y="0" width="160" height="30" uuid="ff0ef728-c4cc-47e9-b602-4bf499e9d82f"/>
 					<textElement textAlignment="Center">
-						<font size="20" isBold="true"/>
+						<font size="14" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression>
 				</textField>
@@ -103,16 +103,16 @@ select a.total_neto, 'CAJA', a.idpedidotienda from pedido a , tipo_pedido b, est
 		</band>
 	</title>
 	<detail>
-		<band height="37" splitType="Stretch">
+		<band height="19" splitType="Stretch">
 			<textField>
-				<reportElement x="280" y="10" width="151" height="20" uuid="1731614f-dbef-42c2-a117-67095de76a7b"/>
+				<reportElement x="280" y="0" width="151" height="17" uuid="1731614f-dbef-42c2-a117-67095de76a7b"/>
 				<textElement textAlignment="Center">
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{total_neto}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="10" width="151" height="20" uuid="d7d1bba9-aa27-4ce1-a2d2-39aff0cf1002"/>
+				<reportElement x="80" y="0" width="151" height="17" uuid="d7d1bba9-aa27-4ce1-a2d2-39aff0cf1002"/>
 				<textElement textAlignment="Center">
 					<font isBold="true"/>
 				</textElement>

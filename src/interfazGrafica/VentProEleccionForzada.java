@@ -13,6 +13,7 @@ import capaModelo.DetallePedido;
 import capaModelo.EleccionForzada;
 import capaModelo.EleccionForzadaBoton;
 import capaModelo.EleccionForzadaTemporal;
+import capaModelo.ModificadorConPregunta;
 import capaModelo.Pregunta;
 import capaModelo.Producto;
 
@@ -72,6 +73,8 @@ public class VentProEleccionForzada extends JDialog {
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private ParametrosProductoCtrl parProductoCtrl = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	ArrayList<Producto> productos =parProductoCtrl.obtenerProductosCompleto();
+	//Variable creada para almacenar los modificadores con seleccionados en un grupo de preguntas forzadas
+	public static ArrayList<ModificadorConPregunta> modConPregunta = new ArrayList();
 	/**
 	 * Launch the application.
 	 */
@@ -165,6 +168,7 @@ public class VentProEleccionForzada extends JDialog {
 		JButton btnConfirmarPregunta = new JButton("");
 		btnConfirmarPregunta.setBackground(Color.BLACK);
 		btnConfirmarPregunta.setIcon(new ImageIcon(VentProEleccionForzada.class.getResource("/icons/preguntaSiguiente.jpg")));
+		//Se define la acción del botón siguiente
 		btnConfirmarPregunta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(obligEleccion == true)
@@ -194,16 +198,19 @@ public class VentProEleccionForzada extends JDialog {
 						}
 					}
 				}
+				//Se define la lógica para la adición de los productos en los arreglos correspondientes
 				incluirProductos();
 				if(preguntaActual == preguntasPantalla.size())
 				{
 					AdicionarTomarPedidos();
-					if(VentPedTomarPedidos.esAnulado)
-					{
-						VentPedTomarPedidos.esAnulado = false;
-					}
+					//Documentamos esta fracción e código para evitar que se quite la marcación de anulado
+//					if(VentPedTomarPedidos.esAnulado)
+//					{
+//						VentPedTomarPedidos.esAnulado = false;
+//					}
 					preguntaActual = 0;	
 					VentPedTomarPedidos.contadorDetallePedido++;
+					modConPregunta = new ArrayList();
 					dispose();
 				}
 				CargarEleccionForzada();
@@ -351,20 +358,29 @@ public class VentProEleccionForzada extends JDialog {
 				/*
 				 * Definimos la acción cuando damos clic sobre los botones
 				 */
+				// Se definen las acciones para el botón de cada elección forzada
 				jButElecciones1.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
+					public void actionPerformed(ActionEvent arg0) 
+					{
+						
+						//Retornamos el action command del botón seleccionado
+						String actCom =arg0.getActionCommand();
 						/*
 						 * Traemos el objeto botón sobre el cual se dio clic
 						 */
-						String actCom =arg0.getActionCommand();
 						JButton selButton = (JButton) arg0.getSource();
+						//Le hacemos tratamiento al texto del botón quitando los modificdores
 						String texto = selButton.getText();
 						texto = texto.replaceAll("<html>", "");
 						texto = texto.replaceAll("</html>", "");
 						texto = texto.replaceAll("<center>", "");
 						texto = texto.replaceAll("</center>", "");
 						String elSelButton = actCom + "-" + texto;
+						//Sacamos el idProducto que se esta seleccionando para de allí tomar decisiones más abajo
+						int idProdSel = Integer.parseInt(actCom);
+						//Tomamos el color del boton seleccionado
 						Color colSelButton = selButton.getBackground();
+						// Se hace validación si ya todo está seleccionado
 						if(selMitad1 == numMaxElecciones)
 						{
 							if(colSelButton.equals(Color.YELLOW))
@@ -381,8 +397,15 @@ public class VentProEleccionForzada extends JDialog {
 									if((elTempSel.equals(new String(elSelButton))) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==1))
 									{
 										eleccionesTemporales.remove(i);
-										break;
+//										break;
 									}
+									//Hacemos otra comparación en cuento el producto deseleccionado de pronto viene de uno que maneja modificador con
+									if((idProdSel == elTemp.getIdProductoModificadorCon()) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==1))
+									{
+										eleccionesTemporales.remove(i);
+//										break;
+									}
+									//Luego de eliminada la elección debemos de mirar si tenía modificadores adicionanos para eliminarlos
 								}
 							}
 							else
@@ -413,13 +436,30 @@ public class VentProEleccionForzada extends JDialog {
 												if((strElTemp.equals(strElForBotTemp)) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==1))
 												{
 													eleccionesTemporales.remove(j);
-													break;
+//													break;
+												}
+												if((idProdSel == elTemp.getIdProductoModificadorCon()) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==1))
+												{
+													eleccionesTemporales.remove(i);
+//													break;
 												}
 											}
 											break;
 										}
 									}
 									selButton.setBackground(Color.YELLOW);
+									//En este punto intentaremos validar la nueva ventana para seleccionar modificadores con
+									//Extraemos el valor del campo idProducto
+									int idProd = Integer.parseInt(actCom);
+									//Con el campo idProducto revisamos si este producto tiene modificadores Con en preguntas
+									boolean modConPre = parProductoCtrl.tieneModConPregunta(idProd);
+									//Validamos si el producto debe tener selecciones con en la pregunta
+									if(modConPre)
+									{
+										//Realizamos el llamado a la pantalla para la selección de los modificadores CON
+										VentPedModConPregunta ventModPregunta = new VentPedModConPregunta(null, true, idProd, preguntaActual, 1);
+										ventModPregunta.setVisible(true);
+									}
 								}
 								else
 								{
@@ -428,15 +468,29 @@ public class VentProEleccionForzada extends JDialog {
 								}
 							}
 						}
+						//Sino estamos en el maximo de las elecciones se valida el color del botón
 						else
 						{
 							
-							
+							// Si el color es gris
 							if(colSelButton.equals(new Color(238, 238, 238)))
 							{
 								selButton.setBackground(Color.YELLOW);
 								selMitad1++;
+								//En este punto intentaremos validar la nueva ventana para seleccionar modificadores con
+								//Extraemos el valor del campo idProducto
+								int idProd = Integer.parseInt(actCom);
+								//Con el campo idProducto revisamos si este producto tiene modificadores Con en preguntas
+								boolean modConPre = parProductoCtrl.tieneModConPregunta(idProd);
+								//Validamos si el producto debe tener selecciones con en la pregunta
+								if(modConPre)
+								{
+									//Realizamos el llamado a la pantalla para la selección de los modificadores CON
+									VentPedModConPregunta ventModPregunta = new VentPedModConPregunta(null, true, idProd, preguntaActual, 1);
+									ventModPregunta.setVisible(true);
+								}
 							}
+							//Si el color es amarillo es decir fue seleccionado
 							else if(colSelButton.equals(Color.YELLOW))
 							{
 								selButton.setBackground(null);
@@ -451,7 +505,12 @@ public class VentProEleccionForzada extends JDialog {
 									if((strElTemp.equals(elSelButton)) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==1))
 									{
 										eleccionesTemporales.remove(i);
-										break;
+//										break;
+									}
+									if((idProdSel == elTemp.getIdProductoModificadorCon()) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==1))
+									{
+										eleccionesTemporales.remove(i);
+//										break;
 									}
 								}
 							}
@@ -470,6 +529,8 @@ public class VentProEleccionForzada extends JDialog {
 						texto = texto.replaceAll("<center>", "");
 						texto = texto.replaceAll("</center>", "");
 						String elSelButton = actCom + "-" + texto;
+						//Sacamos el idProducto que se esta seleccionando para de allí tomar decisiones más abajo
+						int idProdSel = Integer.parseInt(actCom);
 						Color colSelButton = selButton.getBackground();
 						if(selMitad2 == numMaxElecciones)
 						{
@@ -487,7 +548,12 @@ public class VentProEleccionForzada extends JDialog {
 									if((elTempSel.equals(elSelButton)) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==2))
 									{
 										eleccionesTemporales.remove(i);
-										break;
+//										break;
+									}
+									if((idProdSel == elTemp.getIdProductoModificadorCon()) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==2))
+									{
+										eleccionesTemporales.remove(i);
+//										break;
 									}
 								}
 							}
@@ -519,13 +585,30 @@ public class VentProEleccionForzada extends JDialog {
 												if((strElTemp.equals(strElForBotTemp)) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==2))
 												{
 													eleccionesTemporales.remove(j);
-													break;
+//													break;
+												}
+												if((idProdSel == elTemp.getIdProductoModificadorCon()) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==2))
+												{
+													eleccionesTemporales.remove(i);
+//													break;
 												}
 											}
 											break;
 										}
 									}
 									selButton.setBackground(Color.YELLOW);
+									//En este punto intentaremos validar la nueva ventana para seleccionar modificadores con
+									//Extraemos el valor del campo idProducto
+									int idProd = Integer.parseInt(actCom);
+									//Con el campo idProducto revisamos si este producto tiene modificadores Con en preguntas
+									boolean modConPre = parProductoCtrl.tieneModConPregunta(idProd);
+									//Validamos si el producto debe tener selecciones con en la pregunta
+									if(modConPre)
+									{
+										//Realizamos el llamado a la pantalla para la selección de los modificadores CON
+										VentPedModConPregunta ventModPregunta = new VentPedModConPregunta(null, true, idProd, preguntaActual, 2);
+										ventModPregunta.setVisible(true);
+									}
 								}
 								else
 								{
@@ -542,6 +625,18 @@ public class VentProEleccionForzada extends JDialog {
 							{
 								selButton.setBackground(Color.YELLOW);
 								selMitad2++;
+								//En este punto intentaremos validar la nueva ventana para seleccionar modificadores con
+								//Extraemos el valor del campo idProducto
+								int idProd = Integer.parseInt(actCom);
+								//Con el campo idProducto revisamos si este producto tiene modificadores Con en preguntas
+								boolean modConPre = parProductoCtrl.tieneModConPregunta(idProd);
+								//Validamos si el producto debe tener selecciones con en la pregunta
+								if(modConPre)
+								{
+									//Realizamos el llamado a la pantalla para la selección de los modificadores CON
+									VentPedModConPregunta ventModPregunta = new VentPedModConPregunta(null, true, idProd, preguntaActual, 2);
+									ventModPregunta.setVisible(true);
+								}
 							}
 							else if(colSelButton.equals(Color.YELLOW))
 							{
@@ -557,7 +652,12 @@ public class VentProEleccionForzada extends JDialog {
 									if((strElTemp.equals(new String(elSelButton))) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==2))
 									{
 										eleccionesTemporales.remove(i);
-										break;
+//										break;
+									}
+									if((idProdSel == elTemp.getIdProductoModificadorCon()) &&  (elTemp.getNumeroPregunta() == preguntaActual-1) && (elTemp.getNumeroMitad() ==2))
+									{
+										eleccionesTemporales.remove(i);
+//										break;
 									}
 								}
 							}
@@ -778,6 +878,7 @@ public class VentProEleccionForzada extends JDialog {
 			double precioProducto = 0, cantidad = 0;
 			int idProducto = 0;
 			//Se hace un recorrido de las elecciones forzadas seleccionadas por mitad 
+			//revisamo como está las elecciones temporales
 			for(int m = 0; m < eleccionesTemporales.size(); m++)
 			{
 				//Se trae cada elección de manera temporal
@@ -858,8 +959,6 @@ public class VentProEleccionForzada extends JDialog {
 						if(!existe)
 						{
 							String txtJBut = jButTemp.getActionCommand();
-//							StringTokenizer StrTokenProducto = new StringTokenizer(txtJBut,"-");
-//							String strIdProducto = StrTokenProducto.nextToken();
 							int idProducto = Integer.parseInt(txtJBut);
 							//Para obtener el precio deberíamos recorrer las elecciones de la pregunta y capturar el precio
 							double precioProducto = parProductoCtrl.obtenerPrecioEleccion(elecciones, idProducto);
@@ -875,7 +974,31 @@ public class VentProEleccionForzada extends JDialog {
 							eleTemp.setDescProducto(prod.getDescripcion());
 							eleTemp.setTipoProducto(prod.getTipoProducto());
 							eleccionesTemporales.add(eleTemp);
-							
+							//En este punto realizamos intervención para agregar la selección temporal
+							for(int z = 0; z < modConPregunta.size(); z++)
+							{
+								//comenzamos a relizar la comparación para ver el producto que se acabo de agregar corresponde
+								//al producto al cual se le asociaron los modificadores
+								ModificadorConPregunta modTemp = modConPregunta.get(z);
+								//Si se cumplen las condiciones de que el proudto si tiene modificadores
+								if((modTemp.getIdProductoPadre() == idProducto) &&(modTemp.getNumeroPregunta() == preguntaActual)&&(modTemp.getMitad() == 1))
+								{
+									// Se toma toda la información de la eleccion temporal para agregar
+									eleTemp = new EleccionForzadaTemporal();
+									eleTemp.setBoton(jButTemp);
+									eleTemp.setCantidad(modTemp.getCantidad());
+									eleTemp.setPrecioProducto(modTemp.getPrecio());
+									eleTemp.setIdProducto(modTemp.getIdProductoMod());
+									eleTemp.setNumeroPregunta(preguntaActual-1);
+									eleTemp.setNumeroMitad(1);
+									//En esta parte fijamos el idProducto especie padre para borrarlos si es el caso
+									eleTemp.setIdProductoModificadorCon(modTemp.getIdProductoPadre());
+									prod = parProductoCtrl.obtenerProducto(modTemp.getIdProductoMod());
+									eleTemp.setDescProducto(prod.getDescripcion());
+									eleTemp.setTipoProducto(prod.getTipoProducto());
+									eleccionesTemporales.add(eleTemp);
+								}
+							}
 							
 						}
 						arregloBotPan1.remove(m);
@@ -924,8 +1047,6 @@ public class VentProEleccionForzada extends JDialog {
 							if(!existe)
 							{
 								String txtJBut = jButTemp.getActionCommand();
-//								StringTokenizer StrTokenProducto = new StringTokenizer(txtJBut,"-");
-//								String strIdProducto = StrTokenProducto.nextToken();
 								int idProducto = Integer.parseInt(txtJBut);
 								//Para obtener el precio deberíamos recorrer las elecciones de la pregunta y capturar el precio
 								double precioProducto = parProductoCtrl.obtenerPrecioEleccion(elecciones, idProducto);
@@ -941,6 +1062,31 @@ public class VentProEleccionForzada extends JDialog {
 								eleTemp.setDescProducto(prod.getDescripcion());
 								eleTemp.setTipoProducto(prod.getTipoProducto());
 								eleccionesTemporales.add(eleTemp);
+								//En este punto realizamos intervención para agregar la selección temporal
+								for(int z = 0; z < modConPregunta.size(); z++)
+								{
+									//comenzamos a relizar la comparación para ver el producto que se acabo de agregar corresponde
+									//al producto al cual se le asociaron los modificadores
+									ModificadorConPregunta modTemp = modConPregunta.get(z);
+									//Si se cumplen las condiciones de que el proudto si tiene modificadores
+									if((modTemp.getIdProductoPadre() == idProducto) &&(modTemp.getNumeroPregunta() == preguntaActual)&&(modTemp.getMitad() == 2))
+									{
+										// Se toma toda la información de la eleccion temporal para agregar
+										eleTemp = new EleccionForzadaTemporal();
+										eleTemp.setBoton(jButTemp);
+										eleTemp.setCantidad(modTemp.getCantidad());
+										eleTemp.setPrecioProducto(modTemp.getPrecio());
+										eleTemp.setIdProducto(modTemp.getIdProductoMod());
+										eleTemp.setNumeroPregunta(preguntaActual-1);
+										eleTemp.setNumeroMitad(2);
+										//En esta parte fijamos el idProducto especie padre para borrarlos si es el caso
+										eleTemp.setIdProductoModificadorCon(modTemp.getIdProductoPadre());
+										prod = parProductoCtrl.obtenerProducto(modTemp.getIdProductoMod());
+										eleTemp.setDescProducto(prod.getDescripcion());
+										eleTemp.setTipoProducto(prod.getTipoProducto());
+										eleccionesTemporales.add(eleTemp);
+									}
+								}
 								
 							}
 							arregloBotPan2.remove(m);

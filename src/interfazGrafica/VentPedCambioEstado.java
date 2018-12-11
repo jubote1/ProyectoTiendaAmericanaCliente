@@ -77,7 +77,8 @@ public class VentPedCambioEstado extends JDialog {
 		panelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(panelPrincipal);
 		panelPrincipal.setLayout(null);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JLabel lblIdPedido = new JLabel("Id Pedido");
 		lblIdPedido.setBounds(36, 50, 100, 14);
 		panelPrincipal.add(lblIdPedido);
@@ -98,7 +99,7 @@ public class VentPedCambioEstado extends JDialog {
 		panelPrincipal.add(txtEstadoActual);
 		txtEstadoActual.setColumns(10);
 		
-		JLabel lblEstadoObjetivo = new JLabel("Estado Objetivo");
+		JLabel lblEstadoObjetivo = new JLabel("Siguiente Estado");
 		lblEstadoObjetivo.setBounds(36, 207, 100, 14);
 		panelPrincipal.add(lblEstadoObjetivo);
 		

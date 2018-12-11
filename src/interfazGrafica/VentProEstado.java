@@ -54,7 +54,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import java.awt.Font;
 
-public class VentProEstado extends JFrame {
+public class VentProEstado extends JDialog{
 
 	private JPanel panelGeneral;
 	private JTextField txtIdEstado;
@@ -91,7 +91,7 @@ public class VentProEstado extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentProEstado frame = new VentProEstado();
+					VentProEstado frame = new VentProEstado(null, false);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -103,9 +103,10 @@ public class VentProEstado extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentProEstado() {
+	public VentProEstado(java.awt.Frame parent, boolean modal) {
+		super(parent, modal);
 		setTitle("MAESTRO DE ESTADOS");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(0,0, 903, 617);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -114,7 +115,8 @@ public class VentProEstado extends JFrame {
 		panelGeneral.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(panelGeneral);
 		panelGeneral.setLayout(null);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JLabel lblIdEstado = new JLabel("Id Estado");
 		lblIdEstado.setBounds(90, 27, 109, 14);
 		panelGeneral.add(lblIdEstado);
@@ -265,7 +267,7 @@ public class VentProEstado extends JFrame {
 				}
 			}
 		});
-		btnGrabarEdicion.setBounds(665, 160, 127, 23);
+		btnGrabarEdicion.setBounds(522, 160, 127, 23);
 		panelTable.add(btnGrabarEdicion);
 		
 		btnEliminar.setBounds(194, 160, 127, 23);
@@ -342,7 +344,7 @@ public class VentProEstado extends JFrame {
 				llenarEstadosAnterioresNoAsignados();
 			}
 		});
-		btnEditar.setBounds(489, 160, 127, 23);
+		btnEditar.setBounds(344, 160, 127, 23);
 		panelTable.add(btnEditar);
 		
 		JLabel lblEstadosAnteriores = new JLabel("Estados Anteriores");
@@ -471,6 +473,16 @@ public class VentProEstado extends JFrame {
 		scrollPane.setViewportView(jTableEstados);
 		jTableEstados.setModel(modelo);
 		setCellRender(jTableEstados);
+		
+		JButton btnSalir = new JButton("SALIR");
+		btnSalir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnSalir.setBounds(676, 160, 145, 23);
+		panelTable.add(btnSalir);
 		
 		JLabel lblTipoPedido = new JLabel("Tipo Pedido");
 		lblTipoPedido.setBounds(90, 139, 109, 14);
