@@ -10,6 +10,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -40,7 +42,6 @@ public class VentPrincipal extends JFrame {
 	private int menuInventarios;
 	private int menuSeguridad;
 	private int menuProductos;
-	
 	CardLayout cl = new CardLayout();
 	JFrame ventPrincipal;
 
@@ -98,8 +99,15 @@ public class VentPrincipal extends JFrame {
 		JButton btnSeguridadMenAgrupador = new JButton("Seguridad Men\u00FA Agrupador");
 		btnSeguridadMenAgrupador.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentSegCRUDMenuAgrupador MenuAgrupa = new VentSegCRUDMenuAgrupador(ventPrincipal, true);
-				MenuAgrupa.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("SEG_003", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentSegCRUDMenuAgrupador MenuAgrupa = new VentSegCRUDMenuAgrupador(ventPrincipal, true);
+					MenuAgrupa.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
 		btnSeguridadMenAgrupador.setBounds(24, 124, 180, 48);
@@ -108,8 +116,15 @@ public class VentPrincipal extends JFrame {
 		JButton btnSegEmpleado = new JButton("Definici\u00F3n de Empleados");
 		btnSegEmpleado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentSegEmpleado emp = new VentSegEmpleado (ventPrincipal,true);
-				emp.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("SEG_005", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentSegEmpleado emp = new VentSegEmpleado (ventPrincipal,true);
+					emp.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
 		PanelSeguridad.add(btnSegEmpleado);
@@ -117,8 +132,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnSegTipoEmpleado = new JButton("Definici\u00F3n Tipo Empleado");
 		btnSegTipoEmpleado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentSegTipoEmpleado tipEmp = new VentSegTipoEmpleado(ventPrincipal, true);
-				tipEmp.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("SEG_008", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentSegTipoEmpleado tipEmp = new VentSegTipoEmpleado(ventPrincipal, true);
+					tipEmp.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		PanelSeguridad.add(btnSegTipoEmpleado);
@@ -126,8 +149,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnParametrosTienda = new JButton("Parametros de Tienda");
 		btnParametrosTienda.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentSegTienda seguridadTienda = new VentSegTienda(null, true);
-				seguridadTienda.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("SEG_007", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentSegTienda seguridadTienda = new VentSegTienda(null, true);
+					seguridadTienda.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		PanelSeguridad.add(btnParametrosTienda);
@@ -142,8 +173,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnEleccionForzada = new JButton("Eleccion Forzada");
 		btnEleccionForzada.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentProCRUDPregunta EleccionForzada = new VentProCRUDPregunta();
-				EleccionForzada.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PRO_003", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentProCRUDPregunta EleccionForzada = new VentProCRUDPregunta();
+					EleccionForzada.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnEleccionForzada.setBounds(276, 124, 188, 48);
@@ -152,8 +191,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnImpuestos = new JButton("Impuestos");
 		btnImpuestos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentProCRUDImpuesto impuesto = new VentProCRUDImpuesto();
-				impuesto.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PRO_001", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentProCRUDImpuesto impuesto = new VentProCRUDImpuesto();
+					impuesto.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnImpuestos.setBounds(539, 124, 188, 48);
@@ -162,8 +209,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnCreacionClientes = new JButton("Creacion Clientes");
 		btnCreacionClientes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentCliCliente cliente  = new VentCliCliente(0, null, true);
-				cliente.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("CLI_002", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentCliCliente cliente  = new VentCliCliente(0, null, true);
+					cliente.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnCreacionClientes.setBounds(24, 197, 180, 48);
@@ -172,8 +227,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnItemsInventario = new JButton("Items Inventario");
 		btnItemsInventario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentInvCRUDItemInventario itemInv = new VentInvCRUDItemInventario(null, true);
-				itemInv.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("INV_001", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentInvCRUDItemInventario itemInv = new VentInvCRUDItemInventario(null, true);
+					itemInv.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnItemsInventario.setBounds(275, 196, 189, 48);
@@ -182,8 +245,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnNewButton = new JButton("Administraci\u00F3n Inventarios");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentInvInventarios inv = new VentInvInventarios(null, true);
-				inv.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("INV_004", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentInvInventarios inv = new VentInvInventarios(null, true);
+					inv.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		PanelInventarios.add(btnNewButton);
@@ -191,8 +262,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnProductos = new JButton("Productos");
 		btnProductos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentProCRUDProducto producto = new VentProCRUDProducto(ventPrincipal, true);
-				producto.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PRO_004", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentProCRUDProducto producto = new VentProCRUDProducto(ventPrincipal, true);
+					producto.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnProductos.setBounds(539, 195, 188, 48);
@@ -201,8 +280,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnDefinicinEstadosDe = new JButton("Definici\u00F3n Estados de Productos");
 		btnDefinicinEstadosDe.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentProEstado ventEst = new VentProEstado(ventPrincipal, true);
-				ventEst.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PRO_006", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentProEstado ventEst = new VentProEstado(ventPrincipal, true);
+					ventEst.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		PanelProductos.add(btnDefinicinEstadosDe);
@@ -210,8 +297,17 @@ public class VentPrincipal extends JFrame {
 		JButton btnParmetrosDireccin = new JButton("Par\u00E1metros Direcci\u00F3n");
 		btnParmetrosDireccin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentProCRUDParametrosDireccion parDir = new VentProCRUDParametrosDireccion(ventPrincipal, true);
-				parDir.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PRO_002", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentProCRUDParametrosDireccion parDir = new VentProCRUDParametrosDireccion(ventPrincipal, true);
+					parDir.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
+				
 			}
 		});
 		btnParmetrosDireccin.setBounds(24, 269, 180, 48);
@@ -220,8 +316,16 @@ public class VentPrincipal extends JFrame {
 		JButton btnConfiguracionMenu = new JButton("Configuracion Menu");
 		btnConfiguracionMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentSegConfMenu confMenu = new VentSegConfMenu(ventPrincipal, true);
-				confMenu.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("SEG_001", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentSegConfMenu confMenu = new VentSegConfMenu(ventPrincipal, true);
+					confMenu.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnConfiguracionMenu.setBounds(276, 269, 188, 48);
@@ -230,17 +334,33 @@ public class VentPrincipal extends JFrame {
 		JButton btnFinalizarDa = new JButton("Finalizar D\u00EDa");
 		btnFinalizarDa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentPedFinalizarDia finDia = new VentPedFinalizarDia(ventPrincipal, true);
-				finDia.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_007", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentPedFinalizarDia finDia = new VentPedFinalizarDia(ventPrincipal, true);
+					finDia.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		
 		JButton btnTomaPedidos = new JButton("Toma Pedidos");
 		btnTomaPedidos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentPedTomarPedidos tomaPedido = new VentPedTomarPedidos();
-				tomaPedido.setVisible(true);
-				dispose();
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_013", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentPedTomarPedidos tomaPedido = new VentPedTomarPedidos();
+					tomaPedido.setVisible(true);
+					dispose();
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnTomaPedidos.setBounds(539, 269, 188, 48);
@@ -250,17 +370,33 @@ public class VentPrincipal extends JFrame {
 		JButton btnMaestroPedidos = new JButton("Maestro Pedidos");
 		btnMaestroPedidos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentPedTransaccional pedTrans = new VentPedTransaccional();
-				pedTrans.setVisible(true);
-				dispose();
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_014", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentPedTransaccional pedTrans = new VentPedTransaccional();
+					pedTrans.setVisible(true);
+					dispose();
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		
 		JButton btnParmetrosGenerales = new JButton("Par\u00E1metros Generales");
 		btnParmetrosGenerales.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentPedAdmParametros ventParametros = new VentPedAdmParametros(ventPrincipal, true);
-				ventParametros.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_001", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentPedAdmParametros ventParametros = new VentPedAdmParametros(ventPrincipal, true);
+					ventParametros.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		PanelPedidos.add(btnParmetrosGenerales);
@@ -269,9 +405,17 @@ public class VentPrincipal extends JFrame {
 		JButton btnComandaDePedidos = new JButton("Comanda de Pedidos");
 		btnComandaDePedidos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentPedComandaPedidos ventComPed = new VentPedComandaPedidos();
-				ventComPed.setVisible(true);
-				dispose();
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_003", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentPedComandaPedidos ventComPed = new VentPedComandaPedidos();
+					ventComPed.setVisible(true);
+					dispose();
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		PanelPedidos.add(btnComandaDePedidos);

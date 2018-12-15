@@ -41,6 +41,9 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import JTable.CellRenderTransaccional;
+import JTable.CellRenderTransaccional2;
+import JTable.CheckBoxRenderer;
+import capaControlador.AutenticacionCtrl;
 import capaControlador.EmpleadoCtrl;
 import capaControlador.ReportesCtrl;
 import capaControlador.PedidoCtrl;
@@ -68,6 +71,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	private String fechaSis;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
+	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 	Thread h1;
 	private JFrame ventanaPadre;
 	ArrayList<Usuario> domiciliarios;
@@ -212,10 +216,18 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 			public void actionPerformed(ActionEvent e) {
 				if( tblMaestroPedidos.getSelectedRows().length == 1 ) { 
 		    		  
-		    		  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
-					  int idPedidoHistoria = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
-					  VentPedHisDetPedido ventHistoria = new VentPedHisDetPedido(ventanaPadre, true, idPedidoHistoria);
-					  ventHistoria.setVisible(true);
+					boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_009", Sesion.getAccesosOpcion());
+					if (tienePermiso)
+					{
+						int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+						  int idPedidoHistoria = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
+						  VentPedHisDetPedido ventHistoria = new VentPedHisDetPedido(ventanaPadre, true, idPedidoHistoria);
+						  ventHistoria.setVisible(true);
+					}else
+					{
+						JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+					}
+		    		  
 		         }
 			}
 		});
@@ -235,9 +247,17 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		JButton btnTomarPedido = new JButton("Tomar Pedido");
 		btnTomarPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentPedTomarPedidos ventPedido = new VentPedTomarPedidos();
-				ventPedido.setVisible(true);
-				dispose();
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_013", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentPedTomarPedidos ventPedido = new VentPedTomarPedidos();
+					ventPedido.setVisible(true);
+					dispose();
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnTomarPedido.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -517,7 +537,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	{
 		Object[] columnsName = new Object[10];
         
-        columnsName[0] = "Id Pedido Tienda";
+		columnsName[0] = "Id Pedido";
         columnsName[1] = "Fecha Pedido";
         columnsName[2] = "Nombres";
         columnsName[3] = "Tipo Pedido";
@@ -545,28 +565,42 @@ public class VentPedTransaccional extends JFrame implements Runnable{
         	//Se invoca de la capa Controladora la forma de observar los pedidos por un domiciliario
         	pedidos = pedCtrl.obtenerPedidosVentanaComandaDom(idDomiCon);
         }
+        //Definimos cuales serán las columnas editables dentro de la tabla
+        boolean[] editarCampos = {false, false, false, false, false, false, false, false, false, false};
+      
+        //Definimos los tipos de objetos que se manejarán en el jtable en cada columna
+        
         DefaultTableModel modelo = new DefaultTableModel(){
        	    public boolean isCellEditable(int rowIndex,int columnIndex){
-       	    	return false;
+       	    	return editarCampos[columnIndex];
        	    }
        	    
-       	    
+       	    Class[] types = new Class[] {java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.Long.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class};
+         
+//       	    Class[] types = new Class[] {java.lang.Boolean.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class};
+         
+       	    public Class getColumnClass(int columnIndex)
+       	    {
+       	    	return types[columnIndex];
+       	    }
        	};
 		modelo.setColumnIdentifiers(columnsName);
 		for(int y = 0; y < pedidos.size();y++)
 		{
 			String[] fila =(String[]) pedidos.get(y);
-			modelo.addRow(fila);
+			//modelo.addRow(fila);
+			Object[] filaFinal = {Long.parseLong(fila[0]), fila[1], fila[2], fila[3], fila[4], fila[5], Long.parseLong(fila[6]),Long.parseLong(fila[7]),fila[8], fila[9]};
+			modelo.addRow(filaFinal);
 		}
 		tblMaestroPedidos.setModel(modelo);
-		tblMaestroPedidos.getColumnModel().getColumn(0).setMaxWidth(70);
-		tblMaestroPedidos.getColumnModel().getColumn(0).setMinWidth(70);
+		tblMaestroPedidos.getColumnModel().getColumn(0).setMaxWidth(60);
+		tblMaestroPedidos.getColumnModel().getColumn(0).setMinWidth(60);
 		//Ocultamos la conlumna de FechaPedido, dado que es la misma dependiendo del día aperturado
 		tblMaestroPedidos.getColumnModel().getColumn(1).setMaxWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(1).setMinWidth(0);
 		//Modificamos el ancho de la columna nombre
-		tblMaestroPedidos.getColumnModel().getColumn(2).setMinWidth(150);
-		tblMaestroPedidos.getColumnModel().getColumn(2).setMaxWidth(150);
+		tblMaestroPedidos.getColumnModel().getColumn(2).setMinWidth(120);
+		tblMaestroPedidos.getColumnModel().getColumn(2).setMaxWidth(120);
 		//Modificamos ancho del tipo de pedido
 		tblMaestroPedidos.getColumnModel().getColumn(3).setMinWidth(110);
 		tblMaestroPedidos.getColumnModel().getColumn(3).setMaxWidth(110);
@@ -583,14 +617,15 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getColumnModel().getColumn(9).setMinWidth(150);
 		tblMaestroPedidos.getColumnModel().getColumn(9).setMaxWidth(150);
 		
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMaxWidth(70);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMinWidth(70);
+		
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMaxWidth(60);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMinWidth(60);
 		//Ocultamos la conlumna de FechaPedido, dado que es la misma dependiendo del día aperturado
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(0);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(1).setMinWidth(0);
 		//Modificamos el ancho de la columna nombre
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMinWidth(150);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMaxWidth(150);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMinWidth(120);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(2).setMaxWidth(120);
 		//Modificamos ancho del tipo de pedido
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(3).setMinWidth(110);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(110);
@@ -606,8 +641,13 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		//Modificamos el ancho del la muestra del tiempo
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMinWidth(150);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMaxWidth(150);
+
 		tblMaestroPedidos.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		setCellRender(tblMaestroPedidos);
+		tblMaestroPedidos.getColumnModel().getColumn(3).setCellRenderer( new CellRenderTransaccional2());
+		tblMaestroPedidos.getColumnModel().getColumn(4).setCellRenderer( new CellRenderTransaccional2());
+		tblMaestroPedidos.getColumnModel().getColumn(2).setCellRenderer( new CellRenderTransaccional2());
+		tblMaestroPedidos.getColumnModel().getColumn(5).setCellRenderer( new CellRenderTransaccional2());
+		//setCellRender(tblMaestroPedidos);
 		
 	}
 	
@@ -658,9 +698,17 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		}
 		else
 		{
-			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true,/* OJO HAY QUE NORMALIZAR*/0);
-			cambioEstado.setVisible(true);
-			pintarPedidos();
+			boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_002", Sesion.getAccesosOpcion());
+			if (tienePermiso)
+			{
+				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true,/* OJO HAY QUE NORMALIZAR*/0);
+				cambioEstado.setVisible(true);
+				pintarPedidos();
+			}else
+			{
+				JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+			}
+			
 		}
 	}
 	
@@ -687,9 +735,17 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		}
 		else
 		{
-			VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true,/* OJO HAY QUE NORMALIZAR*/0);
-			cambioEstado.setVisible(true);
-			pintarPedidos();
+			boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_002", Sesion.getAccesosOpcion());
+			if (tienePermiso)
+			{
+				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true,/* OJO HAY QUE NORMALIZAR*/0);
+				cambioEstado.setVisible(true);
+				pintarPedidos();
+			}else
+			{
+				JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+			}
+			
 		}
 	}
 }

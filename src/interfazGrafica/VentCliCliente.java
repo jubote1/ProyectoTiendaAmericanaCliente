@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.MaskFormatter;
 
+import capaControlador.AutenticacionCtrl;
 import capaControlador.ClienteCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.PedidoCtrl;
@@ -71,6 +72,7 @@ public class VentCliCliente extends JFrame {
 	private int  idCliente = 0;
 	private ClienteCtrl cliCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 	private MaskFormatter mascTel = new MaskFormatter();
 	public JButton btnActualizarCliente;
 	public JButton btnCrearCliente;
@@ -348,9 +350,17 @@ public class VentCliCliente extends JFrame {
 					ArrayList<Cliente> cliente = cliCtrl.existeCliente(telefono);
 					if(cliente.size() >= 2)
 					{
-						ventBusCliente = new VentCliBuscarCliente(telefono);
-						ventBusCliente.setVisible(true);
-						dispose();
+						boolean tienePermiso = autCtrl.validarAccesoOpcion("CLI_001", Sesion.getAccesosOpcion());
+						if (tienePermiso)
+						{
+							ventBusCliente = new VentCliBuscarCliente(telefono);
+							ventBusCliente.setVisible(true);
+							dispose();
+						}else
+						{
+							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+						}
+						
 					}
 					else if(cliente.size() == 0)
 					{
@@ -422,9 +432,17 @@ public class VentCliCliente extends JFrame {
 					ArrayList<Cliente> cliente = cliCtrl.existeCliente(telefono);
 					if(cliente.size() >= 2)
 					{
-						ventBusCliente = new VentCliBuscarCliente(telefono);
-						ventBusCliente.setVisible(true);
-						dispose();
+						boolean tienePermiso = autCtrl.validarAccesoOpcion("CLI_001", Sesion.getAccesosOpcion());
+						if (tienePermiso)
+						{
+							ventBusCliente = new VentCliBuscarCliente(telefono);
+							ventBusCliente.setVisible(true);
+							dispose();
+						}else
+						{
+							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+						}
+						
 					}
 					else if(cliente.size() == 0)
 					{

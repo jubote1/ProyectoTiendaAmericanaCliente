@@ -94,7 +94,7 @@ public class PedidoDAO {
 				valorImpuesto = rs.getDouble(2);
 				break;
 			}
-			String update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto) + " , impuesto = " + valorImpuesto + " , total_neto =" + valorTotal + " , idtipopedido =" + idTipoPedido + " where idpedidotienda = " + idpedido;
+			String update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto) + " , impuesto = " + valorImpuesto + " , total_neto =" + valorTotal + " , idtipopedido =" + idTipoPedido + " , tiempopedido = " + tiempopedido +" where idpedidotienda = " + idpedido;
 			if(auditoria)
 			{
 				logger.info(update);

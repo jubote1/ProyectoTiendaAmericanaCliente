@@ -80,13 +80,14 @@ public class ItemInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select a.iditem, a.nombre_item, ifnull((select b.cantidad from item_inventario_historico b "
-					+ "where b.iditem = a.iditem),0)as inicio, ifnull( (select sum(c.cantidad) from retiro_inventario d, "
+					+ "where b.iditem = a.iditem and b.fecha = '" + fecha + "'),0)as inicio, ifnull( (select sum(c.cantidad) from retiro_inventario d, "
 					+ "retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem  "
 					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
 					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
 					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo from item_inventario a";
+			System.out.println(consulta);
 			if(auditoria)
 			{
 				logger.info(consulta);

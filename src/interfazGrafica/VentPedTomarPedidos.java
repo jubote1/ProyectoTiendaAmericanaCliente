@@ -31,11 +31,13 @@ import java.awt.Component;
 import java.awt.Window;
 import javax.swing.SwingUtilities;
 
+import capaControlador.AutenticacionCtrl;
 import capaControlador.InventarioCtrl;
 import capaControlador.MenuCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ParametrosProductoCtrl;
 import capaControlador.PedidoCtrl;
+import capaModelo.AccesosPorBoton;
 import capaModelo.ConfiguracionMenu;
 import capaModelo.DetallePedido;
 import capaModelo.FechaSistema;
@@ -120,6 +122,9 @@ public class VentPedTomarPedidos extends JFrame {
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private ParametrosProductoCtrl parPro = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
+	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+	private final String codPantalla = "PED_013";
+	ArrayList<AccesosPorBoton> accesosBoton = autCtrl.obtenerAccesosPorBotonObj(Sesion.getIdTipoEmpleado(), codPantalla);
 	private MenuCtrl menuCtrl = new MenuCtrl();
 	ArrayList<Producto> productos =parPro.obtenerProductosCompleto();
 	String[] nombresMultimenus;
@@ -599,9 +604,16 @@ public class VentPedTomarPedidos extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				//Se deberï¿½a crear una nueva ventana para la asignaciï¿½n y creaciï¿½n de clientes
 				//Al momento de instanciar VentCliente se le pasarï¿½ como parï¿½metro el idCliente del pedido
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("CLI_002", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentCliCliente cliente = new VentCliCliente(idCliente,framePrincipal, true);
+					cliente.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
 				
-				VentCliCliente cliente = new VentCliCliente(idCliente,framePrincipal, true);
-				cliente.setVisible(true);
 			}
 		});
 		btnAsignarCliente.setBounds(10, 11, 140, 47);
@@ -611,11 +623,20 @@ public class VentPedTomarPedidos extends JFrame {
 		// A continuacion definiremos la acción para la actividad de anular pedido
 		btnAnularPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if(idPedido > 0)
+				
+				boolean tienePermiso = autCtrl.validarAccesoBoton(codPantalla, "BOT_001", accesosBoton);
+				if (tienePermiso)
 				{
-					//Invocamamos el método qeu se encarga de realizar la verificacion para la anulación del pedido
-					anularPedido(false);
+					if(idPedido > 0)
+					{
+						//Invocamamos el método qeu se encarga de realizar la verificacion para la anulación del pedido
+						anularPedido(false);
+					}
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 				}
+				
 			}
 		});
 		btnAnularPedido.setBounds(160, 11, 140, 47);
@@ -645,9 +666,17 @@ public class VentPedTomarPedidos extends JFrame {
 							boolean respuesta = pedCtrl.eliminarPedidoDescuento(idPedido);
 							if(respuesta)
 							{
-								VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
-								ventDescuento.setVisible(true);
-								descuento = 0;
+								boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_006", Sesion.getAccesosOpcion());
+								if (tienePermiso)
+								{
+									VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
+									ventDescuento.setVisible(true);
+									descuento = 0;
+								}else
+								{
+									JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+								}
+								
 							}
 							else
 							{
@@ -658,8 +687,16 @@ public class VentPedTomarPedidos extends JFrame {
 					}
 					else
 					{
-						VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
-						ventDescuento.setVisible(true);
+						boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_006", Sesion.getAccesosOpcion());
+						if (tienePermiso)
+						{
+							VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
+							ventDescuento.setVisible(true);
+						}else
+						{
+							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+						}
+						
 					}
 				}
 				else
@@ -702,13 +739,29 @@ public class VentPedTomarPedidos extends JFrame {
 					boolean hayFormaPago = pedCtrl.existeFormaPago(idPedido);
 					if (hayFormaPago)
 					{
-						VentPedFinPago Finalizar = new VentPedFinPago(true, (JFrame) ventanaPadre, true);
-						Finalizar.setVisible(true);
+						boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_008", Sesion.getAccesosOpcion());
+						if (tienePermiso)
+						{
+							VentPedFinPago Finalizar = new VentPedFinPago(true, (JFrame) ventanaPadre, true);
+							Finalizar.setVisible(true);
+						}else
+						{
+							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+						}
+						
 					}
 					else
 					{
-						VentPedFinPago Finalizar = new VentPedFinPago(false, (JFrame) ventanaPadre, true);
-						Finalizar.setVisible(true);
+						boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_008", Sesion.getAccesosOpcion());
+						if (tienePermiso)
+						{
+							VentPedFinPago Finalizar = new VentPedFinPago(false, (JFrame) ventanaPadre, true);
+							Finalizar.setVisible(true);
+						}else
+						{
+							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+						}
+						
 					}
 				}
 				else
@@ -730,9 +783,17 @@ public class VentPedTomarPedidos extends JFrame {
 				
 				if(idPedido == 0)
 				{
-					VentPedTransaccional transacciones = new VentPedTransaccional();
-					transacciones.setVisible(true);
-					dispose();
+					boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_014", Sesion.getAccesosOpcion());
+					if (tienePermiso)
+					{
+						VentPedTransaccional transacciones = new VentPedTransaccional();
+						transacciones.setVisible(true);
+						dispose();
+					}else
+					{
+						JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+					}
+					
 				}
 				else
 				{
@@ -740,19 +801,27 @@ public class VentPedTomarPedidos extends JFrame {
 					anularPedido(true);
 					if(idPedido == 0)
 					{
-						VentPedTransaccional transacciones = new VentPedTransaccional();
-						transacciones.setVisible(true);
-						idCliente = 0;
-						//Preguntamos si es anulado sin descontar signfica que si entro y debe anular el pedido
-						//Se valida aca porque normalmente cuando se invoca desde el botón anular que no es donde se sale la idea es que no anule todavía el pedido, mientras acá si 
-						// lo deberá anular.
-						if(esAnuladoSinDescontar)
+						boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_014", Sesion.getAccesosOpcion());
+						if (tienePermiso)
 						{
-							//Anulamos el pedido con el detalle de cambio de opinion del cliente
-							pedCtrl.anularPedidoSinDetalle(idPedidoTemp);
-							esAnuladoSinDescontar = false;
+							VentPedTransaccional transacciones = new VentPedTransaccional();
+							transacciones.setVisible(true);
+							idCliente = 0;
+							//Preguntamos si es anulado sin descontar signfica que si entro y debe anular el pedido
+							//Se valida aca porque normalmente cuando se invoca desde el botón anular que no es donde se sale la idea es que no anule todavía el pedido, mientras acá si 
+							// lo deberá anular.
+							if(esAnuladoSinDescontar)
+							{
+								//Anulamos el pedido con el detalle de cambio de opinion del cliente
+								pedCtrl.anularPedidoSinDetalle(idPedidoTemp);
+								esAnuladoSinDescontar = false;
+							}
+							dispose();
+						}else
+						{
+							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 						}
-						dispose();
+						
 					}
 				}
 			}
@@ -950,10 +1019,18 @@ public class VentPedTomarPedidos extends JFrame {
 					
 				}else
 				{
-					int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
-					int contDetPedido = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 7));
-					VentPedModificador ventMod = new VentPedModificador(null, true, idDetalleTratar, true, false, contDetPedido);
-					ventMod.setVisible(true);
+					boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_011", Sesion.getAccesosOpcion());
+					if (tienePermiso)
+					{
+						int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
+						int contDetPedido = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 7));
+						VentPedModificador ventMod = new VentPedModificador(null, true, idDetalleTratar, true, false, contDetPedido);
+						ventMod.setVisible(true);
+					}else
+					{
+						JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+					}
+					
 				}
 				
 			}
@@ -972,10 +1049,18 @@ public class VentPedTomarPedidos extends JFrame {
 					
 				}else
 				{
-					int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
-					int contDetPedido = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 7));
-					VentPedModificador ventMod = new VentPedModificador(null, true, idDetalleTratar, false, true, contDetPedido);
-					ventMod.setVisible(true);
+					boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_011", Sesion.getAccesosOpcion());
+					if (tienePermiso)
+					{
+						int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
+						int contDetPedido = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 7));
+						VentPedModificador ventMod = new VentPedModificador(null, true, idDetalleTratar, false, true, contDetPedido);
+						ventMod.setVisible(true);
+					}else
+					{
+						JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+					}
+					
 				}
 			}
 		});
@@ -1163,9 +1248,16 @@ public class VentPedTomarPedidos extends JFrame {
 		}
 		else
 		{
+			boolean tienePermiso = autCtrl.validarAccesoOpcion("PRO_005", Sesion.getAccesosOpcion());
+			if (tienePermiso)
+			{
+				VentProEleccionForzada ElForzada = new VentProEleccionForzada(null, true,preguntasProducto, idProducto);
+				ElForzada.setVisible(true);
+			}else
+			{
+				JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+			}
 			
-			VentProEleccionForzada ElForzada = new VentProEleccionForzada(null, true,preguntasProducto, idProducto);
-			ElForzada.setVisible(true);
 		}
 	}
 	

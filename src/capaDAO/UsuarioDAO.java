@@ -46,6 +46,8 @@ public class UsuarioDAO {
 				String nombreUsuario = rs.getString("nombre_largo");
 				String administrador = rs.getString("administrador");
 				String tipoInicio = rs.getString("tipoinicio");
+				int idTipoEmpleado = rs.getInt("idtipoempleado");
+				usuario.setIdTipoEmpleado(idTipoEmpleado);
 				usuario.setNombreLargo(nombreUsuario);
 				usuario.setIdUsuario(idUsuario);
 				if(administrador.equals(new String("S")))

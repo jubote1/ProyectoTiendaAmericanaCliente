@@ -194,6 +194,8 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 						Sesion.setUsuario(usuario);
 						Sesion.setIdUsuario(idUsuario);
 						Sesion.setAccesosMenus(aut.obtenerAccesosPorMenuUsuario(usuario));
+						Sesion.setAccesosOpcion(aut.obtenerAccesosPorOpcionObj(objUsuario.getidTipoEmpleado()));
+						Sesion.setIdTipoEmpleado(objUsuario.getidTipoEmpleado());
 						if(objUsuario.getTipoInicio().equals("Ventana Menús"))
 						{
 							VentPrincipal ventPrincipal = new VentPrincipal();

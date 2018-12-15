@@ -12,6 +12,7 @@ import javax.swing.table.TableColumn;
 
 import JTable.CellRenderIngInventario;
 import JTable.CellRenderTransaccional;
+import capaControlador.AutenticacionCtrl;
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
@@ -43,6 +46,7 @@ public class VentInvInventarios extends JDialog {
 	private JLabel lblImagen;
 	private JButton btnRetornarAMen;
 	InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
+	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
 	 * Launch the application.
 	 */
@@ -107,9 +111,16 @@ public class VentInvInventarios extends JDialog {
 		JButton btnAdministrarItems = new JButton("Adm Items Inventario");
 		btnAdministrarItems.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("INV_001", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentInvCRUDItemInventario itemInv = new VentInvCRUDItemInventario(null, true);
+					itemInv.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
 				
-				VentInvCRUDItemInventario itemInv = new VentInvCRUDItemInventario(null, true);
-				itemInv.setVisible(true);
 			}
 		});
 		btnAdministrarItems.setBounds(557, 11, 191, 61);
@@ -118,8 +129,16 @@ public class VentInvInventarios extends JDialog {
 		btnIngresarInventario = new JButton("Ingresar Inventario");
 		btnIngresarInventario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentInvIngresarInventario ingInventario = new VentInvIngresarInventario(null, true);
-				ingInventario.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("INV_002", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentInvIngresarInventario ingInventario = new VentInvIngresarInventario(null, true);
+					ingInventario.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnIngresarInventario.setBounds(557, 83, 191, 61);
@@ -129,8 +148,16 @@ public class VentInvInventarios extends JDialog {
 		btnRetirarInventario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				VentInvRetirarInventario ingInventario = new VentInvRetirarInventario(null, true);
-				ingInventario.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("INV_006", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentInvRetirarInventario ingInventario = new VentInvRetirarInventario(null, true);
+					ingInventario.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnRetirarInventario.setBounds(557, 155, 191, 61);
@@ -139,8 +166,16 @@ public class VentInvInventarios extends JDialog {
 		btnRealizarPedidoEspecial = new JButton("Realizar Pedido Especial");
 		btnRealizarPedidoEspecial.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentInvPedidoEspecial pedEspecial = new VentInvPedidoEspecial(null, true);
-				pedEspecial.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("INV_005", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentInvPedidoEspecial pedEspecial = new VentInvPedidoEspecial(null, true);
+					pedEspecial.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnRealizarPedidoEspecial.setBounds(557, 226, 191, 61);
@@ -149,8 +184,16 @@ public class VentInvInventarios extends JDialog {
 		btnRealizarVarianzaCierre = new JButton("Realizar Varianza Cierre");
 		btnRealizarVarianzaCierre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentInvIngresarVarianza ingVarianza = new VentInvIngresarVarianza(null, true);
-				ingVarianza.setVisible(true);
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("INV_003", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentInvIngresarVarianza ingVarianza = new VentInvIngresarVarianza(null, true);
+					ingVarianza.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+				
 			}
 		});
 		btnRealizarVarianzaCierre.setBounds(10, 292, 191, 61);

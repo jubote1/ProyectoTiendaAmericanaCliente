@@ -1,13 +1,17 @@
 package capaControlador;
 
+import capaModelo.AccesosPorBoton;
 import capaModelo.AccesosPorMenu;
+import capaModelo.AccesosPorOpcion;
 import capaModelo.AgrupadorMenu;
 import capaModelo.Usuario;
 import interfazGrafica.Sesion;
 
 import java.util.ArrayList;
 
+import capaDAO.AccesosPorBotonDAO;
 import capaDAO.AccesosPorMenuDAO;
+import capaDAO.AccesosPorOpcionDAO;
 import capaDAO.AgrupadorMenuDAO;
 import capaDAO.UsuarioDAO;
 
@@ -149,4 +153,55 @@ public class AutenticacionCtrl {
 		}
 		return(tieneAcceso);
 	}
+	
+	
+	//Acciones para la entidad AccesosPorOpcion
+	
+	public ArrayList<AccesosPorOpcion> obtenerAccesosPorOpcionObj(int idTipoUsuario)
+	{
+		ArrayList<AccesosPorOpcion> accesos = AccesosPorOpcionDAO.obtenerAccesosPorOpcionObj(auditoria, idTipoUsuario);
+		return(accesos);
+	}
+	
+	//Creamos un método para validar el acceso del usuario a una opción determinado
+		public boolean validarAccesoOpcion(String codPantalla, ArrayList<AccesosPorOpcion> accesos )
+		{
+			boolean tieneAcceso = false;
+			AccesosPorOpcion accesoTemp;
+			for(int i = 0; i < accesos.size(); i++)
+			{
+				accesoTemp = accesos.get(i);
+				if(accesoTemp.getCodigoPantalla().equals(new String(codPantalla)))
+				{
+					tieneAcceso = true;
+					break;
+				}
+			}
+			return(tieneAcceso);
+		}
+	
+	//Acciones para la Entidad AccesosPorBoton
+		
+	public ArrayList<AccesosPorBoton> obtenerAccesosPorBotonObj(int idTipUsu, String codPant)
+	{
+		ArrayList<AccesosPorBoton> accesos = AccesosPorBotonDAO.obtenerAccesosPorBotonObj(auditoria, idTipUsu, codPant);
+		return(accesos);
+	}
+	
+	//Creamos un método para validar el acceso del usuario a un botón determinado
+			public boolean validarAccesoBoton(String codPantalla, String codBoton,  ArrayList<AccesosPorBoton> accesos )
+			{
+				boolean tieneAcceso = false;
+				AccesosPorBoton accesoTemp;
+				for(int i = 0; i < accesos.size(); i++)
+				{
+					accesoTemp = accesos.get(i);
+					if(accesoTemp.getCodPantalla().equals(new String(codPantalla)) && accesoTemp.getCodBoton().equals(new String(codBoton)))
+					{
+						tieneAcceso = true;
+						break;
+					}
+				}
+				return(tieneAcceso);
+			}
 }
