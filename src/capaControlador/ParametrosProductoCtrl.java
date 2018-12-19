@@ -21,6 +21,7 @@ import capaModelo.ItemInventarioProducto;
 import capaModelo.AgrupadorMenu;
 import capaModelo.Pregunta;
 import capaModelo.Producto;
+import capaModelo.ProductoEleccionPrecio;
 import capaModelo.ProductoIncluido;
 import capaModelo.ProductoModificadorCon;
 import capaModelo.ProductoModificadorSin;
@@ -421,6 +422,13 @@ public class ParametrosProductoCtrl {
 		{
 			boolean respuesta = EleccionForzadaDAO.eliminarEleccionForzada(idEleccion, auditoria);
 			return(respuesta);
+		}
+		
+		
+		public ArrayList<ProductoEleccionPrecio> obtenerProductoEleccionPrecio()
+		{
+			ArrayList<ProductoEleccionPrecio> prodElePrecio = EleccionForzadaDAO.obtenerProductoEleccionPrecio(auditoria);
+			return(prodElePrecio);
 		}
 		
 		//PREGUNTA

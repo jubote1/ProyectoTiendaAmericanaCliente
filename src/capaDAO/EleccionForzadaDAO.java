@@ -9,6 +9,7 @@ import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.EleccionForzada;
 import capaModelo.Impuesto;
+import capaModelo.ProductoEleccionPrecio;
 import capaModelo.AgrupadorMenu;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;
@@ -229,4 +230,60 @@ public class EleccionForzadaDAO {
 		}
 		return(true);
 	}
+	
+	/**
+	 * Método que obtiene todas las combinaciones de producto, producto incluido en eleccion forzada y el precio que le aplica
+	 * @param auditoria
+	 * @return
+	 */
+	public static ArrayList<ProductoEleccionPrecio> obtenerProductoEleccionPrecio( boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<ProductoEleccionPrecio> prodElePrecio = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select c1.idproducto, a.idproducto as idproductoeleccion, a.precio  from eleccion_forzada a, pregunta b , producto c1 where a.idpregunta = b.idpregunta and b.idpregunta = c1.idpreguntaforzada1 " +
+					"union " +
+					"select c2.idproducto, a.idproducto as idproductoeleccion, a.precio  from eleccion_forzada a, pregunta b , producto c2 where a.idpregunta = b.idpregunta and b.idpregunta = c2.idpreguntaforzada2 " +
+					"union " +
+					"select c3.idproducto, a.idproducto as idproductoeleccion, a.precio  from eleccion_forzada a, pregunta b , producto c3 where a.idpregunta = b.idpregunta and b.idpregunta = c3.idpreguntaforzada3 " +
+					"union " +
+					"select c4.idproducto, a.idproducto as idproductoeleccion, a.precio  from eleccion_forzada a, pregunta b , producto c4 where a.idpregunta = b.idpregunta and b.idpregunta = c4.idpreguntaforzada4 " +
+					"union " +
+					"select c5.idproducto, a.idproducto as idproductoeleccion, a.precio  from eleccion_forzada a, pregunta b , producto c5 where a.idpregunta = b.idpregunta and b.idpregunta = c5.idpreguntaforzada5 ";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idProducto, idProductoEleccion;
+			String precio;
+			while(rs.next()){
+				idProducto = rs.getInt("idproducto");
+				idProductoEleccion = rs.getInt("idproductoeleccion");
+				precio = rs.getString("precio");
+				ProductoEleccionPrecio valTemp  = new ProductoEleccionPrecio(idProducto, idProductoEleccion, precio);
+				prodElePrecio.add(valTemp);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(prodElePrecio);
+		
+	}
+	
 }

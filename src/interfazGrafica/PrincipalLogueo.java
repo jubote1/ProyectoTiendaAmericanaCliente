@@ -13,13 +13,16 @@ import java.awt.GridLayout;
 import java.awt.Image;
 
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.JPasswordField;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Panel;
+import java.awt.Window;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
 import java.util.Date;
@@ -268,6 +271,18 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		lblHora.setFont(new Font("Tahoma", Font.BOLD, 14));
 		lblHora.setBounds(133, 258, 153, 19);
 		contentPane.add(lblHora);
+		
+		JButton btnIngresoRapido = new JButton("Ingreso R\u00E1pido");
+		btnIngresoRapido.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
+				VentPrincipalLogueRapido ventLogueoRapido = new VentPrincipalLogueRapido((JFrame)ventanaPadre, true);
+				ventLogueoRapido.setVisible(true);
+			}
+		});
+		btnIngresoRapido.setBounds(226, 154, 176, 23);
+		contentPane.add(btnIngresoRapido);
 		if(estaAperturado)
 		{
 			txtEstadoCierre.setText("El día en cuestión ya se encuentra abierto.");

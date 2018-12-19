@@ -13,13 +13,18 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Window;
+
 import javax.swing.border.LineBorder;
 
 import capaControlador.AutenticacionCtrl;
@@ -161,6 +166,18 @@ public class VentPrincipal extends JFrame {
 				
 			}
 		});
+		
+		JButton btnCambiarDeUsuario_3 = new JButton("CAMBIAR DE USUARIO");
+		btnCambiarDeUsuario_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
+				VentPrincipalLogueRapido ventLogueoRapido = new VentPrincipalLogueRapido((JFrame)ventanaPadre, true);
+				ventLogueoRapido.setVisible(true);
+			}
+		});
+		btnCambiarDeUsuario_3.setFont(new Font("Tahoma", Font.BOLD, 11));
+		PanelSeguridad.add(btnCambiarDeUsuario_3);
 		PanelSeguridad.add(btnParametrosTienda);
 		ImageIcon icono = new ImageIcon("iconos\\seguridad.jpg");
 		
@@ -257,6 +274,18 @@ public class VentPrincipal extends JFrame {
 				
 			}
 		});
+		
+		JButton btnCambiarDeUsuario_1 = new JButton("CAMBIAR DE USUARIO");
+		btnCambiarDeUsuario_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
+				VentPrincipalLogueRapido ventLogueoRapido = new VentPrincipalLogueRapido((JFrame)ventanaPadre, true);
+				ventLogueoRapido.setVisible(true);
+			}
+		});
+		btnCambiarDeUsuario_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		PanelInventarios.add(btnCambiarDeUsuario_1);
 		PanelInventarios.add(btnNewButton);
 		
 		JButton btnProductos = new JButton("Productos");
@@ -292,6 +321,18 @@ public class VentPrincipal extends JFrame {
 				
 			}
 		});
+		
+		JButton btnCambiarDeUsuario_4 = new JButton("CAMBIAR DE USUARIO");
+		btnCambiarDeUsuario_4.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
+				VentPrincipalLogueRapido ventLogueoRapido = new VentPrincipalLogueRapido((JFrame)ventanaPadre, true);
+				ventLogueoRapido.setVisible(true);
+			}
+		});
+		btnCambiarDeUsuario_4.setFont(new Font("Tahoma", Font.BOLD, 11));
+		PanelProductos.add(btnCambiarDeUsuario_4);
 		PanelProductos.add(btnDefinicinEstadosDe);
 		
 		JButton btnParmetrosDireccin = new JButton("Par\u00E1metros Direcci\u00F3n");
@@ -310,6 +351,18 @@ public class VentPrincipal extends JFrame {
 				
 			}
 		});
+		
+		JButton btnCambiarDeUsuario_2 = new JButton("CAMBIAR DE USUARIO");
+		btnCambiarDeUsuario_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) e.getSource());
+				VentPrincipalLogueRapido ventLogueoRapido = new VentPrincipalLogueRapido((JFrame)ventanaPadre, true);
+				ventLogueoRapido.setVisible(true);
+			}
+		});
+		btnCambiarDeUsuario_2.setFont(new Font("Tahoma", Font.BOLD, 11));
+		PanelClientes.add(btnCambiarDeUsuario_2);
 		btnParmetrosDireccin.setBounds(24, 269, 180, 48);
 		PanelClientes.add(btnParmetrosDireccin);
 		
@@ -418,6 +471,18 @@ public class VentPrincipal extends JFrame {
 				
 			}
 		});
+		
+		JButton btnCambiarDeUsuario = new JButton("CAMBIAR DE USUARIO");
+		btnCambiarDeUsuario.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
+				VentPrincipalLogueRapido ventLogueoRapido = new VentPrincipalLogueRapido((JFrame)ventanaPadre, true);
+				ventLogueoRapido.setVisible(true);
+			}
+		});
+		btnCambiarDeUsuario.setFont(new Font("Tahoma", Font.BOLD, 11));
+		PanelPedidos.add(btnCambiarDeUsuario);
 		PanelPedidos.add(btnComandaDePedidos);
 		
 		JToolBar toolBarModulos = new JToolBar();

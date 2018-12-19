@@ -249,10 +249,10 @@ public class PreguntaDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada1 and  b.idproducto = " + idProducto + " union "
-					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada2 and  b.idproducto = " + idProducto + " union "
-					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada3 and  b.idproducto = " + idProducto + " union "
-					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada4 and  b.idproducto = " + idProducto + " union "
+			String consulta = "select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada1 and  b.idproducto = " + idProducto + " union all "
+					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada2 and  b.idproducto = " + idProducto + " union all "
+					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada3 and  b.idproducto = " + idProducto + " union all "
+					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada4 and  b.idproducto = " + idProducto + " union all "
 					+ " select a.* from pregunta a , producto b where a.idpregunta = b.idpreguntaforzada5 and  b.idproducto = " + idProducto;
 			if(auditoria)
 			{

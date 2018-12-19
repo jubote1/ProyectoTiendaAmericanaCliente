@@ -66,7 +66,6 @@ public class VentProCRUDImpuesto extends JFrame {
 		for(int y = 0; y < impuestos.size();y++)
 		{
 			String[] fila =(String[]) impuestos.get(y);
-			System.out.println(fila);
 			modelo.addRow(fila);
 		}
 		return(modelo);

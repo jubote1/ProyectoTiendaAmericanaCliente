@@ -121,6 +121,56 @@ public class UsuarioDAO {
 		return(resultado);
 	}
 	
+	
+	/**
+	 * Método que se encarga de validar si un usuario existe o no en la base de datos
+	 * @param usuario Recibe como parámetro un objeto Modelo Usuario con base en el cual se realiza la consulta.
+	 * @return Se retorna un valor booleano con base en el cual se realiza la validación del usuario en base de datos
+	 * 
+	 */
+	public static Usuario validarAutenticacionRapida(String claveRapida, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		Usuario usuario = new Usuario(0,"","","", 0, "", false);
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from usuario where claverapida = '" + claveRapida + "'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				
+				try{
+					usuario.setIdUsuario(rs.getInt("id"));
+					usuario.setNombreUsuario(rs.getString("nombre"));
+					usuario.setNombreLargo(rs.getString("nombre_largo"));
+					usuario.setIdTipoEmpleado(rs.getInt("idtipoempleado"));
+					usuario.setTipoInicio(rs.getString("tipoinicio"));
+					break;
+				}catch(Exception e){
+					
+					
+				}
+				rs.close();
+				stm.close();
+				con1.close();
+			}
+		}catch (Exception e){
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(usuario);
+	}
+	
 	/**
 	 * Método que se encarga de la validación de un idUsuario determinado está o no creado en el sistema.
 	 * @param idUsuario parámetro con base en la cual se valida o no la existencia del usuario en base de datos

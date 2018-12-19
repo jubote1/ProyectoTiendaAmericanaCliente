@@ -103,9 +103,16 @@ public class TipoPedidoDAO {
 				{
 					esDomicilio = true;
 				}
+				else
+				{
+					esDomicilio = false;
+				}
 				if(valDef == 1)
 				{
 					valorDefecto = true;
+				}else
+				{
+					valorDefecto = false;
 				}
 				tipoPedidoRet= new TipoPedido(idTipoPedido, descripcion, valorDefecto, icono, esDomicilio);
 				tiposPedido.add(tipoPedidoRet);

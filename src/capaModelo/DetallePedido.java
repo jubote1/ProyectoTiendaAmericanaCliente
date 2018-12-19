@@ -19,9 +19,7 @@ public class DetallePedido {
 	private String descargoInventario;
 	private String estado;
 	private int contadorDetallePedido;
-	
-	
-	
+
 	public int getContadorDetallePedido() {
 		return contadorDetallePedido;
 	}

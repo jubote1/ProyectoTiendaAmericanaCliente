@@ -71,6 +71,12 @@ public class AutenticacionCtrl {
 		return(resultado);
 	}
 	
+	public Usuario validarAutenticacionRapida(String claveRapida)
+	{
+		Usuario  usuario = UsuarioDAO.validarAutenticacionRapida(claveRapida,auditoria);
+		return(usuario);
+	}
+	
 	/**
 	 * Método Desarrollo por la capa de presentación
 	 * @return

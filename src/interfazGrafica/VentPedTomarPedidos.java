@@ -730,7 +730,7 @@ public class VentPedTomarPedidos extends JFrame {
 				{
 					if(VentPedTomarPedidos.idCliente == 0)
 					{
-						JOptionPane.showMessageDialog(ventanaPadre, "No se puede finalizar pedido, dado que es tipo domicilio y no tiene asociado un cliente." , "Falta Cliente para Pedido Tipo Domicilio", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaPadre, "No se puede finalizar pedido, dado que es tipo domicilio y no tiene asociado un cliente. es domicilio " + tipPedido.isEsDomicilio() + " id tipo  " + tipPedido.getIdTipoPedido() , "Falta Cliente para Pedido Tipo Domicilio", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
 				}

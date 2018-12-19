@@ -10,6 +10,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import capaConexion.ConexionBaseDatos;
+import capaControlador.AutenticacionCtrl;
 import capaControlador.InventarioCtrl;
 import capaControlador.OperacionesTiendaCtrl;
 import capaControlador.ReportesCtrl;
@@ -50,8 +51,13 @@ public class VentPedFinalizarDia extends JDialog {
 	private JTable tableResTipoPedido;
 	private JTextField txtTotalVendido;
 	private double totalVendido = 0;
+	private double totalIngresos = 0;
+	private double totalEgresos = 0;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
+	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+	OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
+	private JTextField txtTotalVendidoConIE;
 	/**
 	 * Launch the application.
 	 */
@@ -90,7 +96,7 @@ public class VentPedFinalizarDia extends JDialog {
 		
 		JButton btnCierreDia = new JButton("Finalizar D\u00EDa");
 		
-		btnCierreDia.setBounds(110, 239, 152, 37);
+		btnCierreDia.setBounds(110, 272, 152, 37);
 		contentPanePrincipal.add(btnCierreDia);
 		
 		JButton btnCancelar = new JButton("Cancelar/Salir");
@@ -106,14 +112,14 @@ public class VentPedFinalizarDia extends JDialog {
 		
 		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
 		lblFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblFechaSistema.setBounds(110, 387, 240, 14);
+		lblFechaSistema.setBounds(110, 403, 240, 14);
 		contentPanePrincipal.add(lblFechaSistema);
 		
 		txtFechaInventario = new JTextField();
 		txtFechaInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtFechaInventario.setEnabled(false);
 		txtFechaInventario.setEditable(false);
-		txtFechaInventario.setBounds(429, 384, 135, 20);
+		txtFechaInventario.setBounds(427, 400, 135, 20);
 		contentPanePrincipal.add(txtFechaInventario);
 		txtFechaInventario.setColumns(10);
 		
@@ -123,7 +129,7 @@ public class VentPedFinalizarDia extends JDialog {
 		txtFechaInventario.setText(fechaSis);
 		
 		JScrollPane scrollResCierre = new JScrollPane();
-		scrollResCierre.setBounds(45, 289, 680, 79);
+		scrollResCierre.setBounds(45, 320, 680, 79);
 		contentPanePrincipal.add(scrollResCierre);
 		
 		JTextPane txtPaneResCierre = new JTextPane();
@@ -144,7 +150,7 @@ public class VentPedFinalizarDia extends JDialog {
 		
 		JLabel lblTotalVendido = new JLabel("TOTAL VENDIDO");
 		lblTotalVendido.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblTotalVendido.setBounds(77, 138, 88, 14);
+		lblTotalVendido.setBounds(10, 138, 88, 14);
 		contentPanePrincipal.add(lblTotalVendido);
 		
 		txtTotalVendido = new JTextField();
@@ -248,8 +254,39 @@ public class VentPedFinalizarDia extends JDialog {
 				txtPaneResCierre.setText(resp);
 			}
 		});
-		btnValidarCierre.setBounds(110, 168, 152, 37);
+		btnValidarCierre.setBounds(110, 224, 152, 37);
 		contentPanePrincipal.add(btnValidarCierre);
+		
+		JButton btnNewButton_2 = new JButton("Adm Ingresos/Egresos");
+		btnNewButton_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_015", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					JDialog ventanaPadre = (JDialog) SwingUtilities.getWindowAncestor(
+	                        (Component) e.getSource());
+					VentPedIngEgrDiarios ingEgr = new VentPedIngEgrDiarios(ventanaPadre, true);
+					ingEgr.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		btnNewButton_2.setBounds(89, 428, 189, 47);
+		contentPanePrincipal.add(btnNewButton_2);
+		
+		JLabel lblTotalVendidoCon = new JLabel("TOTAL VENDIDO CON I/E");
+		lblTotalVendidoCon.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblTotalVendidoCon.setBounds(10, 175, 152, 14);
+		contentPanePrincipal.add(lblTotalVendidoCon);
+		
+		txtTotalVendidoConIE = new JTextField();
+		txtTotalVendidoConIE.setText("0.0");
+		txtTotalVendidoConIE.setEditable(false);
+		txtTotalVendidoConIE.setColumns(10);
+		txtTotalVendidoConIE.setBounds(175, 172, 86, 20);
+		contentPanePrincipal.add(txtTotalVendidoConIE);
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
@@ -319,7 +356,7 @@ public class VentPedFinalizarDia extends JDialog {
 	{
 		Object[] columnsName = new Object[2];
         
-        columnsName[0] = "Tipo Pedido";
+        columnsName[0] = "Tipo Pedido/Inf";
         columnsName[1] = "TOTAL";
         ArrayList totTipoPedido = new ArrayList();
         totTipoPedido = pedCtrl.obtenerTotalesPedidosPorTipo(fechaSis);
@@ -338,7 +375,14 @@ public class VentPedFinalizarDia extends JDialog {
 			modelo.addRow(fila);
 			totalVendido = totalVendido + Double.parseDouble(fila[1]);
 		}
+		totalIngresos = operTiendaCtrl.TotalizarIngreso(fechaSis);
+		String[] filaIngreso = {"Ingresos", Double.toString(totalIngresos)};
+		modelo.addRow(filaIngreso);
+		totalEgresos = operTiendaCtrl.TotalizarEgreso(fechaSis);
+		String[] filaEgreso = {"Egresos", Double.toString(totalEgresos)};
+		modelo.addRow(filaEgreso);
 		txtTotalVendido.setText(Double.toString(totalVendido));
+		txtTotalVendidoConIE.setText(Double.toString(totalVendido + totalIngresos - totalEgresos));
 		tableResTipoPedido.setModel(modelo);
 				
 	}

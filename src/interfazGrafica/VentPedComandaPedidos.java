@@ -196,7 +196,9 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		btnDisponible.setVisible(false);
 		//Vamos  a adicionar los domiciliarios del sistema
 		domiciliarios = empCtrl.obtenerDomiciliarios();
+		btnLlegadaDeDomicilio = new JButton("Llegada de Domicilio");
 		actualizarCondicionesPantallas();
+		
 		//Adicionamos el botón de retornar salida
 		
 		btnDisponible.addActionListener(new ActionListener() {
@@ -239,6 +241,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		btnTotal = new JButton("Todos los Pedidos");
 		btnTotal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				actualizarCondicionesPantallas();
 				idTipoPedido = 0;
 				consDomi = false;
 				pintarPedidos();
@@ -259,6 +262,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		
 		btnHistorial.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				actualizarCondicionesPantallas();
 				//Le ponemos una marcación especial de idTipoPedido = 100:
 				idTipoPedido = 100;
 				consDomi = false;
@@ -295,6 +299,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		
 		btnDomicilio.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				actualizarCondicionesPantallas();
 				idTipoPedido = 1;
 				consDomi = false;
 				pintarPedidos();
@@ -312,6 +317,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		
 		btnPuntoDeVenta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				actualizarCondicionesPantallas();
 				idTipoPedido = 2;
 				consDomi = false;
 				pintarPedidos();
@@ -521,7 +527,6 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 				//para seleccionar el domiciliario que va a salir.
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
                         (Component) arg0.getSource());
-				System.out.println("ES DOMICILIARIO ? " + esDomiciliario);
 				if(esDomiciliario)
 				{
 					darSalidaDomiciliario(Sesion.getUsuario(), idDomiCon, idUsuario);
@@ -546,39 +551,56 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		btnSalidaConDomicilio.setBounds(175, 554, 216, 36);
 		contentPane.add(btnSalidaConDomicilio);
 		btnSalidaConDomicilio.setVisible(false);
-		btnLlegadaDeDomicilio = new JButton("Llegada de Domicilio");
+		
 		btnLlegadaDeDomicilio.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//Para la acción de este botón lo que realizaremos es recorrer el Jtable y lo que esté marcado le intentaremos dar salida
-				//Se tiene un indicador qeu nos dice si por lo menos se le dio llegada a un domiciliario
-				boolean llegadaDomi = false;
-				for(int i = 0; i < tblMaestroPedidos.getRowCount(); i ++)
-			      {
-			    	  //En este punto de manera predefinida vamos por el item de si está o no chequeado el pedido
-			    	  boolean pedCheq =(boolean) tblMaestroPedidos.getValueAt(i, 0);
-			    	  if(pedCheq)
-			    	  {
-			    		//En caso de que el pedido este chequeado validamos si está en el estado correspondiente para dar salida
-			    		  long idEstado = (long) tblMaestroPedidos.getValueAt(i, 8);
-			    		  if(idEstado == estEnRutaDom)
-			    		  {
-			    			  //avanzamos de estado el pedido para lo cual tomamos el idpedido
-			    			  int idPedidoAvanzar= Integer.parseInt(tblMaestroPedidos.getValueAt(i, 1).toString());
-			    			  boolean respuesta = pedCtrl.ActualizarEstadoPedido((int)idPedidoAvanzar, (int) estEnRutaDom , (int) estEntregaDom,Sesion.getUsuario(),true, idDomiCon);
-			    			  llegadaDomi = true;
-			    		  }
-			    	  }
-			      }
-				//Validamos si el indicador de si por lo menos un pedido se dio llegada está prendido
-				if(llegadaDomi)
+				int resp = JOptionPane.showConfirmDialog(null, "¿Está seguro que desea dar llegada a todos los domicilios EN RUTA?", "Confirmación Llegada Domiciliario" , JOptionPane.YES_NO_OPTION);
+				if (resp == 0)
 				{
-					 //finalmente en este punto debemos de tener un domiciliario y a este es al que le vamos a cambiar el estado
-			    	  empCtrl.entradaDomiciliario(idUsuario);
-			    	  //Debemos actualizar el arreglo con los estados domiciliarios
-			    	  llegadaDomiciliarioLocal(idUsuario);
+					if (idDomiCon   > 0)
+					{
+						//Para la acción de este botón lo que realizaremos es recorrer el Jtable y lo que esté marcado le intentaremos dar salida
+						//Se tiene un indicador qeu nos dice si por lo menos se le dio llegada a un domiciliario
+						boolean llegadaDomi = false;
+						for(int i = 0; i < tblMaestroPedidos.getRowCount(); i ++)
+					      {
+					    	  //En caso de que el pedido este chequeado validamos si está en el estado correspondiente para dar salida
+					    	  long idEstado = (long) tblMaestroPedidos.getValueAt(i, 8);
+					    	  if(idEstado == estEnRutaDom)
+					    	  {
+					    		  //avanzamos de estado el pedido para lo cual tomamos el idpedido
+					    		  int idPedidoAvanzar= Integer.parseInt(tblMaestroPedidos.getValueAt(i, 1).toString());
+					    		  boolean respuesta = pedCtrl.ActualizarEstadoPedido((int)idPedidoAvanzar, (int) estEnRutaDom , (int) estEntregaDom,Sesion.getUsuario(),true, idDomiCon);
+					    		  llegadaDomi = true;
+					    	  }
+					    	
+					      }
+						//Validamos si el indicador de si por lo menos un pedido se dio llegada está prendido
+						if(llegadaDomi)
+						{
+							 //finalmente en este punto debemos de tener un domiciliario y a este es al que le vamos a cambiar el estado
+					    	  empCtrl.entradaDomiciliario(idDomiCon);
+					    	  //Debemos actualizar el arreglo con los estados domiciliarios
+					    	  llegadaDomiciliarioLocal(idDomiCon);
+						}
+						btnLlegadaDeDomicilio.setVisible(false);
+						consDomiEnRuta = false;
+						//Comentamos el quitar los filtros porque la idea seguir con el comportamiento de la pantalla
+						//porque el botón del domiciliario no se ha deseleccionado
+						//quitarRefrescarFiltrosPantalla();
+						pintarPedidos();
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "Debe ser un domiciliario quien se de llegada, o seleccionar el domiciliario y darse llegada " , "Error", JOptionPane.ERROR_MESSAGE);
+					}
+					
 				}
-				btnLlegadaDeDomicilio.setVisible(false);
-				quitarRefrescarFiltrosPantalla();
+				else
+				{
+					return;
+				}
+				
 			}
 		});
 		btnLlegadaDeDomicilio.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -640,11 +662,35 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 						//Debemos volver a la normalidad los botones quitarles el background
 						pintarBotonesDomiciliario();
 						botAccion.setBackground(Color.YELLOW);
+						botAccion.setForeground(Color.BLACK);
 						//Prendemos el indicador de que es una consulta por domiciliario
 						consDomi = true;
 						//Debemos de ejecutar la consulta para el domiciliario en cuestión
 						//guardamos en la variable el idUsuario del domiciliario
 						idDomiCon = Integer.parseInt(actCom);
+						//Validamos si se deben o no pintar los domicilios EN RUTA
+						
+						for(int i = 0; i < domiciliarios.size(); i++)
+						{
+							Usuario domiTemp = domiciliarios.get(i);
+							if(domiTemp.getIdUsuario() == idDomiCon)
+							{
+								//Validamos el estado domiciliario si está por fuera, habilitamos el indicador para ver los pedidos en ruta de dicho domiciliario.
+								if(domiTemp.getEstadoDomiciliario() == 1)
+								{
+									consDomiEnRuta = true;
+									btnDisponible.setVisible(true);
+									btnLlegadaDeDomicilio.setVisible(true);
+								}
+								else
+								{
+									consDomiEnRuta = false;
+									btnLlegadaDeDomicilio.setVisible(false);
+								}
+								break;
+							}
+						}
+						
 						//Llamamos método para pintar pedidos
 						pintarPedidos();
 						//Quitamos el color al filtro por tipo de pedido
@@ -655,8 +701,9 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 					}
 					lblTipoFiltro.setText(((JButton)arg0.getSource()).getText());
 					lblEmpleado.setText("");
-					//Este método realiza una revisión de los filtros de la pantalla y los actualiza
-					actualizarCondicionesPantallas();
+					//Este método realiza una revisión de los filtros de la pantalla y los actualiza , lo comentamos de manera que no se quitn los filtros hasta que no se 
+					//clic en otro botón
+					//actualizarCondicionesPantallas();
 				}
 			});
 		}
@@ -730,6 +777,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
         	if(consDomiEnRuta)
         	{
         		pedidos = pedCtrl.obtenerPedidosVentanaComandaDomEnRuta(idDomiCon);
+        		btnLlegadaDeDomicilio.setVisible(true);
         	}else
         	{
         		pedidos = pedCtrl.obtenerPedidosVentanaComandaDom(idDomiCon);
@@ -1025,10 +1073,12 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 					{
 						consDomiEnRuta = true;
 						btnDisponible.setVisible(true);
+						btnLlegadaDeDomicilio.setVisible(true);
 					}
 					else
 					{
 						consDomiEnRuta = false;
+						btnLlegadaDeDomicilio.setVisible(false);
 					}
 				}
 			}
@@ -1072,9 +1122,18 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	    	  salidaDomiciliarioLocal(idUsu);
 		}
 		btnSalidaConDomicilio.setVisible(false);
-		quitarRefrescarFiltrosPantalla();
+		consDomiEnRuta = true;
+		btnLlegadaDeDomicilio.setVisible(true);
+		//Comentamos el quitar los filtros porque la idea seguir con el comportamiento de la pantalla
+		//porque el botón del domiciliario no se ha deseleccionado
+		//quitarRefrescarFiltrosPantalla();
+		pintarPedidos();
 	}
 	
+	/**
+	 * Correponde al método con el cual se normaliza la situación de la pantalla una vez se realizan 
+	 * las acciones correspondientes de otros usuarios.
+	 */
 	public void actualizarCondicionesPantallas()
 	{
 		//Igualamos el usuario del sistema
@@ -1084,6 +1143,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		//Deberemos si el tipo de empleado es domicilio  y en caso de que lo sea
 		esDomiciliario = empCtrl.esDomicilario(idTipoEmpleado);
 		//En caso de que sea domiciliario o este consultando domiciliario fijamos el idDomiciliario
+		consDomiEnRuta = false;
 		if(esDomiciliario)
 		{
 			idDomiCon = Sesion.getIdUsuario();
@@ -1099,8 +1159,14 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 					{
 						consDomiEnRuta = true;
 						btnDisponible.setVisible(true);
+						btnLlegadaDeDomicilio.setVisible(true);
 					}
+					break;
 				}
+			}
+			if(!consDomiEnRuta)
+			{
+				btnLlegadaDeDomicilio.setVisible(false);
 			}
 		}
 	}

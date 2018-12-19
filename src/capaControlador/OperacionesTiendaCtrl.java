@@ -2,14 +2,19 @@ package capaControlador;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import capaDAO.EgresoDAO;
+import capaDAO.IngresoDAO;
 import capaDAO.ItemInventarioHistoricoDAO;
 import capaDAO.ModificadorInventarioDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.TiendaDAO;
+import capaModelo.Egreso;
 import capaModelo.FechaSistema;
+import capaModelo.Ingreso;
 import capaModelo.Tienda;
 
 public class OperacionesTiendaCtrl {
@@ -179,4 +184,86 @@ public void realizarInventarioHistorico(String fecha)
 		return(idTienda);
 	}
 
+	
+	// Entidad Egreso
+	
+	public ArrayList obtenerEgresos(String fecha)
+	{
+		ArrayList egresos = EgresoDAO.obtenerEgresos(fecha, auditoria);
+		return(egresos);
+		
+	}
+	
+	public ArrayList<Egreso> obtenerEgresosObj(String fecha)
+	{
+		ArrayList<Egreso> egresos =  EgresoDAO.obtenerEgresosObj(fecha, auditoria);
+		return(egresos);
+		
+	}
+	
+	public int insertarEgreso(Egreso egrIns)
+	{
+		int idIns = EgresoDAO.insertarEgreso(egrIns, auditoria);
+		return(idIns);
+	}
+	
+	public boolean eliminarEgreso(int idEgreso)
+	{
+		boolean respuesta = EgresoDAO.eliminarEgreso(idEgreso, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean editarEgreso(Egreso egr)
+	{
+		boolean respuesta =  EgresoDAO.editarEgreso(egr, auditoria);
+		return(respuesta);
+	}
+	
+	public double TotalizarEgreso(String fech)
+	{
+		double respuesta = EgresoDAO.TotalizarEgreso(fech, auditoria);
+		return(respuesta);
+	}
+	
+	//Entidad Ingreso
+	
+	public ArrayList obtenerIngresos(String fecha)
+	{
+		ArrayList ingresos = IngresoDAO.obtenerIngresos(fecha, auditoria);
+		return(ingresos);
+		
+	}
+	
+	public ArrayList<Ingreso> obtenerIngresosObj(String fecha)
+	{
+		ArrayList<Ingreso> ingresos =  IngresoDAO.obtenerIngresosObj(fecha, auditoria);
+		return(ingresos);
+		
+	}
+	
+	public int insertarIngreso(Ingreso ingIns)
+	{
+		int idIns = IngresoDAO.insertarIngreso(ingIns, auditoria);
+		return(idIns);
+	}
+	
+	public boolean eliminarIngreso(int idIngreso)
+	{
+		boolean respuesta = IngresoDAO.eliminarIngreso(idIngreso, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean editarIngreso(Ingreso ing)
+	{
+		boolean respuesta =  IngresoDAO.editarIngreso(ing, auditoria);
+		return(respuesta);
+	}
+	
+	public double TotalizarIngreso(String fech)
+	{
+		double respuesta = IngresoDAO.TotalizarIngreso(fech, auditoria);
+		return(respuesta);
+	}
+	
+	
 }
