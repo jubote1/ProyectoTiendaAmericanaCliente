@@ -1,40 +1,60 @@
 package interfazGrafica;
 
+import java.awt.print.PrinterException;
+import java.io.IOException;
 import java.io.PrintWriter;
+
 import javax.print.*;
 
-public class Impresion {
 
+
+//La clase debe de implementar la impresi贸n implements Printable
+
+//clase p煤blica que se ejecuta donde debe de estar el main que 
+// llama a laotra clase.
+public class Impresion
+{
 	
-	public void imprimirFactura(String impresion)
-	{
-
-		 //Cogemos el servicio de impresi髇 por defecto (impresora por defecto)
-		   PrintService service = PrintServiceLookup.lookupDefaultPrintService();
-		   //Le decimos el tipo de datos que vamos a enviar a la impresora
-		   //Tipo: bytes Subtipo: autodetectado
-		   DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-		   DocFlavor cutflavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-		   //Creamos un trabajo de impresi髇
-		   DocPrintJob pj = service.createPrintJob(), jobcut = service.createPrintJob();
-		   //Nuestro trabajo de impresi髇 env韆 una cadena de texto
-		   String ss=new String(impresion);
-		   byte[] bytes;
-		   byte[] cutbytes; 
-		   //Transformamos el texto a bytes que es lo que soporta la impresora
-		   bytes=ss.getBytes();
-		   cutbytes = new byte[] { 0x1B, 'm'}; 
-		   //Creamos un documento (Como si fuese una hoja de Word para imprimir)
-		   Doc doc=new SimpleDoc(bytes,flavor,null);
-		   Doc cutdoc = new SimpleDoc(cutbytes, cutflavor, null);
-		   //Obligado coger la excepci髇 PrintException
-		   try {
-		     //Mandamos a impremir el documento
-		     pj.print(doc, null);
-		     jobcut.print(cutdoc, null);
-		   }
-		   catch (PrintException e) {
-		     System.out.println("Error al imprimir: "+e.getMessage());
-		   }
+   public static void main (String impresion)
+   {
+	   String impresoraPrincipal = "Caja";
+	   
+	 //Cogemos el servicio de impresi贸n por defecto (impresora por defecto)
+	   PrintService service = PrintServiceLookup.lookupDefaultPrintService();
+	   //Le decimos el tipo de datos que vamos a enviar a la impresora
+	   //Tipo: bytes Subtipo: autodetectado
+	   DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+	   //Creamos un trabajo de impresi贸n
+	   DocPrintJob pj = service.createPrintJob();
+	   //Nuestro trabajo de impresi贸n env铆a una cadena de texto
+	   String ss=new String(impresion);
+	   byte[] bytes; 
+	   //Transformamos el texto a bytes que es lo que soporta la impresora
+	   bytes=ss.getBytes();
+	   //Creamos un documento (Como si fuese una hoja de Word para imprimir)
+	   Doc doc=new SimpleDoc(bytes,flavor,null);
+	   //Obligado coger la excepci贸n PrintException
+	   try {
+	     //Mandamos a impremir el documento
+		   
+	     pj.print(doc, null);
+	   }
+	   catch (PrintException e) {
+	     System.out.println("Error al imprimir: "+e.getMessage());
+	   }
+	      
+	   
+	   
+	   try {
+		cortehoja.printer("", impresoraPrincipal);
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (PrinterException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
 	}
+   }
+   
+   
 }

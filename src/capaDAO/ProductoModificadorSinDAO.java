@@ -109,6 +109,47 @@ public class ProductoModificadorSinDAO {
 		return(proModSin);
 		
 	}
+	
+	public static ArrayList<ProductoModificadorSin> obtenerProdModificadoresSinTodos(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList proModSin = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idproducto,  a.idproductosin from producto_modificador_sin a ";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idProducto;
+			int idProductoSin;
+			ProductoModificadorSin prodModTemp;
+			while(rs.next()){
+				idProductoSin = rs.getInt("idproductosin");
+				idProducto = rs.getInt("idproducto");
+				prodModTemp = new ProductoModificadorSin(idProducto, idProductoSin);
+				proModSin.add(prodModTemp);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(proModSin);
+		
+	}
 
 	public static ArrayList<Producto> obtenerProdModificadorSinFalta(int idProd, boolean auditoria)
 	{

@@ -207,7 +207,14 @@ public class VentInvIngresarVarianza extends JDialog {
 					//Capturamos el idItem	
 					idItem =Integer.parseInt((String)tableIngVarianza.getValueAt(i, 0));
 					//Capturamos la cantidad
-					cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 8));
+					try
+					{
+						cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 8));
+					}catch(Exception e)
+					{
+						cantidad = 0;
+					}
+					
 					ModificadorInventario mod = new ModificadorInventario(idItem,cantidad);
 					inventarioIngresar.add(mod);
 				}

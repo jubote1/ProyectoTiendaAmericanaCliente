@@ -80,22 +80,22 @@ public class ProductoIncluidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select  a.idproductoincluido, cantidad*"+cantidad +"as cantidad, a.precio  from producto_incluido a where a.idproductoincluye = " + idProducto;
+			String consulta = "select  a.idproductoincluye, a.cantidad*"+cantidad +" as cantidad, a.precio  from producto_incluido a where a.idproductoincluido = " + idProducto;
 			if(auditoria)
 			{
 				logger.info(consulta);
 			}
+			System.out.println(consulta);
 			ResultSet rs = stm.executeQuery(consulta);
-			int idProducto_Incluido;
-			int idProductoIncluido;
+			int idProductoIncluye;
 			double cantidadIncluye;
 			String precio;
 			
 			while(rs.next()){
-				idProductoIncluido = rs.getInt("idproductoincluido");
+				idProductoIncluye = rs.getInt("idproductoincluye");
 				cantidadIncluye = rs.getDouble("cantidad");
 				precio = rs.getString("precio");
-				ProductoIncluido fila = new ProductoIncluido(0, idProductoIncluido, idProducto, cantidadIncluye, precio);
+				ProductoIncluido fila = new ProductoIncluido(0, idProductoIncluye, idProducto, cantidadIncluye, precio);
 				productoIncluidos.add(fila);
 				
 			}

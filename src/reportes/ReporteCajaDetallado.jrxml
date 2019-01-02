@@ -7,9 +7,10 @@
 		<defaultValueExpression><![CDATA[$P{fecha}]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
-		<![CDATA[select a.total_neto, d.usuario, a.idpedidotienda from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 1 and a.fechapedido = $P{fecha} 
+		<![CDATA[select a.total_neto, d.nombre_largo as usuario, a.idpedidotienda from pedido a , tipo_pedido b, estado c, usuario d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and a.iddomiciliario = d.id and b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.fechapedido = $P{fecha}
 union
-select a.total_neto, 'CAJA', a.idpedidotienda from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 0 and a.fechapedido = $P{fecha}]]>
+select a.total_neto, 'CAJA NO DOMICILIO' as usuario, a.idpedidotienda from pedido a , tipo_pedido b, estado c where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and b.esdomicilio = 0 and a.fechapedido = $P{fecha}
+order by usuario]]>
 	</queryString>
 	<field name="total_neto" class="java.lang.Double">
 		<property name="com.jaspersoft.studio.field.label" value="total_neto"/>
@@ -33,7 +34,7 @@ select a.total_neto, 'CAJA', a.idpedidotienda from pedido a , tipo_pedido b, est
 					<textElement textAlignment="Center">
 						<font size="12" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Número Pedido]]></text>
+					<text><![CDATA[Numero Pedido]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="280" y="30" width="151" height="21" uuid="b7fa8cf1-7ac1-4fd3-94f9-70bf3ed949e8"/>
@@ -43,7 +44,7 @@ select a.total_neto, 'CAJA', a.idpedidotienda from pedido a , tipo_pedido b, est
 					<text><![CDATA[Valor Pedido]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="200" y="0" width="160" height="30" uuid="9f701305-b22c-4ca0-b476-d02bcceb7632"/>
+					<reportElement x="130" y="0" width="310" height="30" uuid="9f701305-b22c-4ca0-b476-d02bcceb7632"/>
 					<textElement textAlignment="Center">
 						<font size="20" isBold="true"/>
 					</textElement>

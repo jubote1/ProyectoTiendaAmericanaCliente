@@ -12,10 +12,13 @@ import capaDAO.ItemInventarioHistoricoDAO;
 import capaDAO.ModificadorInventarioDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.TiendaDAO;
+import capaModelo.DetallePedido;
 import capaModelo.Egreso;
 import capaModelo.FechaSistema;
 import capaModelo.Ingreso;
+import capaModelo.Pedido;
 import capaModelo.Tienda;
+import interfazGrafica.Impresion;
 
 public class OperacionesTiendaCtrl {
 	
@@ -65,6 +68,32 @@ public String validarEstadoFechaSistema()
 	{
 		return("");
 	}
+}
+
+public boolean validarCierreSemanal()
+{
+	PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
+	FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
+	String fechaActual = fechasSistema.getFechaApertura();
+	Calendar calendarioActual = Calendar.getInstance();
+	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	try
+	{
+		//Al objeto calendario le fijamos la fecha actual del sitema
+		calendarioActual.setTime(dateFormat.parse(fechaActual));
+		
+	}catch(Exception e)
+	{
+		System.out.println(e.toString());
+	}
+	//Retormanos el día de la semana actual segun la fecha del calendario
+	int diaActual = calendarioActual.get(Calendar.DAY_OF_WEEK);
+	//Domingo
+	if(diaActual == 1)
+	{
+		return(true);
+	}
+	return(false);
 }
 
 //APERTURA DE DÍA
@@ -204,6 +233,9 @@ public void realizarInventarioHistorico(String fecha)
 	public int insertarEgreso(Egreso egrIns)
 	{
 		int idIns = EgresoDAO.insertarEgreso(egrIns, auditoria);
+		egrIns.setIdEgreso(idIns);
+		String comandaIngreso = generarStrImpresionEgreso(egrIns);
+		Impresion.main(comandaIngreso);
 		return(idIns);
 	}
 	
@@ -225,6 +257,22 @@ public void realizarInventarioHistorico(String fecha)
 		return(respuesta);
 	}
 	
+	public String generarStrImpresionEgreso(Egreso egresoImp)
+	{
+		
+		//Obtenemos la tienda sobre la que estamos trabajando
+		Date fechaActual = new Date();                                                                                      
+		String ingreso = "======================================\n" 
+				+ "    EGRESO GENERADO:"+  egresoImp.getIdEgreso() +"\n"
+	            + " " + fechaActual.toString()
+	            + "    ======================================\n"
+	            + "    Valor Egreso: " + egresoImp.getValorEgreso() + "   \n"
+	            + "    Observación: " + egresoImp.getDescripcion() + "   \n"
+	            + "    ======================================\n"
+	            + "\n\n\n\n\n\n\n           ";
+		return(ingreso);
+	}
+	
 	//Entidad Ingreso
 	
 	public ArrayList obtenerIngresos(String fecha)
@@ -244,6 +292,9 @@ public void realizarInventarioHistorico(String fecha)
 	public int insertarIngreso(Ingreso ingIns)
 	{
 		int idIns = IngresoDAO.insertarIngreso(ingIns, auditoria);
+		ingIns.setIdIngreso(idIns);
+		String comandaIngreso = generarStrImpresionIngreso(ingIns);
+		Impresion.main(comandaIngreso);
 		return(idIns);
 	}
 	
@@ -265,5 +316,20 @@ public void realizarInventarioHistorico(String fecha)
 		return(respuesta);
 	}
 	
+	public String generarStrImpresionIngreso(Ingreso ingresoImp)
+	{
+		
+		//Obtenemos la tienda sobre la que estamos trabajando
+		Date fechaActual = new Date();
+		String ingreso = "======================================\n" 
+				+ "    INGRESO GENERADO:"+  ingresoImp.getIdIngreso() +"\n"
+	            + " " + fechaActual.toString()
+	            + "    ======================================\n"
+	            + "    Valor Ingreso: " + ingresoImp.getValorIngreso() + "   \n"
+	            + "    Observación: " + ingresoImp.getDescripcion() + "   \n"
+	            + "    ======================================\n"
+	            + "\n\n\n\n\n\n\n           ";
+		return(ingreso);
+	}
 	
 }

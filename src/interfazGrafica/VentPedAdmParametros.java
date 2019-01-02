@@ -2,9 +2,14 @@ package interfazGrafica;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
@@ -27,6 +32,8 @@ import capaControlador.ParametrosCtrl;
 import capaModelo.Impuesto;
 import capaModelo.AgrupadorMenu;
 import capaModelo.Parametro;
+import capaModelo.Tienda;
+
 import java.awt.Font;
 
 public class VentPedAdmParametros extends JDialog {
@@ -237,6 +244,33 @@ public class VentPedAdmParametros extends JDialog {
 				{
 					Parametro parametroEditado = new Parametro(jTextValorParametro.getText(), Integer.parseInt(jTextValorNumerico.getText()), jTextValorTexto.getText());
 					boolean respuesta = parCtrl.EditarParametro(parametroEditado);
+					
+					if(jTextValorParametro.getText().equals(new String("TIEMPOPEDIDO")))
+					{
+						//Buscamos la URL que nos servirá como buscaador
+						//Inicializamos la variable de habilitaAuditoria
+						//Traemos de base de datos el valor del parametro de auditoria
+						Tienda tienda = parCtrl.obtenerTiendaObj();
+						//Extraemos el valor del campo de ValorTexto
+						String rutaURL = tienda.getUrlContact() + "CRUDTiempoPedido?idoperacion=1&nuevotiempo=" + jTextValorNumerico.getText()+ "&idtienda=" + tienda.getIdTienda();
+//						//Obtenemos es un String los pedido qeu deseamos geolocalizar
+//						String pedidosJSON  = pedCtrl.obtenerPedidosEmpacadosDomicilio();
+						//Habilitamos la consola del navegador para ver los posibles errores
+						URL url=null;
+						try {
+						    url = new URL(rutaURL);
+						    try {
+						        Desktop.getDesktop().browse(url.toURI());
+						    } catch (IOException e) {
+						        e.printStackTrace();
+						    } catch (URISyntaxException e) {
+						        e.printStackTrace();
+						    }
+						} catch (MalformedURLException e1) {
+						    e1.printStackTrace();
+						}
+					}
+					
 					if (respuesta)
 					{
 						JOptionPane.showMessageDialog(null, "Se ha editado correctamente el registro " , "Confirmación Edición", JOptionPane.OK_OPTION);
@@ -249,6 +283,7 @@ public class VentPedAdmParametros extends JDialog {
 						btnInsertar.setEnabled(true);
 						btnGrabarEdicion.setEnabled(false);
 					}
+					
 				}
 				
 			}

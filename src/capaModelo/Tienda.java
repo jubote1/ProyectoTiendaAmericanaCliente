@@ -15,10 +15,25 @@ public class Tienda {
 	private String identificacion;
 	private String fechaApertura;
 	private String fechaUltimoCierre;
+	private long numeroInicialResolucion;
+	private long numeroFinalResolucion;
 	
 	
 	
 	
+	
+	public long getNumeroInicialResolucion() {
+		return numeroInicialResolucion;
+	}
+	public void setNumeroInicialResolucion(long numeroInicialResolucion) {
+		this.numeroInicialResolucion = numeroInicialResolucion;
+	}
+	public long getNumeroFinalResolucion() {
+		return numeroFinalResolucion;
+	}
+	public void setNumeroFinalResolucion(long numeroFinalResolucion) {
+		this.numeroFinalResolucion = numeroFinalResolucion;
+	}
 	public String getFechaApertura() {
 		return fechaApertura;
 	}
@@ -104,7 +119,7 @@ public class Tienda {
 	
 	public Tienda(int idTienda, String nombretienda, String urlContact, String direccion, String telefono,
 			String razonSocial, String tipoContribuyente, String resolucion, String fechaResolucion, String ubicacion,
-			String identificacion, String fechaApertura, String fechaUltimoCierre) {
+			String identificacion, String fechaApertura, String fechaUltimoCierre, long numeroInicialResolucion, long numeroFinalResolucion) {
 		super();
 		this.idTienda = idTienda;
 		this.nombretienda = nombretienda;
@@ -119,6 +134,8 @@ public class Tienda {
 		this.identificacion = identificacion;
 		this.fechaApertura = fechaApertura;
 		this.fechaUltimoCierre = fechaUltimoCierre;
+		this.numeroInicialResolucion = numeroInicialResolucion;
+		this.numeroFinalResolucion = numeroFinalResolucion;
 	}
 	public Tienda()
 	{

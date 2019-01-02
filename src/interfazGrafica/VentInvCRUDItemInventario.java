@@ -27,6 +27,7 @@ import capaModelo.ItemInventario;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JComboBox;
+import java.awt.Font;
 
 public class VentInvCRUDItemInventario extends JDialog {
 
@@ -201,12 +202,12 @@ public class VentInvCRUDItemInventario extends JDialog {
 		
 		JButton btnEditar = new JButton("Editar");
 		
-		btnEditar.setBounds(298, 133, 89, 23);
+		btnEditar.setBounds(274, 133, 89, 23);
 		panelJtable.add(btnEditar);
 		
 		JButton btnGrabarEdicion = new JButton("Grabar Edicion");
 		
-		btnGrabarEdicion.setBounds(427, 133, 123, 23);
+		btnGrabarEdicion.setBounds(373, 133, 123, 23);
 		panelJtable.add(btnGrabarEdicion);
 		btnGrabarEdicion.setEnabled(false);
 		
@@ -220,6 +221,16 @@ public class VentInvCRUDItemInventario extends JDialog {
 		jTableItemInventario.setBorder(new LineBorder(new Color(0, 0, 0)));
 		jTableItemInventario.setBackground(Color.WHITE);
 		this.jTableItemInventario.setModel(modelo);
+		
+		JButton btnNewButton = new JButton("SALIR");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dispose();
+			}
+		});
+		btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnNewButton.setBounds(523, 133, 138, 23);
+		panelJtable.add(btnNewButton);
 		jTextNombre.setText("");
 		jTextUnidadMedida.setText("");
 		

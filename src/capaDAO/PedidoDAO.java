@@ -78,6 +78,7 @@ public class PedidoDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
+		double valorDescuento = PedidoDescuentoDAO.obtenerTotalPedidoDescuento(idpedido, auditoria);
 		try
 		{
 			double valorTotal = 0;
@@ -94,7 +95,7 @@ public class PedidoDAO {
 				valorImpuesto = rs.getDouble(2);
 				break;
 			}
-			String update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto) + " , impuesto = " + valorImpuesto + " , total_neto =" + valorTotal + " , idtipopedido =" + idTipoPedido + " , tiempopedido = " + tiempopedido +" where idpedidotienda = " + idpedido;
+			String update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto) + " , impuesto = " + valorImpuesto + " , total_neto =" + (valorTotal - valorDescuento) + " , idtipopedido =" + idTipoPedido + " , tiempopedido = " + tiempopedido +" where idpedidotienda = " + idpedido;
 			if(auditoria)
 			{
 				logger.info(update);
@@ -115,6 +116,42 @@ public class PedidoDAO {
 			return(false);
 		}
 		return(true);
+	}
+	
+	public static double obtenerTotalesPedidosSemana(String fechaAnterior, String fechaPosterior , boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double totalVenta = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select sum(total_neto) from pedido where fechapedido >= '" + fechaAnterior + "' and fechapedido <=  '" + fechaPosterior + "'  and idmotivoanulacion IS NULL"; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				totalVenta = rs.getDouble(1);
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(0);
+		}
+		return(totalVenta);
 	}
 	
 	public static double obtenerTotalBrutoPedido(int idpedido, boolean auditoria)
@@ -838,7 +875,52 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select b.descripcion, sum(a.total_neto) from pedido a , tipo_pedido b where a.idmotivoanulacion IS NULL and  a.idtipopedido = b.idtipopedido and fechapedido = '" + fechaPedido +"' group by b.descripcion ";
+			String consulta = "select b.descripcion, sum(a.total_neto), count(*) from pedido a , tipo_pedido b where a.idmotivoanulacion IS NULL and  a.idtipopedido = b.idtipopedido and fechapedido = '" + fechaPedido +"' group by b.descripcion ";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				totalPorTipo.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(totalPorTipo);
+		
+	}
+	
+	
+	public static ArrayList obtenerTotalesPedidosPorDomiciliario(String fechaPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList totalPorTipo = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select sum(total_neto), d.nombre_largo, count(*) from pedido a , tipo_pedido b, estado c, usuario d where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and  b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = '" +  fechaPedido + "' group by d.nombre_largo";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1138,11 +1220,10 @@ public class PedidoDAO {
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
 		Pedido pedRsta = new Pedido();
-		
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, a.total_bruto, a.total_neto, a.impuesto from pedido a, cliente b, tipo_pedido c, estado d  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idpedidotienda = " + idPedidoTienda;
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, a.total_bruto, a.total_neto, a.impuesto, b.telefono, b.observacion, b.zona, (e.valorformapago - a.total_neto) as cambio, a.usuariopedido, f.nombre as nombreformapago, e.valorformapago from pedido a, cliente b, tipo_pedido c, estado d, pedido_forma_pago e, forma_pago f  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idpedidotienda = e.idpedidotienda and e.idforma_pago = f.idforma_pago and a.idpedidotienda = " + idPedidoTienda;
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1165,6 +1246,20 @@ public class PedidoDAO {
 				pedRsta.setValorneto(totalNeto);
 				double impuesto = rs.getDouble("impuesto");
 				pedRsta.setImpuesto(impuesto);
+				String telefono = rs.getString("telefono");
+				pedRsta.setTelefono(telefono);
+				String zona = rs.getString("zona");
+				pedRsta.setZona(zona);
+				String observacion = rs.getString("observacion");
+				pedRsta.setObservacion(observacion);
+				double cambio = rs.getDouble("cambio");
+				pedRsta.setCambio(cambio);
+				String usuarioPedido = rs.getString("usuariopedido");
+				pedRsta.setUsuariopedido(usuarioPedido);
+				String nombreFormaPago = rs.getString("nombreformapago");
+				pedRsta.setNombreFormaPago(nombreFormaPago);
+				double valorFormaPago = rs.getDouble("valorformapago");
+				pedRsta.setTotalFormaPago(valorFormaPago);
 				break;
 			}
 			rs.close();
@@ -1172,6 +1267,7 @@ public class PedidoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
+			System.out.println(e.toString());
 			try
 			{
 				con1.close();

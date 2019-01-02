@@ -41,6 +41,7 @@ import javax.swing.JOptionPane;
 
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Window;
 
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -135,6 +136,8 @@ public class VentInvIngresarInventario extends JDialog {
 		JButton btnConfirmarIngreso = new JButton("Confirmar Ingreso");
 		btnConfirmarIngreso.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				cantAvance = 1;
 				hiloProgressBar.start();
 				//Realizamos la desactivación de la edición del JTable
@@ -150,19 +153,21 @@ public class VentInvIngresarInventario extends JDialog {
 				double cantidad;
 				String strCantidad;
 				//Realizamos validación de los datos para verificar que si son números
-				for(int i = 0; i < tableIngInventarios.getRowCount(); i++)
-				{
-					strCantidad = (String)tableIngInventarios.getValueAt(i, 5);
-					try
-					{
-						cantidad = Double.parseDouble(strCantidad);
-					}catch(Exception e)
-					{
-						//En caso que se dispare la excepción arrojamos el mensaje de error y retornamos, no confitunarmos con el procesamiento.
-						JOptionPane.showMessageDialog(null, "Alguna de las cantidades no cumple con las características de número por favor corrija " , "Error Validación Datos", JOptionPane.ERROR_MESSAGE);
-						return;
-					}
-				}
+				// POR EL MOMENTO LOS COMENTAMOS 
+//				for(int i = 0; i < tableIngInventarios.getRowCount(); i++)
+//				{
+//					strCantidad = (String)tableIngInventarios.getValueAt(i, 5);
+//					try
+//					{
+//						cantidad = Double.parseDouble(strCantidad);
+//					}catch(Exception e)
+//					{
+//						//En caso que se dispare la excepción arrojamos el mensaje de error y retornamos, no confitunarmos con el procesamiento.
+//						JOptionPane.showMessageDialog(ventanaPadre, "Alguna de las cantidades no cumple con las características de número por favor corrija " , "Error Validación Datos", JOptionPane.ERROR_MESSAGE);
+//						System.out.println("ERROR CONVIRTIENDO " + strCantidad + " " + e.toString());
+//						return;
+//					}
+//				}
 				cantAvance =  30;
 				//Recorre el jtable para ver si se modifico
 				for(int i = 0; i < tableIngInventarios.getRowCount(); i++)
@@ -170,7 +175,14 @@ public class VentInvIngresarInventario extends JDialog {
 					//Capturamos el idItem	
 					idItem =Integer.parseInt((String)tableIngInventarios.getValueAt(i, 0));
 					//Capturamos la cantidad
-					cantidad = Double.parseDouble((String)tableIngInventarios.getValueAt(i, 5));
+					try
+					{
+						cantidad = Double.parseDouble((String)tableIngInventarios.getValueAt(i, 5));
+					}catch(Exception e)
+					{
+						cantidad = 0;
+					}
+					
 					if(cantidad > 0 )
 					{
 						//Creamos el objeto y lo ingresamos al ArrayList

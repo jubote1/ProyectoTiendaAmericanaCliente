@@ -3,22 +3,24 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ReporteCaja" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a5379deb-4709-4ba4-a7ee-d3fb9ceedfa2">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="BDTienda2"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<parameter name="fecha" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{fecha}]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
-		<![CDATA[select total_neto, d.usuario from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 1 and a.fechapedido = $P{fecha} group by total_neto, usuario
+		<![CDATA[select sum(total_neto), d.nombre_largo as usuariopedido from pedido a , tipo_pedido b, estado c, usuario d where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and  b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = $P{fecha} group by d.nombre_largo
 union
-select total_neto, 'CAJA' from pedido a , tipo_pedido b, estado c, cambios_estado_pedido d  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and d.idestadoposterior = a.idestado and b.esdomicilio = 0 and a.fechapedido = $P{fecha} group by total_neto, usuario]]>
+select sum(total_neto), 'CAJA-NO DOMICILIO' from pedido a , tipo_pedido b, estado c where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and b.esdomicilio = 0 and a.idmotivoanulacion IS NULL and a.fechapedido = $P{fecha} group by usuariopedido]]>
 	</queryString>
-	<field name="total_neto" class="java.lang.Double">
-		<property name="com.jaspersoft.studio.field.label" value="total_neto"/>
+	<field name="sum(total_neto)" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="sum(total_neto)"/>
 	</field>
-	<field name="usuario" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="usuario"/>
+	<field name="usuariopedido" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="usuariopedido"/>
 	</field>
 	<group name="usuario">
-		<groupExpression><![CDATA[$F{usuario}]]></groupExpression>
+		<groupExpression><![CDATA[$F{usuariopedido}]]></groupExpression>
 	</group>
 	<background>
 		<band splitType="Stretch"/>
@@ -64,21 +66,18 @@ select total_neto, 'CAJA' from pedido a , tipo_pedido b, estado c, cambios_estad
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="18" splitType="Stretch">
+		<band height="26" splitType="Stretch">
 			<textField>
-				<reportElement x="110" y="2" width="100" height="16" uuid="6703467e-7c70-41eb-8ea7-532e4b46407c">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="2874cbfb-4488-40e2-9425-2bf312df6c02"/>
+				<reportElement x="330" y="0" width="100" height="20" uuid="636b7710-6b10-4049-9119-c3597b348f1e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c6056a09-fbbe-4fa5-991c-8292e0c794bf"/>
 				</reportElement>
-				<textElement textAlignment="Center">
-					<font size="12" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sum(total_neto)}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="339" y="3" width="100" height="13" uuid="7e46ca4d-1ccc-46de-a7c1-16fc3615d512">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d6404231-ff4f-413f-a822-b49f8a72ecec"/>
+				<reportElement x="120" y="0" width="100" height="20" uuid="5a82de06-bc44-4bea-a9c4-2166583d227a">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="68877a77-1dba-4933-9f44-62eb82f3b939"/>
 				</reportElement>
-				<textFieldExpression><![CDATA[$F{total_neto}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{usuariopedido}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

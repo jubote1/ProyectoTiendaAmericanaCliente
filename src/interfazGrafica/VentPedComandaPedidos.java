@@ -120,6 +120,8 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	public static  String usuarioTemp;
 	//Esta variable inicará qeu se asignó correctamente el usuario para dar salida al domiciliario
 	public static boolean indUsuarioTemp = false;
+	private JLabel lblNewLabel;
+	private JTextField txtFormaPago;
 	/**
 	 * Launch the application.
 	 */
@@ -351,7 +353,17 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		//Manejamos el evento de cuando damos doble clic sobre el pedido para avanzar de estado o cuando damos 3 veces para retroceder de estado
 		tblMaestroPedidos.addMouseListener(new java.awt.event.MouseAdapter() {
 		      public void mouseClicked(java.awt.event.MouseEvent e) {
-		    	  Window ventanaPadre = SwingUtilities.getWindowAncestor(
+		    	 
+		    if( tblMaestroPedidos.getSelectedRows().length == 1 ) {
+			   	  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+				  int idPedidoFP = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 1).toString());
+				  txtFormaPago.setText(pedCtrl.consultarFormaPago(idPedidoFP));
+			}
+			else
+			{
+			 	  txtFormaPago.setText("");
+			}  
+		    Window ventanaPadre = SwingUtilities.getWindowAncestor(
 	                        (Component) e.getSource());
 		    	  //TEMPORALMENTE QUITAREMOS LA ACCIÓN DE EL DOBLE CLICK PARA AVANZAR ESTADO
 //		      if(e.getClickCount()==2){
@@ -371,15 +383,12 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		    		  if(idEstado == estEmpDom)
 		    		  {
 		    			  indBotSalida = true;
+		    			  btnSalidaConDomicilio.setVisible(true);
 		    			  break;
 		    		  }
 		    	  }
 		      }
-		      if(indBotSalida)
-		      {
-		    	  btnSalidaConDomicilio.setVisible(true);
-		      }
-		      else
+		      if(!indBotSalida)
 		      {
 		    	  btnSalidaConDomicilio.setVisible(false);
 		      }
@@ -395,19 +404,17 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		    		  if(idEstado == estEnRutaDom)
 		    		  {
 		    			  indBotLlegada = true;
+		    			  btnLlegadaDeDomicilio.setVisible(true);
 		    			  break;
 		    		  }
 		    	  }
 		      }
-		      if(indBotLlegada)
-		      {
-		    	  btnLlegadaDeDomicilio.setVisible(true);
-		      }
-		      else
+		      if(!indBotLlegada)
 		      {
 		    	  btnLlegadaDeDomicilio.setVisible(false);
 		      }
-		 }
+
+		      }
 		});
 		
 		JButton btnAvanzarEstado = new JButton("Avanzar Estado");
@@ -570,7 +577,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 					    	  {
 					    		  //avanzamos de estado el pedido para lo cual tomamos el idpedido
 					    		  int idPedidoAvanzar= Integer.parseInt(tblMaestroPedidos.getValueAt(i, 1).toString());
-					    		  boolean respuesta = pedCtrl.ActualizarEstadoPedido((int)idPedidoAvanzar, (int) estEnRutaDom , (int) estEntregaDom,Sesion.getUsuario(),true, idDomiCon);
+					    		  boolean respuesta = pedCtrl.ActualizarEstadoPedido((int)idPedidoAvanzar, (int) estEnRutaDom , (int) estEntregaDom,Sesion.getUsuario(),true, idDomiCon, false);
 					    		  llegadaDomi = true;
 					    	  }
 					    	
@@ -606,6 +613,18 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		btnLlegadaDeDomicilio.setFont(new Font("Tahoma", Font.BOLD, 14));
 		btnLlegadaDeDomicilio.setBounds(401, 555, 216, 36);
 		contentPane.add(btnLlegadaDeDomicilio);
+		
+		lblNewLabel = new JLabel("FORMA DE PAGO");
+		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblNewLabel.setBounds(130, 662, 120, 27);
+		contentPane.add(lblNewLabel);
+		
+		txtFormaPago = new JTextField();
+		txtFormaPago.setFont(new Font("Tahoma", Font.BOLD, 12));
+		txtFormaPago.setEditable(false);
+		txtFormaPago.setBounds(287, 666, 133, 20);
+		contentPane.add(txtFormaPago);
+		txtFormaPago.setColumns(10);
 		
 
 		btnLlegadaDeDomicilio.setVisible(false);
@@ -725,7 +744,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		//Para este punto de la ventana de pedidos realizaremos una validación de si el usuario esta logueado o no en cuyo caso no sea así 
 		//la aplicación nos sacara
 		validarLogueo();
-		//Luego de pasada la validación del logueo realizamos el cargue de la página
+		//Se realiza un recargue de la página cada 30 segundos, con base en las variables 
 		h1 = new Thread(this);
 		//h1.start();
 	}
@@ -830,11 +849,11 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		tblMaestroPedidos.getColumnModel().getColumn(3).setMinWidth(120);
 		tblMaestroPedidos.getColumnModel().getColumn(3).setMaxWidth(120);
 		//Modificamos ancho del tipo de pedido
-		tblMaestroPedidos.getColumnModel().getColumn(4).setMinWidth(110);
-		tblMaestroPedidos.getColumnModel().getColumn(4).setMaxWidth(110);
+		tblMaestroPedidos.getColumnModel().getColumn(4).setMinWidth(90);
+		tblMaestroPedidos.getColumnModel().getColumn(4).setMaxWidth(90);
 		//Modificamos ancho del estado pedido
-		tblMaestroPedidos.getColumnModel().getColumn(5).setMinWidth(110);
-		tblMaestroPedidos.getColumnModel().getColumn(5).setMaxWidth(110);
+		tblMaestroPedidos.getColumnModel().getColumn(5).setMinWidth(90);
+		tblMaestroPedidos.getColumnModel().getColumn(5).setMaxWidth(90);
 		tblMaestroPedidos.getColumnModel().getColumn(7).setMaxWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(7).setMinWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(8).setMaxWidth(0);
@@ -842,8 +861,8 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		tblMaestroPedidos.getColumnModel().getColumn(9).setMinWidth(90);
 		tblMaestroPedidos.getColumnModel().getColumn(9).setMaxWidth(90);
 		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getColumnModel().getColumn(10).setMinWidth(150);
-		tblMaestroPedidos.getColumnModel().getColumn(10).setMaxWidth(150);
+		tblMaestroPedidos.getColumnModel().getColumn(10).setMinWidth(155);
+		tblMaestroPedidos.getColumnModel().getColumn(10).setMaxWidth(155);
 		
 		
 		//Checkbox
@@ -858,11 +877,11 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(3).setMinWidth(120);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(3).setMaxWidth(120);
 		//Modificamos ancho del tipo de pedido
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(4).setMinWidth(110);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(4).setMaxWidth(110);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(4).setMinWidth(90);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(4).setMaxWidth(90);
 		//Modificamos ancho del estado pedido
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(5).setMinWidth(110);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(5).setMaxWidth(110);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(5).setMinWidth(90);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(5).setMaxWidth(90);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(7).setMaxWidth(0);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(7).setMinWidth(0);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(0);	
@@ -870,8 +889,8 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMinWidth(90);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMaxWidth(90);
 		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMinWidth(150);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMaxWidth(150);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMinWidth(155);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMaxWidth(155);
 
 		tblMaestroPedidos.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tblMaestroPedidos.getColumnModel().getColumn(4).setCellRenderer( new CellRenderTransaccional());
@@ -900,13 +919,14 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		 Thread ct = Thread.currentThread();
 		 while(ct == h1) 
 		 {   
+			 try {
+				 	Thread.sleep(60000);
+			 }catch(InterruptedException e) 
+			 {}
 			 //Ejecutamos el pintado de los pedidos en el JTable de la pantalla.
 			 pintarPedidos();
 		  //Realizamos la ejecución cada 30 segundos
-			 try {
-				 	Thread.sleep(30000);
-			 }catch(InterruptedException e) 
-			 {}
+			 
 		 }
 	}
 	
@@ -933,7 +953,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 			boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_002", Sesion.getAccesosOpcion());
 			if (tienePermiso)
 			{
-				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, padre, true, idDomiCon);
+				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, padre, true, idDomiCon, (int) estEnRutaDom);
 				cambioEstado.setVisible(true);
 				pintarPedidos();
 			}else
@@ -968,7 +988,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 			boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_002", Sesion.getAccesosOpcion());
 			if (tienePermiso)
 			{
-				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, padre, true,idDomiCon);
+				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, padre, true,idDomiCon, (int)estEnRutaDom);
 				cambioEstado.setVisible(true);
 				pintarPedidos();
 			}else
@@ -1107,7 +1127,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	    			  //avanzamos de estado el pedido para lo cual tomamos el idpedido
 	    			  int idPedidoAvanzar= Integer.parseInt(tblMaestroPedidos.getValueAt(i, 1).toString());
 	    			  //Avanzamos de estado el pedido
-	    			  boolean respuesta = pedCtrl.ActualizarEstadoPedido((int)idPedidoAvanzar, (int) estEmpDom , (int) estEnRutaDom,usuario,true, idDomiciliario);
+	    			  boolean respuesta = pedCtrl.ActualizarEstadoPedido((int)idPedidoAvanzar, (int) estEmpDom , (int) estEnRutaDom,usuario,true, idDomiciliario,true);
 	    			  //Prendemos el indicador de salida del domicilio
 	    			  salidaDomi =  true;
 	    		  }

@@ -35,6 +35,7 @@ import java.awt.GridLayout;
 import javax.swing.border.LineBorder;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 
 public class VentPedDescuento extends JDialog {
 
@@ -42,19 +43,21 @@ public class VentPedDescuento extends JDialog {
 	private final Action action = new SwingAction();
 	private JTextField txtTotalFinal;
 	
-	public static double DescuentoEfectivo = 0, DescuentoPorcentaje = 0, NuevoTotal = 0 , Total = VentPedTomarPedidos.totalPedido,nuevoTotal = Total ;
+	public static double DescuentoEfectivo = 0, DescuentoPorcentaje = 0, Total = VentPedTomarPedidos.totalPedido,nuevoTotal = Total ;
 	public static boolean boolEfectivo = true, boolPorcentaje = false; 
 	public static int idPedido = VentPedTomarPedidos.idPedido;
 	private JTextField txtTotal;
 	private JTextField txtValorPesos;
 	private JTextField txtValorPorcen;
-	
+	JTextArea textAreaObservacion;
+	JDialog ventanaActual;
 	
 	public static void clarearVarEstaticas()
 	{
+		Total = 0;
+		nuevoTotal = 0;
 		DescuentoEfectivo = 0;
 		DescuentoPorcentaje = 0;
-		NuevoTotal = 0;
 		boolEfectivo = true;
 		boolPorcentaje = false;
 		idPedido = 0;
@@ -111,6 +114,7 @@ public class VentPedDescuento extends JDialog {
 	public VentPedDescuento(java.awt.Frame parent, boolean modal) {
 		super(parent, modal);
 		setTitle("APLICAR DESCUENTOS");
+		ventanaActual = this;
 		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setDefaultCloseOperation(0);
 		setBounds(0,0, 961, 636);
@@ -368,26 +372,29 @@ public class VentPedDescuento extends JDialog {
 		btnFinalizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Tomamos la información para insertar la forma de pago
-				PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
-				// Se envían datos para la inserción del descuento
-				double valorPorcen;
-				try
+				if(validarObservacion())
 				{
-					valorPorcen = Double.parseDouble(txtValorPorcen.getText());
-				}catch(Exception e)
-				{
-					valorPorcen = 0;
+					PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+					// Se envían datos para la inserción del descuento
+					double valorPorcen;
+					try
+					{
+						valorPorcen = Double.parseDouble(txtValorPorcen.getText());
+					}catch(Exception e)
+					{
+						valorPorcen = 0;
+					}
+					PedidoDescuento descuento = new PedidoDescuento(idPedido, Total -  nuevoTotal, valorPorcen, textAreaObservacion.getText() );
+					boolean resp = pedCtrl.insertarPedidoDescuento(descuento);
+					VentPedTomarPedidos.descuento = Total -  nuevoTotal;
+					System.out.println("le estamos poniendo descuento " + (VentPedTomarPedidos.descuento));
+					txtTotal.setText("");
+					txtValorPesos.setText("");
+					txtValorPorcen.setText("");
+					VentPedTomarPedidos.tieneDescuento = true;
+					clarearVarEstaticas();
+					dispose();
 				}
-				PedidoDescuento descuento = new PedidoDescuento(idPedido, Total -  nuevoTotal, valorPorcen );
-				boolean resp = pedCtrl.insertarPedidoDescuento(descuento);
-				VentPedTomarPedidos.descuento = Total -  nuevoTotal;
-				txtTotal.setText("");
-				txtValorPesos.setText("");
-				txtValorPorcen.setText("");
-				VentPedTomarPedidos.tieneDescuento = true;
-				dispose();
-				clarearVarEstaticas();
-				
 			}
 		});
 		btnFinalizar.setEnabled(false);
@@ -502,6 +509,16 @@ public class VentPedDescuento extends JDialog {
 		btnSalir.setBounds(794, 494, 141, 70);
 		contentenorDescuento.add(btnSalir);
 		
+		textAreaObservacion = new JTextArea();
+		textAreaObservacion.setLineWrap(true);
+		textAreaObservacion.setBounds(490, 73, 336, 115);
+		contentenorDescuento.add(textAreaObservacion);
+		
+		JLabel lblObservacin = new JLabel("Observaci\u00F3n");
+		lblObservacin.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblObservacin.setBounds(493, 44, 195, 16);
+		contentenorDescuento.add(lblObservacin);
+		
 		btnDesPorcentaje.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnAplicar.setText("Aplicar "+btnDesPorcentaje.getText());
@@ -526,13 +543,13 @@ public class VentPedDescuento extends JDialog {
 						nuevoTotal =  Double.parseDouble(txtTotal.getText()) - DescuentoEfectivo;
 						
 					} else {
-						JOptionPane.showMessageDialog(null, "El valor de descuento en pesos está vacío " , "Valor Descuento Vacío ", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaActual, "El valor de descuento en pesos está vacío " , "Valor Descuento Vacío ", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
 					txtTotalFinal.setText(Double.toString(nuevoTotal));
 					
 					if (Total < DescuentoEfectivo) {
-						JOptionPane.showMessageDialog(null, "El valor de descuento no puede ser mayor al valor de la factura " , "Valor Descuento mayor. ", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaActual, "El valor de descuento no puede ser mayor al valor de la factura " , "Valor Descuento mayor. ", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
 				}else if (boolPorcentaje) {
@@ -540,13 +557,13 @@ public class VentPedDescuento extends JDialog {
 						DescuentoPorcentaje = Double.parseDouble(txtValorPorcen.getText());
 						if (DescuentoPorcentaje > 100)
 						{
-							JOptionPane.showMessageDialog(null, "El porcentaje de decuento no puede ser mayor a 100 " , "Valor Descuento Porcentaj mayor. ", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(ventanaActual, "El porcentaje de decuento no puede ser mayor a 100 " , "Valor Descuento Porcentaj mayor. ", JOptionPane.ERROR_MESSAGE);
 							return;
 						}
 						nuevoTotal =  Double.parseDouble(txtTotal.getText()) - (DescuentoPorcentaje/100)* Double.parseDouble(txtTotal.getText());
 						
 					} else {
-						JOptionPane.showMessageDialog(null, "El valor de descuento en porcentaje está vacío " , "Valor Descuento Vacío ", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaActual, "El valor de descuento en porcentaje está vacío " , "Valor Descuento Vacío ", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
 					txtTotalFinal.setText(Double.toString(nuevoTotal));
@@ -584,5 +601,21 @@ public class VentPedDescuento extends JDialog {
 		}
 		public void actionPerformed(ActionEvent e) {
 		}
+	}
+	
+	public boolean validarObservacion()
+	{
+		String observacion = textAreaObservacion.getText();
+		if(observacion.equals(new String("")))
+		{
+			JOptionPane.showMessageDialog(ventanaActual, "La observación del descuento esta en blanco." , "Descuento sin Observación", JOptionPane.ERROR_MESSAGE);
+			return(false);
+		}
+		if(observacion.length() > 100)
+		{
+			JOptionPane.showMessageDialog(ventanaActual, "La observación del descuento esta demasiado larga, debe tener máximo 100 carácteres." , "Observación demasiado larga", JOptionPane.ERROR_MESSAGE);
+			return(false);
+		}
+		return(true);
 	}
 }

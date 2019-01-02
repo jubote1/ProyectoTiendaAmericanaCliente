@@ -133,4 +133,10 @@ public class ParametrosCtrl {
 			ArrayList parametros = ParametrosDAO.obtenerParametros(auditoria);
 			return parametros;
 		}
+		
+		public Tienda obtenerTiendaObj()
+		{
+			Tienda tienda = TiendaDAO.obtenerTienda( auditoria);
+			return(tienda);
+		}
 }

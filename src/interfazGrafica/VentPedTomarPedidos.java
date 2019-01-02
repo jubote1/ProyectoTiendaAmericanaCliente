@@ -37,6 +37,7 @@ import capaControlador.MenuCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ParametrosProductoCtrl;
 import capaControlador.PedidoCtrl;
+import capaDAO.DetallePedidoDAO;
 import capaModelo.AccesosPorBoton;
 import capaModelo.ConfiguracionMenu;
 import capaModelo.DetallePedido;
@@ -46,6 +47,8 @@ import capaModelo.Municipio;
 import capaModelo.Pregunta;
 import capaModelo.Producto;
 import capaModelo.ProductoIncluido;
+import capaModelo.ProductoModificadorCon;
+import capaModelo.ProductoModificadorSin;
 import capaModelo.TipoPedido;
 
 import javax.swing.border.CompoundBorder;
@@ -129,6 +132,10 @@ public class VentPedTomarPedidos extends JFrame {
 	ArrayList<Producto> productos =parPro.obtenerProductosCompleto();
 	String[] nombresMultimenus;
 	JFrame framePrincipal;
+	//Definimos los arreglos que tendrán todos los modificadores con y sin con el fin de poder definir el comportamiento
+	// de los botones de una forma más rapida.
+	private ArrayList<ProductoModificadorCon> modCon;
+	private ArrayList<ProductoModificadorSin> modSin; 
 	/**
 	 * Launch the application.
 	 */
@@ -379,7 +386,8 @@ public class VentPedTomarPedidos extends JFrame {
 				int filaSeleccionada = tableDetallePedido.getSelectedRow();
 				int idDetalleTratar = Integer.parseInt((String)tableDetallePedido.getValueAt(filaSeleccionada, 0));
 				//Validaremos si el detallePedido tiene un producto que tiene productos con y sin.
-				boolean hayModCon = pedCtrl.detalleTieneModificadorCon(idDetalleTratar);
+				DetallePedido detPedido = pedCtrl.obtenerUnDetallePedido(idDetalleTratar);
+				boolean hayModCon = tieneModificadorCon(detPedido.getIdProducto());
 				if(hayModCon)
 				{
 					btnProductoCon.setEnabled(true);
@@ -388,7 +396,7 @@ public class VentPedTomarPedidos extends JFrame {
 				{
 					btnProductoCon.setEnabled(false);
 				}
-				boolean hayModSin = pedCtrl.detalleTieneModificadorSin(idDetalleTratar);
+				boolean hayModSin = tieneModificadorSin(detPedido.getIdProducto());
 				if(hayModSin)
 				{
 					btnProductoSin.setEnabled(true);
@@ -647,6 +655,9 @@ public class VentPedTomarPedidos extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
                         (Component) e.getSource());
+				VentPedDescuento.idPedido = VentPedTomarPedidos.idPedido;
+				VentPedDescuento.Total = VentPedTomarPedidos.totalPedido;
+				VentPedDescuento.nuevoTotal = VentPedDescuento.Total;
 				if (idPedido > 0)
 				{
 					boolean hayDescuentos = pedCtrl.existePedidoDescuento(idPedido);
@@ -671,7 +682,8 @@ public class VentPedTomarPedidos extends JFrame {
 								{
 									VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
 									ventDescuento.setVisible(true);
-									descuento = 0;
+									//Será que despues de que retorna ejecuta esto?
+									//descuento = 0;
 								}else
 								{
 									JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
@@ -946,6 +958,7 @@ public class VentPedTomarPedidos extends JFrame {
 				fijarCliente();
 				txtValorPedidoSD.setText(Double.toString(totalPedido));
 				pintarDetallePedido();
+				System.out.println("REVISANDO EL VALOR DE DESCUENTO " + descuento);
 				txtDescuento.setText(Double.toString(descuento));
 				txtValorTotal.setText(Double.toString(totalPedido - descuento));
 				txtNroPedido.setText(Integer.toString(idPedido));
@@ -1099,6 +1112,9 @@ public class VentPedTomarPedidos extends JFrame {
 				idTienda = 1;
 			}
 		}
+		//Llenamos los arreglos de los modificadores
+		modCon = pedCtrl.obtenerProdModificadoresConTodos();
+		modSin = pedCtrl.obtenerProdModificadoresSinTodos();
 		
 	}
 	
@@ -1210,6 +1226,7 @@ public class VentPedTomarPedidos extends JFrame {
 		//En estepunto debemos de validar si el producto adicionado tiene productos incluidos
 		//Agrupamos esta información en proIncluido
 		ArrayList<ProductoIncluido> proIncluido = parPro.obtenerProductosIncluidos(idProducto, cantidad);
+		System.out.println("REVISANDO EL PRODUCTO INCLUIDO " + idProducto + " " + proIncluido.size());
 		//Capturamos el detalle pedido creado, validaremos si fue exitoso para agregarlo al contenedor y pantalla
 		int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
 		detPedido.setIdDetallePedido(idDetalle);
@@ -1458,5 +1475,34 @@ public class VentPedTomarPedidos extends JFrame {
 				
 			}
 		}
+	}
+	
+	//Creamos métodos que devuelven valor booleano  de si un idproducto tiene o no modificadores
+	public boolean tieneModificadorCon(int idProducto)
+	{
+		boolean respuesta = false;
+		for(int i = 0; i < modCon.size();i++)
+		{
+			if(modCon.get(i).getIdProducto() == idProducto)
+			{
+				respuesta = true;
+				break;
+			}
+		}
+		return(respuesta);
+	}
+	
+	public boolean tieneModificadorSin(int idProducto)
+	{
+		boolean respuesta = false;
+		for(int i = 0; i < modSin.size();i++)
+		{
+			if(modSin.get(i).getIdProducto() == idProducto)
+			{
+				respuesta = true;
+				break;
+			}
+		}
+		return(respuesta);
 	}
 }

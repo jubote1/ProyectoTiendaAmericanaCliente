@@ -111,6 +111,49 @@ public class ProductoModificadorConDAO {
 		
 	}
 	
+	public static ArrayList<ProductoModificadorCon> obtenerProdModificadoresConTodos( boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList proModCon = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idproducto,  a.idproductocon from producto_modificador_con a ";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idProducto;
+			int idProductoCon;
+			String descProductoCon;
+			ProductoModificadorCon prodModTemp;
+			while(rs.next()){
+				idProducto = rs.getInt("idproducto");
+				idProductoCon = rs.getInt("idproductocon");
+				prodModTemp = new ProductoModificadorCon(idProducto, idProductoCon);
+				proModCon.add(prodModTemp);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(proModCon);
+		
+	}
+	
 
 	public static ArrayList<Producto> obtenerProdModificadorConFalta(int idProd, boolean auditoria)
 	{

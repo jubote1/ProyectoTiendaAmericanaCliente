@@ -280,7 +280,7 @@ public class VentSegTienda extends JDialog {
 				String fechaResolucion = txtFechaResolucion.getText();
 				String ubicacion = txtUbicacion.getText();
 				String identificacion = txtIdentificacion.getText();
-				Tienda tienda = new Tienda(0,nombreTienda, url, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, "", "");
+				Tienda tienda = new Tienda(0,nombreTienda, url, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, "", "",0,0);
 				OperacionesTiendaCtrl opertiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 				boolean respuesta = opertiendaCtrl.actualizarTienda(tienda);
 				if(respuesta)
@@ -317,6 +317,9 @@ public void cargarDatosTienda()
 	cmbTipoContribuyente.addItem(new String("REGIMÉN COMÚN"));
 	cmbTipoContribuyente.addItem(new String("REGIMEN SIMPLIFICADO"));
 	cmbTipoContribuyente.setSelectedItem(tienda.getTipoContribuyente());
+	txtNumInicial.setText(Long.toString(tienda.getNumeroInicialResolucion()));
+	txtNumFinal.setText(Long.toString(tienda.getNumeroFinalResolucion()));
+	
 }
 	
 public boolean validarNumerosResolucion()

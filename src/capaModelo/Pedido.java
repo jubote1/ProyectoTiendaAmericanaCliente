@@ -23,10 +23,52 @@ public class Pedido {
 	private int idTipoPedido;
 	private String tipoPedido;
 	private int idMotivoAnulacion;
-	
+	private String telefono;
+	private String zona;
+	private String observacion;
+	private double cambio;
+	private double totalFormaPago;
+	private String nombreFormaPago;
 	
 		
 	
+	
+	public double getTotalFormaPago() {
+		return totalFormaPago;
+	}
+	public void setTotalFormaPago(double totalFormaPago) {
+		this.totalFormaPago = totalFormaPago;
+	}
+	public String getNombreFormaPago() {
+		return nombreFormaPago;
+	}
+	public void setNombreFormaPago(String nombreFormaPago) {
+		this.nombreFormaPago = nombreFormaPago;
+	}
+	public double getCambio() {
+		return cambio;
+	}
+	public void setCambio(double cambio) {
+		this.cambio = cambio;
+	}
+	public String getZona() {
+		return zona;
+	}
+	public void setZona(String zona) {
+		this.zona = zona;
+	}
+	public String getObservacion() {
+		return observacion;
+	}
+	public void setObservacion(String observacion) {
+		this.observacion = observacion;
+	}
+	public String getTelefono() {
+		return telefono;
+	}
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
 	public int getIdMotivoAnulacion() {
 		return idMotivoAnulacion;
 	}

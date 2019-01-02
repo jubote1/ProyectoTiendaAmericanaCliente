@@ -51,7 +51,7 @@ public class VentPedCambioEstado extends JDialog {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentPedCambioEstado frame = new VentPedCambioEstado(0, false, false, null, true,0);
+					VentPedCambioEstado frame = new VentPedCambioEstado(0, false, false, null, true,0,0);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -63,7 +63,7 @@ public class VentPedCambioEstado extends JDialog {
 	/**
 	 * Create the frame.
 	 */
-	public VentPedCambioEstado(int idPedido, boolean anterior, boolean posterior, java.awt.Frame parent, boolean modal , int idDomiciliario ) {
+	public VentPedCambioEstado(int idPedido, boolean anterior, boolean posterior, java.awt.Frame parent, boolean modal , int idDomiciliario, int idEstEnRuta) {
 		super(parent, modal);
 		this.anterior = anterior;
 		this.posterior = posterior;
@@ -116,17 +116,22 @@ public class VentPedCambioEstado extends JDialog {
 				if (anterior)
 				{
 					estAnt = (EstadoAnterior) cmbEstadoObjetivo.getSelectedItem();
-					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estAnt.getIdEstadoAnterior(),Sesion.getUsuario(),false, idDomiciliario);
+					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estAnt.getIdEstadoAnterior(),Sesion.getUsuario(),false, idDomiciliario, false);
 				}else if(posterior)
 				{
 					estPos = (EstadoPosterior) cmbEstadoObjetivo.getSelectedItem();
-					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior(),Sesion.getUsuario(),true, idDomiciliario);
+					boolean salidaDomiciliario = false;
+					if(estPos.getIdEstadoPosterior() == idEstEnRuta)
+					{
+						salidaDomiciliario = true;
+					}
+					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior(),Sesion.getUsuario(),true, idDomiciliario,salidaDomiciliario);
 					if(estPos.isImprimeEstPosterior())
 					{
 //						ReportesCtrl repCtrl = new ReportesCtrl();
 //						repCtrl.generarFactura(idPedido);
 						String strFactura = pedCtrl.generarStrImpresionFactura(idPedidoTienda);
-						Impresion imp = new Impresion();
+						ImpresionBK imp = new ImpresionBK();
 						imp.imprimirFactura(strFactura);
 					}
 				}

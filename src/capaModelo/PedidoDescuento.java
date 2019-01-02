@@ -5,11 +5,16 @@ public class PedidoDescuento {
 	private int idpedido;
 	private double descuentoPesos;
 	private double descuentoPorcentaje;
-	public PedidoDescuento(int idpedido, double descuentoPesos, double descuentoPorcentaje) {
+	private String observacion;
+	
+	
+	
+	public PedidoDescuento(int idpedido, double descuentoPesos, double descuentoPorcentaje, String observacion) {
 		super();
 		this.idpedido = idpedido;
 		this.descuentoPesos = descuentoPesos;
 		this.descuentoPorcentaje = descuentoPorcentaje;
+		this.observacion = observacion;
 	}
 	public int getIdpedido() {
 		return idpedido;
@@ -29,6 +34,14 @@ public class PedidoDescuento {
 	public void setDescuentoPorcentaje(double descuentoPorcentaje) {
 		this.descuentoPorcentaje = descuentoPorcentaje;
 	}
+	public String getObservacion() {
+		return observacion;
+	}
+	public void setObservacion(String observacion) {
+		this.observacion = observacion;
+	}
+	
+	
 	
 	
 

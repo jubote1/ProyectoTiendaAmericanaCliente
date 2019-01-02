@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,6 +22,7 @@ import capaDAO.DetallePedidoImpuestoDAO;
 import capaDAO.EstadoAnteriorDAO;
 import capaDAO.EstadoDAO;
 import capaDAO.EstadoPosteriorDAO;
+import capaDAO.GeneralDAO;
 import capaDAO.MotivoAnulacionPedidoDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.PedidoDescuentoDAO;
@@ -34,13 +37,17 @@ import capaDAO.TipoEmpleadoEstadoDAO;
 import capaDAO.TipoPedidoDAO;
 import capaDAO.UsuarioDAO;
 import capaModelo.Cliente;
+import capaModelo.Correo;
 import capaModelo.DetallePedido;
 import capaModelo.DetallePedidoPixel;
+import capaModelo.Egreso;
 import capaModelo.Estado;
 import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPedidoTienda;
 import capaModelo.EstadoPosterior;
 import capaModelo.FechaSistema;
+import capaModelo.Ingreso;
+import capaModelo.ItemInventario;
 import capaModelo.MotivoAnulacionPedido;
 import capaModelo.Pedido;
 import capaModelo.PedidoDescuento;
@@ -55,9 +62,11 @@ import capaModelo.Tienda;
 import capaModelo.TipoPedido;
 import capaModelo.Usuario;
 import interfazGrafica.Impresion;
+import interfazGrafica.ImpresionBK;
 import interfazGrafica.PrincipalLogueo;
 import interfazGrafica.Sesion;
 import interfazGrafica.VentPedTomarPedidos;
+import utilidades.ControladorEnvioCorreo;
 
 public class PedidoCtrl implements Runnable {
 	
@@ -69,6 +78,8 @@ public class PedidoCtrl implements Runnable {
 	//Tendremos un idPedido definido para poder paralelizar
 	private int idPedidoActual;
 	private int idTipoPedidoActual;
+	OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl(auditoria);
+	ParametrosProductoCtrl parProductoCtrl = new ParametrosProductoCtrl(auditoria);
 	public PedidoCtrl(boolean auditoria)
 	{
 		this.auditoria = auditoria;
@@ -164,6 +175,12 @@ public class PedidoCtrl implements Runnable {
 		return(respuesta);
 	}
 	
+	public String consultarFormaPago(int idPedido)
+	{
+		String respuesta = PedidoFormaPagoDAO.consultarFormaPago(idPedido, auditoria);
+		return(respuesta);
+	}
+	
 	public boolean insertarPedidoFormaPago(double efectivo, double tarjeta, double valorTotal, double cambio, int idPedidoTienda)
 	{
 		
@@ -222,11 +239,20 @@ public class PedidoCtrl implements Runnable {
 		hiloImpuestos.start();
 		//Arrancamos el hilo que hace descuento de inventarios
 		hiloInventarios.start();
+		while(hiloImpuestos.isAlive())
+		{
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido, idTipoPedido, auditoria);
 		//Arrancamos hilo que se encarga de dejar consistente el estado del pedido
 		hiloEstadoPedido.start();
-		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido, idTipoPedido, auditoria);
 		//En este punto debemos de validar si este estado requiere de impresión
-		return(respuesta);
+		return(true);
 	}
 	
 	/**
@@ -681,7 +707,7 @@ public class PedidoCtrl implements Runnable {
 		 * @param estadoPosterior parámetro booleano que indica si el pedido está avanzando de estado o retrocedieno de estasdo
 		 * @return Se retorna un valor booleano indicando como resulto el proceso.
 		 */
-		public boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario, boolean estadoPosterior, int idDomiciliario)
+		public boolean ActualizarEstadoPedido(int idPedido, int idEstadoAnterior, int idEstadoPosterior, String usuario, boolean estadoPosterior, int idDomiciliario, boolean salidaDomiciliario)
 		{
 			if(estadoPosterior)
 			{
@@ -704,6 +730,10 @@ public class PedidoCtrl implements Runnable {
 				}
 			}
 			boolean respuesta = PedidoDAO.ActualizarEstadoPedido(idPedido, idEstadoAnterior, idEstadoPosterior, usuario, auditoria);
+			if(salidaDomiciliario)
+			{
+				imprimirSalidaDomiciliario(idPedido);
+			}
 			return(respuesta);
 		}
 		
@@ -770,6 +800,12 @@ public class PedidoCtrl implements Runnable {
 			return(respuesta);
 		}
 		//PedidoDescuento
+		
+		public ArrayList<PedidoDescuento> obtenerPedidoDescuentoFecha(String fecha)
+		{
+			ArrayList<PedidoDescuento> descuentosFecha =  PedidoDescuentoDAO.obtenerPedidoDescuentoFecha(fecha, auditoria);
+			return(descuentosFecha);
+		}
 		
 		public boolean insertarPedidoDescuento(PedidoDescuento descuento)
 		{
@@ -1122,6 +1158,77 @@ public class PedidoCtrl implements Runnable {
 			return(resumenTotTipoPedido);
 		}
 		
+		public ArrayList obtenerTotalesPedidosPorDomiciliario(String fechaPedido)
+		{
+			ArrayList resumenTotDomiciliario = PedidoDAO.obtenerTotalesPedidosPorDomiciliario(fechaPedido, auditoria);
+			return(resumenTotDomiciliario);
+		}
+		
+		//Este método tendrá como objetivo realizar un totalizado de lo que va de la semana en ventas, de igual
+		//forma para ser consumido en reportes y por pantalla
+		public double obtenerTotalesPedidosSemana()
+		{
+			//Recuperamos la fecha actual del sistema con la fecha apertura
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaActual = fecha.getFechaApertura();
+			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
+			Date datFechaAnterior;
+			String fechaAnterior = "";
+			//Creamos el objeto calendario
+			Calendar calendarioActual = Calendar.getInstance();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			try
+			{
+				//Al objeto calendario le fijamos la fecha actual del sitema
+				calendarioActual.setTime(dateFormat.parse(fechaActual));
+				
+			}catch(Exception e)
+			{
+				System.out.println(e.toString());
+			}
+			//Retormanos el día de la semana actual segun la fecha del calendario
+			int diaActual = calendarioActual.get(Calendar.DAY_OF_WEEK);
+			//Domingo
+			if(diaActual == 1)
+			{
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -6);
+			}
+			else if(diaActual == 2)
+			{
+				//Si es lunes no se hace nada
+			}
+			else if(diaActual == 3)
+			{
+				//Si es martes se resta uno solo
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -1);
+			}
+			else if(diaActual == 4)
+			{
+				//Si es miercoles se resta dos
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -2);
+			}
+			else if(diaActual == 5)
+			{
+				//Si es jueves se resta tres
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -3);
+			}
+			else if(diaActual == 6)
+			{
+				//Si es viernes se resta cuatro
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -4);
+			}
+			else if(diaActual == 7)
+			{
+				//Si es sabado se resta cinco
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -5);
+			}
+			//Llevamos a un string la fecha anterior para el cálculo de la venta
+			datFechaAnterior = calendarioActual.getTime();
+			fechaAnterior = dateFormat.format(datFechaAnterior);
+			double totalVenta = PedidoDAO.obtenerTotalesPedidosSemana(fechaAnterior, fechaActual, auditoria);
+			return(totalVenta);
+		}
+		
 		//Información relacionada con los estados para los tipos de empleados
 		
 		public ArrayList<Estado> obtenerEstFalTipoEmpleado(int idTipoEmpleado)
@@ -1358,6 +1465,19 @@ public class PedidoCtrl implements Runnable {
 			return(respuesta);
 		}
 		
+		public ArrayList<ProductoModificadorCon> obtenerProdModificadoresConTodos()
+		{
+			ArrayList<ProductoModificadorCon> modCon =  ProductoModificadorConDAO.obtenerProdModificadoresConTodos(auditoria);
+			return(modCon);
+			
+		}
+		
+		public ArrayList<ProductoModificadorSin> obtenerProdModificadoresSinTodos()
+		{
+			ArrayList<ProductoModificadorSin> modSin =  ProductoModificadorSinDAO.obtenerProdModificadoresSinTodos(auditoria);
+			return(modSin);
+		}
+		
 		public boolean detalleTieneModificadorCon(int idDetalle)
 		{
 			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
@@ -1376,6 +1496,12 @@ public class PedidoCtrl implements Runnable {
 			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
 			boolean respuesta = ProductoModificadorSinDAO.tieneModificadorSin(detPedido.getIdProducto(), auditoria);
 			return(respuesta);
+		}
+		
+		public DetallePedido obtenerUnDetallePedido(int idDetalle)
+		{
+			DetallePedido detPedido = DetallePedidoDAO.obtenerUnDetallePedido(idDetalle, auditoria);
+			return(detPedido);
 		}
 		
 		//Métodos para retornar los modificadores dado un idDetallePedido
@@ -1481,11 +1607,65 @@ public class PedidoCtrl implements Runnable {
 					+ tienda.getTipoContribuyente() + "\n"
 					+ tienda.getResolucion() + "\n"
 					+ tienda.getFechaResolucion()+ "\n"
-					+ "    Desde P3 0 Hasta P3 50000\n"
+					+ "    Desde P5 " + tienda.getNumeroInicialResolucion() + " Hasta P5 " + tienda.getNumeroFinalResolucion() + " \n"
 					+ tienda.getUbicacion() + "\n"
 					+ "    Mesa\n"
-					+ "    Factura de Venta:"+idPedido +"\n"
-		            + "    Usuario\n"
+					+ "    Factura de Venta: P5 - "+idPedido +"\n"
+		            + "  ======================================\n"
+		            + "    Cant    Descripcion            Costo\n"
+		            + "  ======================================\n";
+			double cantidad;
+			for(int i = 0; i < detPedido.size(); i++)
+			{
+				detTemp = detPedido.get(i);
+				cantidad = detTemp.getValorTotal();
+				//if ((cantidad - Math.floor(cantidad)) == 0) 
+				if (detTemp.getValorTotal() == 0) 
+				{
+					factura = factura + "     " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + "\n";
+				}
+				else
+				{
+					factura = factura + "     " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + detTemp.getValorTotal() + "\n";
+				}
+				
+			}
+			Pedido pedImpFac = obtenerPedido(idPedido);
+			factura = factura + "    ======================================\n";
+			factura = factura + "    TOTAL BRUTO:      " + pedImpFac.getValorbruto()+"\n";
+			factura = factura + "    IMP CONS 8%   :      " + pedImpFac.getImpuesto()+"\n";
+			factura = factura + "    ======================================\n";
+			factura = factura  + "   TOTAL : " + pedImpFac.getValorneto() + "\n";
+			factura = factura  + "   CAMBIO : " + pedImpFac.getCambio() +"\n";
+			factura = factura  + "    ======================================\n";
+			factura = factura  + "   " + pedImpFac.getNombreFormaPago() + " : " + pedImpFac.getTotalFormaPago() + "\n";
+			factura = factura  + "    ======================================\n";
+			factura = factura  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
+			factura = factura  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
+			factura = factura  + "   OBS : " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "\n";
+			factura = factura  + "   TELEFONO : " + pedImpFac.getTelefono() + "\n";
+			factura = factura  + "   !FELICITACIONES! HAZ COMPRADO LA MEJOR " + "\n";
+			factura = factura  + "   PIZZA DE LA CIUDAD " + "\n";
+			factura = factura  + "   PQRS - pizzaamericanacolombia@gmail.com " + "\n";
+			factura = factura  + "    GRACIAS POR SU COMPRA...\n"
+		            + "                ******::::::::*******"
+		            + "\n\n\n\n\n\n\n           "
+		            + "\n           ";
+			return(factura);
+		}
+		
+		public String generarStrImpresionComanda(int idPedido)
+		{
+			
+			//Obtenemos la tienda sobre la que estamos trabajando
+			ArrayList<DetallePedido> detPedido = obtenerDetallePedidoPintar(idPedido);
+			Pedido infoPedido = obtenerPedido(idPedido); 
+			DetallePedido detTemp;
+			Date fechaActual = new Date();
+			String factura = "======================================\n" 
+					+ "    Factura de Venta: P5 "+idPedido +"\n"
+		            + "    Usuario: " + infoPedido.getUsuariopedido() + "\n"
+		            + " " + fechaActual.toString()
 		            + "    ======================================\n"
 		            + "      Cant    Descripcion            Costo   \n"
 		            + "    ======================================\n";
@@ -1504,18 +1684,6 @@ public class PedidoCtrl implements Runnable {
 				}
 				
 			}
-			Pedido pedImpFac = obtenerPedido(idPedido);
-			factura = factura + "    ======================================\n";
-			factura = factura + "    TOTAL BRUTO:      " + pedImpFac.getValorbruto()+"\n";
-			factura = factura + "    IMPUESTO   :      " + pedImpFac.getImpuesto()+"\n";
-			factura = factura + "    ======================================\n";
-			factura = factura  + "   TOTAL : " + pedImpFac.getValorneto() + "\n";
-			factura = factura  + "   CAMBIO : " + "\n";
-			factura = factura  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
-			factura = factura  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
-			factura = factura  + "   !FELICITACIONES! HAZ COMPRADO LA MEJOR " + "\n";
-			factura = factura  + "   PIZZA DE LA CIUDAD " + "\n";
-			factura = factura  + "   PQRS - pizzaamericanacolombia@gmail.com " + "\n";
 			factura = factura  + "    GRACIAS POR SU COMPRA...\n"
 		            + "                ******::::::::*******"
 		            + "\n\n\n\n\n\n\n           "
@@ -1541,12 +1709,11 @@ public class PedidoCtrl implements Runnable {
 			// TODO Auto-generated method stub
 			Thread ct = Thread.currentThread();
 			//Validamos si el hilo es de impuestos con el fin de poder arrancar el hilo que descuenta de inventarios
-			System.out.println("antes de liquidar impuestos");
 			if(ct == hiloImpuestos) 
 			{   
 				 ImpuestoCtrl impCtrl = new ImpuestoCtrl(auditoria);
 				 impCtrl.liquidarImpuestosPedido(idPedidoActual);
-				 System.out.println("Si entre a liquidar impuestos");
+				 
 			}else if(ct == hiloInventarios) 
 			{
 				//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
@@ -1564,12 +1731,246 @@ public class PedidoCtrl implements Runnable {
 				PedidoDAO.ActualizarEstadoPedido(idPedidoActual, 0 , idEstadoPostIni,Sesion.getUsuario(), auditoria);
 				if(estadoIni.isImpresion())
 				{
+					//Vamos a realizar la impresión de la comanda
+					String strComanda = generarStrImpresionComanda(idPedidoActual);
+					Impresion.main(strComanda);
+					//Obtenemos el string de la factura que se imprimirá 2 veces
 					String strFactura = generarStrImpresionFactura(idPedidoActual);
-					Impresion imp = new Impresion();
-					imp.imprimirFactura(strFactura);
+					//Primera Impresión
+					Impresion.main(strFactura);
+					//Segunda Impresión
+					Impresion.main(strFactura);
+					
 				}
 			}
 				
+		}
+		
+		
+		public void imprimirSalidaDomiciliario(int idPedido)
+		{
+			
+			Pedido pedImpFac = obtenerPedido(idPedido);
+			Date fechaActual = new Date();
+			String comandaSalida = "======================================\n" 
+					+ "    SALIDA DOMICILIO " +"\n"
+					+ "    Factura de Venta: "+idPedido +"\n"
+		            + "    Usuario: " + pedImpFac.getUsuariopedido() + "\n"
+		            + " " + fechaActual.toString();
+			comandaSalida = comandaSalida  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
+			comandaSalida = comandaSalida  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
+			comandaSalida = comandaSalida  + "   OBS : " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "\n";
+			comandaSalida = comandaSalida  + "   TELEFONO : " + pedImpFac.getTelefono() + "\n"
+		            + "                ******::::::::*******"
+		            + "\n\n\n\n\n\n\n           "
+		            + "\n           ";
+			
+			Impresion.main(comandaSalida);
+		}
+		
+		public String resumenGeneralVentasImprimir()
+		{
+			//Obtenemos la fecha actual del sistema
+			//Vamos a recuperar la fecha del sistema y la vamos a mostrar en el campo correspondiente
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaSis = fecha.getFechaApertura();
+			String respuesta = "   RESUMEN GENERAL DE VENTAS \n";
+			ArrayList totTipoPedido = new ArrayList();
+	        totTipoPedido = obtenerTotalesPedidosPorTipo(fechaSis);
+	        double totalVendido = 0;
+			for(int y = 0; y < totTipoPedido.size();y++)
+			{
+				String[] fila =(String[]) totTipoPedido.get(y);
+				respuesta = respuesta + "  " + fila[0] + "  " + fila[1] + " " + fila[2] +"\n";
+				totalVendido = totalVendido + Double.parseDouble(fila[1]);
+			}
+			double totalIngresos = operTiendaCtrl.TotalizarIngreso(fechaSis);
+			respuesta = respuesta + "   TOTAL INGRESOS DEL DÍA " + Double.toString(totalIngresos) + "\n";
+			double totalEgresos = operTiendaCtrl.TotalizarEgreso(fechaSis);
+			respuesta = respuesta + "   TOTAL EGRESOS DEL DÍA " + Double.toString(totalEgresos) + "\n>";
+			respuesta = respuesta + "   TOTAL SIN I/E " + (Double.toString(totalVendido)) + "\n";
+			respuesta = respuesta + "   TOTAL CON I/E " + (Double.toString(totalVendido + totalIngresos - totalEgresos)) + "\n";
+			return(respuesta);
+		}
+		
+		public String resumenGeneralVentas()
+		{
+			//Obtenemos la fecha actual del sistema
+			//Vamos a recuperar la fecha del sistema y la vamos a mostrar en el campo correspondiente
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaSis = fecha.getFechaApertura();
+			String respuesta = "<table border='2'> <tr> RESUMEN DE VENTAS </tr>";
+			respuesta = respuesta + "<tr>"
+			+  "<td><strong>Concepto</strong></td>"
+			+  "<td><strong>Total Venta</strong></td>"
+			+  "<td><strong>Cantidad</strong></td>"
+			+  "</tr>";
+			ArrayList totTipoPedido = new ArrayList();
+	        totTipoPedido = obtenerTotalesPedidosPorTipo(fechaSis);
+	        double totalVendido = 0;
+			for(int y = 0; y < totTipoPedido.size();y++)
+			{
+				String[] fila =(String[]) totTipoPedido.get(y);
+				respuesta = respuesta + "<tr><td>" + fila[0] + "</td><td> " + fila[1] + "</td><td> " + fila[2] +"</td></tr>";
+				totalVendido = totalVendido + Double.parseDouble(fila[1]);
+			}
+			respuesta = respuesta + "</table> <br/>";
+			
+			respuesta = respuesta + "<table border='2'><tr><td><strong>ACUMULADO DE VENTA DE LA SEMANA: </strong></td> <td><strong>" + Double.toString(obtenerTotalesPedidosSemana()) + "</strong></td></tr></table><br/> <br/>";
+			
+			double totalIngresos = operTiendaCtrl.TotalizarIngreso(fechaSis);
+			respuesta = respuesta + "<table border='2'> <tr> <td> TOTAL INGRESOS DEL DÍA </td> <td>" + Double.toString(totalIngresos) + "</td></tr>";
+			double totalEgresos = operTiendaCtrl.TotalizarEgreso(fechaSis);
+			respuesta = respuesta + "<tr> <td> TOTAL EGRESOS DEL DÍA </td> <td>" + Double.toString(totalEgresos) + "</td></tr>";
+			respuesta = respuesta + "<tr> <td> TOTAL SIN I/E </td> <td>" + (Double.toString(totalVendido)) + "\n";
+			respuesta = respuesta + "<tr> <td> TOTAL CON I/E </td> <td>" + (Double.toString(totalVendido + totalIngresos - totalEgresos)) + "</td></tr></table> <br/>";
+			//Adicionamos la información de resumen domiciliarios
+			ArrayList totDomiciliario = obtenerTotalesPedidosPorDomiciliario(fechaSis);
+			respuesta = respuesta + "<table border='2'> <tr> RESUMEN DE DOMICILIARIOS </tr>";
+			respuesta = respuesta + "<tr>"
+					+  "<td><strong>Domiciliario</strong></td>"
+					+  "<td><strong>Total Venta</strong></td>"
+					+  "<td><strong>Cantidad Pedidos</strong></td>"
+					+  "</tr>";
+			for(int y = 0; y < totDomiciliario.size();y++)
+			{
+				String[] fila =(String[]) totDomiciliario.get(y);
+				respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td> " + fila[0] + "</td><td> " + fila[2] +"</td></tr>";
+			}
+			respuesta = respuesta + "</table> <br/>";
+			//Adicionamos los ingresos y egresos
+			//INGRESOS
+			ArrayList<Ingreso> ingresosDia = operTiendaCtrl.obtenerIngresosObj(fechaSis);
+			respuesta = respuesta + "<table border='2'> <tr> INGRESOS </tr>";
+			respuesta = respuesta + "<tr>"
+					+  "<td><strong>Descripción Ingreso</strong></td>"
+					+  "<td><strong>Valor Ingreso</strong></td>"
+					+  "</tr>";
+			Ingreso ingTemp;
+			for(int y = 0; y < ingresosDia.size();y++)
+			{
+				ingTemp = ingresosDia.get(y);
+				respuesta = respuesta + "<tr><td>" + ingTemp.getDescripcion() + "</td><td> " + ingTemp.getValorIngreso() +"</td></tr>";
+			}
+			respuesta = respuesta + "</table> <br/>";
+			//EGRESOS
+			ArrayList<Egreso> egresosDia = operTiendaCtrl.obtenerEgresosObj(fechaSis);
+			respuesta = respuesta + "<table border='2'> <tr> EGRESOS/VALES </tr>";
+			respuesta = respuesta + "<tr>"
+					+  "<td><strong>Descripción egreso</strong></td>"
+					+  "<td><strong>Valor Egreso</strong></td>"
+					+  "</tr>";
+			Egreso egrTemp;
+			for(int y = 0; y < egresosDia.size();y++)
+			{
+				egrTemp = egresosDia.get(y);
+				respuesta = respuesta + "<tr><td>" + egrTemp.getDescripcion() + "</td><td> " + egrTemp.getValorEgreso() +"</td></tr>";
+			}
+			respuesta = respuesta + "</table> <br/>";
+			//DESCUENTO DE PIZZAS
+			ArrayList<PedidoDescuento> descuentosFecha = obtenerPedidoDescuentoFecha(fechaSis);
+			respuesta = respuesta + "<table border='2'> <tr> DESCUENTOS </tr>";
+			respuesta = respuesta + "<tr>"
+					+  "<td><strong>PEDIDO</strong></td>"
+					+  "<td><strong>Descuento</strong></td>"
+					+  "<td><strong>Observacion</strong></td>"
+					+  "</tr>";
+			PedidoDescuento descTemp;
+			for(int y = 0; y < descuentosFecha.size();y++)
+			{
+				descTemp = descuentosFecha.get(y);
+				String desc = "";
+				if(descTemp.getDescuentoPesos() > 0 )
+				{
+					desc = Double.toString(descTemp.getDescuentoPesos());
+				}
+				else
+				{
+					desc = Double.toString(descTemp.getDescuentoPorcentaje());
+				}
+				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + desc + "</td><td> " + descTemp.getObservacion() +"</td></tr>";
+			}
+			respuesta = respuesta + "</table> <br/>";
+			return(respuesta);
+		}
+		
+		public String resumenInventarios()
+		{
+			//Obtenemos la fecha actual del sistema
+			//Vamos a recuperar la fecha del sistema y la vamos a mostrar en el campo correspondiente
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaSis = fecha.getFechaApertura();
+			String respuesta = "<table border='2'> <tr> RESUMEN DE INVENTARIOS </tr>";
+			respuesta = respuesta + "<tr>"
+			+  "<td><strong>Nombre Item</strong></td>"
+			+  "<td><strong>Unidad</strong></td>"
+			+  "<td><strong>Cantidad</strong></td>"
+			+  "</tr>";
+			
+	        ArrayList<ItemInventario>itemsInventario = parProductoCtrl.obtenerItemsInventariosObj();
+	        ItemInventario itemTemp;
+	        for(int y = 0; y < itemsInventario.size();y++)
+			{
+	        	itemTemp = itemsInventario.get(y);
+				respuesta = respuesta + "<tr><td>" + itemTemp.getNombreItem() + "</td><td> " + itemTemp.getUnidadMedida() + "</td><td> " + itemTemp.getCantidad() +"</td></tr>";
+			}
+			respuesta = respuesta + "<br/> </table>";
+			return(respuesta);
+		}
+		
+		
+		public void imprimirResumenGeneralVentas()
+		{
+			String respuesta = "======================================\n";
+			respuesta = respuesta + "  RESUMEN GENERAL DE VENTAS     \n";
+			respuesta = respuesta + resumenGeneralVentasImprimir();
+			respuesta = respuesta + "======================================\n";
+			respuesta = respuesta  + "\n\n\n\n\n\n\n           "
+		            + "\n           ";
+			Impresion.main(respuesta);
+		}
+		
+		public void enviarCorreoResumenGeneralVentas()
+		{
+			//Obtenemos la fecha
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaSis = fecha.getFechaApertura();
+			//Obtenemos la tienda
+			Tienda tiendaReporte = TiendaDAO.obtenerTienda(auditoria);
+			//Obtenemos el reporte
+			String reporte = resumenGeneralVentas();
+			Correo correo = new Correo();
+			correo.setAsunto("Reporte General de Ventas Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setContrasena("Pizzaamericana2017");
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTEGENERALVENTAS", auditoria);
+			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+			correo.setMensaje("A continuación el reporte general de ventas: \n" + reporte);
+			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+			contro.enviarCorreo();
+		}
+		
+		public void enviarCorreoResumenInventario()
+		{
+			//Obtenemos la fecha
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaSis = fecha.getFechaApertura();
+			//Obtenemos la tienda
+			Tienda tiendaReporte = TiendaDAO.obtenerTienda(auditoria);
+			//Obtenemos el reporte
+			String reporte = resumenInventarios();
+			Correo correo = new Correo();
+			correo.setAsunto("Inventario Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setContrasena("Pizzaamericana2017");
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTEGENERALVENTAS", auditoria);
+			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+			correo.setMensaje("A continuación el reporte de Inventarios: \n" + reporte);
+			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+			contro.enviarCorreo();
+		}
+		
+		public String resumenDetalladoVentas()
+		{
+			return("");
 		}
 		
 		

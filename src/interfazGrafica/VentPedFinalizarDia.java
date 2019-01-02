@@ -42,7 +42,7 @@ import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.Component;
 
-public class VentPedFinalizarDia extends JDialog {
+public class VentPedFinalizarDia extends JDialog  implements Runnable{
 
 	private JPanel contentPanePrincipal;
 	private JTextField txtFechaInventario;
@@ -58,6 +58,11 @@ public class VentPedFinalizarDia extends JDialog {
 	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 	OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 	private JTextField txtTotalVendidoConIE;
+	//Creamos un hilo que se encargará de la reportería una vez finalice el cierre
+	Thread hiloReporteria;
+	Thread hiloReportSemanal;
+	//Creamos un hilo que se encargará de la reportería semanal una vez finalice el cierre y se cierre de semanal
+	private JTextField txtVentaSemana;
 	/**
 	 * Launch the application.
 	 */
@@ -96,7 +101,7 @@ public class VentPedFinalizarDia extends JDialog {
 		
 		JButton btnCierreDia = new JButton("Finalizar D\u00EDa");
 		
-		btnCierreDia.setBounds(110, 272, 152, 37);
+		btnCierreDia.setBounds(110, 302, 152, 37);
 		contentPanePrincipal.add(btnCierreDia);
 		
 		JButton btnCancelar = new JButton("Cancelar/Salir");
@@ -107,19 +112,19 @@ public class VentPedFinalizarDia extends JDialog {
 				dispose();
 			}
 		});
-		btnCancelar.setBounds(455, 239, 201, 37);
+		btnCancelar.setBounds(455, 271, 201, 37);
 		contentPanePrincipal.add(btnCancelar);
 		
 		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
 		lblFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblFechaSistema.setBounds(110, 403, 240, 14);
+		lblFechaSistema.setBounds(110, 444, 240, 14);
 		contentPanePrincipal.add(lblFechaSistema);
 		
 		txtFechaInventario = new JTextField();
 		txtFechaInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtFechaInventario.setEnabled(false);
 		txtFechaInventario.setEditable(false);
-		txtFechaInventario.setBounds(427, 400, 135, 20);
+		txtFechaInventario.setBounds(427, 441, 135, 20);
 		contentPanePrincipal.add(txtFechaInventario);
 		txtFechaInventario.setColumns(10);
 		
@@ -129,7 +134,7 @@ public class VentPedFinalizarDia extends JDialog {
 		txtFechaInventario.setText(fechaSis);
 		
 		JScrollPane scrollResCierre = new JScrollPane();
-		scrollResCierre.setBounds(45, 320, 680, 79);
+		scrollResCierre.setBounds(45, 350, 680, 79);
 		contentPanePrincipal.add(scrollResCierre);
 		
 		JTextPane txtPaneResCierre = new JTextPane();
@@ -138,11 +143,11 @@ public class VentPedFinalizarDia extends JDialog {
 		
 		JLabel lblTotalesPorTipo = new JLabel("TOTALES POR TIPO DE PEDIDO");
 		lblTotalesPorTipo.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblTotalesPorTipo.setBounds(89, 11, 240, 14);
+		lblTotalesPorTipo.setBounds(99, 0, 240, 14);
 		contentPanePrincipal.add(lblTotalesPorTipo);
 		
 		JScrollPane scrollPaneTipoPedido = new JScrollPane();
-		scrollPaneTipoPedido.setBounds(99, 36, 189, 79);
+		scrollPaneTipoPedido.setBounds(45, 36, 243, 112);
 		contentPanePrincipal.add(scrollPaneTipoPedido);
 		
 		tableResTipoPedido = new JTable();
@@ -150,18 +155,18 @@ public class VentPedFinalizarDia extends JDialog {
 		
 		JLabel lblTotalVendido = new JLabel("TOTAL VENDIDO");
 		lblTotalVendido.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblTotalVendido.setBounds(10, 138, 88, 14);
+		lblTotalVendido.setBounds(11, 159, 88, 14);
 		contentPanePrincipal.add(lblTotalVendido);
 		
 		txtTotalVendido = new JTextField();
 		txtTotalVendido.setEditable(false);
-		txtTotalVendido.setBounds(175, 135, 86, 20);
+		txtTotalVendido.setBounds(176, 156, 112, 20);
 		contentPanePrincipal.add(txtTotalVendido);
 		txtTotalVendido.setColumns(10);
 		
 		JPanel panelReportes = new JPanel();
 		panelReportes.setBorder(new LineBorder(new Color(0, 0, 0), 5));
-		panelReportes.setBounds(341, 21, 400, 207);
+		panelReportes.setBounds(341, 21, 400, 239);
 		contentPanePrincipal.add(panelReportes);
 		panelReportes.setLayout(null);
 		
@@ -235,6 +240,21 @@ public class VentPedFinalizarDia extends JDialog {
 		lblReporteVentas.setBounds(204, 11, 110, 14);
 		panelReportes.add(lblReporteVentas);
 		
+		JButton btnImpResumenGenVentas = new JButton("Imprimir Resumen General Ventas");
+		btnImpResumenGenVentas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				pedCtrl.imprimirResumenGeneralVentas();
+				
+			}
+		});
+		btnImpResumenGenVentas.setBackground(Color.LIGHT_GRAY);
+		btnImpResumenGenVentas.setBounds(86, 192, 228, 23);
+		panelReportes.add(btnImpResumenGenVentas);
+		
+		JButton btnVentaSemanal = new JButton("Venta Semanal");
+		btnVentaSemanal.setBounds(202, 116, 186, 23);
+		panelReportes.add(btnVentaSemanal);
+		
 		JButton btnValidarCierre = new JButton("Validar Cierre");
 		btnValidarCierre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -254,7 +274,7 @@ public class VentPedFinalizarDia extends JDialog {
 				txtPaneResCierre.setText(resp);
 			}
 		});
-		btnValidarCierre.setBounds(110, 224, 152, 37);
+		btnValidarCierre.setBounds(110, 254, 152, 37);
 		contentPanePrincipal.add(btnValidarCierre);
 		
 		JButton btnNewButton_2 = new JButton("Adm Ingresos/Egresos");
@@ -273,20 +293,32 @@ public class VentPedFinalizarDia extends JDialog {
 				}
 			}
 		});
-		btnNewButton_2.setBounds(89, 428, 189, 47);
+		btnNewButton_2.setBounds(84, 462, 189, 47);
 		contentPanePrincipal.add(btnNewButton_2);
 		
 		JLabel lblTotalVendidoCon = new JLabel("TOTAL VENDIDO CON I/E");
 		lblTotalVendidoCon.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblTotalVendidoCon.setBounds(10, 175, 152, 14);
+		lblTotalVendidoCon.setBounds(11, 196, 152, 14);
 		contentPanePrincipal.add(lblTotalVendidoCon);
 		
 		txtTotalVendidoConIE = new JTextField();
 		txtTotalVendidoConIE.setText("0.0");
 		txtTotalVendidoConIE.setEditable(false);
 		txtTotalVendidoConIE.setColumns(10);
-		txtTotalVendidoConIE.setBounds(175, 172, 86, 20);
+		txtTotalVendidoConIE.setBounds(176, 193, 112, 20);
 		contentPanePrincipal.add(txtTotalVendidoConIE);
+		
+		txtVentaSemana = new JTextField();
+		txtVentaSemana.setText("0.0");
+		txtVentaSemana.setEditable(false);
+		txtVentaSemana.setColumns(10);
+		txtVentaSemana.setBounds(176, 224, 112, 20);
+		contentPanePrincipal.add(txtVentaSemana);
+		txtVentaSemana.setText(Double.toString(pedCtrl.obtenerTotalesPedidosSemana()));
+		JLabel lblVentanaSemana = new JLabel("VENTA SEMANA");
+		lblVentanaSemana.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblVentanaSemana.setBounds(11, 229, 152, 14);
+		contentPanePrincipal.add(lblVentanaSemana);
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
@@ -306,7 +338,27 @@ public class VentPedFinalizarDia extends JDialog {
                         (Component) arg0.getSource());
 				if(resp.equals(new String("PROCESO EXITOSO")))
 				{
+					//Se implementa hilo para generar la reportería
+					hiloReporteria.start();
+					if(operTiendaCtrl.validarCierreSemanal())
+					{
+						hiloReportSemanal.start();
+					}
+					//Se realiza la impresión de la comanda con el resumen de las ventas
+					pedCtrl.imprimirResumenGeneralVentas();
+					//Se envía mensaje en pantalla con el resultado del cierre
 					JOptionPane.showMessageDialog(ventanaPadre, "El cierre ha finalizado correctamente " , "El cierre ha finalizado, la aplicación se cerrará.", JOptionPane.INFORMATION_MESSAGE);
+					//Se espera a que el hilo de reportería termine
+					while(hiloReporteria.isAlive())
+					{
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					//Se sale del sistema completamente.
 					System.exit(0);
 				}
 				else
@@ -319,6 +371,9 @@ public class VentPedFinalizarDia extends JDialog {
 		// Se llena Datatable con la información
 		
 		pintarTotTipoPedido();
+		//Instanciamos el hilo
+		hiloReporteria = new Thread(this);
+		hiloReportSemanal = new Thread(this);
 	}
 	
 	public DefaultTableModel pintarItemsInventario()
@@ -354,10 +409,11 @@ public class VentPedFinalizarDia extends JDialog {
 	
 	public void pintarTotTipoPedido()
 	{
-		Object[] columnsName = new Object[2];
+		Object[] columnsName = new Object[3];
         
         columnsName[0] = "Tipo Pedido/Inf";
         columnsName[1] = "TOTAL";
+        columnsName[2] = "Cantidad";
         ArrayList totTipoPedido = new ArrayList();
         totTipoPedido = pedCtrl.obtenerTotalesPedidosPorTipo(fechaSis);
         DefaultTableModel modelo = new DefaultTableModel(){
@@ -385,5 +441,20 @@ public class VentPedFinalizarDia extends JDialog {
 		txtTotalVendidoConIE.setText(Double.toString(totalVendido + totalIngresos - totalEgresos));
 		tableResTipoPedido.setModel(modelo);
 				
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		Thread ct = Thread.currentThread();
+		//Validamos si el hilo es de reportería para que realice la ejecución de los reportes
+		if(ct == hiloReporteria) 
+		{ 
+			pedCtrl.enviarCorreoResumenGeneralVentas();
+			pedCtrl.enviarCorreoResumenInventario();
+		}else if(ct == hiloReportSemanal) 
+		{ 
+			
+		}
 	}
 }

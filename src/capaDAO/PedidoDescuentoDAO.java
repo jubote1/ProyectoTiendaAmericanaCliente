@@ -24,7 +24,7 @@ public class PedidoDescuentoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into pedido_descuento (idpedido, descuentopesos, descuentoporcentaje) values (" + descuento.getIdpedido() + ", " + descuento.getDescuentoPesos() + " , " + descuento.getDescuentoPorcentaje() + ")"; 
+			String insert = "insert into pedido_descuento (idpedido, descuentopesos, descuentoporcentaje, observacion) values (" + descuento.getIdpedido() + ", " + descuento.getDescuentoPesos() + " , " + descuento.getDescuentoPorcentaje() +  ", '" + descuento.getObservacion() + "')"; 
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -85,7 +85,7 @@ public class PedidoDescuentoDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		PedidoDescuento descuento = new PedidoDescuento(0,0,0);
+		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"");
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -96,12 +96,14 @@ public class PedidoDescuentoDAO {
 			}
 			ResultSet rs = stm.executeQuery(consulta);
 			double descuentoPesos = 0, descuentoPorcentaje = 0;
+			String observacion = "";
 			while(rs.next())
 			{
 				descuentoPesos = rs.getDouble("descuentopesos");
 				descuentoPorcentaje = rs.getDouble("descuentoPorcentaje");
+				observacion = rs.getString("observacion");
 			}
-			descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje);
+			descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion);
 			stm.close();
 			con1.close();
 		}
@@ -117,6 +119,89 @@ public class PedidoDescuentoDAO {
 			
 		}
 		return(descuento);
+	}
+	
+	public static ArrayList<PedidoDescuento> obtenerPedidoDescuentoFecha(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<PedidoDescuento> descuentosFecha = new ArrayList();
+		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"");
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.* from pedido_descuento a, pedido b where a.idpedido = b.idpedidotienda and b.fechapedido = '" + fecha + "'"; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idPedido = 0;
+			double descuentoPesos = 0, descuentoPorcentaje = 0;
+			String observacion = "";
+			while(rs.next())
+			{
+				idPedido = rs.getInt("idpedido");
+				descuentoPesos = rs.getDouble("descuentopesos");
+				descuentoPorcentaje = rs.getDouble("descuentoPorcentaje");
+				observacion = rs.getString("observacion");
+				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion);
+				descuentosFecha.add(descuento);
+			}
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+				
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(descuentosFecha);
+	}
+	
+	public static double obtenerTotalPedidoDescuento(int idPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double total = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select sum(descuentopesos) as total from pedido_descuento where idpedido = " + idPedido; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			
+			while(rs.next())
+			{
+				total = rs.getDouble("total");
+			}
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+				
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(total);
 	}
 	
 	public static boolean existePedidoDescuento(int idPedido, boolean auditoria)

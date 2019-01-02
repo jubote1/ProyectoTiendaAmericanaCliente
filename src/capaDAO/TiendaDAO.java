@@ -38,6 +38,8 @@ public class TiendaDAO {
 			}
 			ResultSet rs = stm.executeQuery(consulta);
 			String direccion, telefono, razonSocial, tipoContribuyente,resolucion, fechaResolucion, ubicacion,identificacion, fechaApertura, fechaUltimoCierre;
+			long numeroInicialResolucion;
+			long numeroFinalResolucion;
 			while(rs.next()){
 				int idTienda = rs.getInt("idtienda");
 				String nombre = rs.getString("nombretienda");
@@ -52,7 +54,9 @@ public class TiendaDAO {
 				identificacion = rs.getString("identificacion");
 				fechaApertura = rs.getString("fecha_apertura");
 				fechaUltimoCierre = rs.getString("fecha_ultimo_cierre");
-				tien = new Tienda(idTienda, nombre, urlcontact, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, fechaApertura, fechaUltimoCierre);
+				numeroInicialResolucion = rs.getLong("numinicialresolucion");
+				numeroFinalResolucion = rs.getLong("numfinalresolucion");
+				tien = new Tienda(idTienda, nombre, urlcontact, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, fechaApertura, fechaUltimoCierre, numeroInicialResolucion, numeroFinalResolucion);
 			}
 			rs.close();
 			stm.close();

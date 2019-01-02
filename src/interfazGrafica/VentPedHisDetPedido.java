@@ -16,11 +16,13 @@ import javax.swing.table.DefaultTableModel;
 
 import capaControlador.PedidoCtrl;
 import capaModelo.DetallePedido;
+import capaModelo.PedidoDescuento;
 
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 
 public class VentPedHisDetPedido extends JDialog {
 
@@ -29,6 +31,9 @@ public class VentPedHisDetPedido extends JDialog {
 	private JTable tableEstadosPedido;
 	private JTable tableDetallePedido;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private JTextField txtTotalSD;
+	private JTextField txtDescuento;
+	private JTextField txtTotalPedido;
 	/**
 	 * Launch the application.
 	 */
@@ -92,11 +97,44 @@ public class VentPedHisDetPedido extends JDialog {
 		panelDetallePedido.setLayout(null);
 		
 		JScrollPane scrollDetallePedido = new JScrollPane();
-		scrollDetallePedido.setBounds(25, 11, 724, 190);
+		scrollDetallePedido.setBounds(25, 11, 724, 168);
 		panelDetallePedido.add(scrollDetallePedido);
 		
 		tableDetallePedido = new JTable();
 		scrollDetallePedido.setViewportView(tableDetallePedido);
+		
+		JLabel lblTotalDelPedido = new JLabel("TOTAL PEDIDO SD");
+		lblTotalDelPedido.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblTotalDelPedido.setBounds(10, 177, 155, 24);
+		panelDetallePedido.add(lblTotalDelPedido);
+		
+		txtTotalSD = new JTextField();
+		txtTotalSD.setEditable(false);
+		txtTotalSD.setBounds(132, 180, 116, 20);
+		panelDetallePedido.add(txtTotalSD);
+		txtTotalSD.setColumns(10);
+		
+		JLabel lblDescuento = new JLabel("DESCUENTO");
+		lblDescuento.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblDescuento.setBounds(287, 177, 104, 24);
+		panelDetallePedido.add(lblDescuento);
+		
+		txtDescuento = new JTextField();
+		txtDescuento.setEditable(false);
+		txtDescuento.setBounds(371, 180, 116, 20);
+		panelDetallePedido.add(txtDescuento);
+		txtDescuento.setColumns(10);
+		
+		JLabel lblTotalPedido = new JLabel("TOTAL PEDIDO");
+		lblTotalPedido.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblTotalPedido.setBounds(497, 177, 104, 24);
+		panelDetallePedido.add(lblTotalPedido);
+		
+		txtTotalPedido = new JTextField();
+		txtTotalPedido.setEditable(false);
+		txtTotalPedido.setBounds(611, 180, 126, 20);
+		panelDetallePedido.add(txtTotalPedido);
+		txtTotalPedido.setColumns(10);
 		
 		JLabel lblIdPedido = new JLabel("Id Pedido");
 		lblIdPedido.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -167,6 +205,7 @@ public class VentPedHisDetPedido extends JDialog {
 		modelo.setColumnIdentifiers(columnsName);
 		String[] fila = new String[5];
 		DetallePedido detPedTemp;
+		double totalPedido = 0;
 		for(int y = 0; y < detsPedido.size();y++)
 		{
 			detPedTemp = detsPedido.get(y);
@@ -176,8 +215,13 @@ public class VentPedHisDetPedido extends JDialog {
 			fila[2] = Double.toString(detPedTemp.getCantidad());
 			fila[3] = Double.toString(detPedTemp.getValorUnitario());
 			fila[4] = Double.toString(detPedTemp.getValorTotal());
+			totalPedido = totalPedido + detPedTemp.getValorTotal();
 			modelo.addRow(fila);
 		}
+		txtTotalSD.setText(Double.toString(totalPedido));
+		PedidoDescuento pedDesc = pedCtrl.obtenerPedidoDescuento(idPedido);
+		txtDescuento.setText(Double.toString(pedDesc.getDescuentoPesos()));
+		txtTotalPedido.setText(Double.toString(totalPedido - pedDesc.getDescuentoPesos()));
 		tableDetallePedido.setModel(modelo);
 	}
 }

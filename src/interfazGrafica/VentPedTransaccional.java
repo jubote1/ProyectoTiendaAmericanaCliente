@@ -80,6 +80,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	//Variable booleana para saber si se está consultando un domiciliario
 	boolean consDomi = false;
 	int idDomiCon = 0;
+	private JTextField txtFormaPago;
 	/**
 	 * Launch the application.
 	 */
@@ -102,7 +103,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	public VentPedTransaccional() {
 		setTitle("VENTANA TRANSACCIONAL");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 1014, 700);
+		setBounds(100, 100, 1014, 720);
 		setUndecorated(true);
 		getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 		this.setExtendedState(MAXIMIZED_BOTH);
@@ -113,7 +114,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
 		JPanel panelBotones = new JPanel();
-		panelBotones.setBounds(10, 603, 978, 92);
+		panelBotones.setBounds(10, 603, 978, 74);
 		contentPane.add(panelBotones);
 		panelBotones.setLayout(new GridLayout(0, 6, 0, 0));
 		
@@ -202,8 +203,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 					int idPedidoTienda = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
 					//La nueva impresión de la factura se realiza de la siguiente manera
 					String strFactura = pedCtrl.generarStrImpresionFactura(idPedidoTienda);
-					Impresion imp = new Impresion();
-					imp.imprimirFactura(strFactura);
+					Impresion.main(strFactura);
 				}
 			}
 		});
@@ -214,6 +214,12 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		btnHistoriaDetalle.setFont(new Font("Tahoma", Font.BOLD, 11));
 		btnHistoriaDetalle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				int filaValida = tblMaestroPedidos.getSelectedRow();
+				if(filaValida == -1)
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún pedido para ver su Historia." , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				if( tblMaestroPedidos.getSelectedRows().length == 1 ) { 
 		    		  
 					boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_009", Sesion.getAccesosOpcion());
@@ -408,6 +414,16 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		//Manejamos el evento de cuando damos doble clic sobre el pedido para avanzar de estado o cuando damos 3 veces para retroceder de estado
 		tblMaestroPedidos.addMouseListener(new java.awt.event.MouseAdapter() {
 		      public void mouseClicked(java.awt.event.MouseEvent e) {
+		      //Revisamos el tema para mostrar la forma del pago del pedido
+		      if( tblMaestroPedidos.getSelectedRows().length == 1 ) {
+		    	  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+				  int idPedidoFP = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
+				  txtFormaPago.setText(pedCtrl.consultarFormaPago(idPedidoFP));
+		      }
+		      else
+		      {
+		    	  txtFormaPago.setText("");
+		      }
 		      if(e.getClickCount()==2){
 		    	  avanzarEstado();
 		        }
@@ -460,6 +476,17 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		JPanel panelDomiciliario = new JPanel();
 		scrollPaneDomiciliarios.setViewportView(panelDomiciliario);
 		panelDomiciliario.setLayout(new GridLayout(11, 0, 0, 0));
+		
+		JLabel lblFormaDePago = new JLabel("FORMA DE PAGO");
+		lblFormaDePago.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblFormaDePago.setBounds(78, 688, 150, 21);
+		contentPane.add(lblFormaDePago);
+		
+		txtFormaPago = new JTextField();
+		txtFormaPago.setEditable(false);
+		txtFormaPago.setBounds(245, 688, 180, 20);
+		contentPane.add(txtFormaPago);
+		txtFormaPago.setColumns(10);
 		
 		//Agregamos los botones dinámicos de domiciliarios
 		//Vamos  a adicionar los domiciliarios del sistema
@@ -529,8 +556,9 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 				//pintarPedidos();
 			}
 		});
-		//h1 = new Thread(this);
-		//h1.start();
+		//Realizamos un refrescamiento de la pantalla cada 30 segundos
+		h1 = new Thread(this);
+		h1.start();
 	}
 	
 	public void pintarPedidos()
@@ -665,13 +693,14 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		 Thread ct = Thread.currentThread();
 		 while(ct == h1) 
 		 {   
+			 try {
+				 	Thread.sleep(15000);
+			 }catch(InterruptedException e) 
+			 {}
 			 //Ejecutamos el pintado de los pedidos en el JTable de la pantalla.
 			 pintarPedidos();
 		  //Realizamos la ejecución cada 30 segundos
-			 try {
-				 	Thread.sleep(30000);
-			 }catch(InterruptedException e) 
-			 {}
+			
 		 }
 	}
 	
@@ -701,7 +730,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 			boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_002", Sesion.getAccesosOpcion());
 			if (tienePermiso)
 			{
-				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true,/* OJO HAY QUE NORMALIZAR*/0);
+				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoDevolver, true, false, null, true,/* OJO HAY QUE NORMALIZAR*/0,50);
 				cambioEstado.setVisible(true);
 				pintarPedidos();
 			}else
@@ -738,7 +767,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 			boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_002", Sesion.getAccesosOpcion());
 			if (tienePermiso)
 			{
-				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true,/* OJO HAY QUE NORMALIZAR*/0);
+				VentPedCambioEstado cambioEstado = new VentPedCambioEstado(idPedidoAvanzar, false, true, null, true,/* OJO HAY QUE NORMALIZAR*/0,50);
 				cambioEstado.setVisible(true);
 				pintarPedidos();
 			}else

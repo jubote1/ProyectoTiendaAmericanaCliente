@@ -1,0 +1,10 @@
+ service found Samsung SCX-3200 Series (Copiar 2)
+ service found Samsung SCX-3200 Series
+ service found Samsung CLP-350 Series PCL6 WIFI
+ service found Samsung CLP-350 Series PCL6
+ service found Microsoft XPS Document Writer
+ service found Generic / Text Only
+ service found Fax
+ service found Enviar a OneNote 2013
+ service found \\192.168.0.21\Caja
+ service found \\192.168.0.37\Caja

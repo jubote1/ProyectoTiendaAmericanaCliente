@@ -84,7 +84,7 @@ public class ItemInventarioDAO {
 					+ "retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem  "
 					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
-					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
+					+ "and f.iditem = a.iditem  and e.fecha_sistema ='"+ fecha +"' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
 					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo from item_inventario a";
 			System.out.println(consulta);
@@ -137,10 +137,9 @@ public class ItemInventarioDAO {
 					+ "retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem  "
 					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
-					+ "and f.iditem = a.iditem  and e.fecha_sistema ='2018-04-25' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
+					+ "and f.iditem = a.iditem  and e.fecha_sistema = '" + fecha + "' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
 					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, a.cantidad,0 from item_inventario a";
-			System.out.println("CONSULTAR VARIANZA " + consulta);
 			if(auditoria)
 			{
 				logger.info(consulta);

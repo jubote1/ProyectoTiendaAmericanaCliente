@@ -38,8 +38,10 @@ public boolean enviarCorreo()
 		
 		Session s = Session.getDefaultInstance(p, null);
 		BodyPart texto = new MimeBodyPart();
-		texto.setText(c.getMensaje());
+		texto.setContent(c.getMensaje(), "text/html; charset=utf-8");
+		//texto.setText(c.getMensaje());
 		MimeMultipart m = new MimeMultipart();
+		
 		m.addBodyPart(texto);
 		MimeMessage mensaje = new MimeMessage(s);
 		mensaje.setFrom(new InternetAddress(c.getUsuarioCorreo()));
@@ -48,7 +50,7 @@ public boolean enviarCorreo()
 			mensaje.addRecipient(Message.RecipientType.TO, new InternetAddress((String)correos.get(i)));
 		}
 		mensaje.setSubject(c.getAsunto());
-		mensaje.setContent(m);
+		mensaje.setContent(m, "text/html");
 		Transport t = s.getTransport("smtp");
 		t.connect(c.getUsuarioCorreo(),c.getContrasena());
 		t.sendMessage(mensaje, mensaje.getAllRecipients());

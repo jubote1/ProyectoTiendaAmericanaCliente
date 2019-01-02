@@ -17,7 +17,7 @@ public class GeneralDAO {
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
-		Connection con1 = con.obtenerConexionBDGeneral();
+		Connection con1 = con.obtenerConexionBDLocal();
 		ArrayList correos = new ArrayList();
 		try
 		{
