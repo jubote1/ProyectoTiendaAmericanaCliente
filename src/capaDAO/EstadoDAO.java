@@ -120,7 +120,13 @@ public class EstadoDAO {
 		
 	}
 	
-
+/**
+ * Método en la capa controladora que se encarga de llenar un arreglo con los tiempos de pedido, buscando realizar una sola consulta y no varias con el fin de 
+ * mejorar el performance a la aplicación.
+ * @param fecha Este parámetro hace referencia a la fecha del sistema
+ * @param auditoria Este parámetro indica la generación o no de auditoria y trazas de las consultas ejecutadas.
+ * @return
+ */
 		public static ArrayList obtenerHistoriaEstadoPedidosFecha(String fecha, boolean auditoria)
 		{
 			Logger logger = Logger.getLogger("log_file");
@@ -130,7 +136,8 @@ public class EstadoDAO {
 			int idEstado = 0;
 			try
 			{
-				//Rediseñamos el método base para traer todos los pedidos del dia con sus estados
+				//Rediseñamos el método base para traer todos los pedidos del dia con sus estados esto nos servira para una vez traemos toda la historia
+				//agregamos el campo estado
 				ArrayList<EstadoPedido>	estadosPedido = PedidoDAO.obtenerEstadoPedidosFecha(fecha, auditoria);
 				Statement stm = con1.createStatement();
 				String consulta = "select a.fechacambio, IFNULL(b.descripcion, 'Tomando Pedido'), IFNULL(c.descripcion, 'Tomando Pedido'), d.idpedidotienda from pedido d, cambios_estado_pedido a left outer join  estado b on a.idestadoanterior = b.idestado left outer join estado c on a.idestadoposterior = c.idestado where  a.idpedidotienda = d.idpedidotienda and d.fechapedido = '" + fecha + "' order by a.idpedidotienda, a.fechacambio asc";
@@ -142,8 +149,11 @@ public class EstadoDAO {
 				ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 				int numeroColumnas = rsMd.getColumnCount() ;
 				int idPedidoTienda = 0;
+				//Se recorre el resultado para llenar los estados de los pedidos
 				while(rs.next()){
+					// Creamos el resultado con una colunma más para agregar el estado
 					String [] fila = new String[numeroColumnas + 1];
+					//recorremos agregando cada uno de los resultados, cuando estamos en la última tomamos el idPedido para luego ir a buscarlo en el de estados por pedidos
 					for(int y = 0; y < numeroColumnas; y++)
 					{
 						fila[y] = rs.getString(y+1);
@@ -155,6 +165,7 @@ public class EstadoDAO {
 					//Debemos realizar la busqueda del estado del idPedidoTienda
 					for(int i = 0; i < estadosPedido.size(); i++)
 					{
+						//Si lo encontramos traemos en un booleano el estado del pedido para agregarlo al final de la historia de pedido
 						if(estadosPedido.get(i).getIdPedidoTienda() == idPedidoTienda)
 						{
 							fila[numeroColumnas] = Boolean.toString(estadosPedido.get(i).isEsFinal());
@@ -164,6 +175,7 @@ public class EstadoDAO {
 					historiaEstados.add(fila);
 					
 				}
+				
 				rs.close();
 				stm.close();
 				con1.close();

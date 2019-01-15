@@ -11,11 +11,11 @@ public class ItemInventario {
 	private String cantidadCanasta;
 	private String nombreContenedor;
 	private String categoria;
-	
+	private boolean varianzaResumida;
 	
 	
 	public ItemInventario(int idItem, String nombreItem, String unidadMedida, double cantidad, String manejaCanastas,
-			String cantidadCanasta, String nombreContenedor, String categoria) {
+			String cantidadCanasta, String nombreContenedor, String categoria, boolean varianzaResumida) {
 		super();
 		this.idItem = idItem;
 		this.nombreItem = nombreItem;
@@ -25,6 +25,7 @@ public class ItemInventario {
 		this.cantidadCanasta = cantidadCanasta;
 		this.nombreContenedor = nombreContenedor;
 		this.categoria = categoria;
+		this.varianzaResumida = varianzaResumida;
 	}
 	public double getCantidad() {
 		return cantidad;
@@ -79,6 +80,14 @@ public class ItemInventario {
 	public void setCategoria(String categoria) {
 		this.categoria = categoria;
 	}
+	public boolean isVarianzaResumida() {
+		return varianzaResumida;
+	}
+	public void setVarianzaResumida(boolean varianzaResumida) {
+		this.varianzaResumida = varianzaResumida;
+	}
+	
+	
 	
 
 }

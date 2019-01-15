@@ -349,7 +349,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 					//Se envía mensaje en pantalla con el resultado del cierre
 					JOptionPane.showMessageDialog(ventanaPadre, "El cierre ha finalizado correctamente " , "El cierre ha finalizado, la aplicación se cerrará.", JOptionPane.INFORMATION_MESSAGE);
 					//Se espera a que el hilo de reportería termine
-					while(hiloReporteria.isAlive())
+					while(hiloReporteria.isAlive() || hiloReportSemanal.isAlive())
 					{
 						try {
 							Thread.sleep(100);
@@ -454,7 +454,12 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 			pedCtrl.enviarCorreoResumenInventario();
 		}else if(ct == hiloReportSemanal) 
 		{ 
-			
+			pedCtrl.enviarCorreoDescuentosSemanal();
+			pedCtrl.enviarCorreoDomiciliosSemanal();
+			pedCtrl.enviarCorreoAnulacionesSemanal();
+			pedCtrl.enviarCorreoAnulacionesDescuentaSemanal();
+			//Realizamos la generación de la varianza  y enviamos el indicador de resumida en true
+			invCtrl.enviarCorreoVarianzaSemanal(true);
 		}
 	}
 }

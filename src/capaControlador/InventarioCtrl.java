@@ -1,15 +1,25 @@
 package capaControlador;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import capaDAO.DetallePedidoDAO;
+import capaDAO.GeneralDAO;
 import capaDAO.ItemInventarioDAO;
 import capaDAO.ItemInventarioProductoDAO;
 import capaDAO.ModificadorInventarioDAO;
 import capaDAO.PedidoEspecialDAO;
+import capaDAO.TiendaDAO;
+import capaModelo.Correo;
 import capaModelo.DetallePedido;
+import capaModelo.FechaSistema;
 import capaModelo.ModificadorInventario;
 import capaModelo.PedidoEspecial;
+import capaModelo.Tienda;
+import utilidades.ControladorEnvioCorreo;
 
 public class InventarioCtrl {
 	private boolean auditoria;
@@ -153,5 +163,154 @@ public class InventarioCtrl {
 	{
 		boolean respuesta = DetallePedidoDAO.descargarDetallePedido(idDetallePedido, auditoria);
 		return(respuesta);
+	}
+	
+	public ArrayList obtenerInventarioVarianza(String fecha)
+	{
+		ArrayList itemInventarioVarianza = ItemInventarioDAO.obtenerInventarioVarianza(fecha, auditoria);
+		return(itemInventarioVarianza);
+	}
+	
+	public ArrayList obtenerInventarioVarianzaRes(String fecha)
+	{
+		ArrayList itemInventarioVarianza = ItemInventarioDAO.obtenerInventarioVarianzaRes(fecha, auditoria);
+		return(itemInventarioVarianza);
+	}
+	
+	//GENERAR INFORMACIÓN SEMANAL
+	
+	public String obtenerVarianzaDiasSemana(boolean resumida)
+	{
+		String respuesta = "";
+		PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
+		//Recuperamos la fecha actual del sistema con la fecha apertura
+		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
+		String fechaActual = fecha.getFechaApertura();
+		//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
+		Date datFecha;
+		String fechaAnterior = "";
+		//Creamos el objeto calendario
+		Calendar calendarioActual = Calendar.getInstance();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		try
+		{
+			//Al objeto calendario le fijamos la fecha actual del sitema
+			calendarioActual.setTime(dateFormat.parse(fechaActual));
+			
+		}catch(Exception e)
+		{
+			System.out.println(e.toString());
+		}
+		//Retormanos el día de la semana actual segun la fecha del calendario
+		int diaActual = calendarioActual.get(Calendar.DAY_OF_WEEK);
+		//Domingo
+		if(diaActual == 1)
+		{
+			//Realizamos un ciclo para ir disminuyendo la fecha uno a uno hasta seis
+			datFecha = calendarioActual.getTime();
+			fechaAnterior = dateFormat.format(datFecha);
+			ArrayList varianza;
+			if(resumida)
+			{
+				varianza =  obtenerInventarioVarianzaRes(fechaAnterior);
+			}else
+			{
+				varianza =  obtenerInventarioVarianza(fechaAnterior);
+			}
+			respuesta = respuesta + resumenVarianzaDiaria(varianza, fechaAnterior);
+			for(int i = 1; i <= 6; i++)
+			{
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -1);
+				datFecha = calendarioActual.getTime();
+				fechaAnterior = dateFormat.format(datFecha);
+				if(resumida)
+				{
+					varianza =  obtenerInventarioVarianzaRes(fechaAnterior);
+				}else
+				{
+					varianza =  obtenerInventarioVarianza(fechaAnterior);
+				}
+				respuesta = respuesta + resumenVarianzaDiaria(varianza, fechaAnterior);
+			}
+			
+		}
+		else if(diaActual == 2)
+		{
+			//Si es lunes no se hace nada
+		}
+		else if(diaActual == 3)
+		{
+			//Si es martes se resta uno solo
+			calendarioActual.add(Calendar.DAY_OF_YEAR, -1);
+		}
+		else if(diaActual == 4)
+		{
+			//Si es miercoles se resta dos
+			calendarioActual.add(Calendar.DAY_OF_YEAR, -2);
+		}
+		else if(diaActual == 5)
+		{
+			//Si es jueves se resta tres
+			calendarioActual.add(Calendar.DAY_OF_YEAR, -3);
+		}
+		else if(diaActual == 6)
+		{
+			//Si es viernes se resta cuatro
+			calendarioActual.add(Calendar.DAY_OF_YEAR, -4);
+		}
+		else if(diaActual == 7)
+		{
+			//Si es sabado se resta cinco
+			calendarioActual.add(Calendar.DAY_OF_YEAR, -5);
+		}
+		return(respuesta);
+	}
+	
+	//GENERAR STRING DE CORREO ELECTRÓNICO
+	
+	public String resumenVarianzaDiaria(ArrayList varianza, String fecha)
+	{
+		String respuesta  = "";
+		DecimalFormat formatea = new DecimalFormat("###,###");
+		respuesta = respuesta + "<table border='2'> <tr> RESUMEN VARIANZA " + fecha + " </tr>";
+		respuesta = respuesta + "<tr>"
+				+  "<td><strong>Nombre Item</strong></td>"
+				+  "<td><strong>Inicio</strong></td>"
+				+  "<td><strong>Retiro</strong></td>"
+				+  "<td><strong>Ingreso</strong></td>"
+				+  "<td><strong>Consumo</strong></td>"
+				+  "<td><strong>Teor Real</strong></td>"
+				+  "<td><strong>Varianza</strong></td>"
+				+  "</tr>";
+		for(int y = 0; y < varianza.size();y++)
+		{
+			String[] fila =(String[]) varianza.get(y);
+			double teoricoReal = Double.parseDouble(fila[2]) - Double.parseDouble(fila[3]) + Double.parseDouble(fila[4]) - Double.parseDouble(fila[5]);
+			respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td>" + formatea.format(Double.parseDouble(fila[2])) + "</td><td>" + formatea.format(Double.parseDouble(fila[3])) + "</td><td>" + formatea.format(Double.parseDouble(fila[4])) + "</td><td> " + formatea.format(Double.parseDouble(fila[5])) + "</td><td> " + formatea.format(teoricoReal) + "</td><td>" + formatea.format(Double.parseDouble(fila[6])) +"</td></tr>";
+		}
+		respuesta = respuesta + "</table> <br/>";
+		return(respuesta);
+	}
+	
+	//ENVIO DE CORREO ELECTRÓNICO
+	
+	public void enviarCorreoVarianzaSemanal(boolean resumida)
+	{
+		PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
+		//Obtenemos la fecha del rango del reporte
+		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
+		String fechaSis = fecha.getFechaApertura();
+		//Obtenemos la tienda
+		Tienda tiendaReporte = TiendaDAO.obtenerTienda(auditoria);
+		//Obtenemos el reporte
+		String reporte = obtenerVarianzaDiasSemana(resumida);
+		Correo correo = new Correo();
+		correo.setAsunto("Reporte Semanal Varianzas Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+		correo.setContrasena("Pizzaamericana2017");
+		ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
+		correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+		correo.setMensaje("A continuación el reporte semanal de Varianzas: \n" + reporte);
+		ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+		contro.enviarCorreo();
 	}
 }

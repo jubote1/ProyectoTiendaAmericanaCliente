@@ -6,6 +6,7 @@ public class PedidoDescuento {
 	private double descuentoPesos;
 	private double descuentoPorcentaje;
 	private String observacion;
+	private String fechaDescuento;
 	
 	
 	
@@ -16,6 +17,15 @@ public class PedidoDescuento {
 		this.descuentoPorcentaje = descuentoPorcentaje;
 		this.observacion = observacion;
 	}
+	
+	public String getFechaDescuento() {
+		return fechaDescuento;
+	}
+
+	public void setFechaDescuento(String fechaDescuento) {
+		this.fechaDescuento = fechaDescuento;
+	}
+
 	public int getIdpedido() {
 		return idpedido;
 	}

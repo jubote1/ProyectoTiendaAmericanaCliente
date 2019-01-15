@@ -173,6 +173,110 @@ public class ItemInventarioDAO {
 		
 	}
 	
+	public static ArrayList obtenerInventarioVarianza(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInventarioResumen = new ArrayList();
+		
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iditem, a.nombre_item, ifnull((select b.cantidad from item_inventario_historico b "
+					+ "where b.iditem = a.iditem and b.fecha = '" + fecha + "'),0)as inicio, ifnull( (select sum(c.cantidad) from retiro_inventario d, "
+					+ "retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem  "
+					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
+					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
+					+ "and f.iditem = a.iditem  and e.fecha_sistema = '" + fecha + "' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
+					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, ifnull((select z.cantidad from inventario_varianza y , item_inventario_varianza z "
+					+ "where y.idinventario_varianza = z.idinventario_varianza and a.iditem = z.iditem and y.fecha_sistema = '" + fecha + "' and y.idinventario_varianza = (select max(t.idinventario_varianza) from inventario_varianza t where t.fecha_sistema = '" + fecha + "')),0)as varianza  from item_inventario a";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInventarioResumen.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(itemsInventarioResumen);
+		
+	}
+	
+	public static ArrayList obtenerInventarioVarianzaRes(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInventarioResumen = new ArrayList();
+		
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iditem, a.nombre_item, ifnull((select b.cantidad from item_inventario_historico b "
+					+ "where b.iditem = a.iditem and b.fecha = '" + fecha + "'),0)as inicio, ifnull( (select sum(c.cantidad) from retiro_inventario d, "
+					+ "retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem  "
+					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
+					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
+					+ "and f.iditem = a.iditem  and e.fecha_sistema = '" + fecha + "' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
+					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, ifnull((select z.cantidad from inventario_varianza y , item_inventario_varianza z "
+					+ "where y.idinventario_varianza = z.idinventario_varianza and a.iditem = z.iditem and y.fecha_sistema = '" + fecha + "' and y.idinventario_varianza = (select max(t.idinventario_varianza) from inventario_varianza t where t.fecha_sistema = '" + fecha + "')),0)as varianza  from item_inventario a where a.varianza_resumida = 1";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInventarioResumen.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(itemsInventarioResumen);
+		
+	}
+	
 	
 	public static ArrayList<ItemInventario> obtenerItemInventarioObj(boolean auditoria)
 	{
@@ -183,7 +287,8 @@ public class ItemInventarioDAO {
 		int idItem;
 		String nombreItem,unidadMedida,manejaCanastas,cantidadCanasta,nombreContenedor, categoria;
 		double cantidad;
-		
+		int varRes;
+		boolean varianzaResumida;
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -202,7 +307,15 @@ public class ItemInventarioDAO {
 				cantidadCanasta = rs.getString("cantidadxcanasta");
 				nombreContenedor = rs.getString("nombrecontenedor");
 				categoria = rs.getString("categoria");
-				ItemInventario itemTemp = new ItemInventario(idItem, nombreItem, unidadMedida,cantidad, manejaCanastas, cantidadCanasta, nombreContenedor,categoria);
+				varRes = rs.getInt("varianza_resumida");
+				if(varRes == 1)
+				{
+					varianzaResumida = true;
+				}else
+				{
+					varianzaResumida = false;
+				}
+				ItemInventario itemTemp = new ItemInventario(idItem, nombreItem, unidadMedida,cantidad, manejaCanastas, cantidadCanasta, nombreContenedor,categoria,varianzaResumida);
 				itemsInventario.add(itemTemp);
 				
 			}
@@ -281,7 +394,15 @@ public class ItemInventarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into item_inventario (nombre_item, unidad_medida,manejacanastas,cantidadxcanasta,nombrecontenedor, categoria) values ('" + item.getNombreItem() + "', '" + item.getUnidadMedida() + "' , '" + item.getManejaCanastas() + "' , " + item.getCantidadCanasta() + " , '" + item.getNombreContenedor() + "' , '" + item.getCategoria() + "')"; 
+			int varRes;
+			if(item.isVarianzaResumida())
+			{
+				varRes = 1;
+			}else
+			{
+				varRes = 0;
+			}
+			String insert = "insert into item_inventario (nombre_item, unidad_medida,manejacanastas,cantidadxcanasta,nombrecontenedor, categoria, varianza_resumida) values ('" + item.getNombreItem() + "', '" + item.getUnidadMedida() + "' , '" + item.getManejaCanastas() + "' , " + item.getCantidadCanasta() + " , '" + item.getNombreContenedor() + "' , '" + item.getCategoria() + "' , " + varRes + ")"; 
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -364,8 +485,16 @@ public class ItemInventarioDAO {
 		Connection con1 = con.obtenerConexionBDLocal();
 		try
 		{
+			int varRes;
+			if(item.isVarianzaResumida())
+			{
+				varRes = 1;
+			}else
+			{
+				varRes = 0;
+			}
 			Statement stm = con1.createStatement();
-			String update = "update item_inventario set nombre_item = '" + item.getNombreItem() + "' , unidad_medida = '" + item.getUnidadMedida() + " ' , manejacanastas = '" + item.getManejaCanastas() + "' , cantidadxcanasta =" + item.getCantidadCanasta() + " , nombrecontenedor = '" + item.getNombreContenedor() + "' , categoria = '" + item.getCategoria()  + "' where iditem = " + item.getIdItem() ; 
+			String update = "update item_inventario set nombre_item = '" + item.getNombreItem() + "' , unidad_medida = '" + item.getUnidadMedida() + " ' , manejacanastas = '" + item.getManejaCanastas() + "' , cantidadxcanasta =" + item.getCantidadCanasta() + " , nombrecontenedor = '" + item.getNombreContenedor() + "' , categoria = '" + item.getCategoria() + "' , varianza_resumida = " + varRes  + " where iditem = " + item.getIdItem() ; 
 			if(auditoria)
 			{
 				logger.info(update);

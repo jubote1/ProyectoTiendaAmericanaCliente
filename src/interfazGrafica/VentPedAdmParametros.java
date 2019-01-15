@@ -27,12 +27,15 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
 import capaControlador.ParametrosProductoCtrl;
+import capaDAO.GeneralDAO;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.ParametrosCtrl;
 import capaModelo.Impuesto;
 import capaModelo.AgrupadorMenu;
+import capaModelo.Correo;
 import capaModelo.Parametro;
 import capaModelo.Tienda;
+import utilidades.ControladorEnvioCorreo;
 
 import java.awt.Font;
 
@@ -268,6 +271,30 @@ public class VentPedAdmParametros extends JDialog {
 						    }
 						} catch (MalformedURLException e1) {
 						    e1.printStackTrace();
+						}
+						//Verificamos el nuevo tiempo si esté está por encima de un parámetro se envía correo eletrónico
+						int valNuevoTiempo = Integer.parseInt(jTextValorNumerico.getText());
+						//Recuperamos el valor de la variable máximo tiempo para alertar tiempos pedidos
+						Parametro parametro = parCtrl.obtenerParametro("TIEMPOMAXIMOALERTA");
+						long valNum = 0;
+						try
+						{
+							valNum = (long) parametro.getValorNumerico();
+						}catch(Exception e)
+						{
+							System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE TIEMPOMAXIMOALERTA");
+							valNum = 0;
+						}
+						if(valNuevoTiempo >= valNum)
+						{
+							Correo correo = new Correo();
+							correo.setAsunto("ALERTA TIEMPOS PEDIDO");
+							ArrayList correos = GeneralDAO.obtenerCorreosParametro("TIEMPOPEDIDO", PrincipalLogueo.habilitaAuditoria);
+							correo.setContrasena("Pizzaamericana2017");
+							correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+							correo.setMensaje("La tienda " + tienda.getNombretienda() + " está aumentando el tiempo de entrega a " + valNuevoTiempo + " minutos");
+							ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+							contro.enviarCorreo();
 						}
 					}
 					

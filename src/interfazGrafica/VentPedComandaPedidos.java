@@ -768,7 +768,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	
 	public void pintarPedidos()
 	{
-		Object[] columnsName = new Object[11];
+		Object[] columnsName = new Object[12];
         
 		columnsName[0] = "ACT";
 		columnsName[1] = "Id Pedido";
@@ -780,7 +780,8 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
         columnsName[7] = "id Tipo Pedido";
         columnsName[8] = "idestado";
         columnsName[9] = "Domiciliario";
-        columnsName[10] = "Tiempo";
+        columnsName[10] = "TP";
+        columnsName[11] = "Tiempo";
         ArrayList<Object> pedidos = new ArrayList();
         //La lógica de pintar pedidos debemos de dividirla en varios items
         // Hay filtros de tipo pedido, en cuyo caso se cumple condición para que el sistema filtre por ellos
@@ -810,7 +811,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
         }
         
         //Definimos cuales serán las columnas editables dentro de la tabla
-        boolean[] editarCampos = {true, false, false, false, false, false, false, false, false, false, false};
+        boolean[] editarCampos = {true, false, false, false, false, false, false, false, false, false, false,false};
       
         //Definimos los tipos de objetos que se manejarán en el jtable en cada columna
         
@@ -819,7 +820,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
        	    	return editarCampos[columnIndex];
        	    }
        	    
-       	    Class[] types = new Class[] {java.lang.Boolean.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.Long.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class};
+       	    Class[] types = new Class[] {java.lang.Boolean.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.Long.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class};
          
 //       	    Class[] types = new Class[] {java.lang.Boolean.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class};
          
@@ -833,7 +834,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		{
 			String[] fila =(String[]) pedidos.get(y);
 			//modelo.addRow(fila);
-			Object[] filaFinal = {false,Long.parseLong(fila[1]), fila[2], fila[3], fila[4], fila[5], fila[6], Long.parseLong(fila[7]),Long.parseLong(fila[8]),fila[9], fila[10]};
+			Object[] filaFinal = {false,Long.parseLong(fila[1]), fila[2], fila[3], fila[4], fila[5], fila[6], Long.parseLong(fila[7]),Long.parseLong(fila[8]),fila[9], fila[10], fila[11]};
 			modelo.addRow(filaFinal);
 		}
 		tblMaestroPedidos.setModel(modelo);
@@ -860,9 +861,12 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		tblMaestroPedidos.getColumnModel().getColumn(8).setMinWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(9).setMinWidth(90);
 		tblMaestroPedidos.getColumnModel().getColumn(9).setMaxWidth(90);
+		//Modificamos el ancho del la Tiempo Pedido
+		tblMaestroPedidos.getColumnModel().getColumn(10).setMinWidth(20);
+		tblMaestroPedidos.getColumnModel().getColumn(10).setMaxWidth(20);
 		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getColumnModel().getColumn(10).setMinWidth(155);
-		tblMaestroPedidos.getColumnModel().getColumn(10).setMaxWidth(155);
+		tblMaestroPedidos.getColumnModel().getColumn(11).setMinWidth(135);
+		tblMaestroPedidos.getColumnModel().getColumn(11).setMaxWidth(135);
 		
 		
 		//Checkbox
@@ -888,9 +892,12 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMinWidth(0);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMinWidth(90);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMaxWidth(90);
-		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMinWidth(155);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMaxWidth(155);
+		//Modificamos el ancho del tiempo dado pedido
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMinWidth(20);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMaxWidth(20);
+		//Modificamos el ancho del Tiempo Pedido
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(11).setMinWidth(135);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(11).setMaxWidth(135);
 
 		tblMaestroPedidos.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tblMaestroPedidos.getColumnModel().getColumn(4).setCellRenderer( new CellRenderTransaccional());

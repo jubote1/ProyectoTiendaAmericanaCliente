@@ -34,6 +34,7 @@ public class VentPedHisDetPedido extends JDialog {
 	private JTextField txtTotalSD;
 	private JTextField txtDescuento;
 	private JTextField txtTotalPedido;
+	private JTable tableAnuladosPedido;
 	/**
 	 * Launch the application.
 	 */
@@ -136,6 +137,17 @@ public class VentPedHisDetPedido extends JDialog {
 		panelDetallePedido.add(txtTotalPedido);
 		txtTotalPedido.setColumns(10);
 		
+		JPanel panelAnulacionPedido = new JPanel();
+		tabbedPane.addTab("Items Anulados", null, panelAnulacionPedido, null);
+		panelAnulacionPedido.setLayout(null);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(42, 26, 667, 175);
+		panelAnulacionPedido.add(scrollPane);
+		
+		tableAnuladosPedido = new JTable();
+		scrollPane.setViewportView(tableAnuladosPedido);
+		
 		JLabel lblIdPedido = new JLabel("Id Pedido");
 		lblIdPedido.setFont(new Font("Tahoma", Font.BOLD, 20));
 		lblIdPedido.setBounds(182, 28, 131, 34);
@@ -148,6 +160,7 @@ public class VentPedHisDetPedido extends JDialog {
 		contentPanel.add(lblPedido);
 		pintarDetallePedido(idPedidoTienda);
 		pintarHistoriaEstado(idPedidoTienda);
+		pintarDetalleAnuladosPedido(idPedidoTienda);
 	}
 	
 	
@@ -224,4 +237,41 @@ public class VentPedHisDetPedido extends JDialog {
 		txtTotalPedido.setText(Double.toString(totalPedido - pedDesc.getDescuentoPesos()));
 		tableDetallePedido.setModel(modelo);
 	}
+	
+	public void pintarDetalleAnuladosPedido(int idPedido)
+	{
+		Object[] columnsName = new Object[5];
+        
+        columnsName[0] = "Id Detalle";
+        columnsName[1] = "Desc Producto";
+        columnsName[2] = "Cantidad";
+        columnsName[3] = "Valor Unitario";
+        columnsName[4] = "Valor Total";
+        ArrayList<DetallePedido> detsPedido = new ArrayList();
+        detsPedido = pedCtrl.obtenerDetallePedidoAnuladoPintar(idPedido);
+        DefaultTableModel modelo = new DefaultTableModel(){
+       	    public boolean isCellEditable(int rowIndex,int columnIndex){
+       	    	return false;
+       	    }
+       	    
+       	    
+       	};
+		modelo.setColumnIdentifiers(columnsName);
+		String[] fila = new String[5];
+		DetallePedido detPedTemp;
+		double totalPedido = 0;
+		for(int y = 0; y < detsPedido.size();y++)
+		{
+			detPedTemp = detsPedido.get(y);
+			fila = new String[6];
+			fila[0] = Integer.toString(detPedTemp.getIdDetallePedido());
+			fila[1] = detPedTemp.getDescripcioProducto();
+			fila[2] = Double.toString(detPedTemp.getCantidad());
+			fila[3] = Double.toString(detPedTemp.getValorUnitario());
+			fila[4] = Double.toString(detPedTemp.getValorTotal());
+			modelo.addRow(fila);
+		}
+		tableAnuladosPedido.setModel(modelo);
+	}
+	
 }

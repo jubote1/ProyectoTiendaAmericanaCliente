@@ -1226,7 +1226,6 @@ public class VentPedTomarPedidos extends JFrame {
 		//En estepunto debemos de validar si el producto adicionado tiene productos incluidos
 		//Agrupamos esta información en proIncluido
 		ArrayList<ProductoIncluido> proIncluido = parPro.obtenerProductosIncluidos(idProducto, cantidad);
-		System.out.println("REVISANDO EL PRODUCTO INCLUIDO " + idProducto + " " + proIncluido.size());
 		//Capturamos el detalle pedido creado, validaremos si fue exitoso para agregarlo al contenedor y pantalla
 		int idDetalle = pedCtrl.insertarDetallePedido(detPedido);
 		detPedido.setIdDetallePedido(idDetalle);

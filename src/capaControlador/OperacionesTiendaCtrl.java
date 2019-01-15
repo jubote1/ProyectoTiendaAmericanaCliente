@@ -1,22 +1,30 @@
 package capaControlador;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+
+import capaConexion.ConexionBaseDatos;
 import capaDAO.EgresoDAO;
 import capaDAO.IngresoDAO;
 import capaDAO.ItemInventarioHistoricoDAO;
 import capaDAO.ModificadorInventarioDAO;
 import capaDAO.PedidoDAO;
+import capaDAO.PorcionesControlDiarioDAO;
 import capaDAO.TiendaDAO;
 import capaModelo.DetallePedido;
 import capaModelo.Egreso;
 import capaModelo.FechaSistema;
 import capaModelo.Ingreso;
 import capaModelo.Pedido;
+import capaModelo.PorcionesControlDiario;
 import capaModelo.Tienda;
 import interfazGrafica.Impresion;
 
@@ -331,5 +339,75 @@ public void realizarInventarioHistorico(String fecha)
 	            + "\n\n\n\n\n\n\n           ";
 		return(ingreso);
 	}
+	
+	
+	
+	
+	//Operaciones de porciones en la tienda
+	
+	public PorcionesControlDiario obtenerPorcionesControlDiario(String fecha)
+	{
+		PorcionesControlDiario estActual = PorcionesControlDiarioDAO.obtenerPorcionesControlDiario(fecha, auditoria);
+		return(estActual);
+	}
+	
+	//AUMENTO
+	
+	public boolean aumentarPorcion(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.aumentarPorcion(fecha, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean aumentarPorcionGaseosa(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.aumentarPorcionGaseosa(fecha, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean aumentarPorcionEmpleado(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.aumentarPorcionEmpleado(fecha, auditoria);
+		return(respuesta);
+	}
+
+	public boolean aumentarPorcionDesecho(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.aumentarPorcionDesecho(fecha, auditoria);
+		return(respuesta);
+	}
+	
+	//DISMINUIR
+	
+	public boolean disminuirPorcion(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.disminuirPorcion(fecha, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean disminuirPorcionGaseosa(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.disminuirPorcionGaseosa(fecha, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean disminuirPorcionEmpleado(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.disminuirPorcionEmpleado(fecha, auditoria);
+		return(respuesta);
+	}
+
+	public boolean disminuirPorcionDesecho(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.disminuirPorcionDesecho(fecha, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean facturarPorciones(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.facturarPorciones(fecha, auditoria);
+		return(respuesta);
+	}
+
 	
 }

@@ -12,6 +12,7 @@ import javax.swing.text.MaskFormatter;
 
 import capaControlador.AutenticacionCtrl;
 import capaControlador.ClienteCtrl;
+import capaControlador.OperacionesTiendaCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.Cliente;
@@ -73,6 +74,7 @@ public class VentCliCliente extends JFrame {
 	private ClienteCtrl cliCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+	private OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 	private MaskFormatter mascTel = new MaskFormatter();
 	public JButton btnActualizarCliente;
 	public JButton btnCrearCliente;
@@ -297,8 +299,9 @@ public class VentCliCliente extends JFrame {
 				//conformamos el campo dirección con base en la nomenclatura definida
 				String direccion = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getNomenclatura() + " " + numNomen1 + " # " + numNomen2 + " - " + num3;
 				Cliente crearCliente = new Cliente(0, telefono, nombre, apellido, compania, direccion, "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "");
-				//Esto lo realizaremos de manera transitoria mientra hacemos algo estándar en el ingreso de la tienda
-				crearCliente.setIdtienda(1);
+				//Retornamos el id de la tienda y los fijamos en el cliente para su creación
+				int idTienda = operTienda.obtenerIdTienda();
+				crearCliente.setIdtienda(idTienda);
 				ClienteCtrl clienteCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
 				int idCliIns = clienteCtrl.insertarCliente(crearCliente);
 				if(idCliIns > 0)

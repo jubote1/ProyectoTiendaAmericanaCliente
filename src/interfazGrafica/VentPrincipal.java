@@ -452,6 +452,23 @@ public class VentPrincipal extends JFrame {
 				
 			}
 		});
+		
+		JButton btnControlarPorciones = new JButton("Controlar Porciones");
+		btnControlarPorciones.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_016", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentPedContPorciones ventPorciones = new VentPedContPorciones(ventPrincipal, true);
+					ventPorciones.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		PanelPedidos.add(btnControlarPorciones);
 		PanelPedidos.add(btnParmetrosGenerales);
 		PanelPedidos.add(btnMaestroPedidos);
 		

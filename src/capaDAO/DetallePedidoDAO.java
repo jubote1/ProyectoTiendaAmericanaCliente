@@ -460,7 +460,88 @@ public class DetallePedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.iddetalle_pedido, a.idproducto, b.descripcion, b.tipo_producto , b.tamano, b.impresion,  a.iddetalle_pedido_master, a.cantidad, a.valorunitario, a.valortotal, a.observacion, a.iddetalle_modificador, a.descargo_inventario, a.idmotivoanulacion from detalle_pedido a, producto b where a.idproducto = b.idproducto and a.idpedidotienda = " + idPedido ;
+			String consulta = "select a.iddetalle_pedido, a.idproducto, b.descripcion, b.tipo_producto , b.tamano, b.impresion,  a.iddetalle_pedido_master, a.cantidad, a.valorunitario, a.valortotal, a.observacion, a.iddetalle_modificador, a.descargo_inventario, a.idmotivoanulacion from detalle_pedido a, producto b where a.idproducto = b.idproducto and a.idpedidotienda = " + idPedido + " and a.idmotivoanulacion IS NULL "  ;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idDetallePedido,idProducto,idDetallePedidoMaster, idDetalleModificador, idMotivoAnulacion;
+			double cantidad,valorUnitario,valorTotal;
+			String observacion;
+			DetallePedido detPedTemp;
+			String descripcionProducto = "";
+			String tipoProducto = "";
+			String tamano = "";
+			String descCortaProducto = "";
+			String descargoInventario = "";
+			String estado = "";
+			while (rs.next())
+			{
+				idDetallePedido = rs.getInt("iddetalle_pedido");
+				idProducto = rs.getInt("idproducto");
+				idDetallePedidoMaster = rs.getInt("iddetalle_pedido_master");
+				cantidad = rs.getDouble("cantidad");
+				valorUnitario = rs.getDouble("valorunitario");
+				valorTotal = rs.getDouble("valortotal");
+				observacion = rs.getString("observacion");
+				descripcionProducto = rs.getString("descripcion");
+				tipoProducto = rs.getString("tipo_producto");
+				tamano = rs.getString("tamano");
+				descCortaProducto = rs.getString("impresion");
+				idDetalleModificador = rs.getInt("iddetalle_modificador");
+				descargoInventario = rs.getString("descargo_inventario");
+				try
+				{
+					idMotivoAnulacion = rs.getInt("idmotivoanulacion");
+				}catch(Exception e)
+				{
+					idMotivoAnulacion = 0;
+				}	
+				if(idMotivoAnulacion > 0)
+				{
+					estado = "A";
+				}
+				else
+				{
+					estado = "";
+				}
+				detPedTemp = new DetallePedido(idDetallePedido,  idPedido, idProducto, cantidad, valorUnitario,
+						valorTotal, observacion, idDetallePedidoMaster, descripcionProducto, tipoProducto, tamano, descCortaProducto);
+				detPedTemp.setIdDetalleModificador(idDetalleModificador);
+				detPedTemp.setEstado(estado);
+				detallesPedido.add(detPedTemp);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+			
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(detallesPedido);
+		
+	}
+	
+	public static ArrayList<DetallePedido> obtenerDetallePedidoAnuladoPintar(int idPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		ArrayList<DetallePedido> detallesPedido = new ArrayList();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iddetalle_pedido, a.idproducto, b.descripcion, b.tipo_producto , b.tamano, b.impresion,  a.iddetalle_pedido_master, a.cantidad, a.valorunitario, a.valortotal, a.observacion, a.iddetalle_modificador, a.descargo_inventario, a.idmotivoanulacion from detalle_pedido a, producto b where a.idproducto = b.idproducto and a.idpedidotienda = " + idPedido + " and a.idmotivoanulacion IS NOT NULL "  ;
 			if(auditoria)
 			{
 				logger.info(consulta);

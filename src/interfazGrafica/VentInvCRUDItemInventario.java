@@ -40,6 +40,7 @@ public class VentInvCRUDItemInventario extends JDialog {
 	private JTextField txtCantidadCanasta;
 	private JTextField txtNombreContenedor;
 	private JCheckBox chckbxManejaCanasta;
+	private JCheckBox chckbxVarianza;
 	private JComboBox cbCategoria;
 	private ParametrosProductoCtrl par = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	/**
@@ -163,13 +164,14 @@ public class VentInvCRUDItemInventario extends JDialog {
 				String nombreContenedor = "";
 				String manejaContenedor = "N";
 				String categoria = (String) cbCategoria.getSelectedItem();
+				boolean varianzaResumida = chckbxVarianza.isSelected();
 				if(chckbxManejaCanasta.isSelected())
 				{
 					cantidadCanasta = txtCantidadCanasta.getText();
 					nombreContenedor = txtNombreContenedor.getText();
 					manejaContenedor = "S";
 				}
-				ItemInventario itemNuevo = new ItemInventario(0,nombreItem, unidadMedida,0,manejaContenedor,cantidadCanasta,nombreContenedor,categoria); 
+				ItemInventario itemNuevo = new ItemInventario(0,nombreItem, unidadMedida,0,manejaContenedor,cantidadCanasta,nombreContenedor,categoria, varianzaResumida); 
 				int idItem = par.insertarItemInventario(itemNuevo);
 				DefaultTableModel modelo = pintarItemInventario();
 				jTableItemInventario.setModel(modelo);
@@ -235,7 +237,7 @@ public class VentInvCRUDItemInventario extends JDialog {
 		jTextUnidadMedida.setText("");
 		
 		chckbxManejaCanasta = new JCheckBox("");
-		chckbxManejaCanasta.setBounds(209, 117, 97, 23);
+		chckbxManejaCanasta.setBounds(209, 117, 33, 23);
 		panelDatos.add(chckbxManejaCanasta);
 		
 		JLabel lblManejaCanastas = new JLabel("Maneja Canastas");
@@ -279,6 +281,14 @@ public class VentInvCRUDItemInventario extends JDialog {
 		lblCategoria.setBounds(29, 234, 134, 14);
 		panelDatos.add(lblCategoria);
 		
+		JLabel lblVarianzaResumida = new JLabel("Varianza Resumida");
+		lblVarianzaResumida.setBounds(259, 117, 93, 14);
+		panelDatos.add(lblVarianzaResumida);
+		
+		chckbxVarianza = new JCheckBox("");
+		chckbxVarianza.setBounds(366, 117, 33, 23);
+		panelDatos.add(chckbxVarianza);
+		
 		btnEditar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int filaSeleccionada = jTableItemInventario.getSelectedRow();
@@ -313,7 +323,8 @@ public class VentInvCRUDItemInventario extends JDialog {
 						nombreContenedor = txtNombreContenedor.getText();
 						manejaContenedor = "S";
 					}
-					ItemInventario itemEditado = new ItemInventario(Integer.parseInt(jTextIDItem.getText()),jTextNombre.getText(),jTextUnidadMedida.getText(),0, manejaContenedor, cantidadCanasta, nombreContenedor,categoria); 
+					boolean varianzaResumida = chckbxVarianza.isSelected();
+					ItemInventario itemEditado = new ItemInventario(Integer.parseInt(jTextIDItem.getText()),jTextNombre.getText(),jTextUnidadMedida.getText(),0, manejaContenedor, cantidadCanasta, nombreContenedor,categoria,varianzaResumida); 
 					boolean respuesta = par.editarItemInventario(itemEditado);
 					if (respuesta)
 					{
