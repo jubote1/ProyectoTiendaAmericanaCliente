@@ -21,6 +21,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JLayeredPane;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.BoxLayout;
@@ -358,6 +359,22 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 			   	  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
 				  int idPedidoFP = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 1).toString());
 				  txtFormaPago.setText(pedCtrl.consultarFormaPago(idPedidoFP));
+				  //Agregar la acción de cuando uno da clic en cualquier parte de la columna poder
+				  //chequear el pedido
+				  boolean cheq = (boolean) tblMaestroPedidos.getValueAt(filaSeleccionada, 0);
+				  //Debemos de capturar de donde proviene el evento, para lo cual capturamos la columna
+				  int col= tblMaestroPedidos.columnAtPoint(e.getPoint());
+				  //Validamos que la columna es diferente de cero para revisar el chequeo o no de la fila para las acciones que vienen
+				  if(col != 0)
+				  {
+					  if(cheq)
+					  {
+						  tblMaestroPedidos.setValueAt(false,filaSeleccionada,0);
+					  }else
+					  {
+						  tblMaestroPedidos.setValueAt(true,filaSeleccionada,0);
+					  }
+				  }
 			}
 			else
 			{
@@ -397,7 +414,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		      {
 		    	  //En este punto de manera predefinida vamos por el item de si está o no chequeado el pedido
 		    	  boolean pedCheq =(boolean) tblMaestroPedidos.getValueAt(i, 0);
-		    	  if(pedCheq)
+		    	  if(pedCheq == true)
 		    	  {
 		    		  //En caso de que el pedido este chequeado validamos si está en el estado correspondiente para dar salida
 		    		  long idEstado = (long) tblMaestroPedidos.getValueAt(i, 8);
@@ -1109,6 +1126,12 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 					}
 				}
 			}
+		}
+		else
+		{
+			//Cuando se refresca y en caso de que no sea un domiciliario se debe limpiar las variables en cuestión
+			idDomiCon = 0;
+			consDomi = false;
 		}
 		//En caso de que sea domiciliario lo debemos de tener en cuenta para que muestre su vista
 		lblTipoFiltro.setText("EMPLEADO");

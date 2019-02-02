@@ -72,6 +72,7 @@ public class ModificadorInventarioDAO {
 		return(idIngresoInv);
 	}
 	
+		
 	/**
 	 * Método que se encargará en la inserción de los consumos de un pedido determinado, sean positivos es decir gastos o negativos reintegros de inventario
 	 * @param consumo Arraylist con objetos de tipo modificadorInventario que se descontarán del inventario

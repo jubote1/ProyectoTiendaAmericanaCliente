@@ -22,6 +22,7 @@ import JTable.NextCellActioinVarianza;
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
+import capaModelo.InventariosTemporal;
 import capaModelo.ModificadorInventario;
 
 import javax.swing.JScrollPane;
@@ -43,9 +44,11 @@ import javax.swing.JOptionPane;
 
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Window;
 
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import java.awt.Color;
 
 public class VentInvIngresarVarianza extends JDialog {
 
@@ -131,7 +134,7 @@ public class VentInvIngresarVarianza extends JDialog {
 		};
 		scrollPaneIngVarianza.setColumnHeaderView(tableIngVarianza);
 		scrollPaneIngVarianza.setViewportView(tableIngVarianza);
-		pintarResumenVarianza(fechaSis);
+		
 		//Adicionamos acciones para el comportamiento de la tabla tab y enter
 		InputMap im = tableIngVarianza.getInputMap();
 		//Definimos que el enter será para la siguiente celda
@@ -226,6 +229,8 @@ public class VentInvIngresarVarianza extends JDialog {
 					{
 						cantAvance = 100;
 						JOptionPane.showMessageDialog(null, "La Varianza " + idInvVarianza + " fue ingresado correctamente." , "Ingreso de Varianza", JOptionPane.INFORMATION_MESSAGE);
+						//Si se confirma el ingreso debemos de borrar de la tabla temporal
+						invCtrl.limpiarTipoInventariosTemporal(fechaSis,"V");
 						dispose();
 					}
 					else
@@ -238,17 +243,23 @@ public class VentInvIngresarVarianza extends JDialog {
 				
 			}
 		});
-		btnConfirmarIngreso.setBounds(54, 319, 152, 37);
+		btnConfirmarIngreso.setBounds(20, 319, 152, 37);
 		contentPanePrincipal.add(btnConfirmarIngreso);
 		
 		JButton btnCancelar = new JButton("Cancelar");
 		btnCancelar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				dispose();
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
+				int resp = JOptionPane.showConfirmDialog(ventanaPadre, "¿Está seguro que desea salir sin confirmar el ingreso o sin guardar temporalmente?", "Confirmación de Salida de Pantalla" , JOptionPane.YES_NO_OPTION);
+				if (resp == 0)
+				{
+					dispose();
+				}
 			}
 		});
-		btnCancelar.setBounds(380, 316, 146, 37);
+		btnCancelar.setBounds(207, 319, 146, 37);
 		contentPanePrincipal.add(btnCancelar);
 		
 		JLabel lblFechaIngresoVarianza = new JLabel("FECHA INGRESO VARIANZA");
@@ -276,10 +287,71 @@ public class VentInvIngresarVarianza extends JDialog {
 		lblImagen.setIcon(iconoEscalado);
 		contentPanePrincipal.add(lblImagen);
 		
+		JButton btnGuardarSinConfirmar = new JButton("Guardar sin Confirmar");
+		btnGuardarSinConfirmar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//La variable que controla los ingresados
+				cantAvance = 1;
+				InventariosTemporal invTemp;
+				ArrayList<InventariosTemporal> inventariosTemp = new ArrayList();
+				hiloProgressBar.start();
+				//Realizamos la desactivación de la edición del JTable
+				if(tableIngVarianza.isEditing())
+				{
+					tableIngVarianza.getCellEditor().stopCellEditing();
+				}
+				//Recorre el jtable para ver si se modifico
+				int idItem;
+				double cantidad;
+				int controladorIngreso = 0;
+				cantAvance = 20;
+				//Ponemos a correr el hilo que actualizará el JProgressBar
+				
+				for(int i = 0; i < tableIngVarianza.getRowCount(); i++)
+				{
+					cantAvance = 40;
+					//Capturamos el idItem	
+					idItem =Integer.parseInt((String)tableIngVarianza.getValueAt(i, 0));
+					//Capturamos la cantidad
+					try
+					{
+						cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 8));
+					}catch(Exception e)
+					{
+						cantidad = 0;
+					}
+					
+					invTemp = new InventariosTemporal(fechaSis,"V", idItem, cantidad);
+					inventariosTemp.add(invTemp);
+				}
+				cantAvance = 50;
+				//Realizamos la invocación para la inclusión de la información de inventarios
+				boolean respuesta  = invCtrl.insertarInventariosTemp(inventariosTemp);
+				cantAvance = 90;
+				if(respuesta)
+				{
+						cantAvance = 100;
+						JOptionPane.showMessageDialog(null, "Se ha guardado temporalmente la varianza." , "Ingreso Temporal de Varianza", JOptionPane.INFORMATION_MESSAGE);
+						dispose();
+				}
+				else
+				{
+						JOptionPane.showMessageDialog(null, "Se tuvieron inconvenientes al ingresar los datos temporales de la Varianza" , "Error al ingresar Varianza inventarios", JOptionPane.ERROR_MESSAGE);
+						cantAvance = 0;
+						return;
+				}
+			}
+		});
+		btnGuardarSinConfirmar.setBackground(Color.ORANGE);
+		btnGuardarSinConfirmar.setBounds(385, 319, 181, 37);
+		contentPanePrincipal.add(btnGuardarSinConfirmar);
+		pintarResumenVarianza(fechaSis);
 	}
 	
 	public void pintarResumenVarianza( String fecha)
 	{
+		//Se valida si existe algo en las tablas temporales
+		boolean existePreVarianza = invCtrl.existeInventariosTemporal(fechaSis, "V");		
 		Object[] columnsName = new Object[10];
         
 		columnsName[0] = "Id Item";
@@ -292,8 +364,16 @@ public class VentInvIngresarVarianza extends JDialog {
         columnsName[7] = "A este Instante";
         columnsName[8] = "Ingrese Real";
         columnsName[9] = "Diferencia";
-        ArrayList itemsResumen = invCtrl.obtenerItemInventarioVarianza(fecha);
-		//Se crea el default table model y allí esperamos poder digitar los valores
+        ArrayList itemsResumen = new ArrayList();
+        if(existePreVarianza)
+        {
+        	JOptionPane.showMessageDialog(null, "Los datos de la varianza fueron recuperados de un proceso anterior de guardado temporal." , "Ingreso Temporal de Varianza", JOptionPane.INFORMATION_MESSAGE);
+        	itemsResumen = invCtrl.obtenerItemInventarioVarianzaTemp(fecha);
+        }else
+        {
+        	itemsResumen = invCtrl.obtenerItemInventarioVarianza(fecha);
+        }
+        //Se crea el default table model y allí esperamos poder digitar los valores
 		DefaultTableModel modeloItemResumen = new DefaultTableModel(){
 			
 			

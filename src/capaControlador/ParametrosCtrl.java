@@ -103,6 +103,12 @@ public class ParametrosCtrl {
 			}
 			return listJSON.toJSONString();
 		}
+		
+		public FormaPago retornarFormaPago(int idFormaPago)
+		{
+			FormaPago forPago = FormaPagoDAO.retornarFormaPago(idFormaPago, auditoria);
+			return(forPago);
+		}
 	
 		public boolean EditarParametro(Parametro parametro)
 		{

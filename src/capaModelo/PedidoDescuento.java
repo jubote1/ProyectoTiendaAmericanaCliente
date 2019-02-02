@@ -7,17 +7,51 @@ public class PedidoDescuento {
 	private double descuentoPorcentaje;
 	private String observacion;
 	private String fechaDescuento;
+	private double valorInicial;
+	private double valorFinal;
 	
 	
 	
-	public PedidoDescuento(int idpedido, double descuentoPesos, double descuentoPorcentaje, String observacion) {
+	
+	
+	public PedidoDescuento(int idpedido, double descuentoPesos, double descuentoPorcentaje, String observacion,
+			String fechaDescuento, double valorInicial, double valorFinal) {
 		super();
 		this.idpedido = idpedido;
 		this.descuentoPesos = descuentoPesos;
 		this.descuentoPorcentaje = descuentoPorcentaje;
 		this.observacion = observacion;
+		this.fechaDescuento = fechaDescuento;
+		this.valorInicial = valorInicial;
+		this.valorFinal = valorFinal;
 	}
-	
+
+
+
+	public double getValorInicial() {
+		return valorInicial;
+	}
+
+
+
+	public void setValorInicial(double valorInicial) {
+		this.valorInicial = valorInicial;
+	}
+
+
+
+	public double getValorFinal() {
+		return valorFinal;
+	}
+
+
+
+	public void setValorFinal(double valorFinal) {
+		this.valorFinal = valorFinal;
+	}
+
+
+
 	public String getFechaDescuento() {
 		return fechaDescuento;
 	}

@@ -8,6 +8,7 @@ import java.util.Date;
 
 import capaDAO.DetallePedidoDAO;
 import capaDAO.GeneralDAO;
+import capaDAO.InventariosTemporalDAO;
 import capaDAO.ItemInventarioDAO;
 import capaDAO.ItemInventarioProductoDAO;
 import capaDAO.ModificadorInventarioDAO;
@@ -16,6 +17,7 @@ import capaDAO.TiendaDAO;
 import capaModelo.Correo;
 import capaModelo.DetallePedido;
 import capaModelo.FechaSistema;
+import capaModelo.InventariosTemporal;
 import capaModelo.ModificadorInventario;
 import capaModelo.PedidoEspecial;
 import capaModelo.Tienda;
@@ -33,10 +35,34 @@ public class InventarioCtrl {
 		return(itemsIngresar);
 	}
 	
+	public ArrayList obtenerItemInventarioIngresar(String fechaSistema, String tipo)
+	{
+		ArrayList itemsIngresar = ItemInventarioDAO.obtenerItemInventarioIngresar(fechaSistema, tipo, auditoria);
+		return(itemsIngresar);
+	}
+	
 	public int insertarIngresosInventarios(ArrayList <ModificadorInventario> ingresos, String fecha )
 	{
 		int idIngreso = ModificadorInventarioDAO.insertarIngresosInventarios(ingresos, fecha, auditoria);
 		return(idIngreso);
+	}
+	
+	public boolean insertarInventariosTemp(ArrayList <InventariosTemporal> ingresosTemp)
+	{
+		boolean respuesta = false;
+		InventariosTemporal ingTemp;
+		int contadorIng = 0;
+		for(int i = 0; i < ingresosTemp.size(); i++)
+		{
+			ingTemp = ingresosTemp.get(i);
+			InventariosTemporalDAO.insertarInventariosTemporal(ingTemp, auditoria);
+			contadorIng++;
+		}
+	if(contadorIng > 0)
+	{
+		respuesta = true;
+	}
+		return(respuesta);
 	}
 	
 	public int insertarRetirosInventarios(ArrayList <ModificadorInventario> retiros, String fecha )
@@ -81,6 +107,12 @@ public class InventarioCtrl {
 		ArrayList itemInventarioVarianza = ItemInventarioDAO.obtenerItemInventarioVarianza(fecha, auditoria);
 		return(itemInventarioVarianza);
 	}
+	
+	public ArrayList obtenerItemInventarioVarianzaTemp(String fecha)
+	{
+		ArrayList itemInventarioVarianza = ItemInventarioDAO.obtenerItemInventarioVarianzaTemp(fecha, auditoria);
+		return(itemInventarioVarianza);
+	}
 	public int insertarVarianzaInventarios(ArrayList <ModificadorInventario> varianzas, String fecha )
 	{
 		int idInvVarianza = ModificadorInventarioDAO.insertarVarianzaInventarios(varianzas, fecha, auditoria);
@@ -113,6 +145,23 @@ public class InventarioCtrl {
 	}
 	
 	
+	//Métodos para el manejo de la entidad InventariosTemporal
+	
+	public void insertarInventariosTemporal(InventariosTemporal invTemp)
+	{
+		InventariosTemporalDAO.insertarInventariosTemporal(invTemp,auditoria);
+	}
+	
+	public void limpiarTipoInventariosTemporal(String fechaSistema, String tipoInventario)
+	{
+		InventariosTemporalDAO.limpiarTipoInventariosTemporal(fechaSistema, tipoInventario, auditoria);
+	}
+	
+	public boolean existeInventariosTemporal(String fechaSistema, String tipoInventario)
+	{
+		boolean respuesta = InventariosTemporalDAO.existeInventariosTemporal(fechaSistema, tipoInventario, auditoria);
+		return(respuesta);
+	}
 	
 	public boolean reintegrarInventarioPedido(int idPedido)
 	{
@@ -280,13 +329,16 @@ public class InventarioCtrl {
 				+  "<td><strong>Ingreso</strong></td>"
 				+  "<td><strong>Consumo</strong></td>"
 				+  "<td><strong>Teor Real</strong></td>"
+				+  "<td><strong>TEOR ING</strong></td>"
 				+  "<td><strong>Varianza</strong></td>"
 				+  "</tr>";
 		for(int y = 0; y < varianza.size();y++)
 		{
 			String[] fila =(String[]) varianza.get(y);
 			double teoricoReal = Double.parseDouble(fila[2]) - Double.parseDouble(fila[3]) + Double.parseDouble(fila[4]) - Double.parseDouble(fila[5]);
-			respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td>" + formatea.format(Double.parseDouble(fila[2])) + "</td><td>" + formatea.format(Double.parseDouble(fila[3])) + "</td><td>" + formatea.format(Double.parseDouble(fila[4])) + "</td><td> " + formatea.format(Double.parseDouble(fila[5])) + "</td><td> " + formatea.format(teoricoReal) + "</td><td>" + formatea.format(Double.parseDouble(fila[6])) +"</td></tr>";
+			//Calculamos la varianza entendiendo que la varianza es la resta de los valores teorico y real
+			double varCalculada = Double.parseDouble(fila[6]) - teoricoReal;
+			respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td>" + formatea.format(Double.parseDouble(fila[2])) + "</td><td>" + formatea.format(Double.parseDouble(fila[3])) + "</td><td>" + formatea.format(Double.parseDouble(fila[4])) + "</td><td> " + formatea.format(Double.parseDouble(fila[5])) + "</td><td> " + formatea.format(teoricoReal) + "</td><td>" + formatea.format(Double.parseDouble(fila[6])) + "</td><td>" + formatea.format(varCalculada) +"</td></tr>";
 		}
 		respuesta = respuesta + "</table> <br/>";
 		return(respuesta);
@@ -305,7 +357,7 @@ public class InventarioCtrl {
 		//Obtenemos el reporte
 		String reporte = obtenerVarianzaDiasSemana(resumida);
 		Correo correo = new Correo();
-		correo.setAsunto("Reporte Semanal Varianzas Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+		correo.setAsunto("SEMANAL Reporte Varianzas Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
 		correo.setContrasena("Pizzaamericana2017");
 		ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
 		correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -313,4 +365,6 @@ public class InventarioCtrl {
 		ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
 		contro.enviarCorreo();
 	}
+	
+	
 }

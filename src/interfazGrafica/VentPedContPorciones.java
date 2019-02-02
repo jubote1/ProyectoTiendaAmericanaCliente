@@ -40,17 +40,20 @@ public class VentPedContPorciones extends JDialog {
 	JButton btnPorcion;
 	JButton btnPorcionGaseosa;
 	JButton btnPorcionEmpleado;
+	JButton btnPorcionTemporal;
 	JButton btnDesecho;
 	JButton btnDisminuirPorcion;
 	JButton btnDisminuirPorcionGaseosa;
 	JButton btnDisminuirPorcionEmpleado;
 	JButton btnDisminuirDesecho;
+	JButton btnDisminuirPorcionTemporal;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 	private ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	private ParametrosProductoCtrl parProductoCtrl = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private PorcionesControlDiario estActual;
 	private JTextField txtPorcionDesecho;
+	private JTextField txtPorcionTemporal;
 	/**
 	 * Launch the application.
 	 */
@@ -70,7 +73,7 @@ public class VentPedContPorciones extends JDialog {
 	public VentPedContPorciones(java.awt.Frame frame, boolean modal) {
 		super(frame, modal);
 		setTitle("CONTROL DE VENTA DE PORCIONES");
-		setBounds(100, 100, 911, 429);
+		setBounds(100, 100, 911, 511);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -181,8 +184,10 @@ public class VentPedContPorciones extends JDialog {
 					}
 					//Asignamos el producto de porciones para con este facturar
 					int idProductoPorcion =(int) valNum;
+					int idPorcionTemporal = 0;
 					int cantPorciones;
 					int cantDescuento;
+					int cantTemporales;
 					double precioPorcion = parProductoCtrl.obtenerPrecioPilaProducto(idProductoPorcion);
 					//Repetimos el proceso para el producto gaseosa
 					parametro = parCtrl.obtenerParametro("PRODUCTOGASEOSA");
@@ -199,12 +204,26 @@ public class VentPedContPorciones extends JDialog {
 					int idProductoGaseosa =(int) valNum;
 					int cantGaseosas;
 					double precioGaseosa = parProductoCtrl.obtenerPrecioPilaProducto(idProductoGaseosa);
+					//Tomamos el idProducto para porción de temporales
+					parametro = parCtrl.obtenerParametro("PORCIONTEMPORALES");
+					valNum = 0;
+					try
+					{
+						valNum = (long) parametro.getValorNumerico();
+					}catch(Exception exc)
+					{
+						System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA PORCIONES DE TERMPORALES");
+						JOptionPane.showMessageDialog(ventanaPadre, "Debe tener parametrizada la variable PORCIONTEMPORALES para poder facturar" , "No se tiene variable para poder facturar", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					idPorcionTemporal = (int) valNum;
+					double precioPorcionTemp = parProductoCtrl.obtenerPrecioPilaProducto(idPorcionTemporal);
 					//Actualizamos el estado de las porciones en bd 
 					estActual = operTiendaCtrl.obtenerPorcionesControlDiario(fechaSistema);
 					cantPorciones = estActual.getPorcion() + estActual.getPorcionGaseosa() + estActual.getPorcionEmpleado() + estActual.getPorcionDesecho();
 					cantGaseosas = estActual.getPorcionGaseosa();
 					cantDescuento = estActual.getPorcionEmpleado();
-					
+					cantTemporales = estActual.getPorcionTemporal();
 					//Obtenemos el id de la tienda
 					int idTienda = operTiendaCtrl.obtenerIdTienda();
 					//Existe un cliente tienda el cual es el cliente con el id 0, con ese mandamos la facturación
@@ -228,13 +247,20 @@ public class VentPedContPorciones extends JDialog {
 						pedCtrl.insertarDetallePedido(detPedido);
 						contadorDetallePedido++;
 					}
+					//Validamos si hay venta de porciones para empleado temporales y asi facturarlos
+					if(cantTemporales > 0)
+					{
+						detPedido = new DetallePedido(0,idPedidoTienda,idPorcionTemporal,cantTemporales, precioPorcionTemp, cantTemporales*precioPorcionTemp, "",0, "N","", contadorDetallePedido);
+						pedCtrl.insertarDetallePedido(detPedido);
+						contadorDetallePedido++;
+					}
 					//Insertar la forma de pago en efectivo
-					double valorPago = ((cantPorciones - (estActual.getPorcionEmpleado() + estActual.getPorcionDesecho()))*precioPorcion) + (cantGaseosas * precioGaseosa);
-					pedCtrl.insertarPedidoFormaPago(	valorPago, 0, valorPago, 0, idPedidoTienda);
+					double valorPago = ((cantPorciones - (estActual.getPorcionEmpleado() + estActual.getPorcionDesecho()))*precioPorcion) + (cantGaseosas * precioGaseosa) + (cantTemporales*precioPorcionTemp) ;
+					pedCtrl.insertarPedidoFormaPago(	valorPago, 0, 0, valorPago, 0, idPedidoTienda);
 					
 					//Insertamos el descuento producto de los desechos
 					double valorDescuento = (estActual.getPorcionEmpleado() + estActual.getPorcionDesecho())*precioPorcion; 
-					PedidoDescuento descuento = new PedidoDescuento(idPedidoTienda, valorDescuento , 0, "DESCUENTO PORCIONES EMPLEADO Y DESECHOS" );
+					PedidoDescuento descuento = new PedidoDescuento(idPedidoTienda, valorDescuento , 0, "DESCUENTO PORCIONES EMPLEADO Y DESECHOS", "", 0,0 );
 					boolean resp = pedCtrl.insertarPedidoDescuento(descuento);
 					
 					//Finalizamos el pedido -- el tipo pedido se quema mientras tanto
@@ -250,7 +276,7 @@ public class VentPedContPorciones extends JDialog {
 			}
 		});
 		btnFacturarParaFinalizar.setFont(new Font("Tahoma", Font.BOLD, 12));
-		btnFacturarParaFinalizar.setBounds(216, 322, 233, 23);
+		btnFacturarParaFinalizar.setBounds(91, 333, 233, 23);
 		contentPanel.add(btnFacturarParaFinalizar);
 		
 		btnDisminuirPorcion = new JButton("Disminuir Porci\u00F3n");
@@ -439,6 +465,74 @@ public class VentPedContPorciones extends JDialog {
 		txtPorcionDesecho.setColumns(10);
 		txtPorcionDesecho.setBounds(836, 235, 36, 20);
 		contentPanel.add(txtPorcionDesecho);
+		
+		btnPorcionTemporal = new JButton("Consumo Temporales");
+		btnPorcionTemporal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				boolean respuesta = operTiendaCtrl.aumentarPorcionTemporal(fechaSistema);
+				if(respuesta)
+				{
+					int cantidad;
+					try
+					{
+						cantidad = Integer.parseInt(txtPorcionTemporal.getText());
+					}catch(Exception exc)
+					{
+						cantidad = 0;
+					}
+					cantidad = cantidad + 1;
+					txtPorcionTemporal.setText(Integer.toString(cantidad));
+				}
+			}
+		});
+		btnPorcionTemporal.setBounds(512, 294, 195, 67);
+		contentPanel.add(btnPorcionTemporal);
+		
+		JLabel lblConsumoTemporales = new JLabel("CONSUMO TEMPORALES");
+		lblConsumoTemporales.setFont(new Font("Tahoma", Font.BOLD, 16));
+		lblConsumoTemporales.setBounds(508, 279, 221, 14);
+		contentPanel.add(lblConsumoTemporales);
+		
+		JLabel lblPorcionTemporal = new JLabel("PORCION TEMPORAL");
+		lblPorcionTemporal.setFont(new Font("Tahoma", Font.BOLD, 13));
+		lblPorcionTemporal.setBounds(501, 409, 164, 14);
+		contentPanel.add(lblPorcionTemporal);
+		
+		txtPorcionTemporal = new JTextField();
+		txtPorcionTemporal.setText("0");
+		txtPorcionTemporal.setFont(new Font("Tahoma", Font.BOLD, 13));
+		txtPorcionTemporal.setEditable(false);
+		txtPorcionTemporal.setColumns(10);
+		txtPorcionTemporal.setBounds(671, 407, 36, 20);
+		contentPanel.add(txtPorcionTemporal);
+		
+		btnDisminuirPorcionTemporal = new JButton("Disminuir Porci\u00F3n Temporal");
+		btnDisminuirPorcionTemporal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int cantidad;
+				try
+				{
+					cantidad = Integer.parseInt(txtPorcionTemporal.getText());
+				}catch(Exception exc)
+				{
+					cantidad = 0;
+				}
+				if(cantidad >= 1)
+				{
+					boolean respuesta = operTiendaCtrl.disminuirPorcionTemporal(fechaSistema);
+					if(respuesta)
+					{
+						cantidad = cantidad -1;
+						txtPorcionTemporal.setText(Integer.toString(cantidad));
+					}
+				}
+				
+			}
+		});
+		btnDisminuirPorcionTemporal.setBounds(508, 372, 195, 23);
+		contentPanel.add(btnDisminuirPorcionTemporal);
 		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -468,17 +562,20 @@ public class VentPedContPorciones extends JDialog {
 		txtPorcionesGaseosa.setText(Integer.toString(estActual.getPorcionGaseosa()));
 		txtPorcionEmpleado.setText(Integer.toString(estActual.getPorcionEmpleado()));
 		txtPorcionDesecho.setText(Integer.toString(estActual.getPorcionDesecho()));
+		txtPorcionTemporal.setText(Integer.toString(estActual.getPorcionTemporal()));
 		if(estActual.isFacturado())
 		{
 			btnFacturarParaFinalizar.setEnabled(false);
 			btnPorcion.setEnabled(false);
 			btnPorcionGaseosa.setEnabled(false);
 			btnPorcionEmpleado.setEnabled(false);
+			btnPorcionTemporal.setEnabled(false);
 			btnDesecho.setEnabled(false);
 			btnDisminuirPorcion.setEnabled(false);
 			btnDisminuirPorcionGaseosa.setEnabled(false);
 			btnDisminuirPorcionEmpleado.setEnabled(false);
 			btnDisminuirDesecho.setEnabled(false);
+			btnDisminuirPorcionTemporal.setEnabled(false);
 		}
 	}
 }

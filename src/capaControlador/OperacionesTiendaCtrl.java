@@ -157,6 +157,18 @@ public void realizarInventarioHistorico(String fecha)
 		{
 			respuesta = respuesta + "NO SE HA INGRESADO LA VARIANZA para el día en cuestión.";
 		}
+		//Obtenemos el estado actual de las porciones con el fin de validar si hay cuentas en caso tal debemos de validar
+		// que se haya facturado de la manera correspondiente
+		PorcionesControlDiario estActual =  obtenerPorcionesControlDiario(fecha);
+		if(estActual.getPorcion() > 0 || estActual.getPorcionGaseosa() > 0 || estActual.getPorcionEmpleado() > 0 || estActual.getPorcionDesecho() > 0 || estActual.getPorcionTemporal() > 0)
+		{
+			//Si se pasa esta condición es que el dia en cuestión se debería facturar
+			boolean estaFacturado =  estaFacturadoPorciones(fecha);
+			if(!estaFacturado)
+			{
+				respuesta = respuesta + " Se tienen porciones en el controlador de Porciones y no se han facturado.";
+			}
+		}
 		return(respuesta);
 	}
 
@@ -165,6 +177,14 @@ public void realizarInventarioHistorico(String fecha)
  * @param fecha Se recibe la fecha a partir de la cual se realizará el cierre.
  * @return se recibe un String con el resultado del proceso.
  */
+	public void realizarLimpiezaTemporales(String fecha)
+	{
+		InventarioCtrl invCtrl = new InventarioCtrl(auditoria);
+		invCtrl.limpiarTipoInventariosTemporal(fecha, "I");
+		invCtrl.limpiarTipoInventariosTemporal(fecha, "R");
+		invCtrl.limpiarTipoInventariosTemporal(fecha, "V");
+	}
+	
 	public String finalizarDia(String fecha)
 	{
 		String respuesta = validacionesPreCierre(fecha);
@@ -172,6 +192,8 @@ public void realizarInventarioHistorico(String fecha)
 		{
 			//Avanzar en uno el último día de cierre
 			boolean respAvanFech = AvanzarFechaUltimoCierre();
+			//Realizamos borrado de tablas temporales de ingresos, retiros y varianzas de inventarios
+			realizarLimpiezaTemporales(fecha);
 			if(respAvanFech)
 			{
 				respuesta = "PROCESO EXITOSO";
@@ -377,6 +399,12 @@ public void realizarInventarioHistorico(String fecha)
 		return(respuesta);
 	}
 	
+	public boolean aumentarPorcionTemporal(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.aumentarPorcionTemporal(fecha, auditoria);
+		return(respuesta);
+	}
+	
 	//DISMINUIR
 	
 	public boolean disminuirPorcion(String fecha)
@@ -403,9 +431,21 @@ public void realizarInventarioHistorico(String fecha)
 		return(respuesta);
 	}
 	
+	public boolean disminuirPorcionTemporal(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.disminuirPorcionTemporal(fecha, auditoria);
+		return(respuesta);
+	}
+	
 	public boolean facturarPorciones(String fecha)
 	{
 		boolean respuesta = PorcionesControlDiarioDAO.facturarPorciones(fecha, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean estaFacturadoPorciones(String fecha)
+	{
+		boolean respuesta = PorcionesControlDiarioDAO.estaFacturadoPorciones(fecha, auditoria);
 		return(respuesta);
 	}
 

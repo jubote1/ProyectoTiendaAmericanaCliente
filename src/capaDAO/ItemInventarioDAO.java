@@ -173,6 +173,56 @@ public class ItemInventarioDAO {
 		
 	}
 	
+	public static ArrayList obtenerItemInventarioVarianzaTemp(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInventarioResumen = new ArrayList();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iditem, a.nombre_item, ifnull((select b.cantidad from item_inventario_historico b "
+					+ "where b.iditem = a.iditem and b.fecha = '" + fecha + "'),0)as inicio, ifnull( (select sum(c.cantidad) from retiro_inventario d, "
+					+ "retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem  "
+					+ "and d.fecha_sistema ='"+fecha+"' ),0) as retiro, ifnull((select sum(f.cantidad) "
+					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
+					+ "and f.iditem = a.iditem  and e.fecha_sistema = '" + fecha + "' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
+					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, b.cantidad,0 from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fecha + "' and b.tipo_inventario = 'V'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInventarioResumen.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(itemsInventarioResumen);
+		
+	}
+	
 	public static ArrayList obtenerInventarioVarianza(String fecha, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -346,6 +396,60 @@ public class ItemInventarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select iditem,nombre_item,unidad_medida,cantidadxcanasta,nombrecontenedor,0 from item_inventario";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInventario.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(itemsInventario);
+		
+	}
+	
+	
+	public static ArrayList obtenerItemInventarioIngresar(String fechaSistema, String tipo, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInventario = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "";
+			if(tipo == "I")
+			{
+				consulta = "select a.iditem, a.nombre_item, a.unidad_medida,a.cantidadxcanasta,a.nombrecontenedor,b.cantidad from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fechaSistema + "' and b.tipo_inventario = 'I'";
+				
+			}else if (tipo == "R")
+			{
+				consulta = "select a.iditem, a.nombre_item, a.unidad_medida,a.cantidadxcanasta,a.nombrecontenedor,b.cantidad from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fechaSistema + "' and b.tipo_inventario = 'R'";
+				
+			}
 			if(auditoria)
 			{
 				logger.info(consulta);

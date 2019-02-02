@@ -19,6 +19,7 @@ import JTable.NextCellActioinRetInventarios;
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
+import capaModelo.InventariosTemporal;
 import capaModelo.ModificadorInventario;
 
 import javax.swing.JScrollPane;
@@ -40,10 +41,12 @@ import javax.swing.JOptionPane;
 
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Window;
 
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.JProgressBar;
+import java.awt.Color;
 
 public class VentInvRetirarInventario extends JDialog {
 
@@ -120,7 +123,7 @@ public class VentInvRetirarInventario extends JDialog {
 
 		scrollPaneIngInventarios.setColumnHeaderView(tableRetInventarios);
 		scrollPaneIngInventarios.setViewportView(tableRetInventarios);
-		pintarItemsInventario();
+		
 		
 		//Adicionamos acciones para el comportamiento de la tabla tab y enter
 		InputMap im = tableRetInventarios.getInputMap();
@@ -172,7 +175,6 @@ public class VentInvRetirarInventario extends JDialog {
 					idItem =Integer.parseInt((String)tableRetInventarios.getValueAt(i, 0));
 					//Capturamos la cantidad
 					cantidad = Double.parseDouble((String)tableRetInventarios.getValueAt(i, 5));
-					System.out.println(cantidad);
 					if(cantidad > 0 )
 					{
 						//Creamos el objeto y lo ingresamos al ArrayList
@@ -193,6 +195,8 @@ public class VentInvRetirarInventario extends JDialog {
 					{
 						cantAvance = 100;
 						JOptionPane.showMessageDialog(null, "El inventario " + idRetiro  + " fue retiroado correctamente." , "Retiro de Inventario", JOptionPane.INFORMATION_MESSAGE);
+						//Si se confirma el ingreso debemos de borrar de la tabla temporal
+						invCtrl.limpiarTipoInventariosTemporal(fechaSis,"R");
 						dispose();
 					}
 					else
@@ -208,17 +212,22 @@ public class VentInvRetirarInventario extends JDialog {
 				}
 			}
 		});
-		btnConfirmarRetiro.setBounds(80, 319, 152, 37);
+		btnConfirmarRetiro.setBounds(10, 319, 152, 37);
 		contentPanePrincipal.add(btnConfirmarRetiro);
 		
 		JButton btnCancelar = new JButton("Cancelar");
 		btnCancelar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
-				dispose();
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
+				int resp = JOptionPane.showConfirmDialog(ventanaPadre, "¿Está seguro que desea salir sin confirmar el retiro o sin guardar temporalmente?", "Confirmación de Salida de Pantalla" , JOptionPane.YES_NO_OPTION);
+				if (resp == 0)
+				{
+					dispose();
+				}
 			}
 		});
-		btnCancelar.setBounds(382, 319, 146, 37);
+		btnCancelar.setBounds(201, 319, 146, 37);
 		contentPanePrincipal.add(btnCancelar);
 		
 		JLabel lblFechaRetiroInventario = new JLabel("FECHA RETIRO INVENTARIO");
@@ -288,10 +297,90 @@ public class VentInvRetirarInventario extends JDialog {
 		};
 		progressBar.setBounds(91, 395, 292, 31);
 		contentPanePrincipal.add(progressBar);
+		
+		JButton btnGuardarSinConfirmar = new JButton("Guardar sin Confirmar");
+		btnGuardarSinConfirmar.setBackground(Color.ORANGE);
+		btnGuardarSinConfirmar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
+				ArrayList<InventariosTemporal> inventariosTemp = new ArrayList();
+				InventariosTemporal invTemp;
+				int resp = JOptionPane.showConfirmDialog(ventanaPadre, "¿Desea almacenar temporalmente la información del retiro de inventario?", "Confirmación de Salida de Pantalla" , JOptionPane.YES_NO_OPTION);
+				if (resp == 0)
+				{
+					//Si se confirma el ingreso debemos de borrar de la tabla temporal
+					invCtrl.limpiarTipoInventariosTemporal(fechaSis,"R");
+					cantAvance = 1;
+					hiloProgressBar.start();
+					//Realizamos la desactivación de la edición del JTable
+					if(tableRetInventarios.isEditing())
+					{
+						tableRetInventarios.getCellEditor().stopCellEditing();
+					}
+					cantAvance = 10;
+					//Definición de variables necesarias para el proceso
+					int idItem;
+					int controladorIngreso = 0;
+					//Se defienen las variables cantidad de tipo string y double para capturar el valor 
+					double cantidad;
+					String strCantidad;
+					
+					cantAvance =  30;
+					//Recorre el jtable para ver si se modifico
+					for(int i = 0; i < tableRetInventarios.getRowCount(); i++)
+					{
+						//Capturamos el idItem	
+						idItem =Integer.parseInt((String)tableRetInventarios.getValueAt(i, 0));
+						//Capturamos la cantidad
+						try
+						{
+							cantidad = Double.parseDouble((String)tableRetInventarios.getValueAt(i, 5));
+						}catch(Exception e)
+						{
+							cantidad = 0;
+						}
+						
+						controladorIngreso++;
+						invTemp = new InventariosTemporal(fechaSis,"R", idItem, cantidad);
+						inventariosTemp.add(invTemp);
+					}
+					cantAvance = 40;
+					//Validamos si por lo menos hubo un ingreso
+					if(controladorIngreso>0)
+					{
+						//Realizamos la invocación para la inclusión de la información de inventarios
+						boolean respuesta  = invCtrl.insertarInventariosTemp(inventariosTemp);
+						if(respuesta)
+						{
+							cantAvance = 100;
+							JOptionPane.showMessageDialog(ventanaPadre, "El retiro de inventario se ha guardado temporalmente, recuerde confirmar." , "Retirar de Inventario", JOptionPane.INFORMATION_MESSAGE);
+							dispose();
+						}
+						else
+						{
+							JOptionPane.showMessageDialog(ventanaPadre, "Se tuvo inconvenientes al guardar temporalmente el retiro de inventario." , "Error al retirar inventarios", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "No ingreso ningun retiro temporalmente, si desea salir de clic sobre el botón cancelar " , "No Ha Ingresado nada al Inventario", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+				}
+			}
+		});
+		btnGuardarSinConfirmar.setBounds(382, 319, 182, 37);
+		contentPanePrincipal.add(btnGuardarSinConfirmar);
+		pintarItemsInventario();
 	}
 	
 	public void pintarItemsInventario()
 	{
+		//Se valida si existe algo en las tablas temporales
+		boolean existePreRetiro = invCtrl.existeInventariosTemporal(fechaSis, "R");
 		Object[] columnsName = new Object[6];
         
         columnsName[0] = "Id Item";
@@ -301,8 +390,14 @@ public class VentInvRetirarInventario extends JDialog {
         columnsName[4] = "Nombre Contenedor";
         columnsName[5] = "Cantidad Retirar";
         ArrayList<Object> itemsIng = new ArrayList();
-        itemsIng = invCtrl.obtenerItemInventarioIngresar();
-       	DefaultTableModel modelo = new DefaultTableModel(){
+        if(existePreRetiro)
+        {
+        	itemsIng = invCtrl.obtenerItemInventarioIngresar(fechaSis, "R");
+        }else
+        {
+        	itemsIng = invCtrl.obtenerItemInventarioIngresar();
+        }
+        DefaultTableModel modelo = new DefaultTableModel(){
        	    public boolean isCellEditable(int rowIndex,int columnIndex){
        	    	if(columnIndex < 5)
        	    	{

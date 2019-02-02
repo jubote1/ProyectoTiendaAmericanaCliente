@@ -63,6 +63,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 	Thread hiloReportSemanal;
 	//Creamos un hilo que se encargará de la reportería semanal una vez finalice el cierre y se cierre de semanal
 	private JTextField txtVentaSemana;
+	private JTable tableResFormaPago;
 	/**
 	 * Launch the application.
 	 */
@@ -100,8 +101,9 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		DefaultTableModel modelo = pintarItemsInventario();
 		
 		JButton btnCierreDia = new JButton("Finalizar D\u00EDa");
+		btnCierreDia.setBackground(Color.ORANGE);
 		
-		btnCierreDia.setBounds(110, 302, 152, 37);
+		btnCierreDia.setBounds(176, 280, 152, 37);
 		contentPanePrincipal.add(btnCierreDia);
 		
 		JButton btnCancelar = new JButton("Cancelar/Salir");
@@ -112,19 +114,19 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 				dispose();
 			}
 		});
-		btnCancelar.setBounds(455, 271, 201, 37);
+		btnCancelar.setBounds(342, 278, 167, 38);
 		contentPanePrincipal.add(btnCancelar);
 		
 		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
 		lblFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblFechaSistema.setBounds(110, 444, 240, 14);
+		lblFechaSistema.setBounds(372, 11, 167, 14);
 		contentPanePrincipal.add(lblFechaSistema);
 		
 		txtFechaInventario = new JTextField();
 		txtFechaInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtFechaInventario.setEnabled(false);
 		txtFechaInventario.setEditable(false);
-		txtFechaInventario.setBounds(427, 441, 135, 20);
+		txtFechaInventario.setBounds(569, 8, 135, 20);
 		contentPanePrincipal.add(txtFechaInventario);
 		txtFechaInventario.setColumns(10);
 		
@@ -134,7 +136,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		txtFechaInventario.setText(fechaSis);
 		
 		JScrollPane scrollResCierre = new JScrollPane();
-		scrollResCierre.setBounds(45, 350, 680, 79);
+		scrollResCierre.setBounds(2, 354, 348, 79);
 		contentPanePrincipal.add(scrollResCierre);
 		
 		JTextPane txtPaneResCierre = new JTextPane();
@@ -143,7 +145,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		
 		JLabel lblTotalesPorTipo = new JLabel("TOTALES POR TIPO DE PEDIDO");
 		lblTotalesPorTipo.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblTotalesPorTipo.setBounds(99, 0, 240, 14);
+		lblTotalesPorTipo.setBounds(55, 11, 240, 14);
 		contentPanePrincipal.add(lblTotalesPorTipo);
 		
 		JScrollPane scrollPaneTipoPedido = new JScrollPane();
@@ -166,7 +168,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		
 		JPanel panelReportes = new JPanel();
 		panelReportes.setBorder(new LineBorder(new Color(0, 0, 0), 5));
-		panelReportes.setBounds(341, 21, 400, 239);
+		panelReportes.setBounds(351, 351, 400, 239);
 		contentPanePrincipal.add(panelReportes);
 		panelReportes.setLayout(null);
 		
@@ -274,10 +276,11 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 				txtPaneResCierre.setText(resp);
 			}
 		});
-		btnValidarCierre.setBounds(110, 254, 152, 37);
+		btnValidarCierre.setBounds(11, 280, 152, 37);
 		contentPanePrincipal.add(btnValidarCierre);
 		
 		JButton btnNewButton_2 = new JButton("Adm Ingresos/Egresos");
+		btnNewButton_2.setFont(new Font("Tahoma", Font.BOLD, 11));
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_015", Sesion.getAccesosOpcion());
@@ -293,7 +296,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 				}
 			}
 		});
-		btnNewButton_2.setBounds(84, 462, 189, 47);
+		btnNewButton_2.setBounds(531, 275, 189, 42);
 		contentPanePrincipal.add(btnNewButton_2);
 		
 		JLabel lblTotalVendidoCon = new JLabel("TOTAL VENDIDO CON I/E");
@@ -319,6 +322,18 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		lblVentanaSemana.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblVentanaSemana.setBounds(11, 229, 152, 14);
 		contentPanePrincipal.add(lblVentanaSemana);
+		
+		JLabel lblTotalesPorForma = new JLabel("TOTALES POR FORMA DE PAGO");
+		lblTotalesPorForma.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblTotalesPorForma.setBounds(410, 37, 240, 14);
+		contentPanePrincipal.add(lblTotalesPorForma);
+		
+		JScrollPane scrollPaneFormaPago = new JScrollPane();
+		scrollPaneFormaPago.setBounds(407, 61, 243, 112);
+		contentPanePrincipal.add(scrollPaneFormaPago);
+		
+		tableResFormaPago = new JTable();
+		scrollPaneFormaPago.setViewportView(tableResFormaPago);
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
@@ -441,6 +456,30 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		txtTotalVendidoConIE.setText(Double.toString(totalVendido + totalIngresos - totalEgresos));
 		tableResTipoPedido.setModel(modelo);
 				
+		//Llenamos el modelo para el table de forma de pago
+		
+		columnsName = new Object[3];
+        
+        columnsName[0] = "Forma de Pago";
+        columnsName[1] = "TOTAL";
+        columnsName[2] = "Cantidad";
+        ArrayList totFormaPago = new ArrayList();
+        totFormaPago = pedCtrl.obtenerTotalesPedidosPorFormaPago(fechaSis);
+        DefaultTableModel modeloFormaPago = new DefaultTableModel(){
+       	    public boolean isCellEditable(int rowIndex,int columnIndex){
+       	    	return false;
+       	    }
+       	    
+       	    
+       	};
+       	modeloFormaPago.setColumnIdentifiers(columnsName);
+		for(int y = 0; y < totFormaPago.size();y++)
+		{
+			String[] fila =(String[]) totFormaPago.get(y);
+			modeloFormaPago.addRow(fila);
+		}
+		
+		tableResFormaPago.setModel(modeloFormaPago);
 	}
 
 	@Override

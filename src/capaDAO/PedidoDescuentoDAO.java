@@ -85,7 +85,7 @@ public class PedidoDescuentoDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"");
+		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"","", 0,0);
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -103,7 +103,7 @@ public class PedidoDescuentoDAO {
 				descuentoPorcentaje = rs.getDouble("descuentoPorcentaje");
 				observacion = rs.getString("observacion");
 			}
-			descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion);
+			descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, "", 0, 0);
 			stm.close();
 			con1.close();
 		}
@@ -127,11 +127,11 @@ public class PedidoDescuentoDAO {
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
 		ArrayList<PedidoDescuento> descuentosFecha = new ArrayList();
-		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"");
+		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"","",0,0);
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.* from pedido_descuento a, pedido b where a.idpedido = b.idpedidotienda and b.fechapedido = '" + fecha + "'"; 
+			String consulta = "select a.*, b.fechapedido, (b.total_neto + a.descuentopesos) as valorinicial, b.total_neto as valorfinal, ((a.descuentopesos/(b.total_neto + a.descuentopesos))* 100) as porcentaje from pedido_descuento a, pedido b where a.idpedido = b.idpedidotienda and b.fechapedido = '" + fecha + "'"; 
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -140,13 +140,16 @@ public class PedidoDescuentoDAO {
 			int idPedido = 0;
 			double descuentoPesos = 0, descuentoPorcentaje = 0;
 			String observacion = "";
+			double valorInicial = 0, valorFinal = 0;
 			while(rs.next())
 			{
 				idPedido = rs.getInt("idpedido");
 				descuentoPesos = rs.getDouble("descuentopesos");
-				descuentoPorcentaje = rs.getDouble("descuentoPorcentaje");
+				descuentoPorcentaje = rs.getDouble("porcentaje");
 				observacion = rs.getString("observacion");
-				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion);
+				valorInicial = rs.getDouble("valorinicial");
+				valorFinal = rs.getDouble("valorfinal");
+				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, fecha, valorInicial, valorFinal);
 				descuentosFecha.add(descuento);
 			}
 			
@@ -180,11 +183,11 @@ public class PedidoDescuentoDAO {
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
 		ArrayList<PedidoDescuento> descuentosFecha = new ArrayList();
-		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"");
+		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"", "", 0,0);
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.*, b.fechapedido from pedido_descuento a, pedido b where a.idpedido = b.idpedidotienda and b.fechapedido >= '" + fechaAnterior + "' and b.fechapedido <= '" + fechaActual + "'"; 
+			String consulta = "select a.*, b.fechapedido, (b.total_neto + a.descuentopesos) as valorinicial, b.total_neto as valorfinal, ((a.descuentopesos/(b.total_neto + a.descuentopesos))* 100) as porcentaje   from pedido_descuento a, pedido b where a.idpedido = b.idpedidotienda and b.fechapedido >= '" + fechaAnterior + "' and b.fechapedido <= '" + fechaActual + "'"; 
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -194,15 +197,17 @@ public class PedidoDescuentoDAO {
 			double descuentoPesos = 0, descuentoPorcentaje = 0;
 			String observacion = "";
 			String fechaDescuento = "";
+			double valorInicial = 0, valorFinal = 0;
 			while(rs.next())
 			{
 				idPedido = rs.getInt("idpedido");
 				descuentoPesos = rs.getDouble("descuentopesos");
-				descuentoPorcentaje = rs.getDouble("descuentoPorcentaje");
+				descuentoPorcentaje = rs.getDouble("porcentaje");
 				observacion = rs.getString("observacion");
 				fechaDescuento = rs.getString("fechapedido");
-				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion);
-				descuento.setFechaDescuento(fechaDescuento);
+				valorInicial = rs.getDouble("valorinicial");
+				valorFinal = rs.getDouble("valorfinal");
+				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, fechaDescuento, valorInicial, valorFinal);
 				descuentosFecha.add(descuento);
 			}
 			

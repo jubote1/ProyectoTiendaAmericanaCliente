@@ -347,7 +347,7 @@ public class VentPedFinPago extends JDialog implements Runnable {
 					}
 				}
 				// Se envían datos para la inserción de la forma de pago.
-				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, VentPedTomarPedidos.idPedido);
+				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, 0, Total, Cambio, VentPedTomarPedidos.idPedido);
 				if(resFormaPago)
 				{
 					
@@ -567,7 +567,7 @@ public class VentPedFinPago extends JDialog implements Runnable {
 				
 				//Tomamos la información para insertar la forma de pago
 				// Se envían datos para la inserción de la forma de pago.
-				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, Total, Cambio, VentPedTomarPedidos.idPedido);
+				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, 0, Total, Cambio, VentPedTomarPedidos.idPedido);
 				if(resFormaPago)
 				{
 					clarearVarEstaticas();

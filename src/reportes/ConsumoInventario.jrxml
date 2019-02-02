@@ -87,7 +87,7 @@ from item_inventario a]]>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<text><![CDATA[Descripción]]></text>
+				<text><![CDATA[Descripcion]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="300" y="0" width="151" height="21" uuid="30618442-f6b9-48a4-80ce-4ee50dd0d75d"/>

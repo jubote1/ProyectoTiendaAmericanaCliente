@@ -384,7 +384,7 @@ public class VentPedDescuento extends JDialog {
 					{
 						valorPorcen = 0;
 					}
-					PedidoDescuento descuento = new PedidoDescuento(idPedido, Total -  nuevoTotal, valorPorcen, textAreaObservacion.getText() );
+					PedidoDescuento descuento = new PedidoDescuento(idPedido, Total -  nuevoTotal, valorPorcen, textAreaObservacion.getText(), "",0,0 );
 					boolean resp = pedCtrl.insertarPedidoDescuento(descuento);
 					VentPedTomarPedidos.descuento = Total -  nuevoTotal;
 					System.out.println("le estamos poniendo descuento " + (VentPedTomarPedidos.descuento));

@@ -7,7 +7,15 @@ public class PorcionesControlDiario {
 	private int porcionGaseosa;
 	private int porcionEmpleado;
 	private int porcionDesecho;
+	private int porcionTemporal;
 	private boolean facturado;
+	
+	public int getPorcionTemporal() {
+		return porcionTemporal;
+	}
+	public void setPorcionTemporal(int porcionTemporal) {
+		this.porcionTemporal = porcionTemporal;
+	}
 	public String getFechaControl() {
 		return fechaControl;
 	}
@@ -45,15 +53,17 @@ public class PorcionesControlDiario {
 		this.facturado = facturado;
 	}
 	public PorcionesControlDiario(String fechaControl, int porcion, int porcionGaseosa, int porcionEmpleado,
-			int porcionDesecho, boolean facturado) {
+			int porcionDesecho, int porcionTemporal, boolean facturado) {
 		super();
 		this.fechaControl = fechaControl;
 		this.porcion = porcion;
 		this.porcionGaseosa = porcionGaseosa;
 		this.porcionEmpleado = porcionEmpleado;
 		this.porcionDesecho = porcionDesecho;
+		this.porcionTemporal = porcionTemporal;
 		this.facturado = facturado;
 	}
+
 	
 	
 	

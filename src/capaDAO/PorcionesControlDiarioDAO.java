@@ -21,7 +21,7 @@ public class PorcionesControlDiarioDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		PorcionesControlDiario estActual = new PorcionesControlDiario(fecha,0,0,0,0,false);
+		PorcionesControlDiario estActual = new PorcionesControlDiario(fecha,0,0,0,0,0,false);
 		try
 		{
 			//Vamos a verificar si existe control de porciones para el día en cuestión
@@ -38,6 +38,7 @@ public class PorcionesControlDiarioDAO {
 			int porcionGaseosa = 0;
 			int porcionEmpleado = 0;
 			int porcionDesecho = 0;
+			int porcionTemporal = 0;
 			int facturado = 0;
 			boolean fact = false;
 			while(rs.next()){
@@ -46,13 +47,14 @@ public class PorcionesControlDiarioDAO {
 				porcionGaseosa = rs.getInt("porcion_gaseosa");
 				porcionEmpleado = rs.getInt("porcion_empleado");
 				porcionDesecho = rs.getInt("porcion_desecho");
+				porcionTemporal = rs.getInt("porcion_temporal");
 				facturado = rs.getInt("facturado");
 				if(facturado == 1)
 				{
 					fact = true;
 				}
 			}
-			estActual = new PorcionesControlDiario(fecha, porcion, porcionGaseosa, porcionEmpleado, porcionDesecho,fact);
+			estActual = new PorcionesControlDiario(fecha, porcion, porcionGaseosa, porcionEmpleado, porcionDesecho, porcionTemporal,fact);
 			//Validamos si no se retorno registro en cuyo caso se debe hacer la inserción
 			if(!existeControl)
 			{
@@ -205,6 +207,38 @@ public class PorcionesControlDiarioDAO {
 		return(true);
 	}
 	
+	public static boolean aumentarPorcionTemporal(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update porciones_control_diario set porcion_temporal = porcion_temporal +1  where fecha_control ='" + fecha +"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
 	//DISMINUIR
 	
 	public static boolean disminuirPorcion(String fecha, boolean auditoria)
@@ -335,6 +369,38 @@ public class PorcionesControlDiarioDAO {
 		return(true);
 	}
 	
+	public static boolean disminuirPorcionTemporal(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update porciones_control_diario set porcion_temporal = porcion_temporal - 1   where fecha_control ='" + fecha +"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
 	public static boolean facturarPorciones(String fecha, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -365,6 +431,48 @@ public class PorcionesControlDiarioDAO {
 			return(false);
 		}
 		return(true);
+	}
+	
+	public static boolean estaFacturadoPorciones(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = false;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select facturado from  porciones_control_diario where fecha_control ='" + fecha +"'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int factu = 0;
+			while(rs.next())
+			{
+				factu = rs.getInt("facturado");
+				break;
+			}
+			if(factu == 1)
+			{
+				respuesta = true;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(respuesta);
+		}
+		return(respuesta);
 	}
 
 }

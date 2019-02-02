@@ -183,10 +183,10 @@ public class PedidoCtrl implements Runnable {
 		return(respuesta);
 	}
 	
-	public boolean insertarPedidoFormaPago(double efectivo, double tarjeta, double valorTotal, double cambio, int idPedidoTienda)
+	public boolean insertarPedidoFormaPago(double efectivo, double tarjeta, double pagoOnLine, double valorTotal, double cambio, int idPedidoTienda)
 	{
 		
-		int resIdEfe = 0, resIdTar = 0;
+		int resIdEfe = 0, resIdTar = 0, resIdOnLine = 0;
 		//Realizamos una validación especial si el valor del pedido es cero, entonces realizamos la inserción
 		if(valorTotal == 0)
 		{
@@ -204,7 +204,12 @@ public class PedidoCtrl implements Runnable {
 			PedidoFormaPago forTarjeta = new PedidoFormaPago(0,idPedidoTienda,2,valorTotal,tarjeta);
 			resIdTar = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forTarjeta, auditoria);
 		}
-		if(resIdEfe > 0 || resIdTar > 0)
+		if(pagoOnLine > 0)
+		{
+			PedidoFormaPago forOnLine = new PedidoFormaPago(0,idPedidoTienda,3,valorTotal,pagoOnLine);
+			resIdOnLine = PedidoFormaPagoDAO.InsertarPedidoFormaPago(forOnLine, auditoria);
+		}
+		if(resIdEfe > 0 || resIdTar > 0|| resIdOnLine > 0)
 		{
 			return(true);
 		}else
@@ -1189,6 +1194,17 @@ public class PedidoCtrl implements Runnable {
 			return(resumenTotTipoPedido);
 		}
 		
+		/**
+		 * Método que se encarga de retornar resumen por forma de pago
+		 * @param fechaPedido Se recibe un string con la fecha a consultar y resumir los totales.
+		 * @return Se retorna un arraylist con los totales resumidos
+		 */
+		public ArrayList obtenerTotalesPedidosPorFormaPago(String fechaPedido)
+		{
+			ArrayList resumenTotTipoPedido = PedidoDAO.obtenerTotalesPedidosPorFormaPago(fechaPedido, auditoria);
+			return(resumenTotTipoPedido);
+		}
+		
 		public ArrayList obtenerTotalesPedidosPorDomiciliario(String fechaPedido)
 		{
 			ArrayList resumenTotDomiciliario = PedidoDAO.obtenerTotalesPedidosPorDomiciliario(fechaPedido, auditoria);
@@ -1198,6 +1214,12 @@ public class PedidoCtrl implements Runnable {
 		public ArrayList obtenerTotalesPedidosPorDomiciliarioRango(String fechaAnterior, String fechaActual)
 		{
 			ArrayList resumenTotDomiciliario = PedidoDAO.obtenerTotalesPedidosPorDomiciliarioRango(fechaAnterior, fechaActual, auditoria);
+			return(resumenTotDomiciliario);
+		}
+		
+		public ArrayList obtenerResumidoPedidosPorDomiciliarioRango(String fechaAnterior, String fechaActual)
+		{
+			ArrayList resumenTotDomiciliario = PedidoDAO.obtenerResumidoPedidosPorDomiciliarioRango(fechaAnterior, fechaActual, auditoria);
 			return(resumenTotDomiciliario);
 		}
 		
@@ -1526,6 +1548,69 @@ public class PedidoCtrl implements Runnable {
 			return(domiciliosRangosFecha);
 		}
 		
+		public ArrayList obtenerDomiciliosResumidosSemana()
+		{
+			//Recuperamos la fecha actual del sistema con la fecha apertura
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaActual = fecha.getFechaApertura();
+			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
+			Date datFechaAnterior;
+			String fechaAnterior = "";
+			//Creamos el objeto calendario
+			Calendar calendarioActual = Calendar.getInstance();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			try
+			{
+				//Al objeto calendario le fijamos la fecha actual del sitema
+				calendarioActual.setTime(dateFormat.parse(fechaActual));
+				
+			}catch(Exception e)
+			{
+				System.out.println(e.toString());
+			}
+			//Retormanos el día de la semana actual segun la fecha del calendario
+			int diaActual = calendarioActual.get(Calendar.DAY_OF_WEEK);
+			//Domingo
+			if(diaActual == 1)
+			{
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -6);
+			}
+			else if(diaActual == 2)
+			{
+				//Si es lunes no se hace nada
+			}
+			else if(diaActual == 3)
+			{
+				//Si es martes se resta uno solo
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -1);
+			}
+			else if(diaActual == 4)
+			{
+				//Si es miercoles se resta dos
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -2);
+			}
+			else if(diaActual == 5)
+			{
+				//Si es jueves se resta tres
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -3);
+			}
+			else if(diaActual == 6)
+			{
+				//Si es viernes se resta cuatro
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -4);
+			}
+			else if(diaActual == 7)
+			{
+				//Si es sabado se resta cinco
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -5);
+			}
+			//Llevamos a un string la fecha anterior para el cálculo de la venta
+			datFechaAnterior = calendarioActual.getTime();
+			fechaAnterior = dateFormat.format(datFechaAnterior);
+			ArrayList domiciliosRangosFecha =  obtenerResumidoPedidosPorDomiciliarioRango(fechaAnterior, fechaActual);
+			return(domiciliosRangosFecha);
+		}
+		
 		public String reporteSemanalDescuentos()
 		{
 			String respuesta = "";
@@ -1536,7 +1621,10 @@ public class PedidoCtrl implements Runnable {
 			respuesta = respuesta + "<tr>"
 					+  "<td><strong>PEDIDO</strong></td>"
 					+  "<td><strong>Fecha Descuento</strong></td>"
+					+  "<td><strong>Val Inicial</strong></td>"
 					+  "<td><strong>Descuento</strong></td>"
+					+  "<td><strong>Val Final</strong></td>"
+					+  "<td><strong>% Desc</strong></td>"
 					+  "<td><strong>Observacion</strong></td>"
 					+  "</tr>";
 			PedidoDescuento descTemp;
@@ -1552,7 +1640,7 @@ public class PedidoCtrl implements Runnable {
 				{
 					desc = Double.toString(descTemp.getDescuentoPorcentaje());
 				}
-				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + descTemp.getFechaDescuento() +"</td><td> " + formatea.format(Double.parseDouble(desc)) + "</td><td> " + descTemp.getObservacion() +"</td></tr>";
+				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + descTemp.getFechaDescuento() + "</td><td> " + formatea.format(descTemp.getValorInicial()) +"</td><td> " + formatea.format(Double.parseDouble(desc)) + "</td><td> " + formatea.format(descTemp.getValorFinal()) + "</td><td> " + formatea.format(descTemp.getDescuentoPorcentaje()) + "</td><td> " + descTemp.getObservacion() +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
 			return(respuesta);
@@ -2038,6 +2126,15 @@ public class PedidoCtrl implements Runnable {
 			{
 				zonaObser = "";
 			}
+			//Procesamos la forma de pago para distinguirla
+			String nombreFormaPago = "";
+			if(pedImpFac.getNombreFormaPago().equals(new String("EFECTIVO")))
+			{
+				nombreFormaPago = pedImpFac.getNombreFormaPago();
+			}else
+			{
+				nombreFormaPago = "^W" + pedImpFac.getNombreFormaPago();
+			}
 			factura = factura + "    ======================================\n";
 			factura = factura + "    TOTAL BRUTO:      " + formatea.format(pedImpFac.getValorbruto())+"\n";
 			factura = factura + "    IMP CONS 8%   :      " + formatea.format(pedImpFac.getImpuesto())+"\n";
@@ -2051,7 +2148,7 @@ public class PedidoCtrl implements Runnable {
 			factura = factura  + "   TOTAL : " + formatea.format(pedImpFac.getValorneto()) + "\n";
 			factura = factura  + "   CAMBIO : " + formatea.format(pedImpFac.getCambio()) +"\n";
 			factura = factura  + "    ======================================\n";
-			factura = factura  + "   " + pedImpFac.getNombreFormaPago() + " : " + formatea.format(pedImpFac.getTotalFormaPago()) + "\n";
+			factura = factura  + "   " + nombreFormaPago + " : " + formatea.format(pedImpFac.getTotalFormaPago()) + "\n";
 			factura = factura  + "    ======================================\n";
 			factura = factura  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
 			factura = factura  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
@@ -2098,10 +2195,16 @@ public class PedidoCtrl implements Runnable {
 				}
 				
 			}
+			//Obtenemos información del pedido para colocar unos pocos datos en la comanda
+			Pedido pedImpFac = obtenerPedido(idPedido);
+			factura = factura  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
+			factura = factura  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
+			factura = factura  + "   TELEFONO : " + pedImpFac.getTelefono() + "\n";
 			factura = factura  + "    GRACIAS POR SU COMPRA...\n"
 		            + "                ******::::::::*******"
 		            + "\n\n\n\n\n\n\n           "
 		            + "\n           ";
+			System.out.println(factura);
 			return(factura);
 		}
 		
@@ -2232,12 +2335,17 @@ public class PedidoCtrl implements Runnable {
 				respuesta = respuesta + "<tr><td>" + egrTemp.getDescripcion() + "</td><td> " + formatea.format(egrTemp.getValorEgreso()) +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
+			//CAMBIO FINAL DE DESCUENTOS
 			//DESCUENTO DE PIZZAS
 			ArrayList<PedidoDescuento> descuentosFecha = obtenerPedidoDescuentoFecha(fechaSis);
 			respuesta = respuesta + "<table border='2'> <tr> DESCUENTOS </tr>";
 			respuesta = respuesta + "<tr>"
 					+  "<td><strong>PEDIDO</strong></td>"
+					+  "<td><strong>Fecha Descuento</strong></td>"
+					+  "<td><strong>Val Inicial</strong></td>"
 					+  "<td><strong>Descuento</strong></td>"
+					+  "<td><strong>Val Final</strong></td>"
+					+  "<td><strong>% Desc</strong></td>"
 					+  "<td><strong>Observacion</strong></td>"
 					+  "</tr>";
 			PedidoDescuento descTemp;
@@ -2253,9 +2361,12 @@ public class PedidoCtrl implements Runnable {
 				{
 					desc = Double.toString(descTemp.getDescuentoPorcentaje());
 				}
-				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + formatea.format(Double.parseDouble(desc)) + "</td><td> " + descTemp.getObservacion() +"</td></tr>";
+				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + descTemp.getFechaDescuento() + "</td><td> " + formatea.format(descTemp.getValorInicial()) +"</td><td> " + formatea.format(Double.parseDouble(desc)) + "</td><td> " + formatea.format(descTemp.getValorFinal()) + "</td><td> " + formatea.format(descTemp.getDescuentoPorcentaje()) + "</td><td> " + descTemp.getObservacion() +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
+			
+			
+			
 			return(respuesta);
 		}
 		
@@ -2264,8 +2375,23 @@ public class PedidoCtrl implements Runnable {
 			//Formato para los valores de moneda
 			DecimalFormat formatea = new DecimalFormat("###,###");
 			String respuesta = "";
+			//Información resumida
+			ArrayList resDomiciliarioSemana = obtenerDomiciliosResumidosSemana();
+			respuesta = respuesta + "<table border='2'> <tr> RESUMEN GENERAL SEMANAL DE DOMICILIARIOS </tr>";
+			respuesta = respuesta + "<tr>"
+					+  "<td><strong>Domiciliario</strong></td>"
+					+  "<td><strong>Total Venta</strong></td>"
+					+  "<td><strong>Cantidad Pedidos</strong></td>"
+					+  "</tr>";
+			for(int y = 0; y < resDomiciliarioSemana.size();y++)
+			{
+				String[] fila =(String[]) resDomiciliarioSemana.get(y);
+				respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td> " + formatea.format(Double.parseDouble(fila[0])) + "</td><td> " + fila[2] +"</td></tr>";
+			}
+			respuesta = respuesta + "</table> <br/>";
+			//Información detallada
 			ArrayList totDomiciliarioSemana = obtenerDomiciliosSemana();
-			respuesta = respuesta + "<table border='2'> <tr> RESUMEN SEMANAL DE DOMICILIARIOS </tr>";
+			respuesta = respuesta + "<table border='2'> <tr> RESUMEN DETALLADO SEMANAL DE DOMICILIARIOS </tr>";
 			respuesta = respuesta + "<tr>"
 					+  "<td><strong>Domiciliario</strong></td>"
 					+  "<td><strong>Total Venta</strong></td>"
@@ -2381,7 +2507,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenGeneralVentas();
 			Correo correo = new Correo();
-			correo.setAsunto("Reporte General de Ventas Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto("DIARIO Reporte General de Ventas Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTEGENERALVENTAS", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -2400,7 +2526,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenInventarios();
 			Correo correo = new Correo();
-			correo.setAsunto("Inventario Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto("DIARIO Inventario Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTEGENERALVENTAS", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -2419,7 +2545,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenSemanalDomicilios();
 			Correo correo = new Correo();
-			correo.setAsunto("Resumen de Domicilios Semanal  " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto("SEMANAL Resumen de Domicilios" + tiendaReporte.getNombretienda() + " " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -2438,7 +2564,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = reporteSemanalDescuentos();
 			Correo correo = new Correo();
-			correo.setAsunto("Reporte Semanal Descuentos Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto("SEMANAL Reporte Descuentos Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -2457,7 +2583,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenSemanalAnulaciones();
 			Correo correo = new Correo();
-			correo.setAsunto("Reporte Semanal Anulaciones Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto("SEMANAL Reporte Anulaciones Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -2476,7 +2602,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenSemanalAnulacionesDescuento();
 			Correo correo = new Correo();
-			correo.setAsunto("Reporte Semanal Anulaciones Cambio de Opinión-Descuenta Inventario Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto("SEMANAL Reporte Anulaciones Cambio de Opinión-Descuenta Inventario Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
