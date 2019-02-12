@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.Impuesto;
-import capaModelo.MenuAgrupador;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Tienda;
 import org.apache.log4j.Logger;
 import com.mysql.jdbc.ResultSetMetaData;
@@ -23,7 +23,7 @@ public class ImpuestoDAO {
  * Método que se encarga de retonar todos los impuestos parametrizado en el sistema.
  * @return Retorna un arrayList con tipos de datos genéricos.
  */
-	public static ArrayList obtenerImpuesto()
+	public static ArrayList obtenerImpuesto(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -34,7 +34,10 @@ public class ImpuestoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select * from impuesto";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
 			int numeroColumnas = rsMd.getColumnCount();
@@ -53,7 +56,6 @@ public class ImpuestoDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -66,11 +68,53 @@ public class ImpuestoDAO {
 	}
 	
 	/**
+	 * Metodo que se encarga de retornar el valor del porcentaje de un impuesto dado un idImpuesto determinado.
+	 * @param idImpuesto
+	 * @return
+	 */
+	public static double obtenerImpuesto(int idImpuesto, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double porcImpuesto = 0;
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select valorporcentaje from impuesto where idimpuesto = " + idImpuesto;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+						
+			while(rs.next()){
+				porcImpuesto = rs.getDouble("valorporcentaje");
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(porcImpuesto);
+		
+	}
+	
+	/**
 	 * Método de la capa DAO que se encarga de insertar una entidad impuesto.
 	 * @param impuesto Recibe un objeto de tipo impuesto del cual se extrae la información para la inserción.
 	 * @return Se retorna un valor entero con el idimpuesto creado en la base de datos
 	 */
-	public static int insertarImpuesto(Impuesto impuesto)
+	public static int insertarImpuesto(Impuesto impuesto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idImpuestoIns = 0;
@@ -80,12 +124,19 @@ public class ImpuestoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String insert = "insert into impuesto (descripcion, valorporcentaje) values ('" + impuesto.getDescripcion() + "', " + impuesto.getValorPorcentaje() + ")"; 
-			logger.info(insert);
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
 			stm.executeUpdate(insert);
 			ResultSet rs = stm.getGeneratedKeys();
 			if (rs.next()){
 				idImpuestoIns=rs.getInt(1);
-				logger.info("id impuesto insertada en bd " + idImpuestoIns);
+				if(auditoria)
+				{
+					logger.info("id impuesto insertada en bd " + idImpuestoIns);
+				}
+				
 	        }
 			stm.close();
 			con1.close();
@@ -109,7 +160,7 @@ public class ImpuestoDAO {
 	 * clave primaría de la tabla.
 	 * @return Se retorna un valor booleano que indica si el resultado del proceso fue satisfactorio o no.
 	 */
-	public static boolean eliminarImpuesto(int idImpuesto)
+	public static boolean eliminarImpuesto(int idImpuesto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta = true;
@@ -119,7 +170,10 @@ public class ImpuestoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String delete = "delete from impuesto where idimpuesto = " + idImpuesto; 
-			logger.info(delete);
+			if(auditoria)
+			{
+				logger.info(delete);
+			}
 			stm.executeUpdate(delete);
 			respuesta = true;
 			stm.close();
@@ -144,7 +198,7 @@ public class ImpuestoDAO {
 	 * @param impuesto Recibe como parámetro un objeto de la entidad impuesto con base en el cual se realiza la modificación
 	 * @return Se retorna un valor booleano indicando si el proceso fue o no satisfactorio
 	 */
-	public static boolean EditarImpuesto(Impuesto impuesto)
+	public static boolean EditarImpuesto(Impuesto impuesto, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		boolean respuesta;
@@ -154,7 +208,10 @@ public class ImpuestoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update impuesto set descripcion = '" + impuesto.getDescripcion() + "' , valorporcentaje = " + impuesto.getValorPorcentaje() + " where idimpuesto = " + impuesto.getIdImpuesto() ; 
-			logger.info(update);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
 			stm.executeUpdate(update);
 			
 			stm.close();

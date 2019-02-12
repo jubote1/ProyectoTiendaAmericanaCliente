@@ -1,11 +1,18 @@
 package capaControlador;
 
-import capaModelo.MenuAgrupador;
+import capaModelo.AccesosPorBoton;
+import capaModelo.AccesosPorMenu;
+import capaModelo.AccesosPorOpcion;
+import capaModelo.AgrupadorMenu;
 import capaModelo.Usuario;
+import interfazGrafica.Sesion;
 
 import java.util.ArrayList;
 
-import capaDAO.MenuAgrupadorDAO;
+import capaDAO.AccesosPorBotonDAO;
+import capaDAO.AccesosPorMenuDAO;
+import capaDAO.AccesosPorOpcionDAO;
+import capaDAO.AgrupadorMenuDAO;
 import capaDAO.UsuarioDAO;
 
 /**
@@ -18,13 +25,19 @@ public class AutenticacionCtrl {
 	
 	
 	private static AutenticacionCtrl instance;
+	private boolean auditoria;
 	
 	//singleton controlador
 	public static AutenticacionCtrl getInstance(){
 		if(instance == null){
-			instance = new AutenticacionCtrl();
+			instance = new AutenticacionCtrl(false);
 		}
 		return instance;
+	}
+	
+	public AutenticacionCtrl(boolean auditoria)
+	{
+		this.auditoria = auditoria;
 	}
 	
 	/**
@@ -35,8 +48,14 @@ public class AutenticacionCtrl {
 	 * en al aplicación
 	 */
 	public boolean autenticarUsuario(Usuario usuario){
-		boolean resultado = UsuarioDAO.validarUsuario(usuario);
-		return(resultado);
+		int resultado = 0;
+		boolean respuesta = false;
+		resultado = UsuarioDAO.validarUsuario(usuario , auditoria);
+		if(resultado > 0)
+		{
+			respuesta = true;
+		}
+		return(respuesta);
 	}
 	
 	/**
@@ -48,8 +67,14 @@ public class AutenticacionCtrl {
 	public String validarAutenticacion(String usuario)
 	{
 		Usuario usu = new Usuario(usuario);
-		String resultado = UsuarioDAO.validarAutenticacion(usu);
+		String resultado = UsuarioDAO.validarAutenticacion(usu, auditoria);
 		return(resultado);
+	}
+	
+	public Usuario validarAutenticacionRapida(String claveRapida)
+	{
+		Usuario  usuario = UsuarioDAO.validarAutenticacionRapida(claveRapida,auditoria);
+		return(usuario);
 	}
 	
 	/**
@@ -58,26 +83,131 @@ public class AutenticacionCtrl {
 	 */
 	public ArrayList<Object> obtenerMenusAgrupador()
 	{
-		ArrayList<Object>  menus = MenuAgrupadorDAO.obtenerMenusAgrupador();
+		ArrayList<Object>  menus = AgrupadorMenuDAO.obtenerMenusAgrupador(auditoria);
 		return(menus);
 	}
 	
-	public int insertarMenuAgrupador(MenuAgrupador menu)
+	public ArrayList<AgrupadorMenu> obtenerMenusAgrupadorObj()
 	{
-		int idMenu = MenuAgrupadorDAO.insertarMenuAgrupador(menu);
+		ArrayList<AgrupadorMenu> agrMenus = AgrupadorMenuDAO.obtenerMenusAgrupadorObj(auditoria);
+		return(agrMenus);
+	}
+	
+	public int insertarMenuAgrupador(AgrupadorMenu menu)
+	{
+		int idMenu = AgrupadorMenuDAO.insertarMenuAgrupador(menu, auditoria);
 		return(idMenu);
 	}
 	
-	public boolean editarMenuAgrupador(MenuAgrupador menu)
+	public boolean editarMenuAgrupador(AgrupadorMenu menu)
 	{
-		boolean respuesta  = MenuAgrupadorDAO.EditarMenuAgrupador(menu);
+		boolean respuesta  = AgrupadorMenuDAO.EditarMenuAgrupador(menu, auditoria);
 		return(respuesta);
 	}
 	
 	public boolean eliminarMenuAgrupador(int idMenu)
 	{
-		boolean respuesta = MenuAgrupadorDAO.eliminarMenuAgrupador(idMenu);
+		boolean respuesta = AgrupadorMenuDAO.eliminarMenuAgrupador(idMenu, auditoria);
 		return(respuesta);
 	}
+	
+	//Acciones para la entidad AccesosPorMenu
+	
+	public ArrayList obtenerAccesosAgrupador()
+	{
+		ArrayList accesos = AccesosPorMenuDAO.obtenerAccesosPorMenu(auditoria);
+		return(accesos);
+	}
+	
+	public ArrayList<AccesosPorMenu> obtenerAccesosPorMenuObj()
+	{
+		ArrayList<AccesosPorMenu> accesos = AccesosPorMenuDAO.obtenerAccesosPorMenuObj(auditoria);
+		return(accesos);
+	}
+	
+	public int insertarAccesosPorMenu(AccesosPorMenu acceso)
+	{
+		int idAccesoIns = AccesosPorMenuDAO.insertarAccesosPorMenu(acceso, auditoria);
+		return(idAccesoIns);
+	}
 
+	public boolean eliminarAccesosPorMenu(int idAccesoMenu)
+	{
+		boolean respuesta = AccesosPorMenuDAO.eliminarAccesosPorMenu(idAccesoMenu, auditoria);
+		return(respuesta);
+	}
+	
+	public ArrayList<AccesosPorMenu> obtenerAccesosPorMenuUsuario( String nombreUsuario )
+	{
+		ArrayList<AccesosPorMenu> accesos = AccesosPorMenuDAO.obtenerAccesosPorMenuUsuario(nombreUsuario, auditoria);
+		return(accesos);
+	}
+	
+	//Creamos un método para validar el acceso del usuario a un menú determinado
+	public boolean validarAccesoMenu(int menu, ArrayList<AccesosPorMenu> accesos )
+	{
+		boolean tieneAcceso = false;
+		AccesosPorMenu accesoTemp;
+		for(int i = 0; i < accesos.size(); i++)
+		{
+			accesoTemp = accesos.get(i);
+			if(accesoTemp.getIdAgrupadorMenu() == menu)
+			{
+				tieneAcceso = true;
+				break;
+			}
+		}
+		return(tieneAcceso);
+	}
+	
+	
+	//Acciones para la entidad AccesosPorOpcion
+	
+	public ArrayList<AccesosPorOpcion> obtenerAccesosPorOpcionObj(int idTipoUsuario)
+	{
+		ArrayList<AccesosPorOpcion> accesos = AccesosPorOpcionDAO.obtenerAccesosPorOpcionObj(auditoria, idTipoUsuario);
+		return(accesos);
+	}
+	
+	//Creamos un método para validar el acceso del usuario a una opción determinado
+		public boolean validarAccesoOpcion(String codPantalla, ArrayList<AccesosPorOpcion> accesos )
+		{
+			boolean tieneAcceso = false;
+			AccesosPorOpcion accesoTemp;
+			for(int i = 0; i < accesos.size(); i++)
+			{
+				accesoTemp = accesos.get(i);
+				if(accesoTemp.getCodigoPantalla().equals(new String(codPantalla)))
+				{
+					tieneAcceso = true;
+					break;
+				}
+			}
+			return(tieneAcceso);
+		}
+	
+	//Acciones para la Entidad AccesosPorBoton
+		
+	public ArrayList<AccesosPorBoton> obtenerAccesosPorBotonObj(int idTipUsu, String codPant)
+	{
+		ArrayList<AccesosPorBoton> accesos = AccesosPorBotonDAO.obtenerAccesosPorBotonObj(auditoria, idTipUsu, codPant);
+		return(accesos);
+	}
+	
+	//Creamos un método para validar el acceso del usuario a un botón determinado
+			public boolean validarAccesoBoton(String codPantalla, String codBoton,  ArrayList<AccesosPorBoton> accesos )
+			{
+				boolean tieneAcceso = false;
+				AccesosPorBoton accesoTemp;
+				for(int i = 0; i < accesos.size(); i++)
+				{
+					accesoTemp = accesos.get(i);
+					if(accesoTemp.getCodPantalla().equals(new String(codPantalla)) && accesoTemp.getCodBoton().equals(new String(codBoton)))
+					{
+						tieneAcceso = true;
+						break;
+					}
+				}
+				return(tieneAcceso);
+			}
 }

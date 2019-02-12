@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ConsumoInventario" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="492ff7f9-efde-4b03-8f9e-14e804b86949">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="BDTienda2"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="fecha" class="java.lang.String">
+		<parameterDescription><![CDATA[Fecha del Sistema]]></parameterDescription>
+	</parameter>
+	<queryString>
+		<![CDATA[select a.iditem, a.nombre_item, a.cantidad, a.categoria, a.unidad_medida, a.cantidadxcanasta, a.nombrecontenedor, ifnull((select sum(g.cantidad) from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda and h.fechapedido =  $P{fecha}  ) ,0)as consumo
+from item_inventario a]]>
+	</queryString>
+	<field name="iditem" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="iditem"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="nombre_item" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="nombre_item"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="cantidad" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="cantidad"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="categoria" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="categoria"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="unidad_medida" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="unidad_medida"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="cantidadxcanasta" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="cantidadxcanasta"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="nombrecontenedor" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="nombrecontenedor"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="consumo" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="consumo"/>
+	</field>
+	<group name="Categoria">
+		<groupExpression><![CDATA[$F{categoria}]]></groupExpression>
+		<groupHeader>
+			<band height="31">
+				<textField>
+					<reportElement x="190" y="0" width="203" height="30" uuid="d4d52348-c320-4cf7-aa85-9f88f64c6274"/>
+					<textElement textAlignment="Center">
+						<font size="16" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="81" splitType="Stretch">
+			<staticText>
+				<reportElement x="180" y="20" width="371" height="50" uuid="68d9b2b0-fa33-4f85-967f-edb94e0eecf3"/>
+				<textElement textAlignment="Center">
+					<font size="20" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORTE CONSUMO DE INVENTARIO]]></text>
+			</staticText>
+			<image>
+				<reportElement x="10" y="10" width="141" height="71" uuid="d1b706a9-93e4-4146-9a1c-81f8828ff552"/>
+				<imageExpression><![CDATA["D:/reportes/LogoPizzaAmericana.png"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="24" splitType="Stretch">
+			<staticText>
+				<reportElement x="-10" y="0" width="71" height="21" uuid="47774339-f1e0-4406-862c-5e623f34ffbc"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Id Item]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="70" y="0" width="221" height="21" uuid="590bbd52-df76-49d3-b879-6725ec3c5ba7"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Descripcion]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="0" width="151" height="21" uuid="30618442-f6b9-48a4-80ce-4ee50dd0d75d"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cantidad Consumo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="460" y="0" width="121" height="21" uuid="200ce5a3-f2aa-4bcc-a9d9-dd2abcf851ce"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Unidad]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<textField>
+				<reportElement x="-10" y="2" width="71" height="14" uuid="8bc1c6c1-0d82-4912-8c45-f6bbfe59e962"/>
+				<textFieldExpression><![CDATA[$F{iditem}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="70" y="0" width="221" height="14" uuid="0e4ed7fb-042c-46df-8afa-44f47ab7456f"/>
+				<textFieldExpression><![CDATA[$F{nombre_item}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="0" width="151" height="14" uuid="82b60c47-9831-43df-82aa-85c37dbb94ec"/>
+				<textFieldExpression><![CDATA[$F{consumo}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="460" y="0" width="121" height="14" uuid="e57041e8-b527-4d3e-a2cc-5fc4bf653d0d"/>
+				<textFieldExpression><![CDATA[$F{unidad_medida}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="22" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="56" splitType="Stretch">
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="450" y="30" width="100" height="24" uuid="35659d19-ec2f-4340-ab79-faaabe878a6b"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

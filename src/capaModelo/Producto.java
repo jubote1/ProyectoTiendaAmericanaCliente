@@ -23,6 +23,40 @@ public class Producto {
 	private double precio9;
 	private double precio10;
 	private String impresionComanda;
+	private String tipoProducto;
+	private String tamano;
+	private int modificadorCon;
+	private int modificadorSin;
+	private byte[] imagen;
+	private boolean modConPregunta;
+	
+		
+	
+	
+	public boolean isModConPregunta() {
+		return modConPregunta;
+	}
+	public void setModConPregunta(boolean modConPregunta) {
+		this.modConPregunta = modConPregunta;
+	}
+	public byte[] getImagen() {
+		return imagen;
+	}
+	public void setImagen(byte[] imagen) {
+		this.imagen = imagen;
+	}
+	public int getModificadorCon() {
+		return modificadorCon;
+	}
+	public void setModificadorCon(int modificadorCon) {
+		this.modificadorCon = modificadorCon;
+	}
+	public int getModificadorSin() {
+		return modificadorSin;
+	}
+	public void setModificadorSin(int modificacorSin) {
+		this.modificadorSin = modificacorSin;
+	}
 	public int getIdProducto() {
 		return idProducto;
 	}
@@ -155,10 +189,27 @@ public class Producto {
 		
 	}
 	
+	
+	
+	public String getTipoProducto() {
+		return tipoProducto;
+	}
+	public void setTipoProducto(String tipoProducto) {
+		this.tipoProducto = tipoProducto;
+	}
+	
+	
+	public String getTamano() {
+		return tamano;
+	}
+	public void setTamano(String tamano) {
+		this.tamano = tamano;
+	}
+	
 	public Producto(int idProducto, String descripcion, String impresion, String textoBoton, String colorBoton,
 			int idPreguntaForzada1, int idPreguntaForzada2, int idPreguntaForzada3, int idPreguntaForzada4,
 			int idPreguntaForzada5, double precio1, double precio2, double precio3, double precio4, double precio5,
-			double precio6, double precio7, double precio8, double precio9, double precio10, String impresionComanda) {
+			double precio6, double precio7, double precio8, double precio9, double precio10, String impresionComanda, String tipoProducto, String tamano, boolean modConPregunta) {
 		super();
 		this.idProducto = idProducto;
 		this.descripcion = descripcion;
@@ -181,6 +232,19 @@ public class Producto {
 		this.precio9 = precio9;
 		this.precio10 = precio10;
 		this.impresionComanda = impresionComanda;
+		this.tipoProducto = tipoProducto;
+		this.tamano = tamano;
+		this.modConPregunta = modConPregunta;
+	}
+	public Producto(int idProducto, String descripcion) {
+		super();
+		this.idProducto = idProducto;
+		this.descripcion = descripcion;
+	}
+	
+	public String toString()
+	{
+		return(descripcion);
 	}
 	
 	

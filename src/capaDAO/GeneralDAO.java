@@ -13,17 +13,20 @@ import org.apache.log4j.Logger;
 
 public class GeneralDAO {
 	
-	public static ArrayList obtenerCorreosParametro(String parametro)
+	public static ArrayList obtenerCorreosParametro(String parametro, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
-		Connection con1 = con.obtenerConexionBDGeneral();
+		Connection con1 = con.obtenerConexionBDLocal();
 		ArrayList correos = new ArrayList();
 		try
 		{
 			Statement stm = con1.createStatement();
 			String consulta = "select correo from parametros_correo where valorparametro = '" +parametro+"'";
-			logger.info(consulta);
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
 			ResultSet rs = stm.executeQuery(consulta);
 			
 			while(rs.next()){
@@ -36,7 +39,6 @@ public class GeneralDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
-			System.out.println(e.toString() + e.getMessage() +  e.getStackTrace());
 			try
 			{
 				con1.close();

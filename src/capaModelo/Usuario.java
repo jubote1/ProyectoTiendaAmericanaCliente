@@ -7,9 +7,29 @@ package capaModelo;
  */
 public class Usuario {
 	
+	private int idUsuario;
 	private String nombreUsuario;
 	private String contrasena;
 	private String nombreLargo;
+	private int idTipoEmpleado;
+	private String tipoInicio;
+	private boolean administrador;
+	private int estadoDomiciliario;
+	
+	
+	
+	public int getIdTipoEmpleado() {
+		return idTipoEmpleado;
+	}
+	public void setIdTipoEmpleado(int idTipoEmpleado) {
+		this.idTipoEmpleado = idTipoEmpleado;
+	}
+	public int getEstadoDomiciliario() {
+		return estadoDomiciliario;
+	}
+	public void setEstadoDomiciliario(int estadoDomiciliario) {
+		this.estadoDomiciliario = estadoDomiciliario;
+	}
 	public String getNombreUsuario() {
 		return nombreUsuario;
 	}
@@ -28,11 +48,45 @@ public class Usuario {
 	public void setNombreLargo(String nombreLargo) {
 		this.nombreLargo = nombreLargo;
 	}
-	public Usuario(String nombreUsuario, String contrasena, String nombreLargo) {
+	
+	
+	
+	public int getIdUsuario() {
+		return idUsuario;
+	}
+	public void setIdUsuario(int idUsuario) {
+		this.idUsuario = idUsuario;
+	}
+	public int getidTipoEmpleado() {
+		return idTipoEmpleado;
+	}
+	public void idTipoEmpleado(int idTipoEmpleado) {
+		this.idTipoEmpleado = idTipoEmpleado;
+	}
+	public String getTipoInicio() {
+		return tipoInicio;
+	}
+	public void setTipoInicio(String tipoInicio) {
+		this.tipoInicio = tipoInicio;
+	}
+	public boolean isAdministrador() {
+		return administrador;
+	}
+	public void setAdministrador(boolean administrador) {
+		this.administrador = administrador;
+	}
+	
+	
+	public Usuario(int idUsuario, String nombreUsuario, String contrasena, String nombreLargo, int idTipoEmpleado,
+			String tipoInicio, boolean administrador) {
 		super();
+		this.idUsuario = idUsuario;
 		this.nombreUsuario = nombreUsuario;
 		this.contrasena = contrasena;
 		this.nombreLargo = nombreLargo;
+		this.idTipoEmpleado = idTipoEmpleado;
+		this.tipoInicio = tipoInicio;
+		this.administrador = administrador;
 	}
 	public Usuario(String nombreUsuario) {
 		super();

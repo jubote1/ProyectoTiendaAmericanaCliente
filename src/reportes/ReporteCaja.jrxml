@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ReporteCaja" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a5379deb-4709-4ba4-a7ee-d3fb9ceedfa2">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="BDTienda2"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
+	<parameter name="fecha" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{fecha}]]></defaultValueExpression>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[select sum(total_neto), d.nombre_largo as usuariopedido from pedido a , tipo_pedido b, estado c, usuario d where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and  b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = $P{fecha} group by d.nombre_largo
+union
+select sum(total_neto), 'CAJA-NO DOMICILIO' from pedido a , tipo_pedido b, estado c where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and b.esdomicilio = 0 and a.idmotivoanulacion IS NULL and a.fechapedido = $P{fecha} group by usuariopedido]]>
+	</queryString>
+	<field name="sum(total_neto)" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="sum(total_neto)"/>
+	</field>
+	<field name="usuariopedido" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="usuariopedido"/>
+	</field>
+	<group name="usuario">
+		<groupExpression><![CDATA[$F{usuariopedido}]]></groupExpression>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="91" splitType="Stretch">
+			<image>
+				<reportElement x="10" y="0" width="140" height="70" uuid="0d724dc4-e041-4607-91b9-45958660663a"/>
+				<imageExpression><![CDATA["D:/reportes/LogoPizzaAmericana.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="178" y="10" width="383" height="41" uuid="5bf12349-1819-4b6f-9ca8-71d710df4c54"/>
+				<textElement textAlignment="Center">
+					<font size="20" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORTE DE CAJA RESUMIDO]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="300" y="40" width="112" height="30" uuid="70b0e6c9-c402-4259-a564-bb6a5b57b3f5"/>
+				<textElement textAlignment="Center">
+					<font size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{fecha}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="28" splitType="Stretch">
+			<staticText>
+				<reportElement x="110" y="0" width="100" height="25" uuid="294e767d-392d-41ae-a0c2-2d419ebca6ba"/>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Responsable]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="330" y="0" width="100" height="25" uuid="9cb4c54c-9df5-4a24-a2cf-159f6e008f0a"/>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Valor Total]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="26" splitType="Stretch">
+			<textField>
+				<reportElement x="330" y="0" width="100" height="20" uuid="636b7710-6b10-4049-9119-c3597b348f1e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c6056a09-fbbe-4fa5-991c-8292e0c794bf"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{sum(total_neto)}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="0" width="100" height="20" uuid="5a82de06-bc44-4bea-a9c4-2166583d227a">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="68877a77-1dba-4933-9f44-62eb82f3b939"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{usuariopedido}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+</jasperReport>

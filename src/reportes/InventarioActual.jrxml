@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="InventarioActual" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a950f150-4b66-4b56-8ae9-dd4de54ca61b">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="BDTienda2"/>
+	<queryString language="SQL">
+		<![CDATA[select a.iditem,
+ a.nombre_item,
+ a.cantidad,
+ a.unidad_medida,
+ a.cantidadxcanasta,
+ a.nombrecontenedor,
+ a.categoria
+from item_inventario a]]>
+	</queryString>
+	<field name="iditem" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="iditem"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="nombre_item" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="nombre_item"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="cantidad" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="cantidad"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="unidad_medida" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="unidad_medida"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="cantidadxcanasta" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="cantidadxcanasta"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="nombrecontenedor" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="nombrecontenedor"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<field name="categoria" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="categoria"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="item_inventario"/>
+	</field>
+	<group name="Categoria">
+		<groupExpression><![CDATA[$F{categoria}]]></groupExpression>
+		<groupHeader>
+			<band height="28">
+				<textField>
+					<reportElement x="207" y="0" width="153" height="22" uuid="355e4d00-2fe7-4903-8402-c1ed1265d28f"/>
+					<textElement textAlignment="Center">
+						<font size="16" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="81" splitType="Stretch">
+			<staticText>
+				<reportElement x="160" y="24" width="360" height="30" uuid="5f780788-a709-406d-a019-ccd16d08503d"/>
+				<textElement textAlignment="Center">
+					<font size="20" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORTE DE INVENTARIO ACTUAL]]></text>
+			</staticText>
+			<image>
+				<reportElement x="0" y="10" width="141" height="71" uuid="b6dc8f9e-19f3-49f4-a6d7-e452b59e0b41"/>
+				<imageExpression><![CDATA["D:/reportes/LogoPizzaAmericana.png"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="25" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="71" height="20" uuid="58dbd445-4821-42fb-b383-79d89a3cbef2"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Id Item]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="90" y="0" width="251" height="20" uuid="132e2b79-c2be-431c-96a0-167601ca391f"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Descripcion]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="360" y="0" width="71" height="20" uuid="f73d88f5-97dc-4bff-bd1a-05b5bcfdeba9"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cantidad]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="460" y="0" width="71" height="20" uuid="dd7e5681-b353-4b18-ace5-793a5bf92cf4"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Unidad]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="17" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="71" height="15" uuid="6f0a1aee-b1c5-4365-bc23-411c65f75358"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[$F{iditem}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="0" width="251" height="15" uuid="df141d2a-cce8-48a2-b51a-4547d52ac944"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[$F{nombre_item}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="360" y="0" width="71" height="15" uuid="22d899bd-e224-4909-a349-a58c2e624962"/>
+				<textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="460" y="0" width="71" height="15" uuid="35a13596-e42d-403d-a73f-430887350d0f"/>
+				<textFieldExpression><![CDATA[$F{unidad_medida}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="60" splitType="Stretch">
+			<textField>
+				<reportElement x="480" y="35" width="100" height="20" uuid="829af44a-af4e-4c8b-aaac-e406ec8c1682"/>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="HH:mm">
+				<reportElement x="360" y="30" width="100" height="30" uuid="b4b2e3d6-dca2-4231-9baf-96efaa3bd98f"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
