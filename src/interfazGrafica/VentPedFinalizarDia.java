@@ -497,6 +497,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 			pedCtrl.enviarCorreoDomiciliosSemanal();
 			pedCtrl.enviarCorreoAnulacionesSemanal();
 			pedCtrl.enviarCorreoAnulacionesDescuentaSemanal();
+			pedCtrl.enviarCorreoEgresosSemanal();
 			//Realizamos la generación de la varianza  y enviamos el indicador de resumida en true
 			invCtrl.enviarCorreoVarianzaSemanal(true);
 		}

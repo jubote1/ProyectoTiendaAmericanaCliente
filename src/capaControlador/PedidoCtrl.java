@@ -20,6 +20,7 @@ import org.json.simple.parser.JSONParser;
 
 import capaDAO.DetallePedidoDAO;
 import capaDAO.DetallePedidoImpuestoDAO;
+import capaDAO.EgresoDAO;
 import capaDAO.EstadoAnteriorDAO;
 import capaDAO.EstadoDAO;
 import capaDAO.EstadoPosteriorDAO;
@@ -1485,6 +1486,69 @@ public class PedidoCtrl implements Runnable {
 		}
 		
 		
+		public ArrayList<Egreso> obtenerEgresosSemana()
+		{
+			//Recuperamos la fecha actual del sistema con la fecha apertura
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaActual = fecha.getFechaApertura();
+			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
+			Date datFechaAnterior;
+			String fechaAnterior = "";
+			//Creamos el objeto calendario
+			Calendar calendarioActual = Calendar.getInstance();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			try
+			{
+				//Al objeto calendario le fijamos la fecha actual del sitema
+				calendarioActual.setTime(dateFormat.parse(fechaActual));
+				
+			}catch(Exception e)
+			{
+				System.out.println(e.toString());
+			}
+			//Retormanos el día de la semana actual segun la fecha del calendario
+			int diaActual = calendarioActual.get(Calendar.DAY_OF_WEEK);
+			//Domingo
+			if(diaActual == 1)
+			{
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -6);
+			}
+			else if(diaActual == 2)
+			{
+				//Si es lunes no se hace nada
+			}
+			else if(diaActual == 3)
+			{
+				//Si es martes se resta uno solo
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -1);
+			}
+			else if(diaActual == 4)
+			{
+				//Si es miercoles se resta dos
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -2);
+			}
+			else if(diaActual == 5)
+			{
+				//Si es jueves se resta tres
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -3);
+			}
+			else if(diaActual == 6)
+			{
+				//Si es viernes se resta cuatro
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -4);
+			}
+			else if(diaActual == 7)
+			{
+				//Si es sabado se resta cinco
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -5);
+			}
+			//Llevamos a un string la fecha anterior para el cálculo de la venta
+			datFechaAnterior = calendarioActual.getTime();
+			fechaAnterior = dateFormat.format(datFechaAnterior);
+			ArrayList<Egreso> egresosRangosFecha = EgresoDAO.obtenerEgresosSemana(fechaAnterior, fechaActual, auditoria);
+			return(egresosRangosFecha);
+		}
+		
 		public ArrayList obtenerDomiciliosSemana()
 		{
 			//Recuperamos la fecha actual del sistema con la fecha apertura
@@ -2458,6 +2522,28 @@ public class PedidoCtrl implements Runnable {
 			return(respuesta);
 		}
 		
+		public String resumenSemanalEgresos()
+		{
+			//Formato para los valores de moneda
+			DecimalFormat formatea = new DecimalFormat("###,###");
+			String respuesta = "";
+			ArrayList<Egreso> egresosSemana = obtenerEgresosSemana();
+			respuesta = respuesta + "<table border='2'> <tr> RESUMEN SEMANAL DE EGRESOS/VALES </tr>";
+			respuesta = respuesta + "<tr>"
+					+  "<td><strong>Descripción egreso</strong></td>"
+					+  "<td><strong>Valor Egreso</strong></td>"
+					+  "<td><strong>Fecha Egreso</strong></td>"
+					+  "</tr>";
+			Egreso egrTemp;
+			for(int y = 0; y < egresosSemana.size();y++)
+			{
+				egrTemp = egresosSemana.get(y);
+				respuesta = respuesta + "<tr><td>" + egrTemp.getDescripcion() + "</td><td> " + formatea.format(egrTemp.getValorEgreso()) + "</td><td>" + egrTemp.getFecha()  +"</td></tr>";
+			}
+			respuesta = respuesta + "</table> <br/>";
+			return(respuesta);
+		}
+		
 		
 		public String resumenInventarios()
 		{
@@ -2607,6 +2693,26 @@ public class PedidoCtrl implements Runnable {
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
 			correo.setMensaje("A continuación el reporte semanal de Anulaciones que provienen de un cambio de opinión y que por lo tanto de devuelven al inventario lo anulado: \n" + reporte);
+			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+			contro.enviarCorreo();
+		}
+		
+		
+		public void enviarCorreoEgresosSemanal()
+		{
+			//Obtenemos la fecha del rango del reporte
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaSis = fecha.getFechaApertura();
+			//Obtenemos la tienda
+			Tienda tiendaReporte = TiendaDAO.obtenerTienda(auditoria);
+			//Obtenemos el reporte
+			String reporte = resumenSemanalEgresos();
+			Correo correo = new Correo();
+			correo.setAsunto("SEMANAL Reporte Egresos/Vales Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setContrasena("Pizzaamericana2017");
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
+			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+			correo.setMensaje("A continuación el reporte semanal de los egresos/vales de la semana que acaba de finalizar: \n" + reporte);
 			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
 			contro.enviarCorreo();
 		}

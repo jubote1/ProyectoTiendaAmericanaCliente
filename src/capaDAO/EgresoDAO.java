@@ -117,7 +117,58 @@ public class EgresoDAO {
 		
 	}
 	
-	
+	/**
+	 * Método que se encarga desde la capa DAO de retornar todos los egresos para una semana determinada en el sistema.
+	 * @param fechaInferior rango inferior para la consulta de egresos vales
+	 * @param fechaSuperior rango superior para la consulta de egresos vales
+	 * @param auditoria Parámetro que determina la generación o no de logs
+	 * @return Un arrayList con objetos tipoEgreso
+	 */
+	public static ArrayList<Egreso> obtenerEgresosSemana(String fechaInferior, String fechaSuperior, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<Egreso> egresos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from egreso  where fecha >= '" + fechaInferior + "' and fecha <= '" + fechaSuperior+"'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idEgreso;
+			double valorEgreso;
+			String descripcion;
+			String fecha;
+			Egreso egrTemp = new Egreso(0,0,"", "");
+			while(rs.next()){
+				idEgreso = rs.getInt("idegreso");
+				valorEgreso = rs.getDouble("valoregreso");
+				descripcion = rs.getString("descripcion");
+				fecha = rs.getString("fecha");
+				egrTemp = new Egreso(idEgreso, valorEgreso, fecha, descripcion);
+				egresos.add(egrTemp);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(egresos);
+		
+	}
 		
 
 	public static int insertarEgreso(Egreso egrIns, boolean auditoria)

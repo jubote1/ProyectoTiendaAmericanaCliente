@@ -260,6 +260,13 @@ public void realizarInventarioHistorico(String fecha)
 		
 	}
 	
+	public ArrayList<Egreso> obtenerEgresosSemana(String fechaInferior, String fechaSuperior)
+	{
+		ArrayList<Egreso> egresos =  EgresoDAO.obtenerEgresosSemana(fechaInferior, fechaSuperior, auditoria);
+		return(egresos);
+		
+	}
+	
 	public int insertarEgreso(Egreso egrIns)
 	{
 		int idIns = EgresoDAO.insertarEgreso(egrIns, auditoria);

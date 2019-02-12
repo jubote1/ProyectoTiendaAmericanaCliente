@@ -96,7 +96,16 @@ public class PedidoDAO {
 				valorImpuesto = rs.getDouble(2);
 				break;
 			}
-			String update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto) + " , impuesto = " + valorImpuesto + " , total_neto =" + (valorTotal - valorDescuento) + " , idtipopedido =" + idTipoPedido + " , tiempopedido = " + tiempopedido +" where idpedidotienda = " + idpedido;
+			String update = "";
+			if(valorDescuento == 0)
+			{
+				update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto) + " , impuesto = " + valorImpuesto + " , total_neto =" + (valorTotal) + " , idtipopedido =" + idTipoPedido + " , tiempopedido = " + tiempopedido +" where idpedidotienda = " + idpedido;
+			}
+			else if(valorDescuento > 0)
+			{
+				valorImpuesto = (valorTotal - valorDescuento)* 0.08;
+				update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto - valorDescuento) + " , impuesto = " + (valorImpuesto) + " , total_neto =" + (valorTotal - valorDescuento) + " , idtipopedido =" + idTipoPedido + " , tiempopedido = " + tiempopedido +" where idpedidotienda = " + idpedido;
+			}
 			if(auditoria)
 			{
 				logger.info(update);
