@@ -24,9 +24,14 @@ import java.awt.Window;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionListener;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Properties;
 import java.awt.event.ActionEvent;
 
 import capaControlador.EmpleadoCtrl;
@@ -47,15 +52,20 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	private JTextField txtFechaSistema;
 	private JTextField txtFechaUltCierre;
 	private JTextField txtEstadoCierre;
-	private JLabel lblHora;
+	private JLabel lblFechaHora;
 	public static boolean habilitaAuditoria = false;
 	public static int idTienda = 0;
-	String hora,minutos,segundos,ampm;
+	String fecha,hora,minutos,segundos,ampm;
 	OperacionesTiendaCtrl operTienda;
 	Calendar calendario;    
 	Thread h1;
+	Thread hiloValidacion;
 	AutenticacionCtrl aut = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
-
+	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
+	PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	//Variable que almacenará que tipo de presentación manejará el sistema si 1 la clásica o 2 la vista modificada
+	int valPresentacion;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -88,8 +98,22 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		//Inicializamos la variable de habilitaAuditoria
-		ParametrosCtrl parCtrl = new ParametrosCtrl(true);
+		//Leemos archivos properties para fijar el valor de host
+		Properties prop = new Properties();
+		InputStream is = null;
+		
+		try {
+			is = new FileInputStream("C:\\Program Files\\POSPM\\pospm.properties");
+			prop.load(is);
+		} catch(IOException e) {
+			System.out.println(e.toString());
+		}
+		Sesion.setHost((String)prop.getProperty("host"));
+		Sesion.setEstacion((String)prop.getProperty("estacion"));
+		
+		
+		boolean estaAperturado = pedCtrl.isSistemaAperturado();
+		
 		//Traemos de base de datos el valor del parametro de auditoria
 		Parametro parametroAud = parCtrl.obtenerParametro("AUDITORIA");
 		//Extraemos el valor del campo de ValorTexto
@@ -102,6 +126,19 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		{
 			habilitaAuditoria = false;
 		}
+		//Tomamos el valor del parámetro relacionado la interface gráfica
+		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
+		valPresentacion = 0;
+		try
+		{
+			valPresentacion = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
+			valPresentacion = 0;
+		}
+		
+		
 		JLabel lblNombreSistema = new JLabel("SISTEMA TIENDA PIZZA AMERICANA");
 		lblNombreSistema.setFont(new Font("Traditional Arabic", Font.BOLD, 17));
 		lblNombreSistema.setBounds(64, 11, 338, 40);
@@ -129,9 +166,8 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		contentPane.add(jpassClave);
 		
 		JButton btnAutenticar = new JButton("Autenticar");
-		PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 		FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
-		boolean estaAperturado = pedCtrl.isSistemaAperturado();
+		
 		//Fijamos el idTienda del sistema
 		operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 		try{
@@ -165,6 +201,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 					
 					if(resultado)
 					{
+						hiloValidacion.start();
 						//Cuando se supera el logueo asignamos la variable estática de idUsuario.
 						idUsuario = objUsuario.getIdUsuario();
 						JOptionPane.showConfirmDialog(null,  "Bienvenido al Sistema " + objUsuario.getNombreLargo() , "Ingresaste al Sistema!!", JOptionPane.OK_OPTION);
@@ -173,15 +210,15 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 							//Llamamos método para validar el estado de la fecha respecto a la última apertura.
 							OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 							String fechaMayor = operCtrl.validarEstadoFechaSistema();
-							String fechaAumentada = operCtrl.aumentarFecha(fechasSistema.getFechaApertura());
+							//String fechaAumentada = operCtrl.aumentarFecha(fechasSistema.getFechaApertura());
 							Object seleccion = JOptionPane.showInputDialog(
 									   null,
 									   "¿El día no ha sido aperturado, desea abrirlo? Seleccione opcion",
 									   "Selector de opciones",
 									   JOptionPane.QUESTION_MESSAGE,
 									   null,  // null para icono defecto
-									   new Object[] { fechaAumentada,fechaMayor }, 
-									   fechaAumentada);
+									   new Object[] { fechaMayor }, 
+									   fechaMayor);
 							if(seleccion == null)
 							{
 								dispose();
@@ -199,10 +236,20 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 						Sesion.setAccesosMenus(aut.obtenerAccesosPorMenuUsuario(usuario));
 						Sesion.setAccesosOpcion(aut.obtenerAccesosPorOpcionObj(objUsuario.getidTipoEmpleado()));
 						Sesion.setIdTipoEmpleado(objUsuario.getidTipoEmpleado());
+						Sesion.setPresentacion(valPresentacion);
+												
 						if(objUsuario.getTipoInicio().equals("Ventana Menús"))
 						{
-							VentPrincipal ventPrincipal = new VentPrincipal();
-							ventPrincipal.setVisible(true);
+							if(valPresentacion == 1)
+							{
+								VentPrincipal ventPrincipal = new VentPrincipal();
+								ventPrincipal.setVisible(true);
+							}else if(valPresentacion == 2)
+							{
+								VentPrincipalModificada ventPrincipal = new VentPrincipalModificada();
+								ventPrincipal.lblInformacionUsuario.setText("USUARIO: " + Sesion.getUsuario());
+								ventPrincipal.setVisible(true);
+							}
 						}else if(objUsuario.getTipoInicio().equals("Maestro Pedidos"))
 						{
 							VentPedTransaccional transacciones = new VentPedTransaccional();
@@ -226,6 +273,11 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		contentPane.add(btnAutenticar);
 		
 		JButton btnCancelar = new JButton("Cancelar");
+		btnCancelar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
 		btnCancelar.setBounds(246, 277, 132, 46);
 		contentPane.add(btnCancelar);
 		
@@ -245,13 +297,21 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		JLabel lblFechaUltCierre = new JLabel("Fecha Ult Cierre");
 		lblFechaUltCierre.setBounds(226, 202, 92, 14);
 		contentPane.add(lblFechaUltCierre);
+		lblFechaUltCierre.setVisible(false);
 		
 		txtFechaSistema = new JTextField();
 		txtFechaSistema.setEditable(false);
 		txtFechaSistema.setBounds(112, 199, 104, 20);
 		contentPane.add(txtFechaSistema);
 		txtFechaSistema.setColumns(10);
-		txtFechaSistema.setText(fechasSistema.getFechaApertura());
+		if(estaAperturado)
+		{
+			txtFechaSistema.setText(fechasSistema.getFechaApertura());
+		}else
+		{
+			txtFechaSistema.setText("");
+		}
+		
 		
 		txtFechaUltCierre = new JTextField();
 		txtFechaUltCierre.setEditable(false);
@@ -259,6 +319,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		txtFechaUltCierre.setBounds(320, 199, 104, 20);
 		txtFechaUltCierre.setText(fechasSistema.getFechaUltimoCierre());
 		contentPane.add(txtFechaUltCierre);
+		txtFechaUltCierre.setVisible(false);
 		
 		txtEstadoCierre = new JTextField();
 		txtEstadoCierre.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -267,10 +328,10 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		contentPane.add(txtEstadoCierre);
 		txtEstadoCierre.setColumns(10);
 		
-		lblHora = new JLabel("");
-		lblHora.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblHora.setBounds(133, 258, 153, 19);
-		contentPane.add(lblHora);
+		lblFechaHora = new JLabel("");
+		lblFechaHora.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblFechaHora.setBounds(64, 258, 296, 19);
+		contentPane.add(lblFechaHora);
 		
 		JButton btnIngresoRapido = new JButton("Ingreso R\u00E1pido");
 		btnIngresoRapido.addActionListener(new ActionListener() {
@@ -291,24 +352,43 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 			txtEstadoCierre.setText("El día en cuestión no se encuentra abierto.");
 		}
 		h1 = new Thread(this);
+		hiloValidacion = new Thread(this);
 		h1.start();
 	}
 	
 	public void run(){
 		 Thread ct = Thread.currentThread();
-		 while(ct == h1) {   
-		  calcula();
-		  lblHora.setText(hora + ":" + minutos + ":" + segundos + " "+ampm);
-		  try {
-		   Thread.sleep(1000);
-		  }catch(InterruptedException e) {}
+		 if(ct == h1)
+		 {
+			 while(ct == h1) {   
+				  calcula();
+				  lblFechaHora.setText(fecha + " " + hora + ":" + minutos + ":" + segundos + " "+ampm);
+				  try {
+				   Thread.sleep(1000);
+				  }catch(InterruptedException e) {}
+				 }
+		 }else if (ct == hiloValidacion) 
+		 {
+			while(true)
+			{
+				boolean estaAperturado = pedCtrl.isSistemaAperturado();
+				if(!estaAperturado)
+				{
+					System.exit(0);
+				}
+				try {
+					   Thread.sleep(20000);
+					  }catch(InterruptedException e) {}
+			}
 		 }
+		
 		}
 	
 	public void calcula () {        
 			Calendar calendario = new GregorianCalendar();
 			Date fechaHoraActual = new Date();
-	
+			SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
+			fecha = formatoFecha.format(fechaHoraActual);
 	
 			calendario.setTime(fechaHoraActual);
 			ampm = calendario.get(Calendar.AM_PM)==Calendar.AM?"AM":"PM";

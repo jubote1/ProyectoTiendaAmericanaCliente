@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import capaControlador.ParametrosCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ReportesCtrl;
 import capaControlador.PedidoCtrl;
@@ -15,6 +16,7 @@ import capaModelo.Estado;
 import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPosterior;
 import capaModelo.Municipio;
+import capaModelo.Parametro;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -44,6 +46,9 @@ public class VentPedCambioEstado extends JDialog {
 	private JLabel lblImgEstObj;
 	private JLabel lblImgEstActual;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
+	//variable para estado en ruta domicilios
+	private final long estEnRutaDom;
 	/**
 	 * Launch the application.
 	 */
@@ -82,6 +87,17 @@ public class VentPedCambioEstado extends JDialog {
 		JLabel lblIdPedido = new JLabel("Id Pedido");
 		lblIdPedido.setBounds(36, 50, 100, 14);
 		panelPrincipal.add(lblIdPedido);
+		long valNum = 0;
+		Parametro parametro = parCtrl.obtenerParametro("ENRUTADOMICILIO");
+		try
+		{
+			valNum = (long) parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PEDIDOS EN RUTA");
+			valNum = 0;
+		}
+		estEnRutaDom = valNum;
 		
 		txtIdPedido = new JTextField();
 		txtIdPedido.setEditable(false);
@@ -117,6 +133,11 @@ public class VentPedCambioEstado extends JDialog {
 				{
 					estAnt = (EstadoAnterior) cmbEstadoObjetivo.getSelectedItem();
 					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estAnt.getIdEstadoAnterior(),Sesion.getUsuario(),false, idDomiciliario, false);
+					if(estadoPedido.getIdestado() == estEnRutaDom)
+					{
+						//Tenemos que desasignar el domiciliario al pedido
+						pedCtrl.desasignarDomiciliarioPedido(idPedidoTienda);
+					}
 				}else if(posterior)
 				{
 					estPos = (EstadoPosterior) cmbEstadoObjetivo.getSelectedItem();

@@ -539,7 +539,7 @@ public class VentProCRUDProducto extends JDialog {
 		panelProductos.add(panel);
 		
 		lblImagen = new JLabel("");
-		lblImagen.setBounds(369, 205, 368, 69);
+		lblImagen.setBounds(369, 205, 227, 69);
 		panelProductos.add(lblImagen);
 		
 		JButton btnCargarImagen = new JButton("Cargar Imagen");
@@ -579,8 +579,25 @@ public class VentProCRUDProducto extends JDialog {
 		txtRuta.setColumns(10);
 		
 		chckbxModConPregunta = new JCheckBox("Maneja Modificador Con Pregunta");
-		chckbxModConPregunta.setBounds(446, 188, 192, 23);
+		chckbxModConPregunta.setFont(new Font("Tahoma", Font.BOLD, 11));
+		chckbxModConPregunta.setBounds(446, 188, 260, 23);
 		panelProductos.add(chckbxModConPregunta);
+		
+		JButton btnActualizarImagen = new JButton("Act Imagen");
+		btnActualizarImagen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (idProducto > 0)
+				{
+					boolean respuesta = parPro.actualizarImagenProducto(idProducto, icono);
+					if(respuesta)
+					{
+						JOptionPane.showMessageDialog(null, "Se ha actualizado correcrtamente la imagen" , "Confirmación Edición", JOptionPane.OK_OPTION);
+					}
+				}
+			}
+		});
+		btnActualizarImagen.setBounds(620, 226, 106, 23);
+		panelProductos.add(btnActualizarImagen);
 		
 		
 		
@@ -1214,7 +1231,6 @@ public class VentProCRUDProducto extends JDialog {
 					boolean modConPregunta = chckbxModConPregunta.isSelected();
 					Producto productoEditar = new Producto(idProducto,descripcion, impresion, textoBoton, colorBoton, idPreguntaForzada1, idPreguntaForzada2, idPreguntaForzada3, idPreguntaForzada4, idPreguntaForzada5, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10, impresionComanda, tipoProducto.getTipoProducto(), tamano.getTamano(),modConPregunta ); 
 					productoEditar.setImagen(icono);
-					System.out.println("como va el icono " + icono);
 					boolean respuesta = parPro.editarProducto(productoEditar);
 					if (respuesta)
 					{

@@ -28,7 +28,7 @@ public class MotivoAnulacionPedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select * from motivo_anulacion_pedido " ;
+			String consulta = "select * from motivo_anulacion_pedido order by idmotivoanulacion desc" ;
 			if(auditoria)
 			{
 				logger.info(consulta);

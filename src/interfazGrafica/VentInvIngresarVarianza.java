@@ -301,12 +301,13 @@ public class VentInvIngresarVarianza extends JDialog {
 					tableIngVarianza.getCellEditor().stopCellEditing();
 				}
 				//Recorre el jtable para ver si se modifico
+				//Si se confirma el ingreso debemos de borrar de la tabla temporal
+				invCtrl.limpiarTipoInventariosTemporal(fechaSis,"V");
 				int idItem;
 				double cantidad;
 				int controladorIngreso = 0;
 				cantAvance = 20;
 				//Ponemos a correr el hilo que actualizará el JProgressBar
-				
 				for(int i = 0; i < tableIngVarianza.getRowCount(); i++)
 				{
 					cantAvance = 40;
@@ -412,7 +413,7 @@ public class VentInvIngresarVarianza extends JDialog {
 			invConsumo = Double.parseDouble(fila[5]);
 			invCalculado = invInicio - invRetiro + invIngreso - invConsumo;
 			fila[6] = Double.toString(invCalculado);
-			fila[9] = Double.toString(invCalculado - Double.parseDouble(fila[7]));
+			fila[9] = Double.toString(Double.parseDouble(fila[8])- invCalculado);
 			modeloItemResumen.addRow(fila);
 			
 		}

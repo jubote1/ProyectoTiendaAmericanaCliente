@@ -50,6 +50,11 @@ public class VentSegTienda extends JDialog {
 	private JComboBox cmbTipoContribuyente;
 	private JTextField txtNumInicial;
 	private JTextField txtNumFinal;
+	private JTextField txtPuntodeVenta;
+	private JTextField txtFecVenRes;
+	private JTextField txtNumActual;
+	OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
+	private JTextField txtDelNumeracion;
 	/**
 	 * Launch the application.
 	 */
@@ -246,7 +251,6 @@ public class VentSegTienda extends JDialog {
 		btnActualizarNmeros.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				validarNumerosResolucion();
-				OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 				String numeroInicial = txtNumInicial.getText();
 				String numeroFinal = txtNumFinal.getText();
 				int numInicial;
@@ -257,6 +261,7 @@ public class VentSegTienda extends JDialog {
 				if(respuesta.equals(new String("OK")))
 				{
 					JOptionPane.showMessageDialog(null, "La actualización fue correcta." , "Actualización Resolución Exitosa", JOptionPane.OK_OPTION);
+					txtNumActual.setText(Integer.toString(operTiendaCtrl.retornarSecuenciaFacturacion()));
 				}else
 				{
 					JOptionPane.showMessageDialog(null, respuesta , "Error Fijando Números de resolución", JOptionPane.ERROR_MESSAGE);
@@ -264,8 +269,45 @@ public class VentSegTienda extends JDialog {
 		
 			}
 		});
-		btnActualizarNmeros.setBounds(492, 345, 177, 23);
+		btnActualizarNmeros.setBounds(470, 380, 177, 23);
 		panelDatos.add(btnActualizarNmeros);
+		
+		JLabel lblPuntoDeVenta = new JLabel("Punto de Venta");
+		lblPuntoDeVenta.setBounds(416, 265, 93, 14);
+		panelDatos.add(lblPuntoDeVenta);
+		
+		txtPuntodeVenta = new JTextField();
+		txtPuntodeVenta.setColumns(50);
+		txtPuntodeVenta.setBounds(527, 259, 171, 20);
+		panelDatos.add(txtPuntodeVenta);
+		
+		JLabel lblFechaVenResol = new JLabel("Fecha Vencimiento Resoluci\u00F3n");
+		lblFechaVenResol.setBounds(416, 194, 158, 14);
+		panelDatos.add(lblFechaVenResol);
+		
+		txtFecVenRes = new JTextField();
+		txtFecVenRes.setColumns(10);
+		txtFecVenRes.setBounds(571, 191, 98, 20);
+		panelDatos.add(txtFecVenRes);
+		
+		JLabel lblNumActual = new JLabel("Num Actual");
+		lblNumActual.setBounds(492, 352, 71, 14);
+		panelDatos.add(lblNumActual);
+		
+		txtNumActual = new JTextField();
+		txtNumActual.setEditable(false);
+		txtNumActual.setColumns(10);
+		txtNumActual.setBounds(573, 349, 74, 20);
+		panelDatos.add(txtNumActual);
+		
+		JLabel lblDeltaAlertaNumeracin = new JLabel("Delta Alerta Numeraci\u00F3n");
+		lblDeltaAlertaNumeracin.setBounds(416, 224, 158, 14);
+		panelDatos.add(lblDeltaAlertaNumeracin);
+		
+		txtDelNumeracion = new JTextField();
+		txtDelNumeracion.setColumns(10);
+		txtDelNumeracion.setBounds(571, 224, 98, 20);
+		panelDatos.add(txtDelNumeracion);
 		btnActualizarInf.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Se pulso botón para adicionar un nuevo Menú Agrupador
@@ -280,9 +322,10 @@ public class VentSegTienda extends JDialog {
 				String fechaResolucion = txtFechaResolucion.getText();
 				String ubicacion = txtUbicacion.getText();
 				String identificacion = txtIdentificacion.getText();
-				Tienda tienda = new Tienda(0,nombreTienda, url, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, "", "",0,0);
-				OperacionesTiendaCtrl opertiendaCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
-				boolean respuesta = opertiendaCtrl.actualizarTienda(tienda);
+				String puntoVenta = txtPuntodeVenta.getText();
+				int deltaNumeracion = Integer.parseInt(txtDelNumeracion.getText());
+				Tienda tienda = new Tienda(0,nombreTienda, url, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, "", "",0,0, puntoVenta,deltaNumeracion);
+				boolean respuesta = operTiendaCtrl.actualizarTienda(tienda);
 				if(respuesta)
 				{
 					JOptionPane.showMessageDialog(null, "Se ha actualizado Correctamente la información." , "Actualizacion Información Tienda", JOptionPane.YES_OPTION);
@@ -300,8 +343,7 @@ public class VentSegTienda extends JDialog {
 	
 public void cargarDatosTienda()
 {
-	OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
-	Tienda tienda = operCtrl.obtenerTienda();
+	Tienda tienda = operTiendaCtrl.obtenerTienda();
 	txtNombreTienda.setText(tienda.getNombretienda());
 	txtUrl.setText(tienda.getUrlContact());
 	txtFechaApertura.setText(tienda.getFechaApertura());
@@ -319,7 +361,9 @@ public void cargarDatosTienda()
 	cmbTipoContribuyente.setSelectedItem(tienda.getTipoContribuyente());
 	txtNumInicial.setText(Long.toString(tienda.getNumeroInicialResolucion()));
 	txtNumFinal.setText(Long.toString(tienda.getNumeroFinalResolucion()));
-	
+	txtPuntodeVenta.setText(tienda.getPuntoVenta());
+	txtNumActual.setText(Integer.toString(operTiendaCtrl.retornarSecuenciaFacturacion()));
+	txtDelNumeracion.setText(Integer.toString(tienda.getDeltaNumeracion()));
 }
 	
 public boolean validarNumerosResolucion()
@@ -417,6 +461,11 @@ public boolean validarDatos()
 	if(identificacion.length() == 0)
 	{
 		error = error + " La identificación debe ser diferente de vacío.";
+	}
+	String puntoVenta = txtPuntodeVenta.getText();
+	if(puntoVenta.length() == 0)
+	{
+		error = error + " El punto de venta debe ser diferente de vacío.";
 	}
 	if(error.length() > 0 )
 	{

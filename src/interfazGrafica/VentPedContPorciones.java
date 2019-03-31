@@ -173,6 +173,14 @@ public class VentPedContPorciones extends JDialog {
 			    {
 			    	Parametro parametro = parCtrl.obtenerParametro("PRODUCTOPORCION");
 					long valNum = 0;
+					int idProductoPorcion = 0;
+					int idPorcionTemporal = 0;
+					int idPorcionEmpleado = 0;
+					int idPorcionDesecho = 0;
+					int cantPorciones;
+					int cantPorcEmpleado;
+					int cantTemporales;
+					int cantDesechos;
 					try
 					{
 						valNum = (long) parametro.getValorNumerico();
@@ -183,11 +191,7 @@ public class VentPedContPorciones extends JDialog {
 						return;
 					}
 					//Asignamos el producto de porciones para con este facturar
-					int idProductoPorcion =(int) valNum;
-					int idPorcionTemporal = 0;
-					int cantPorciones;
-					int cantDescuento;
-					int cantTemporales;
+					idProductoPorcion =(int) valNum;
 					double precioPorcion = parProductoCtrl.obtenerPrecioPilaProducto(idProductoPorcion);
 					//Repetimos el proceso para el producto gaseosa
 					parametro = parCtrl.obtenerParametro("PRODUCTOGASEOSA");
@@ -218,11 +222,42 @@ public class VentPedContPorciones extends JDialog {
 					}
 					idPorcionTemporal = (int) valNum;
 					double precioPorcionTemp = parProductoCtrl.obtenerPrecioPilaProducto(idPorcionTemporal);
+					//Capturamos la informacion para la porcion empleado
+					parametro = parCtrl.obtenerParametro("PORCIONEMPLEADO");
+					valNum = 0;
+					try
+					{
+						valNum = (long) parametro.getValorNumerico();
+					}catch(Exception exc)
+					{
+						System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA PORCIONES DE EMPLEADO");
+						JOptionPane.showMessageDialog(ventanaPadre, "Debe tener parametrizada la variable PORCIONEMPLEADO para poder facturar" , "No se tiene variable para poder facturar", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					idPorcionEmpleado = (int) valNum;
+					double precioPorcionEmp =  parProductoCtrl.obtenerPrecioPilaProducto(idPorcionEmpleado);
+					//Capturamos la información de la porcion desecho
+					parametro = parCtrl.obtenerParametro("PORCIONDESECHO");
+					valNum = 0;
+					try
+					{
+						valNum = (long) parametro.getValorNumerico();
+					}catch(Exception exc)
+					{
+						System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA PORCIONES DE EMPLEADO");
+						JOptionPane.showMessageDialog(ventanaPadre, "Debe tener parametrizada la variable PORCIONEMPLEADO para poder facturar" , "No se tiene variable para poder facturar", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					idPorcionDesecho = (int) valNum;
+					double precioPorcionDes =  parProductoCtrl.obtenerPrecioPilaProducto(idPorcionDesecho);
+					
 					//Actualizamos el estado de las porciones en bd 
 					estActual = operTiendaCtrl.obtenerPorcionesControlDiario(fechaSistema);
-					cantPorciones = estActual.getPorcion() + estActual.getPorcionGaseosa() + estActual.getPorcionEmpleado() + estActual.getPorcionDesecho();
+					cantPorciones = estActual.getPorcion() + estActual.getPorcionGaseosa();
 					cantGaseosas = estActual.getPorcionGaseosa();
-					cantDescuento = estActual.getPorcionEmpleado();
+					//Fijamos el valor de porciones empleado
+					cantPorcEmpleado = estActual.getPorcionEmpleado();
+					cantDesechos = estActual.getPorcionDesecho();
 					cantTemporales = estActual.getPorcionTemporal();
 					//Obtenemos el id de la tienda
 					int idTienda = operTiendaCtrl.obtenerIdTienda();
@@ -230,7 +265,7 @@ public class VentPedContPorciones extends JDialog {
 					//A continuación debemos realizar la inserción del pedido, el detalle pedido, la forma de pago y el descuento.
 					
 					//Realizamos la inserción del encabezado pedido
-					int idPedidoTienda = pedCtrl.InsertarEncabezadoPedido(idTienda, 0, fechaSistema, Sesion.getUsuario());
+					int idPedidoTienda = pedCtrl.InsertarEncabezadoPedido(idTienda, 0, fechaSistema, Sesion.getUsuario(), Sesion.getEstacion());
 					
 					//Comenzamos la adición de detalles al pedido, validamos que si existan porciones para facturar
 					DetallePedido detPedido;
@@ -254,21 +289,43 @@ public class VentPedContPorciones extends JDialog {
 						pedCtrl.insertarDetallePedido(detPedido);
 						contadorDetallePedido++;
 					}
+					//Validamos si hay venta de porciones para empleado 
+					if(cantPorcEmpleado > 0)
+					{
+						detPedido = new DetallePedido(0,idPedidoTienda,idPorcionEmpleado,cantPorcEmpleado, precioPorcionEmp, cantPorcEmpleado*precioPorcionEmp, "",0, "N","", contadorDetallePedido);
+						pedCtrl.insertarDetallePedido(detPedido);
+						contadorDetallePedido++;
+					}
+					//Validamos si hay venta de porciones para desecho
+					if(cantDesechos > 0)
+					{
+						detPedido = new DetallePedido(0,idPedidoTienda,idPorcionDesecho,cantDesechos, precioPorcionDes,cantDesechos*precioPorcionDes, "",0, "N","", contadorDetallePedido);
+						pedCtrl.insertarDetallePedido(detPedido);
+						contadorDetallePedido++;
+					}
+					
 					//Insertar la forma de pago en efectivo
-					double valorPago = ((cantPorciones - (estActual.getPorcionEmpleado() + estActual.getPorcionDesecho()))*precioPorcion) + (cantGaseosas * precioGaseosa) + (cantTemporales*precioPorcionTemp) ;
+					double valorPago = (cantPorciones*precioPorcion) + (cantGaseosas * precioGaseosa) + (cantTemporales*precioPorcionTemp) + (cantPorcEmpleado*precioPorcionEmp) + (cantDesechos*precioPorcionDes) ;
 					pedCtrl.insertarPedidoFormaPago(	valorPago, 0, 0, valorPago, 0, idPedidoTienda);
 					
-					//Insertamos el descuento producto de los desechos
-					double valorDescuento = (estActual.getPorcionEmpleado() + estActual.getPorcionDesecho())*precioPorcion; 
-					PedidoDescuento descuento = new PedidoDescuento(idPedidoTienda, valorDescuento , 0, "DESCUENTO PORCIONES EMPLEADO Y DESECHOS", "", 0,0 );
-					boolean resp = pedCtrl.insertarPedidoDescuento(descuento);
+					//Insertamos el descuento producto de los desechos - Se interviene esta parte para evitar hablar de descuentos.
+//					double valorDescuento = (estActual.getPorcionEmpleado() + estActual.getPorcionDesecho())*precioPorcion; 
+//					PedidoDescuento descuento = new PedidoDescuento(idPedidoTienda, valorDescuento , 0, "DESCUENTO PORCIONES EMPLEADO Y DESECHOS", "", 0,0, Sesion.getUsuario() );
+//					boolean resp = pedCtrl.insertarPedidoDescuento(descuento);
 					
 					//Finalizamos el pedido -- el tipo pedido se quema mientras tanto
 					boolean respuesta = pedCtrl.finalizarPedido(idPedidoTienda, 0, 2);
 					//Si se finaliza bien el pedido cambiamos el estado de las porciones para el día
 					if(respuesta)
 					{
-						operTiendaCtrl.facturarPorciones(fechaSistema);
+						//No vamos a prender el indicador de que se facturaron las porciones
+//						operTiendaCtrl.facturarPorciones(fechaSistema);
+						//Llevamos a cero los valores de los controladores de porciones
+						operTiendaCtrl.encerarPorcion(fechaSistema);
+						operTiendaCtrl.encerarPorcionDesecho(fechaSistema);
+						operTiendaCtrl.encerarPorcionEmpleado(fechaSistema);
+						operTiendaCtrl.encerarPorcionGaseosa(fechaSistema);
+						operTiendaCtrl.encerarrPorcionTemporal(fechaSistema);
 						JOptionPane.showMessageDialog(ventanaPadre, "Se ha ingresado el pedido # " + idPedidoTienda , "Confirmación de Ingreso de Pedido", JOptionPane.OK_OPTION);
 						dispose();
 					}

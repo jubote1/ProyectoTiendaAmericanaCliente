@@ -33,7 +33,7 @@ public class UsuarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select nombre_largo, id, administrador, idtipoempleado,tipoinicio from usuario where nombre = '" + usuario.getNombreUsuario() + "' and password = '" + usuario.getContrasena()+"'";
+			String consulta = "select nombre_largo, id, administrador, idtipoempleado,tipoinicio, ingreso from usuario where nombre = '" + usuario.getNombreUsuario() + "' and password = '" + usuario.getContrasena()+"'";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -50,6 +50,12 @@ public class UsuarioDAO {
 				usuario.setIdTipoEmpleado(idTipoEmpleado);
 				usuario.setNombreLargo(nombreUsuario);
 				usuario.setIdUsuario(idUsuario);
+				int ingreso = rs.getInt("ingreso");
+				usuario.setIngreso(ingreso);
+				if(ingreso == 0)
+				{
+					darIngresoEmpleado(idUsuario, auditoria);
+				}
 				if(administrador.equals(new String("S")))
 				{
 					usuario.setAdministrador(true);
@@ -146,11 +152,18 @@ public class UsuarioDAO {
 			while(rs.next()){
 				
 				try{
+					int idUsuario = rs.getInt("id");
 					usuario.setIdUsuario(rs.getInt("id"));
 					usuario.setNombreUsuario(rs.getString("nombre"));
 					usuario.setNombreLargo(rs.getString("nombre_largo"));
 					usuario.setIdTipoEmpleado(rs.getInt("idtipoempleado"));
 					usuario.setTipoInicio(rs.getString("tipoinicio"));
+					int ingreso = rs.getInt("ingreso");
+					usuario.setIngreso(ingreso);
+					if(ingreso == 0)
+					{
+						darIngresoEmpleado(idUsuario, auditoria);
+					}
 					break;
 				}catch(Exception e){
 					
@@ -169,6 +182,69 @@ public class UsuarioDAO {
 			}
 		}
 		return(usuario);
+	}
+	
+	/**
+	 * Método que se encarga de darle marca a un empleado qeu se loguea por primera vez en el día en un día determinado.
+	 * @param idUsuario
+	 * @param auditoria
+	 */
+	public static void darIngresoEmpleado(int idUsuario, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update usuario set ingreso = 1 where id = " + idUsuario;
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+	}
+	
+	public static void darSalidaTodosEmpleados(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update usuario set ingreso = 0";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
 	}
 	
 	/**
@@ -449,7 +525,7 @@ public class UsuarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select * from usuario a, tipo_empleado b where a.idtipoempleado = b.idtipoempleado and b.es_domiciliario = 1" ;
+			String consulta = "select * from usuario a, tipo_empleado b where a.idtipoempleado = b.idtipoempleado and b.es_domiciliario = 1 and a.ingreso = 1" ;
 			if(auditoria)
 			{
 				logger.info(consulta);

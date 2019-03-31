@@ -526,6 +526,43 @@ public class ProductoDAO {
 		return(true);
 	}
 	
+	
+	public static boolean actualizarImagenProducto(int idProducto, byte[] imagen, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int intModConPregunta = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update producto set imagen = ? where idproducto = " + idProducto ; 
+			PreparedStatement actualiz = null;
+			actualiz = con1.prepareStatement(update);
+			actualiz.setBytes(1, imagen);
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			actualiz.executeUpdate();
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
 	public static boolean EditarCantProductoCon(int idProducto, int cantidad, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");

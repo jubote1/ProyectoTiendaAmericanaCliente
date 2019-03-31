@@ -15,9 +15,15 @@ public class Usuario {
 	private String tipoInicio;
 	private boolean administrador;
 	private int estadoDomiciliario;
+	private int ingreso;
 	
-	
-	
+		
+	public int getIngreso() {
+		return ingreso;
+	}
+	public void setIngreso(int ingreso) {
+		this.ingreso = ingreso;
+	}
 	public int getIdTipoEmpleado() {
 		return idTipoEmpleado;
 	}

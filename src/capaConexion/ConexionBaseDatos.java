@@ -1,6 +1,8 @@
 package capaConexion;
 import java.sql.*;
 
+import interfazGrafica.Sesion;
+
 /**
  * Método que implementa la conexión a base de datos desde la aplicación de Servicios Tienda
  * @author JuanDavid
@@ -74,7 +76,7 @@ public class ConexionBaseDatos {
 		    //        + "user=root&password=naillive");
 			
 			con = DriverManager.getConnection(
-		            "jdbc:mysql://localhost/tiendaamericana?"
+		            "jdbc:mysql://"+Sesion.getHost()+"/tiendaamericana?"
 		            + "user=root&password=4m32017");
 
 		    // Otros y operaciones sobre la base de datos...

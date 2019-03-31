@@ -72,6 +72,96 @@ public class ModificadorInventarioDAO {
 		return(idIngresoInv);
 	}
 	
+	
+	/**
+	 * Método que se encarga de retornar el total ingresado de un determinado item de inventario en una fecha determinada
+	 * @param idItem
+	 * @param fecha
+	 * @param auditoria
+	 * @return
+	 */
+	public static double ingresadoItemInvenario(int idItem, String fecha, boolean auditoria )
+	{
+		Logger logger = Logger.getLogger("log_file");
+		int idIngresoInv = 0;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double cantidad = 0;
+		try
+		{
+			//Realizamos la inserción del IdInventario
+			Statement stm = con1.createStatement();
+			String consulta = "select sum(cantidad) from ingreso_inventario a, ingreso_inventario_detalle b where a.fecha_sistema ='" + fecha + "' and b.iditem = " + idItem + " AND a.idingreso_inventario = b.idingreso_inventario"; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next())
+			{
+				cantidad = rs.getDouble(1);
+			}
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)	
+			{
+			}
+			return(0);
+		}
+		return(cantidad);
+	}
+	
+	
+	/**
+	 * Método que se encarga de retornar el total ingresado de un determinado item de inventario en una fecha determinada
+	 * @param idItem
+	 * @param fecha
+	 * @param auditoria
+	 * @return
+	 */
+	public static double retiradoItemInvenario(int idItem, String fecha, boolean auditoria )
+	{
+		Logger logger = Logger.getLogger("log_file");
+		int idIngresoInv = 0;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double cantidad = 0;
+		try
+		{
+			//Realizamos la inserción del IdInventario
+			Statement stm = con1.createStatement();
+			String consulta = "select sum(cantidad) from retiro_inventario, retiro_inventario_detalle where fecha_sistema ='" + fecha + "' and iditem = " + idItem; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next())
+			{
+				cantidad = rs.getDouble(1);
+			}
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)	
+			{
+			}
+			return(0);
+		}
+		return(cantidad);
+	}
+	
 		
 	/**
 	 * Método que se encargará en la inserción de los consumos de un pedido determinado, sean positivos es decir gastos o negativos reintegros de inventario
@@ -288,5 +378,312 @@ public class ModificadorInventarioDAO {
 		}
 		return(respuesta);
 	}
+	
+	
+	/*
+	 * Método que se encargada de obtener todos aquellos productos que descuentan un determinado item de inventario
+	 */
+	public static ArrayList obtenerProductoDescuentoItemInventario(int idItem,boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList productosDescuentan = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select b.descripcion, a.cantidad from item_inventario_x_producto a, producto b where a.idproducto = b.idproducto and a.iditem = " + idItem;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				productosDescuentan.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(productosDescuentan);
+		
+	}
+	
+	
+	public static ArrayList obtenerIngresosItemInventario(int idItem,String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList productosDescuentan = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idingreso_inventario, a.fecha_real, a.fecha_sistema, b.cantidad from ingreso_inventario a, ingreso_inventario_detalle b where a.idingreso_inventario = b.idingreso_inventario and b.iditem = " + idItem + " and a.fecha_sistema = '" + fecha + "'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				productosDescuentan.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(productosDescuentan);
+		
+	}
+	
+	
+	public static ArrayList obtenerRetirosItemInventario(int idItem,String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList productosDescuentan = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idretiro_inventario, a.fecha_real, a.fecha_sistema, b.cantidad from retiro_inventario a, retiro_inventario_detalle b where a.idretiro_inventario = b.idretiro_inventario and b.iditem = " + idItem + " and a.fecha_sistema = '" + fecha + "'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				productosDescuentan.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(productosDescuentan);
+		
+	}
+	
+	
+	public static double obtenerConsumoItemInventario(int idItem,String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double consumo = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select sum(cantidad) from consumo_inventario_pedido a, pedido b where a.idpedido = b.idpedidotienda and " + 
+					" b.fechapedido = '"  + fecha + "' and a.iditem = " + idItem;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			
+			while(rs.next()){
+				consumo = rs.getDouble(1);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(consumo);
+		
+	}
+	
+	
+	public static double obtenerVarianzaItemInventario(int idItem,String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double cantidad = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select b.cantidad from inventario_varianza a, item_inventario_varianza b where a.idinventario_varianza = b.idinventario_varianza and " + 
+					" a.fecha_sistema = '"  + fecha + "' and b.iditem = " + idItem;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			
+			while(rs.next()){
+				cantidad = rs.getDouble(1);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(cantidad);
+		
+	}
+	
+	
+	public static ArrayList obtenerPedidosDescItemInventario(int idItem,String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidosDescItemInv = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select d.idpedido, d.cantidad from consumo_inventario_pedido d where d.iditem = " + idItem + " and d.idpedido in (select a.idpedidotienda from producto c, pedido a, detalle_pedido b  where a.idpedidotienda = b.idpedidotienda\r\n" + 
+					"and b.idproducto = c.idproducto and a.fechapedido  = '"+ fecha +"' and b.idproducto in (select b.idproducto from item_inventario_x_producto a, producto b where a.idproducto = b.idproducto and a.iditem = " + idItem+ ")) ";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidosDescItemInv.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidosDescItemInv);
+		
+	}
+	
+	
+	public static ArrayList obtenerPedidosAnulItemInventario(int idItem,String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidosDescItemInv = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idpedidotienda from producto c, pedido a, detalle_pedido b  where a.idpedidotienda = b.idpedidotienda " + 
+					"and b.idproducto = c.idproducto and a.fechapedido  = '"+ fecha +"' and b.idmotivoanulacion IS NOT NULL and b.idproducto in (select b.idproducto from item_inventario_x_producto a, producto b where a.idproducto = b.idproducto and a.iditem = " + idItem+ ") ";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidosDescItemInv.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidosDescItemInv);
+		
+	}
+
 
 }

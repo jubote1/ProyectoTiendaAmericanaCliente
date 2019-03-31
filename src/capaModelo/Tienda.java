@@ -17,11 +17,23 @@ public class Tienda {
 	private String fechaUltimoCierre;
 	private long numeroInicialResolucion;
 	private long numeroFinalResolucion;
+	private String puntoVenta;
+	private int deltaNumeracion;
 	
 	
 	
-	
-	
+	public int getDeltaNumeracion() {
+		return deltaNumeracion;
+	}
+	public void setDeltaNumeracion(int deltaNumeracion) {
+		this.deltaNumeracion = deltaNumeracion;
+	}
+	public String getPuntoVenta() {
+		return puntoVenta;
+	}
+	public void setPuntoVenta(String puntoVenta) {
+		this.puntoVenta = puntoVenta;
+	}
 	public long getNumeroInicialResolucion() {
 		return numeroInicialResolucion;
 	}
@@ -119,7 +131,7 @@ public class Tienda {
 	
 	public Tienda(int idTienda, String nombretienda, String urlContact, String direccion, String telefono,
 			String razonSocial, String tipoContribuyente, String resolucion, String fechaResolucion, String ubicacion,
-			String identificacion, String fechaApertura, String fechaUltimoCierre, long numeroInicialResolucion, long numeroFinalResolucion) {
+			String identificacion, String fechaApertura, String fechaUltimoCierre, long numeroInicialResolucion, long numeroFinalResolucion, String puntoVenta, int deltaNumeracion) {
 		super();
 		this.idTienda = idTienda;
 		this.nombretienda = nombretienda;
@@ -136,6 +148,8 @@ public class Tienda {
 		this.fechaUltimoCierre = fechaUltimoCierre;
 		this.numeroInicialResolucion = numeroInicialResolucion;
 		this.numeroFinalResolucion = numeroFinalResolucion;
+		this.puntoVenta = puntoVenta;
+		this.deltaNumeracion = deltaNumeracion;
 	}
 	public Tienda()
 	{

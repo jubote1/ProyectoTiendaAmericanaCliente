@@ -9,13 +9,14 @@ public class PedidoDescuento {
 	private String fechaDescuento;
 	private double valorInicial;
 	private double valorFinal;
+	private String usuario;
 	
 	
 	
 	
 	
 	public PedidoDescuento(int idpedido, double descuentoPesos, double descuentoPorcentaje, String observacion,
-			String fechaDescuento, double valorInicial, double valorFinal) {
+			String fechaDescuento, double valorInicial, double valorFinal, String usuario) {
 		super();
 		this.idpedido = idpedido;
 		this.descuentoPesos = descuentoPesos;
@@ -24,6 +25,7 @@ public class PedidoDescuento {
 		this.fechaDescuento = fechaDescuento;
 		this.valorInicial = valorInicial;
 		this.valorFinal = valorFinal;
+		this.usuario = usuario;
 	}
 
 
@@ -84,6 +86,19 @@ public class PedidoDescuento {
 	public void setObservacion(String observacion) {
 		this.observacion = observacion;
 	}
+
+
+
+	public String getUsuario() {
+		return usuario;
+	}
+
+
+
+	public void setUsuario(String usuario) {
+		this.usuario = usuario;
+	}
+	
 	
 	
 	

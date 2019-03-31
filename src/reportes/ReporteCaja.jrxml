@@ -9,9 +9,9 @@
 		<defaultValueExpression><![CDATA[$P{fecha}]]></defaultValueExpression>
 	</parameter>
 	<queryString language="SQL">
-		<![CDATA[select sum(total_neto), d.nombre_largo as usuariopedido from pedido a , tipo_pedido b, estado c, usuario d where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and  b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = $P{fecha} group by d.nombre_largo
+		<![CDATA[select sum(total_neto), d.nombre_largo as usuariopedido from pedido a , tipo_pedido b, estado c, usuario d where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and  b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = $P{fecha} group by d.nombre_largo
 union
-select sum(total_neto), 'CAJA-NO DOMICILIO' from pedido a , tipo_pedido b, estado c where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and b.esdomicilio = 0 and a.idmotivoanulacion IS NULL and a.fechapedido = $P{fecha} group by usuariopedido]]>
+select sum(total_neto), 'CAJA-NO DOMICILIO' from pedido a , tipo_pedido b, estado c where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and b.esdomicilio = 0 and a.idmotivoanulacion IS NULL and a.fechapedido = $P{fecha} group by usuariopedido]]>
 	</queryString>
 	<field name="sum(total_neto)" class="java.lang.Double">
 		<property name="com.jaspersoft.studio.field.label" value="sum(total_neto)"/>

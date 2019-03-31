@@ -354,6 +354,12 @@ public class ParametrosProductoCtrl {
 			boolean respuesta  = ProductoDAO.EditarProducto(producto, auditoria);
 			return(respuesta);
 		}
+		
+		public boolean actualizarImagenProducto(int idProducto, byte[] imagen)
+		{
+			boolean respuesta  = ProductoDAO.actualizarImagenProducto(idProducto, imagen, auditoria);
+			return(respuesta);
+		}
 		/**
 		 * Método de la capa controladora que se encarga de eliminar un determinado producto
 		 * @param idproducto Se recibe el idproducto que se desea eliminar

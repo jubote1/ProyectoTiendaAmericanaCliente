@@ -32,8 +32,12 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Properties;
 
 import javax.swing.JTextField;
 import java.awt.event.KeyAdapter;
@@ -53,7 +57,9 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 	private AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
-		
+	Thread hiloValidacion;
+	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
+		int valPresentacion;
 	/**
 	 * Launch the application.
 	 */
@@ -68,6 +74,24 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 				}
 			}
 		});
+	}
+	
+	public void fijarValorPresentacion()
+	{
+		//Tomamos el valor del parámetro relacionado la interface gráfica
+		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
+		try
+		{
+			valPresentacion = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
+			valPresentacion = 0;
+		}
+		if(valPresentacion == 0)
+		{
+			valPresentacion =1;
+		}
 	}
 	
 		/**
@@ -92,6 +116,7 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 		boolean estaAperturado = pedCtrl.isSistemaAperturado();
 		FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
 		JButton btnNum_1 = new JButton("1");
+		fijarValorPresentacion();
 		btnNum_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				contraRapida.setText(contraRapida.getText()+"1");
@@ -221,21 +246,27 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 				{
 					//Cuando se supera el logueo asignamos la variable estática de idUsuario.
 					PrincipalLogueo.idUsuario = usuLogueado.getIdUsuario();
-					JOptionPane.showConfirmDialog(null,  "Bienvenido al Sistema " + usuLogueado.getNombreLargo() , "Ingresaste al Sistema!!", JOptionPane.OK_OPTION);
+					if(usuLogueado.getIngreso() == 0)
+					{
+						JOptionPane.showConfirmDialog(null,  "Bienvenido al Sistema " + usuLogueado.getNombreLargo() + ". Este es tu primer Ingreso de este día." , "Ingresaste al Sistema por primera vez en el día!!", JOptionPane.OK_OPTION);
+					}else
+					{
+						JOptionPane.showConfirmDialog(null,  "Bienvenido al Sistema " + usuLogueado.getNombreLargo() , "Ingresaste al Sistema!!", JOptionPane.OK_OPTION);
+					}
 					if(!estaAperturado)
 					{
 						//Llamamos método para validar el estado de la fecha respecto a la última apertura.
 						OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 						String fechaMayor = operCtrl.validarEstadoFechaSistema();
-						String fechaAumentada = operCtrl.aumentarFecha(fechasSistema.getFechaApertura());
+						//String fechaAumentada = operCtrl.aumentarFecha(fechasSistema.getFechaApertura());
 						Object seleccion = JOptionPane.showInputDialog(
 								   null,
 								   "¿El día no ha sido aperturado, desea abrirlo? Seleccione opcion",
 								   "Selector de opciones",
 								   JOptionPane.QUESTION_MESSAGE,
 								   null,  // null para icono defecto
-								   new Object[] { fechaAumentada,fechaMayor }, 
-								   fechaAumentada);
+								   new Object[] { fechaMayor }, 
+								   fechaMayor );
 						if(seleccion == null)
 						{
 							dispose();
@@ -253,10 +284,19 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 					Sesion.setAccesosMenus(autCtrl.obtenerAccesosPorMenuUsuario(usuLogueado.getNombreUsuario()));
 					Sesion.setAccesosOpcion(autCtrl.obtenerAccesosPorOpcionObj(usuLogueado.getIdTipoEmpleado()));
 					Sesion.setIdTipoEmpleado(usuLogueado.getidTipoEmpleado());
+										
 					if(usuLogueado.getTipoInicio().equals("Ventana Menús"))
 					{
-						VentPrincipal ventPrincipal = new VentPrincipal();
-						ventPrincipal.setVisible(true);
+						if(valPresentacion == 1)
+						{
+							VentPrincipal ventPrincipal = new VentPrincipal();
+							ventPrincipal.setVisible(true);
+						}else if(valPresentacion == 2)
+						{
+							VentPrincipalModificada ventPrincipal = new VentPrincipalModificada();
+							ventPrincipal.lblInformacionUsuario.setText("USUARIO: " + Sesion.getUsuario());
+							ventPrincipal.setVisible(true);
+						}
 					}else if(usuLogueado.getTipoInicio().equals("Maestro Pedidos"))
 					{
 						VentPedTransaccional transacciones = new VentPedTransaccional();
@@ -300,8 +340,18 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 		btnSalir.setFont(new Font("Calibri", Font.BOLD, 35));
 		btnSalir.setBounds(202, 413, 182, 53);
 		contentenorFinPago.add(btnSalir);
+		//Leemos archivos properties para fijar el valor de host
+		Properties prop = new Properties();
+		InputStream is = null;
 		
-		
+		try {
+			is = new FileInputStream("C:\\Program Files\\POSPM\\pospm.properties");
+			prop.load(is);
+		} catch(IOException e) {
+			System.out.println(e.toString());
+		}
+		Sesion.setHost((String)prop.getProperty("host"));
+		Sesion.setEstacion((String)prop.getProperty("estacion"));
 	}
 	private class SwingAction extends AbstractAction {
 		public SwingAction() {

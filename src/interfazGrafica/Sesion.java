@@ -12,10 +12,36 @@ public class Sesion {
 	private static ArrayList<AccesosPorMenu> accesosMenus;
 	private static ArrayList<AccesosPorOpcion> accesosOpcion;
 	private static int idTipoEmpleado;
+	private static int presentacion;
+	private static String host;
+	private static String estacion;
 	
-		
 	
 	
+	public static String getEstacion() {
+		return estacion;
+	}
+
+	public static void setEstacion(String estacion) {
+		Sesion.estacion = estacion;
+	}
+
+	public static String getHost() {
+		return host;
+	}
+
+	public static void setHost(String host) {
+		Sesion.host = host;
+	}
+
+	public static int getPresentacion() {
+		return presentacion;
+	}
+
+	public static void setPresentacion(int presentacion) {
+		Sesion.presentacion = presentacion;
+	}
+
 	public static int getIdTipoEmpleado() {
 		return idTipoEmpleado;
 	}

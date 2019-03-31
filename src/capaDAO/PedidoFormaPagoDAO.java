@@ -3,6 +3,7 @@ package capaDAO;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 import capaConexion.ConexionBaseDatos;
@@ -135,6 +136,43 @@ public class PedidoFormaPagoDAO {
 			while(rs.next())
 			{
 				respuesta = rs.getString("nombre");
+			}
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+				
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
+	public static ArrayList<PedidoFormaPago> consultarFormaPagoPedido(int idPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<PedidoFormaPago> respuesta = new ArrayList();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select b.nombre from pedido_forma_pago a, forma_pago b where a.idforma_pago = b.idforma_pago and  a.idpedidotienda = " + idPedido; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next())
+			{
+				String revisar = rs.getString("nombre");
 			}
 			
 			stm.close();

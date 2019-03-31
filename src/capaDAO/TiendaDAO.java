@@ -1,4 +1,4 @@
-package capaDAO;
+ package capaDAO;
 
 import java.sql.Connection;
 
@@ -37,9 +37,10 @@ public class TiendaDAO {
 				logger.info(consulta);
 			}
 			ResultSet rs = stm.executeQuery(consulta);
-			String direccion, telefono, razonSocial, tipoContribuyente,resolucion, fechaResolucion, ubicacion,identificacion, fechaApertura, fechaUltimoCierre;
+			String direccion, telefono, razonSocial, tipoContribuyente,resolucion, fechaResolucion, ubicacion,identificacion, fechaApertura, fechaUltimoCierre, puntoVenta;
 			long numeroInicialResolucion;
 			long numeroFinalResolucion;
+			int deltaNumeracion;
 			while(rs.next()){
 				int idTienda = rs.getInt("idtienda");
 				String nombre = rs.getString("nombretienda");
@@ -56,7 +57,9 @@ public class TiendaDAO {
 				fechaUltimoCierre = rs.getString("fecha_ultimo_cierre");
 				numeroInicialResolucion = rs.getLong("numinicialresolucion");
 				numeroFinalResolucion = rs.getLong("numfinalresolucion");
-				tien = new Tienda(idTienda, nombre, urlcontact, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, fechaApertura, fechaUltimoCierre, numeroInicialResolucion, numeroFinalResolucion);
+				puntoVenta = rs.getString("puntoventa");
+				deltaNumeracion = rs.getInt("delta_numeracion");
+				tien = new Tienda(idTienda, nombre, urlcontact, direccion, telefono, razonSocial, tipoContribuyente, resolucion, fechaResolucion, ubicacion, identificacion, fechaApertura, fechaUltimoCierre, numeroInicialResolucion, numeroFinalResolucion, puntoVenta,deltaNumeracion);
 			}
 			rs.close();
 			stm.close();
@@ -134,6 +137,37 @@ public class TiendaDAO {
 		return(true);
 	}
 	
+	
+	public static boolean fijarFechaCierreCierre(String fecha, boolean auditoria)
+	{
+		boolean respuesta = false;
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update tienda set fecha_apertura = '"+fecha+"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+				return false;
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(true);
+	}
+	
 	public static FechaSistema obtenerFechasSistema(boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -182,7 +216,7 @@ public class TiendaDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update tienda set nombretienda  = '" + tienda.getNombretienda() + "' , urlcontact = '" + tienda.getUrlContact() + "' , direccion = '"+ tienda.getDireccion() + "' , telefono = '" + tienda.getTelefono() + "' , razon_social = '" + tienda.getRazonSocial() + "' , tipo_contribuyente = '" + tienda.getTipoContribuyente() + "' , resolucion = '" + tienda.getResolucion() + "' , fecha_resolucion = '" + tienda.getFechaResolucion() + "' , ubicacion = '" + tienda.getUbicacion() + "' , identificacion = '" + tienda.getIdentificacion() + "'";
+			String update = "update tienda set nombretienda  = '" + tienda.getNombretienda() + "' , urlcontact = '" + tienda.getUrlContact() + "' , direccion = '"+ tienda.getDireccion() + "' , telefono = '" + tienda.getTelefono() + "' , razon_social = '" + tienda.getRazonSocial() + "' , tipo_contribuyente = '" + tienda.getTipoContribuyente() + "' , resolucion = '" + tienda.getResolucion() + "' , fecha_resolucion = '" + tienda.getFechaResolucion() + "' , ubicacion = '" + tienda.getUbicacion() + "' , identificacion = '" + tienda.getIdentificacion() + "' , puntoventa =  '" + tienda.getPuntoVenta() + "' , delta_numeracion = " + tienda.getDeltaNumeracion();
 			if(auditoria)
 			{
 				logger.info(update);
@@ -327,6 +361,158 @@ public class TiendaDAO {
 		}
 		return(idTienda);
 		
+	}
+	
+	/**
+	 * Método que se encarga de obtener el estado actual de la tienda
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean retornarEstadoTienda(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean estado = false;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select estado from tienda";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int intEstado = 0;
+			while(rs.next()){
+				intEstado = rs.getInt("estado");
+				if(intEstado == 0)
+				{
+					estado = false;
+				}else if(intEstado == 1)
+				{
+					estado = true;
+				}
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(estado);
+	}
+	
+	
+	/**
+	 * Método que se encarga de activar la tienda, cambiando el estado en la entidad tienda
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean activarEstadoTienda(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update tienda set estado = 1";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			respuesta = true;
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(respuesta);
+	}
+	
+	/**
+	 * Método que se encarga de desactivar la tienda, cambiando el estado en la entidad tienda
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean desactivarEstadoTienda(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update tienda set estado = 0";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			respuesta = true;
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(respuesta);
+	}
+	
+	
+	public static int retornarSecuenciaFacturacion(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int secuenciaAct = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "SELECT AUTO_INCREMENT FROM information_schema.`TABLES` WHERE table_schema ='tiendaamericana' AND TABLE_NAME = 'pedido'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				secuenciaAct = rs.getInt("AUTO_INCREMENT");
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				secuenciaAct = 0;
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(secuenciaAct);
 	}
 	
 }

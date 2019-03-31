@@ -45,11 +45,13 @@ import JTable.CellRenderTransaccional2;
 import JTable.CheckBoxRenderer;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.EmpleadoCtrl;
+import capaControlador.ParametrosCtrl;
 import capaControlador.ReportesCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.Cliente;
 import capaModelo.DetallePedido;
 import capaModelo.FechaSistema;
+import capaModelo.Parametro;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
 import capaModelo.Usuario;
@@ -72,6 +74,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+	private ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	Thread h1;
 	private JFrame ventanaPadre;
 	ArrayList<Usuario> domiciliarios;
@@ -81,6 +84,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	boolean consDomi = false;
 	int idDomiCon = 0;
 	private JTextField txtFormaPago;
+	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
+	int valPresentacion;
 	/**
 	 * Launch the application.
 	 */
@@ -97,6 +102,24 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		});
 	}
 
+	
+	public void fijarValorPresentacion()
+	{
+		//Tomamos el valor del parámetro relacionado la interface gráfica
+		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
+		try
+		{
+			valPresentacion = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
+			valPresentacion = 0;
+		}
+		if(valPresentacion == 0)
+		{
+			valPresentacion =1;
+		}
+	}
 	/**
 	 * Create the frame.
 	 */
@@ -124,7 +147,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		JButton btnBuscar = new JButton("Buscar");
 		btnBuscar.setFont(new Font("Tahoma", Font.BOLD, 11));
 		panelBotones.add(btnBuscar);
-		
+		fijarValorPresentacion();
 		JButton btnReabrirFactura = new JButton("Reabrir Factura");
 		btnReabrirFactura.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -242,8 +265,16 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		JButton btnRegresarMenu = new JButton("Regresar Men\u00FA");
 		btnRegresarMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				VentPrincipal ventPrincipal = new VentPrincipal();
-				ventPrincipal.setVisible(true);
+				if(valPresentacion == 1)
+				{
+					VentPrincipal ventPrincipal = new VentPrincipal();
+					ventPrincipal.setVisible(true);
+				}else if(valPresentacion == 2)
+				{
+					VentPrincipalModificada ventPrincipal = new VentPrincipalModificada();
+					ventPrincipal.lblInformacionUsuario.setText("USUARIO: " + Sesion.getUsuario());
+					ventPrincipal.setVisible(true);
+				}
 				dispose();
 			}
 		});
@@ -559,11 +590,13 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		//Realizamos un refrescamiento de la pantalla cada 30 segundos
 		h1 = new Thread(this);
 		h1.start();
+		btnRetrocederEstado.setVisible(false);
+		btnAvanzarEstado.setVisible(false);
 	}
 	
 	public void pintarPedidos()
 	{
-		Object[] columnsName = new Object[10];
+		Object[] columnsName = new Object[11];
         
 		columnsName[0] = "Id Pedido";
         columnsName[1] = "Fecha Pedido";
@@ -574,7 +607,8 @@ public class VentPedTransaccional extends JFrame implements Runnable{
         columnsName[6] = "id Tipo Pedido";
         columnsName[7] = "idestado";
         columnsName[8] = "Domiciliario";
-        columnsName[9] = "Tiempo";
+        columnsName[9] = "TP";
+        columnsName[10] = "Tiempo";
         ArrayList<Object> pedidos = new ArrayList();
         if(idTipoPedido == -1)
         {
@@ -594,7 +628,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
         	pedidos = pedCtrl.obtenerPedidosVentanaComandaDom(idDomiCon);
         }
         //Definimos cuales serán las columnas editables dentro de la tabla
-        boolean[] editarCampos = {false, false, false, false, false, false, false, false, false, false};
+        boolean[] editarCampos = {false, false, false, false, false, false, false, false, false, false, false};
       
         //Definimos los tipos de objetos que se manejarán en el jtable en cada columna
         
@@ -603,7 +637,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
        	    	return editarCampos[columnIndex];
        	    }
        	    
-       	    Class[] types = new Class[] {java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.Long.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class};
+       	    Class[] types = new Class[] {java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.Long.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class};
          
 //       	    Class[] types = new Class[] {java.lang.Boolean.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class};
          
@@ -617,7 +651,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		{
 			String[] fila =(String[]) pedidos.get(y);
 			//modelo.addRow(fila);
-			Object[] filaFinal = {Long.parseLong(fila[0]), fila[1], fila[2], fila[3], fila[4], fila[5], Long.parseLong(fila[6]),Long.parseLong(fila[7]),fila[8], fila[9]};
+			Object[] filaFinal = {Long.parseLong(fila[0]), fila[1], fila[2], fila[3], fila[4], fila[5], Long.parseLong(fila[6]),Long.parseLong(fila[7]),fila[8], fila[9], fila[10]};
 			modelo.addRow(filaFinal);
 		}
 		tblMaestroPedidos.setModel(modelo);
@@ -641,9 +675,12 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getColumnModel().getColumn(7).setMinWidth(0);
 		tblMaestroPedidos.getColumnModel().getColumn(8).setMinWidth(90);
 		tblMaestroPedidos.getColumnModel().getColumn(8).setMaxWidth(90);
+		//Modificamos el ancho del la Tiempo Pedido
+		tblMaestroPedidos.getColumnModel().getColumn(9).setMinWidth(20);
+		tblMaestroPedidos.getColumnModel().getColumn(9).setMaxWidth(20);
 		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getColumnModel().getColumn(9).setMinWidth(150);
-		tblMaestroPedidos.getColumnModel().getColumn(9).setMaxWidth(150);
+		tblMaestroPedidos.getColumnModel().getColumn(10).setMinWidth(150);
+		tblMaestroPedidos.getColumnModel().getColumn(10).setMaxWidth(150);
 		
 		
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(0).setMaxWidth(60);
@@ -666,9 +703,12 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(7).setMinWidth(0);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMinWidth(90);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(90);
+		//Modificamos el ancho del tiempo dado pedido
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMinWidth(20);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMaxWidth(20);
 		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMinWidth(150);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(9).setMaxWidth(150);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMinWidth(150);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMaxWidth(150);
 
 		tblMaestroPedidos.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tblMaestroPedidos.getColumnModel().getColumn(3).setCellRenderer( new CellRenderTransaccional2());
@@ -694,7 +734,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		 while(ct == h1) 
 		 {   
 			 try {
-				 	Thread.sleep(15000);
+				 	Thread.sleep(25000);
 			 }catch(InterruptedException e) 
 			 {}
 			 //Ejecutamos el pintado de los pedidos en el JTable de la pantalla.

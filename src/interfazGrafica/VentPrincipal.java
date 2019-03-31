@@ -500,6 +500,15 @@ public class VentPrincipal extends JFrame {
 		});
 		btnCambiarDeUsuario.setFont(new Font("Tahoma", Font.BOLD, 11));
 		PanelPedidos.add(btnCambiarDeUsuario);
+		
+		JButton btnAdministracinTiempos = new JButton("Administraci\u00F3n Tiempos");
+		btnAdministracinTiempos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				VentPedFijarTiempoPedidos ventTiempo = new VentPedFijarTiempoPedidos(null, true);
+				ventTiempo.setVisible(true);
+			}
+		});
+		PanelPedidos.add(btnAdministracinTiempos);
 		PanelPedidos.add(btnComandaDePedidos);
 		
 		JToolBar toolBarModulos = new JToolBar();

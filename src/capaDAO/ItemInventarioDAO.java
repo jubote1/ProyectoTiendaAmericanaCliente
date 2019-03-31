@@ -189,7 +189,8 @@ public class ItemInventarioDAO {
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
 					+ "and f.iditem = a.iditem  and e.fecha_sistema = '" + fecha + "' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
-					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, b.cantidad,0 from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fecha + "' and b.tipo_inventario = 'V'";
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, b.cantidad,(a.cantidad - b.cantidad) from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fecha + "' and b.tipo_inventario = 'V'";
+			System.out.println("OJO" + consulta);
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -661,6 +662,106 @@ public class ItemInventarioDAO {
 			return(0);
 		}
 		return(cantItems);
+	}
+	
+	/**
+	 * Método que se encarga de generar la información del inventario consumido en un día determinado
+	 * @param fechaActual
+	 * @param auditoria
+	 * @return
+	 */
+	public static ArrayList obtenerInventarioConsumido(String fechaActual,  boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInvConsumido = new ArrayList();
+		int cantItems = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iditem, a.nombre_item,  ifnull((select sum(g.cantidad) from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda and h.fechapedido =  '"+ fechaActual +"' ) ,0)as consumo, a.unidad_medida " + 
+					"from item_inventario a";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInvConsumido.add(fila);
+				
+			}
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(itemsInvConsumido);
+	}
+	
+	/**
+	 * Método que se encarga de recibir la información de los items de inventarios resumidos para ser presentados en el reporte de pantalla
+	 * @param fechaActual
+	 * @param auditoria
+	 * @return
+	 */
+	public static ArrayList obtenerInventarioActualReporte(String fechaActual,  boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInvActual = new ArrayList();
+		int cantItems = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.iditem, a.nombre_item,  a.cantidad, a.unidad_medida " + 
+					"from item_inventario a";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInvActual.add(fila);
+				
+			}
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(itemsInvActual);
 	}
 	
 }

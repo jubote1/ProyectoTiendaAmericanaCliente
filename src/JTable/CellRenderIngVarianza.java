@@ -53,12 +53,12 @@ public class CellRenderIngVarianza extends DefaultTableCellRenderer implements T
         }
         if(column == 9)
         {
-        	String valPintar = value.toString();
+        	//String valPintar = value.toString();
         	double intValPintar = 0;
         	//Intentamos parsear el contenido a un número, si fallamos es porque hay un error y deberemos de corregir.
         	try
         	{
-        		intValPintar = Double.parseDouble(valPintar);
+        		intValPintar = Double.parseDouble(table.getValueAt(row,8).toString()) - Double.parseDouble(table.getValueAt(row,7).toString());
         	}catch(Exception e)
         	{
         		value = new String("0");
@@ -73,12 +73,12 @@ public class CellRenderIngVarianza extends DefaultTableCellRenderer implements T
         		setForeground(Color.WHITE);
         		setBackground(Color.RED);
         	}
+        	table.setValueAt(Double.toString(intValPintar), row, column);
         }
         //Se realiza la validación al momento de pintar que sea la columna para editar y se verifica que sea un valor de tipo doble
         if(column == 8)
         {
         	String valPintar = value.toString();
-        	System.out.println("hola " + valPintar);
         	double intValPintar = 0;
         	//Intentamos parsear el contenido a un número, si fallamos es porque hay un error y deberemos de corregir, en cuyo
         	//caso mostraremos el valor de cero.

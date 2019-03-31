@@ -29,10 +29,15 @@ public class Pedido {
 	private double cambio;
 	private double totalFormaPago;
 	private String nombreFormaPago;
+	private String domiciliario;
 	
 		
-	
-	
+	public String getDomiciliario() {
+		return domiciliario;
+	}
+	public void setDomiciliario(String domiciliario) {
+		this.domiciliario = domiciliario;
+	}
 	public double getTotalFormaPago() {
 		return totalFormaPago;
 	}

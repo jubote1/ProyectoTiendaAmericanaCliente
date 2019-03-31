@@ -16,21 +16,16 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-
-import com.sun.javafx.geom.Ellipse2D;
-
 import capaControlador.ParametrosProductoCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.DetallePedido;
 import capaModelo.Producto;
-
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JLabel;

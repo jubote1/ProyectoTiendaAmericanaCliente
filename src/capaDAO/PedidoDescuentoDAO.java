@@ -24,7 +24,7 @@ public class PedidoDescuentoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert into pedido_descuento (idpedido, descuentopesos, descuentoporcentaje, observacion) values (" + descuento.getIdpedido() + ", " + descuento.getDescuentoPesos() + " , " + descuento.getDescuentoPorcentaje() +  ", '" + descuento.getObservacion() + "')"; 
+			String insert = "insert into pedido_descuento (idpedido, descuentopesos, descuentoporcentaje, observacion, usuario) values (" + descuento.getIdpedido() + ", " + descuento.getDescuentoPesos() + " , " + descuento.getDescuentoPorcentaje() +  ", '" + descuento.getObservacion() + "' , '" + descuento.getUsuario() + "')"; 
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -85,7 +85,7 @@ public class PedidoDescuentoDAO {
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
-		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"","", 0,0);
+		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"","", 0,0, "");
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -103,7 +103,7 @@ public class PedidoDescuentoDAO {
 				descuentoPorcentaje = rs.getDouble("descuentoPorcentaje");
 				observacion = rs.getString("observacion");
 			}
-			descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, "", 0, 0);
+			descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, "", 0, 0, "");
 			stm.close();
 			con1.close();
 		}
@@ -127,7 +127,7 @@ public class PedidoDescuentoDAO {
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
 		ArrayList<PedidoDescuento> descuentosFecha = new ArrayList();
-		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"","",0,0);
+		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"","",0,0, "");
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -141,6 +141,7 @@ public class PedidoDescuentoDAO {
 			double descuentoPesos = 0, descuentoPorcentaje = 0;
 			String observacion = "";
 			double valorInicial = 0, valorFinal = 0;
+			String usuario;
 			while(rs.next())
 			{
 				idPedido = rs.getInt("idpedido");
@@ -149,7 +150,8 @@ public class PedidoDescuentoDAO {
 				observacion = rs.getString("observacion");
 				valorInicial = rs.getDouble("valorinicial");
 				valorFinal = rs.getDouble("valorfinal");
-				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, fecha, valorInicial, valorFinal);
+				usuario = rs.getString("usuario");
+				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, fecha, valorInicial, valorFinal, usuario);
 				descuentosFecha.add(descuento);
 			}
 			
@@ -183,7 +185,7 @@ public class PedidoDescuentoDAO {
 		ConexionBaseDatos con = new ConexionBaseDatos();
 		Connection con1 = con.obtenerConexionBDLocal();
 		ArrayList<PedidoDescuento> descuentosFecha = new ArrayList();
-		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"", "", 0,0);
+		PedidoDescuento descuento = new PedidoDescuento(0,0,0,"", "", 0,0, "");
 		try
 		{
 			Statement stm = con1.createStatement();
@@ -198,6 +200,7 @@ public class PedidoDescuentoDAO {
 			String observacion = "";
 			String fechaDescuento = "";
 			double valorInicial = 0, valorFinal = 0;
+			String usuario;
 			while(rs.next())
 			{
 				idPedido = rs.getInt("idpedido");
@@ -207,7 +210,8 @@ public class PedidoDescuentoDAO {
 				fechaDescuento = rs.getString("fechapedido");
 				valorInicial = rs.getDouble("valorinicial");
 				valorFinal = rs.getDouble("valorfinal");
-				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, fechaDescuento, valorInicial, valorFinal);
+				usuario = rs.getString("usuario");
+				descuento = new PedidoDescuento(idPedido, descuentoPesos, descuentoPorcentaje, observacion, fechaDescuento, valorInicial, valorFinal, usuario);
 				descuentosFecha.add(descuento);
 			}
 			

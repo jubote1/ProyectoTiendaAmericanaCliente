@@ -10,6 +10,7 @@ import capaDAO.DetallePedidoDAO;
 import capaDAO.GeneralDAO;
 import capaDAO.InventariosTemporalDAO;
 import capaDAO.ItemInventarioDAO;
+import capaDAO.ItemInventarioHistoricoDAO;
 import capaDAO.ItemInventarioProductoDAO;
 import capaDAO.ModificadorInventarioDAO;
 import capaDAO.PedidoEspecialDAO;
@@ -163,7 +164,7 @@ public class InventarioCtrl {
 		return(respuesta);
 	}
 	
-	public boolean reintegrarInventarioPedido(int idPedido)
+	public boolean reintegrarInventarioPedido(int idPedido, int idMotivoAnulacion, String observacion)
 	{
 		ArrayList<DetallePedido> detallesPedido = DetallePedidoDAO.obtenerDetallePedido(idPedido, auditoria);
 		ArrayList<ModificadorInventario> descInventario = new ArrayList();
@@ -172,11 +173,12 @@ public class InventarioCtrl {
 		{
 			DetallePedido detTemp = detallesPedido.get(i);
 			//Validamos que el detallePedido no haya sido descargado al inventario en cuyo caso realizremos el descargo al inventario
-			if(detTemp.getDescargoInventario().equals(new String("S")))
+			if(detTemp.getDescargoInventario().equals(new String("S"))&& (!detTemp.getEstado().equals(new String("A"))))
 			{
 				modsInv = ItemInventarioProductoDAO.obtenerItemsInventarioProducto(detTemp.getIdProducto(), detTemp.getCantidad()*-1, auditoria);
 				boolean respuesta = ModificadorInventarioDAO.insertarConsumoInventarios(modsInv, idPedido, auditoria);
-				
+				//Devuelve el inventario y lo marca como anulado
+				DetallePedidoDAO.anularDetallePedidoPuntual(detTemp.getIdDetallePedido(), idMotivoAnulacion, observacion,  auditoria);
 			}
 		}
 		return(true);
@@ -351,7 +353,7 @@ public class InventarioCtrl {
 		PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
 		//Obtenemos la fecha del rango del reporte
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
-		String fechaSis = fecha.getFechaApertura();
+		String fechaSis = fecha.getFechaUltimoCierre();
 		//Obtenemos la tienda
 		Tienda tiendaReporte = TiendaDAO.obtenerTienda(auditoria);
 		//Obtenemos el reporte
@@ -366,5 +368,75 @@ public class InventarioCtrl {
 		contro.enviarCorreo();
 	}
 	
+	public ArrayList obtenerInventarioConsumido(String fechaActual)
+	{
+		ArrayList itemsInvConsumido = ItemInventarioDAO.obtenerInventarioConsumido(fechaActual, auditoria);
+		return(itemsInvConsumido);
+	}
+	public ArrayList obtenerInventarioActualReporte(String fechaActual)
+	{
+		ArrayList itemsInvConsumido = ItemInventarioDAO.obtenerInventarioActualReporte(fechaActual, auditoria);
+		return(itemsInvConsumido);
+	}
+	
+	public double obtenerItemInventarioHistorico(int idItem, String fecha)
+	{
+		double cantidad = ItemInventarioHistoricoDAO.obtenerItemInventarioHistorico(idItem, fecha, auditoria);
+		return(cantidad);
+	}
+	
+	public double ingresadoItemInvenario(int idItem, String fecha)
+	{
+		double cantidad = ModificadorInventarioDAO.ingresadoItemInvenario(idItem, fecha, auditoria);
+		return(cantidad);
+	}
+	
+	public double retiradoItemInvenario(int idItem, String fecha)
+	{
+		double cantidad = ModificadorInventarioDAO.retiradoItemInvenario(idItem, fecha, auditoria);
+		return(cantidad);
+	}
+	
+	public ArrayList obtenerProductoDescuentoItemInventario(int idItem)
+	{
+		ArrayList prodDescuentan = ModificadorInventarioDAO.obtenerProductoDescuentoItemInventario(idItem, auditoria);
+		return(prodDescuentan);
+	}
+	
+	public ArrayList obtenerIngresosItemInventario(int idItem,String fecha)
+	{
+		ArrayList itemIngreso= ModificadorInventarioDAO.obtenerIngresosItemInventario(idItem, fecha, auditoria);
+		return(itemIngreso);
+	}
+	
+	public ArrayList obtenerRetirosItemInventario(int idItem,String fecha)
+	{
+		ArrayList itemRetiro= ModificadorInventarioDAO. obtenerRetirosItemInventario(idItem, fecha, auditoria);
+		return(itemRetiro);
+	}
+	
+	public double obtenerConsumoItemInventario(int idItem,String fecha)
+	{
+		double consumo = ModificadorInventarioDAO.obtenerConsumoItemInventario(idItem, fecha,auditoria);
+		return(consumo);
+	}
+	
+	public  double obtenerVarianzaItemInventario(int idItem,String fecha)
+	{
+		double cantidad =  ModificadorInventarioDAO.obtenerVarianzaItemInventario(idItem, fecha,auditoria);
+		return(cantidad);
+	}
+	
+	public ArrayList obtenerPedidosDescItemInventario(int idItem,String fecha)
+	{
+		ArrayList pediDesItemInventario = ModificadorInventarioDAO.obtenerPedidosDescItemInventario(idItem,fecha,auditoria);
+		return(pediDesItemInventario);
+	}
+	
+	public ArrayList obtenerPedidosAnulItemInventario(int idItem,String fecha)
+	{
+		ArrayList pedidosConAnulacion = ModificadorInventarioDAO.obtenerPedidosAnulItemInventario(idItem,fecha, auditoria);
+		return(pedidosConAnulacion);
+	}
 	
 }

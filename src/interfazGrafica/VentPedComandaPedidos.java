@@ -5,14 +5,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.FlowLayout;
@@ -26,7 +24,6 @@ import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
-
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -45,7 +42,6 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-
 import JTable.CellRenderTransaccional;
 import JTable.CheckBoxRenderer;
 import capaControlador.AutenticacionCtrl;
@@ -59,14 +55,10 @@ import capaModelo.Parametro;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
 import capaModelo.Usuario;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
-
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-
 import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -123,6 +115,8 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	public static boolean indUsuarioTemp = false;
 	private JLabel lblNewLabel;
 	private JTextField txtFormaPago;
+	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
+	int valPresentacion;
 	/**
 	 * Launch the application.
 	 */
@@ -139,6 +133,23 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		});
 	}
 
+	public void fijarValorPresentacion()
+	{
+		//Tomamos el valor del parámetro relacionado la interface gráfica
+		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
+		try
+		{
+			valPresentacion = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
+			valPresentacion = 0;
+		}
+		if(valPresentacion == 0)
+		{
+			valPresentacion =1;
+		}
+	}
 
 	//Creamos constructor principal del JFrame de Comanda pedidos
 	public VentPedComandaPedidos() {
@@ -176,7 +187,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 			valNum = 0;
 		}
 		estEntregaDom = valNum;
-		
+		fijarValorPresentacion();
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 1014, 700);
 		setUndecorated(true);
@@ -643,14 +654,44 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		contentPane.add(txtFormaPago);
 		txtFormaPago.setColumns(10);
 		
+		JButton btnReimprimirFactura = new JButton("Reimprimir Factura");
+		btnReimprimirFactura.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+				if(filaSeleccionada == -1)
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar un pedido para Reimprimir la factura " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				else
+				{
+					int idPedidoTienda = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 1).toString());
+					//La nueva impresión de la factura se realiza de la siguiente manera
+					String strFactura = pedCtrl.generarStrImpresionFactura(idPedidoTienda);
+					Impresion.main(strFactura);
+				}
+			}
+		});
+		btnReimprimirFactura.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnReimprimirFactura.setBounds(467, 652, 180, 37);
+		contentPane.add(btnReimprimirFactura);
+		
 
 		btnLlegadaDeDomicilio.setVisible(false);
 		btnSalir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
-				VentPrincipal ventPrincipal = new VentPrincipal();
-				ventPrincipal.setVisible(true);
-				
+				if(valPresentacion == 1)
+				{
+					VentPrincipal ventPrincipal = new VentPrincipal();
+					ventPrincipal.setVisible(true);
+				}else if(valPresentacion == 2)
+				{
+					VentPrincipalModificada ventPrincipal = new VentPrincipalModificada();
+					ventPrincipal.lblInformacionUsuario.setText("USUARIO: " + Sesion.getUsuario());
+					ventPrincipal.setVisible(true);
+				}
 			}
 		});
 		

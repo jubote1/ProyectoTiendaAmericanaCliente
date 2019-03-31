@@ -239,6 +239,168 @@ public class PorcionesControlDiarioDAO {
 		return(true);
 	}
 	
+	//ENCERAR
+	
+	public static boolean encerarPorcion(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update porciones_control_diario set porcion = 0  where fecha_control ='" + fecha +"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
+	public static boolean encerarPorcionGaseosa(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update porciones_control_diario set porcion_gaseosa = 0  where fecha_control ='" + fecha +"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
+	public static boolean encerarPorcionEmpleado(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update porciones_control_diario set porcion_empleado = 0 where fecha_control ='" + fecha +"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+
+	public static boolean encerarPorcionDesecho(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update porciones_control_diario set porcion_desecho = 0  where fecha_control ='" + fecha +"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
+	public static boolean encerarPorcionTemporal(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update porciones_control_diario set porcion_temporal = 0  where fecha_control ='" + fecha +"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
 	//DISMINUIR
 	
 	public static boolean disminuirPorcion(String fecha, boolean auditoria)

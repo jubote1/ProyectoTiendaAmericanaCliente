@@ -13,20 +13,26 @@ import org.apache.log4j.Logger;
 
 import capaConexion.ConexionBaseDatos;
 import capaDAO.EgresoDAO;
+import capaDAO.GeneralDAO;
 import capaDAO.IngresoDAO;
 import capaDAO.ItemInventarioHistoricoDAO;
 import capaDAO.ModificadorInventarioDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.PorcionesControlDiarioDAO;
 import capaDAO.TiendaDAO;
+import capaDAO.UsuarioDAO;
+import capaModelo.Correo;
 import capaModelo.DetallePedido;
 import capaModelo.Egreso;
 import capaModelo.FechaSistema;
 import capaModelo.Ingreso;
+import capaModelo.Parametro;
 import capaModelo.Pedido;
 import capaModelo.PorcionesControlDiario;
 import capaModelo.Tienda;
 import interfazGrafica.Impresion;
+import interfazGrafica.PrincipalLogueo;
+import utilidades.ControladorEnvioCorreo;
 
 public class OperacionesTiendaCtrl {
 	
@@ -127,6 +133,8 @@ public boolean realizarAperturaDia(String fecha)
 {
 	AvanzarFechaSistemaApertura(fecha);
 	realizarInventarioHistorico(fecha);
+	//Realizamos salida de todos los usuarios 
+	UsuarioDAO.darSalidaTodosEmpleados(auditoria);
 	return(true);
 }
 
@@ -190,8 +198,14 @@ public void realizarInventarioHistorico(String fecha)
 		String respuesta = validacionesPreCierre(fecha);
 		if(respuesta.equals(new String("")))
 		{
-			//Avanzar en uno el último día de cierre
-			boolean respAvanFech = AvanzarFechaUltimoCierre();
+			//Colocar Fecha base que indica que el sistema está cerradp
+			ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
+			Parametro parametro = parCtrl.obtenerParametro("INDICADORCIERRE");
+			String fechaParametro = parametro.getValorTexto();
+			boolean respAvanFech = fijarFechaCierreParametro(fechaParametro);
+			TiendaDAO.actualizarFechaUltimoCierre(auditoria);
+			//Realizamos la validación de facturación
+			validarEstadoNumeracionFacturacion();
 			//Realizamos borrado de tablas temporales de ingresos, retiros y varianzas de inventarios
 			realizarLimpiezaTemporales(fecha);
 			if(respAvanFech)
@@ -211,6 +225,16 @@ public void realizarInventarioHistorico(String fecha)
 	public boolean AvanzarFechaUltimoCierre()
 	{
 		boolean respuesta = TiendaDAO.actualizarFechaUltimoCierre(auditoria);
+		return(respuesta);
+	}
+	
+	/**
+	 * Método que se encarga de dejar la fecha de sistema el parámetro que indica que el sistema está cerrado
+	 * @return
+	 */
+	public boolean fijarFechaCierreParametro(String fecha)
+	{
+		boolean respuesta = TiendaDAO.fijarFechaCierreCierre(fecha, auditoria);
 		return(respuesta);
 	}
 
@@ -412,6 +436,38 @@ public void realizarInventarioHistorico(String fecha)
 		return(respuesta);
 	}
 	
+	//DEJAR EN CERO
+	
+		public boolean encerarPorcion(String fecha)
+		{
+			boolean respuesta = PorcionesControlDiarioDAO.encerarPorcion(fecha, auditoria);
+			return(respuesta);
+		}
+		
+		public boolean encerarPorcionGaseosa(String fecha)
+		{
+			boolean respuesta = PorcionesControlDiarioDAO.encerarPorcionGaseosa(fecha, auditoria);
+			return(respuesta);
+		}
+		
+		public boolean encerarPorcionEmpleado(String fecha)
+		{
+			boolean respuesta = PorcionesControlDiarioDAO.encerarPorcionEmpleado(fecha, auditoria);
+			return(respuesta);
+		}
+
+		public boolean encerarPorcionDesecho(String fecha)
+		{
+			boolean respuesta = PorcionesControlDiarioDAO.encerarPorcionDesecho(fecha, auditoria);
+			return(respuesta);
+		}
+		
+		public boolean encerarrPorcionTemporal(String fecha)
+		{
+			boolean respuesta = PorcionesControlDiarioDAO.encerarPorcionTemporal(fecha, auditoria);
+			return(respuesta);
+		}
+	
 	//DISMINUIR
 	
 	public boolean disminuirPorcion(String fecha)
@@ -455,6 +511,74 @@ public void realizarInventarioHistorico(String fecha)
 		boolean respuesta = PorcionesControlDiarioDAO.estaFacturadoPorciones(fecha, auditoria);
 		return(respuesta);
 	}
+	
+	public boolean retornarEstadoTienda()
+	{
+		boolean estado = TiendaDAO.retornarEstadoTienda(auditoria);
+		return(estado);
+	}
 
+	public boolean activarEstadoTienda(String nombreTienda)
+	{
+		boolean respuesta = TiendaDAO.activarEstadoTienda(auditoria);
+		if(respuesta)
+		{
+			//Se envia correo notificando el bloqueo
+			Correo correo = new Correo();
+			correo.setAsunto("DESBLOQUEO DE TIENDA PARA PEDIDOS");
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("BLOQUEOTIENDA", PrincipalLogueo.habilitaAuditoria);
+			correo.setContrasena("Pizzaamericana2017");
+			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+			correo.setMensaje("La tienda " + nombreTienda + " HA SIDO DESBLOQUEADA para tomar pedidos ");
+			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+			contro.enviarCorreo();
+		}
+		return(respuesta);
+	}
+	
+	public boolean desactivarEstadoTienda(String nombreTienda)
+	{
+		boolean respuesta = TiendaDAO.desactivarEstadoTienda(auditoria);
+		if(respuesta)
+		{
+			//Se envia correo notificando el bloqueo
+			Correo correo = new Correo();
+			correo.setAsunto("BLOQUEO TIENDA PARA PEDIDOS");
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("BLOQUEOTIENDA", PrincipalLogueo.habilitaAuditoria);
+			correo.setContrasena("Pizzaamericana2017");
+			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+			correo.setMensaje("La tienda " + nombreTienda + " HA SIDO BLOQUEADA para tomar pedidos ");
+			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+			contro.enviarCorreo();
+		}
+		return(respuesta);
+	}
+	
+	
+	public void validarEstadoNumeracionFacturacion()
+	{
+		Tienda tienda = TiendaDAO.obtenerTienda(auditoria);
+		//Traemos los valores necesario para realizar el control de numéración de facturación
+		long secuenciaAct = (long) TiendaDAO.retornarSecuenciaFacturacion(auditoria);
+		long deltaNumeracion = (long) tienda.getDeltaNumeracion();
+		long numeroSuperior = tienda.getNumeroFinalResolucion();
+		if((numeroSuperior-secuenciaAct) <= deltaNumeracion )
+		{
+			Correo correo = new Correo();
+			correo.setAsunto("ALERTA Se están acabando los números de facturación " + tienda.getNombretienda());
+			correo.setContrasena("Pizzaamericana2017");
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
+			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+			correo.setMensaje("La numeración disponible para la actual resolución de numeración está para vencerse : \n" +  "El número final de resolución es " + tienda.getNumeroFinalResolucion() + " y " + " el número actual de numeración de factura es " + secuenciaAct);
+			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+			contro.enviarCorreo();
+		}
+	}
+	
+	public int retornarSecuenciaFacturacion()
+	{
+		int secuenciaAct = TiendaDAO.retornarSecuenciaFacturacion(auditoria);
+		return(secuenciaAct);
+	}
 	
 }

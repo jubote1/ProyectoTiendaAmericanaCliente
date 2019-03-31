@@ -12,6 +12,7 @@ import com.mysql.jdbc.ResultSetMetaData;
 import capaConexion.ConexionBaseDatos;
 import capaModelo.Impuesto;
 import capaModelo.Parametro;
+import interfazGrafica.Sesion;
 
 public class ParametrosDAO {
 	
@@ -295,6 +296,14 @@ public class ParametrosDAO {
 				logger.info(update);
 			}
 			stm.executeUpdate(update);
+			//Ejecutamos la inserción de log
+			String insercionLog = "insert into parametros_log (usuario, nuevovalor,variable) values ('"  + Sesion.getUsuario() + "' , '" + parametro.getValorNumerico()+parametro.getValorTexto() +"' ,'" + parametro.getValorParametro() + "')" ;
+			if(auditoria)
+			{
+				logger.info(insercionLog);
+			}
+			stm.executeUpdate(insercionLog);
+			
 			
 			stm.close();
 			con1.close();

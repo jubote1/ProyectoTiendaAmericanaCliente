@@ -93,7 +93,7 @@ public class DetallePedidoDAO {
 		
 	}
 	
-	public static boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion, boolean auditoria)
+	public static boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion, String observacion,  boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -102,13 +102,53 @@ public class DetallePedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update detalle_pedido set idmotivoanulacion =" + idMotivoAnulacion +" where iddetalle_pedido = " + idDetallePedido ;
+			String update = "update detalle_pedido set idmotivoanulacion =" + idMotivoAnulacion + " , obs_anulacion ='" + observacion +"' where iddetalle_pedido = " + idDetallePedido ;
 			if(auditoria)
 			{
 				logger.info(update);
 			}
 			stm.executeUpdate(update);
-			update = "update detalle_pedido set idmotivoanulacion = " + idMotivoAnulacion +"  where iddetalle_pedido_master = " + idDetallePedido;
+			update = "update detalle_pedido set idmotivoanulacion = " + idMotivoAnulacion + " , obs_anulacion ='" + observacion +"'  where iddetalle_pedido_master = " + idDetallePedido;
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+			return(true);
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		
+		
+	}
+	
+	/**
+	 * Método que realiza la anulación de un detalle pedido puntual, es decir diferente al no puntual que anula el detalle master y sus hijos
+	 * @param idDetallePedido
+	 * @param idMotivoAnulacion
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean anularDetallePedidoPuntual(int idDetallePedido, int idMotivoAnulacion, String observacion, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update detalle_pedido set idmotivoanulacion =" + idMotivoAnulacion + " , obs_anulacion ='" + observacion +"' where iddetalle_pedido = " + idDetallePedido ;
 			if(auditoria)
 			{
 				logger.info(update);

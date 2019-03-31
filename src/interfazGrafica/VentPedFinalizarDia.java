@@ -13,10 +13,12 @@ import capaConexion.ConexionBaseDatos;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.InventarioCtrl;
 import capaControlador.OperacionesTiendaCtrl;
+import capaControlador.ParametrosCtrl;
 import capaControlador.ReportesCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
 import capaModelo.ModificadorInventario;
+import capaModelo.Parametro;
 import reportes.AbstractJasperReports;
 
 import javax.swing.JScrollPane;
@@ -26,6 +28,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 import java.awt.event.ActionEvent;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
@@ -47,6 +50,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 	private JPanel contentPanePrincipal;
 	private JTextField txtFechaInventario;
 	String fechaSis;
+	String fechaUltimoCierre;
 	ArrayList<ModificadorInventario> inventarioIngresar = new ArrayList();
 	private JTable tableResTipoPedido;
 	private JTextField txtTotalVendido;
@@ -64,6 +68,8 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 	//Creamos un hilo que se encargará de la reportería semanal una vez finalice el cierre y se cierre de semanal
 	private JTextField txtVentaSemana;
 	private JTable tableResFormaPago;
+	JDialog jDialogPadre;
+	DecimalFormat formatea = new DecimalFormat("###,###");
 	/**
 	 * Launch the application.
 	 */
@@ -99,8 +105,9 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
 		DefaultTableModel modelo = pintarItemsInventario();
-		
+		jDialogPadre = this;
 		JButton btnCierreDia = new JButton("Finalizar D\u00EDa");
+		btnCierreDia.setEnabled(false);
 		btnCierreDia.setBackground(Color.ORANGE);
 		
 		btnCierreDia.setBounds(176, 280, 152, 37);
@@ -179,12 +186,9 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		JButton btnReporteUsoInventario = new JButton("Reporte uso Inventario");
 		btnReporteUsoInventario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Window ventanaPadre = SwingUtilities.getWindowAncestor(
-                        (Component) arg0.getSource());
-				//Acción para la generación inventario consumido
-				//dispose();
-				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteInventarioCon(ventanaPadre);
+				
+				VentPedReportes ventReporte = new VentPedReportes(jDialogPadre,true, fechaSis, 1);
+				ventReporte.setVisible(true);
 			}
 		});
 		btnReporteUsoInventario.setBounds(10, 45, 182, 23);
@@ -193,44 +197,32 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		JButton btnCorteDeCaja = new JButton("Corte de Caja");
 		btnCorteDeCaja.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Window ventanaPadre = SwingUtilities.getWindowAncestor(
-                        (Component) e.getSource());
-				//Acción para la generación de reporte de caja
-				//dispose();
-				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteCaja(ventanaPadre);
+				VentPedReportes ventReporte = new VentPedReportes(jDialogPadre,true, fechaSis, 3);
+				ventReporte.setVisible(true);
 			}
 		});
 		btnCorteDeCaja.setBounds(204, 45, 184, 23);
 		panelReportes.add(btnCorteDeCaja);
 		
-		JButton btnNewButton = new JButton("Corte de Caja Detallada");
-		btnNewButton.addActionListener(new ActionListener() {
+		JButton btnRepCajDet = new JButton("Corte de Caja Detallada");
+		btnRepCajDet.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Window ventanaPadre = SwingUtilities.getWindowAncestor(
-                        (Component) e.getSource());
-				//Acción para la generación de reporte de caja detallado
-				//dispose();
-				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteCajaDet(ventanaPadre);
+				VentPedReportes ventReporte = new VentPedReportes(jDialogPadre,true, fechaSis, 4);
+				ventReporte.setVisible(true);
 			}
 		});
-		btnNewButton.setBounds(204, 79, 184, 23);
-		panelReportes.add(btnNewButton);
+		btnRepCajDet.setBounds(204, 79, 184, 23);
+		panelReportes.add(btnRepCajDet);
 		
-		JButton btnNewButton_1 = new JButton("Inventario Actual");
-		btnNewButton_1.addActionListener(new ActionListener() {
+		JButton btnReporteInvActual = new JButton("Inventario Actual");
+		btnReporteInvActual.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Window ventanaPadre = SwingUtilities.getWindowAncestor(
-                        (Component) arg0.getSource());
-				//Acción para la generación de reporte inventario actual
-				//dispose();
-				ReportesCtrl repCtrl = new ReportesCtrl(PrincipalLogueo.habilitaAuditoria);
-				repCtrl.generarReporteInventarioAct(ventanaPadre);
+				VentPedReportes ventReporte = new VentPedReportes(jDialogPadre,true, fechaSis, 2);
+				ventReporte.setVisible(true);
 			}
 		});
-		btnNewButton_1.setBounds(10, 79, 182, 23);
-		panelReportes.add(btnNewButton_1);
+		btnReporteInvActual.setBounds(10, 79, 182, 23);
+		panelReportes.add(btnReporteInvActual);
 		
 		JLabel lblInventario = new JLabel("REPORTE INVENTARIOS");
 		lblInventario.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -261,6 +253,16 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		btnValidarCierre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
+				//Validamos que el día no se haya cerrado ya
+				ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
+				Parametro parametro = parCtrl.obtenerParametro("INDICADORCIERRE");
+				String fechaParametro = parametro.getValorTexto();
+				FechaSistema fecha = pedCtrl.obtenerFechasSistema();
+				fechaSis = fecha.getFechaApertura();
+				if(fechaSis.contentEquals(fechaParametro))
+				{
+					System.exit(0);
+				}
 				String resp = operTienda.validacionesPreCierre(fechaSis);
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
                         (Component) arg0.getSource());
@@ -268,6 +270,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 				{
 					((JButton)arg0.getSource()).getParent();
 					JOptionPane.showMessageDialog(ventanaPadre, "El cierre ha superado las prevalidaciones" , "Puede iniciar el cierre", JOptionPane.INFORMATION_MESSAGE);
+					btnCierreDia.setEnabled(true);
 				}
 				else
 				{
@@ -317,7 +320,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		txtVentaSemana.setColumns(10);
 		txtVentaSemana.setBounds(176, 224, 112, 20);
 		contentPanePrincipal.add(txtVentaSemana);
-		txtVentaSemana.setText(Double.toString(pedCtrl.obtenerTotalesPedidosSemana()));
+		txtVentaSemana.setText(formatea.format(pedCtrl.obtenerTotalesPedidosSemanaEnCurso()));
 		JLabel lblVentanaSemana = new JLabel("VENTA SEMANA");
 		lblVentanaSemana.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblVentanaSemana.setBounds(11, 229, 152, 14);
@@ -334,6 +337,16 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		
 		tableResFormaPago = new JTable();
 		scrollPaneFormaPago.setViewportView(tableResFormaPago);
+		
+		JButton btnImprimirCorteCaja = new JButton("Imprimir Corte de Caja");
+		btnImprimirCorteCaja.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Se realiza la impresión del corte de caja a petición.
+				pedCtrl.imprimirResumenCorteCaja(fechaSis);
+			}
+		});
+		btnImprimirCorteCaja.setBounds(432, 204, 189, 23);
+		contentPanePrincipal.add(btnImprimirCorteCaja);
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
@@ -348,11 +361,24 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 			public void actionPerformed(ActionEvent arg0) {
 				
 				OperacionesTiendaCtrl operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
+				//Primero realizamos validación de si el sistema ya fue cerrado
+				ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
+				Parametro parametro = parCtrl.obtenerParametro("INDICADORCIERRE");
+				String fechaParametro = parametro.getValorTexto();
+				FechaSistema fecha = pedCtrl.obtenerFechasSistema();
+				fechaSis = fecha.getFechaApertura();
+				if(fechaSis.contentEquals(fechaParametro))
+				{
+					System.exit(0);
+				}
+				
 				String resp = operTienda.finalizarDia(fechaSis);
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
                         (Component) arg0.getSource());
 				if(resp.equals(new String("PROCESO EXITOSO")))
 				{
+					//Se realiza la impresión del corte de caja a petición.
+					pedCtrl.imprimirResumenCorteCaja(fechaSis);
 					//Se implementa hilo para generar la reportería
 					hiloReporteria.start();
 					if(operTiendaCtrl.validarCierreSemanal())
@@ -452,8 +478,8 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		totalEgresos = operTiendaCtrl.TotalizarEgreso(fechaSis);
 		String[] filaEgreso = {"Egresos", Double.toString(totalEgresos)};
 		modelo.addRow(filaEgreso);
-		txtTotalVendido.setText(Double.toString(totalVendido));
-		txtTotalVendidoConIE.setText(Double.toString(totalVendido + totalIngresos - totalEgresos));
+		txtTotalVendido.setText(formatea.format(totalVendido));
+		txtTotalVendidoConIE.setText(formatea.format(totalVendido + totalIngresos - totalEgresos));
 		tableResTipoPedido.setModel(modelo);
 				
 		//Llenamos el modelo para el table de forma de pago

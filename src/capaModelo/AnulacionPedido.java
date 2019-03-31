@@ -8,6 +8,16 @@ public class AnulacionPedido {
 	private double valor;
 	private String usuario;
 	private String tipoAnulacion;
+	private String observacion;
+	
+	
+	
+	public String getObservacion() {
+		return observacion;
+	}
+	public void setObservacion(String observacion) {
+		this.observacion = observacion;
+	}
 	public int getIdPedido() {
 		return idPedido;
 	}
@@ -45,7 +55,7 @@ public class AnulacionPedido {
 		this.tipoAnulacion = tipoAnulacion;
 	}
 	public AnulacionPedido(int idPedido, String fecha, String producto, double valor, String usuario,
-			String tipoAnulacion) {
+			String tipoAnulacion, String observacion) {
 		super();
 		this.idPedido = idPedido;
 		this.fecha = fecha;
@@ -53,6 +63,7 @@ public class AnulacionPedido {
 		this.valor = valor;
 		this.usuario = usuario;
 		this.tipoAnulacion = tipoAnulacion;
+		this.observacion = observacion;
 	}
 	
 	

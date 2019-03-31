@@ -34,6 +34,8 @@
 	import java.util.ArrayList;
 	import java.awt.event.ActionEvent;
 	import javax.swing.JTable;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 	
 	public class VentPedIngEgrDiarios extends JDialog {
 	
@@ -96,6 +98,19 @@
 			panelIngresos.add(lblValorDelIngreso);
 			
 			txtIngreso = new JTextField();
+			txtIngreso.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyTyped(KeyEvent e) {
+					char car = e.getKeyChar();
+					if(Character.isDigit(car))
+					{
+						
+					}else
+					{
+						e.consume();
+					}
+				}
+			});
 			txtIngreso.setColumns(15);
 			txtIngreso.setBounds(236, 41, 138, 20);
 			panelIngresos.add(txtIngreso);
@@ -222,6 +237,19 @@
 			panelEgresos.add(lblValorDelEgreso);
 			
 			txtEgreso = new JTextField();
+			txtEgreso.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyTyped(KeyEvent e) {
+					char car = e.getKeyChar();
+					if(Character.isDigit(car))
+					{
+						
+					}else
+					{
+						e.consume();
+					}
+				}
+			});
 			txtEgreso.setBounds(236, 45, 138, 20);
 			panelEgresos.add(txtEgreso);
 			txtEgreso.setColumns(15);

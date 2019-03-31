@@ -34,6 +34,7 @@ import javax.swing.SwingUtilities;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.InventarioCtrl;
 import capaControlador.MenuCtrl;
+import capaControlador.ParametrosCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ParametrosProductoCtrl;
 import capaControlador.PedidoCtrl;
@@ -44,6 +45,7 @@ import capaModelo.DetallePedido;
 import capaModelo.FechaSistema;
 import capaModelo.MotivoAnulacionPedido;
 import capaModelo.Municipio;
+import capaModelo.Parametro;
 import capaModelo.Pregunta;
 import capaModelo.Producto;
 import capaModelo.ProductoIncluido;
@@ -126,16 +128,19 @@ public class VentPedTomarPedidos extends JFrame {
 	private ParametrosProductoCtrl parPro = new ParametrosProductoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
 	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+	private ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	private final String codPantalla = "PED_013";
 	ArrayList<AccesosPorBoton> accesosBoton = autCtrl.obtenerAccesosPorBotonObj(Sesion.getIdTipoEmpleado(), codPantalla);
 	private MenuCtrl menuCtrl = new MenuCtrl();
 	ArrayList<Producto> productos =parPro.obtenerProductosCompleto();
 	String[] nombresMultimenus;
-	JFrame framePrincipal;
+	VentPedTomarPedidos framePrincipal;
 	//Definimos los arreglos que tendrán todos los modificadores con y sin con el fin de poder definir el comportamiento
 	// de los botones de una forma más rapida.
 	private ArrayList<ProductoModificadorCon> modCon;
-	private ArrayList<ProductoModificadorSin> modSin; 
+	private ArrayList<ProductoModificadorSin> modSin;
+	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
+		int valPresentacion;
 	/**
 	 * Launch the application.
 	 */
@@ -162,6 +167,24 @@ public class VentPedTomarPedidos extends JFrame {
 		esAnulado = false;
 		esReabierto = false;
 
+	}
+	
+	public void fijarValorPresentacion()
+	{
+		//Tomamos el valor del parámetro relacionado la interface gráfica
+		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
+		try
+		{
+			valPresentacion = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
+			valPresentacion = 0;
+		}
+		if(valPresentacion == 0)
+		{
+			valPresentacion =1;
+		}
 	}
 	
 	public static void clarearVarEstaticasNoSalir()
@@ -244,7 +267,6 @@ public class VentPedTomarPedidos extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
 		JPanel panelPedido = new JPanel();
 		panelPedido.setBorder(new CompoundBorder(new LineBorder(new Color(0, 0, 0), 3), null));
 		panelPedido.setBounds(0, 0, 247, 431);
@@ -258,15 +280,17 @@ public class VentPedTomarPedidos extends JFrame {
 		JLabel lblValorTotalSD = new JLabel("Valor Total SD");
 		lblValorTotalSD.setBounds(10, 312, 83, 14);
 		panelPedido.add(lblValorTotalSD);
-		
+		fijarValorPresentacion();
 		JButton btnAnularItem = new JButton("Anular Item");
 		//Método donde se define la acción del Anular item en la ventana de tomador de pedidos.
 		btnAnularItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				int filaSeleccionada = tableDetallePedido.getSelectedRow();
 				if(filaSeleccionada == -1)
 				{
-					JOptionPane.showMessageDialog(null, "Debe Seleccionar algún item del pedido para Eliminar " , "No ha Seleccionado item para Eliminar ", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(ventanaPadre, "Debe Seleccionar algún item del pedido para Eliminar " , "No ha Seleccionado item para Eliminar ", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				// Se captura el valor del idDetalle que se desea eliminar
@@ -282,54 +306,31 @@ public class VentPedTomarPedidos extends JFrame {
 				//Realizamos la validación si el pedido es reabierto no
 				if(!esReabierto)
 				{
-					boolean respEliDetPedido = pedCtrl.eliminarDetallePedido(idDetalleEliminar);
-					//Recorremos el arrayList de detallePedido para eliminar con base en el detallePedido eliminado
-					for(int j = 0; j < detallesPedido.size(); j++)
-					{
-						DetallePedido detCadaPedido = detallesPedido.get(j);
-						// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
-						if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar || detCadaPedido.getIdDetallePedidoMaster() == idDetalleEliminar)
-						{
-							double valorItem = detCadaPedido.getValorTotal();
-							detallesPedido.remove(j);
-							// j se reduce en uno teniendo en cuenta que se eliminó un elemento
-							j--;
-							totalPedido = totalPedido - valorItem;
-							txtValorPedidoSD.setText(Double.toString(totalPedido));
-							txtValorTotal.setText(Double.toString(totalPedido - descuento));
-						}
-					}
+					borrarDetallePedidoNoInventariado(idDetalleEliminar);
 				}else
 				{
+					//Antes de comenzar con la anulación realizamos la validación si el item ya está anulado, pars evitar continuar
+					//con la acción
+					String estadoItemMaster = (String)tableDetallePedido.getValueAt(filaSeleccionada, 6);
+					//Validamos si el item ya tiene estado anulado, debemos de decir que no se puede anular este item
+					//porque ya está anulado
+					if(estadoItemMaster.equals(new String("A")))
+					{
+						JOptionPane.showMessageDialog(ventanaPadre, "El item seleccionado ya fue anulado." , "Error al Anular", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					//Antes de capturar el motivo de anulación valido que el item no esté descontado del inventario, si es así, simplemente
+					//borramos del sistema.
+					String descargadoInventario = (String)tableDetallePedido.getValueAt(filaSeleccionada, 8);
+					if(descargadoInventario.equals(new String("N")))
+					{
+						borrarDetallePedidoNoInventariado(idDetalleEliminar);
+						pintarDetallePedido();
+						return;
+					}
 					//AQUI TENDREMOS QUE INCLUIR LA LÓGICA IMPORTANTE PARA CAPTURAR MOTIVO DE ANULACIÓN, ELIMINAR Y DESCONTAR INVENTARIO SI ES EL CASO
-					int resp = JOptionPane.showConfirmDialog(null, comboMotivoAnulacion, "Selecciona Motivo de Anulación.",JOptionPane.YES_NO_OPTION);
-					if (resp == 0)
-					{
-						//Capturamos en caso de aceptar la anulación el motivo de anulación seleccionado
-						MotivoAnulacionPedido motAnu = (MotivoAnulacionPedido)comboMotivoAnulacion.getSelectedItem();
-						//Se realiza la anulación del pedido incluyendo el motivo de anulación
-						boolean reinAnPedido = invCtrl.reintegrarInventarioDetallePedido(idDetalleEliminar, idPedido);
-						boolean anuDetalle = false;
-						if(reinAnPedido)
-						{
-							anuDetalle = pedCtrl.anularDetallePedido(idDetalleEliminar, motAnu.getIdMotivoAnulacion());
-						}
-					}
-					//Se realizar un recorrido del arrayList de detalle pedidos para poner negativo los detalles de pedido
-					for(int j = 0; j < detallesPedido.size(); j++)
-					{
-						DetallePedido detCadaPedido = detallesPedido.get(j);
-						// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
-						if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar || detCadaPedido.getIdDetallePedidoMaster() == idDetalleEliminar)
-						{
-							double valorItem = detCadaPedido.getValorTotal();
-							detCadaPedido.setEstado("A");
-							detallesPedido.set(j, detCadaPedido);
-							totalPedido = totalPedido - valorItem;
-							txtValorPedidoSD.setText(Double.toString(totalPedido));
-							txtValorTotal.setText(Double.toString(totalPedido - descuento));
-						}
-					}
+					VentPedAnulacionPedido  ventPedAnu = new VentPedAnulacionPedido(framePrincipal, true,idDetalleEliminar, false);
+					ventPedAnu.setVisible(true);
 				}
 				pintarDetallePedido();
 				
@@ -758,7 +759,7 @@ public class VentPedTomarPedidos extends JFrame {
 							Finalizar.setVisible(true);
 						}else
 						{
-							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(ventanaPadre, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 						}
 						
 					}
@@ -771,14 +772,14 @@ public class VentPedTomarPedidos extends JFrame {
 							Finalizar.setVisible(true);
 						}else
 						{
-							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(ventanaPadre, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 						}
 						
 					}
 				}
 				else
 				{
-					JOptionPane.showMessageDialog(null, "No se ha agregado ningún item al pedido, no debe haber Forma de Pago " , "Error Agregando Forma Pago ", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(ventanaPadre, "No se ha agregado ningún item al pedido, no debe haber Forma de Pago " , "Error Agregando Forma Pago ", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				
@@ -792,6 +793,8 @@ public class VentPedTomarPedidos extends JFrame {
 		JButton btnMaestroPedidos = new JButton("Maestro Pedidos");
 		btnMaestroPedidos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				
 				if(idPedido == 0)
 				{
@@ -803,7 +806,7 @@ public class VentPedTomarPedidos extends JFrame {
 						dispose();
 					}else
 					{
-						JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaPadre, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 					}
 					
 				}
@@ -831,7 +834,7 @@ public class VentPedTomarPedidos extends JFrame {
 							dispose();
 						}else
 						{
-							JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(ventanaPadre, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 						}
 						
 					}
@@ -853,8 +856,16 @@ public class VentPedTomarPedidos extends JFrame {
 				//Es porque se dijo que si en la anulación, si saldriamos en esta situación
 				if(idPedido == 0)
 				{
-					VentPrincipal ventPrincipal = new VentPrincipal();
-					ventPrincipal.setVisible(true);
+					if(valPresentacion == 1)
+					{
+						VentPrincipal ventPrincipal = new VentPrincipal();
+						ventPrincipal.setVisible(true);
+					}else if(valPresentacion == 2)
+					{
+						VentPrincipalModificada ventPrincipal = new VentPrincipalModificada();
+						ventPrincipal.lblInformacionUsuario.setText("USUARIO: " + Sesion.getUsuario());
+						ventPrincipal.setVisible(true);
+					}
 					idCliente = 0;
 					//Preguntamos si es anulado sin descontar signfica que si entro y debe anular el pedido
 					if(esAnuladoSinDescontar)
@@ -872,7 +883,9 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		JButton btnTerminarPedido = new JButton("Terminar Pedido");
 		btnTerminarPedido.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				//Ingresamos lógica para tomar el tipo de pedido 
 				int idTipoPedido;
 				try
@@ -908,7 +921,7 @@ public class VentPedTomarPedidos extends JFrame {
 						boolean reintInv = invCtrl.descontarInventarioPedido(idPedido);
 						if(!reintInv)
 						{
-							JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(ventanaPadre, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
 						}
 						clarearVarEstaticas();
 						pintarDetallePedido();
@@ -1025,7 +1038,8 @@ public class VentPedTomarPedidos extends JFrame {
 		btnProductoCon = new JButton("PRODUCTO CON");
 		btnProductoCon.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				int filaSeleccionada = tableDetallePedido.getSelectedRow();
 				if(filaSeleccionada == -1)
 				{
@@ -1041,7 +1055,7 @@ public class VentPedTomarPedidos extends JFrame {
 						ventMod.setVisible(true);
 					}else
 					{
-						JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaPadre, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 					}
 					
 				}
@@ -1054,8 +1068,9 @@ public class VentPedTomarPedidos extends JFrame {
 		
 		btnProductoSin = new JButton("PRODUCTO SIN");
 		btnProductoSin.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
+			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				int filaSeleccionada = tableDetallePedido.getSelectedRow();
 				if(filaSeleccionada == -1)
 				{
@@ -1071,7 +1086,7 @@ public class VentPedTomarPedidos extends JFrame {
 						ventMod.setVisible(true);
 					}else
 					{
-						JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaPadre, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
 					}
 					
 				}
@@ -1291,7 +1306,7 @@ public class VentPedTomarPedidos extends JFrame {
        	    
        	};
 		tableDetallePedido.setModel(modeloDetalle);
-		modeloDetalle.setColumnIdentifiers(new Object [] {"idDetalle", "Cantidad", "Descripción",  "Valor", "idDetalleMaster","idDetalleModificador", "Estado","Contador"});
+		modeloDetalle.setColumnIdentifiers(new Object [] {"idDetalle", "Cantidad", "Descripción",  "Valor", "idDetalleMaster","idDetalleModificador", "Estado","Contador", "Descargado"});
 		tableDetallePedido.getColumnModel().getColumn(0).setMaxWidth(0);
 		tableDetallePedido.getColumnModel().getColumn(0).setMinWidth(0);
 		tableDetallePedido.getColumnModel().getColumn(1).setMaxWidth(20);
@@ -1308,6 +1323,8 @@ public class VentPedTomarPedidos extends JFrame {
 		//Este será el contador con el que controlaremos el color del detallePedido master
 		tableDetallePedido.getColumnModel().getColumn(7).setMaxWidth(0);
 		tableDetallePedido.getColumnModel().getColumn(7).setMinWidth(0);
+		tableDetallePedido.getColumnModel().getColumn(8).setMaxWidth(0);
+		tableDetallePedido.getColumnModel().getColumn(8).setMinWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(0).setMaxWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(0).setMinWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(20);
@@ -1324,6 +1341,10 @@ public class VentPedTomarPedidos extends JFrame {
 		//Este será el contador con el que controlaremos el color del detallePedido master
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(7).setMaxWidth(0);
 		tableDetallePedido.getTableHeader().getColumnModel().getColumn(7).setMinWidth(0);
+		//Este será el indicador de si se ha descargado o no del inventario
+		tableDetallePedido.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(0);
+		tableDetallePedido.getTableHeader().getColumnModel().getColumn(8).setMinWidth(0);
+		
 		for(int i = 0; i < detallesPedido.size();i++)
 		{
 			DetallePedido det = detallesPedido.get(i);
@@ -1340,7 +1361,7 @@ public class VentPedTomarPedidos extends JFrame {
 				}
 			}
 			//Producto proDet = parPro.obtenerProducto(det.getIdProducto());
-			String [] object = new String[]{Integer.toString(det.getIdDetallePedido()),Double.toString(det.getCantidad()),proDet.getDescripcion(),Double.toString(det.getValorTotal()), Integer.toString(det.getIdDetallePedidoMaster()), Integer.toString(det.getIdDetalleModificador()), det.getEstado(), Integer.toString(det.getContadorDetallePedido())};
+			String [] object = new String[]{Integer.toString(det.getIdDetallePedido()),Double.toString(det.getCantidad()),proDet.getDescripcion(),Double.toString(det.getValorTotal()), Integer.toString(det.getIdDetallePedidoMaster()), Integer.toString(det.getIdDetalleModificador()), det.getEstado(), Integer.toString(det.getContadorDetallePedido()), det.getDescargoInventario()};
 			modeloDetalle.addRow(object);
 		}
 		int cantFilas = tableDetallePedido.getRowCount() -1;
@@ -1359,7 +1380,7 @@ public class VentPedTomarPedidos extends JFrame {
 	{
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
 		String fechaPedido = fecha.getFechaApertura();
-		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, Sesion.getUsuario());
+		idPedido = pedCtrl.InsertarEncabezadoPedido(idTienda, idCliente, fechaPedido, Sesion.getUsuario(), Sesion.getEstacion());
 		if(idPedido == 0)
 		{
 			JOptionPane.showMessageDialog(null, "Error al insertar el encabezado de un pedido " , "Error Inserción Encabezado", JOptionPane.ERROR_MESSAGE);
@@ -1433,46 +1454,9 @@ public class VentPedTomarPedidos extends JFrame {
 			//En caso del que el pedido hay sido reabierto
 		}else if(esReabierto)
 		{	
-			//Desplegamos para que el usuario seleccione el motivo de anulación
-			int resp = JOptionPane.showConfirmDialog(null, comboMotivoAnulacion, "Selecciona Motivo de Anulación.",JOptionPane.YES_NO_OPTION);
-			if (resp == 0)
-			{
-				//Capturamos en caso de aceptar la anulación el motivo de anulación seleccionado
-				MotivoAnulacionPedido motAnu = (MotivoAnulacionPedido)comboMotivoAnulacion.getSelectedItem();
-				//Se realiza la anulación del pedido incluyendo el motivo de anulación
-				boolean anuDetallePedido = pedCtrl.anularPedido(idPedido, motAnu.getIdMotivoAnulacion());
-				//validamos si la anulación fue correcta y el tipo de anulación descuenta pedido
-				if((anuDetallePedido) &&(motAnu.getDescuentaInventario().equals(new String("S"))))
-				{
-					//Realizamos el descuento de inventarios
-					boolean reintInv = invCtrl.reintegrarInventarioPedido(idPedido);
-					if(!reintInv)
-					{
-						JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el reintegro de los inventarios " , "Error en reintegro de Inventarios ", JOptionPane.ERROR_MESSAGE);
-					}
-				
-				}
-				//Realizamos el limpiado de las variables de la pantalla de pedidos
-				if(salirVentana)
-				{
-					clarearVarEstaticas();
-					clarearVarNoEstaticas(false);
-				}else
-				{
-					clarearVarEstaticasNoSalir();
-					clarearVarNoEstaticasNoSalir();
-					for(int j = 0; j < detallesPedido.size(); j++)
-					{
-						DetallePedido detCadaPedido = detallesPedido.get(j);
-						detCadaPedido.setEstado("A");
-						detallesPedido.set(j, detCadaPedido);
-					}
-					//Marcamos que fue anulado el pedido y se quitará esta marca en caso de agregar un producto
-					esAnulado = true;
-					pintarDetallePedido();
-				}
-				
-			}
+			//AQUI TENDREMOS QUE INCLUIR LA LÓGICA IMPORTANTE PARA CAPTURAR MOTIVO DE ANULACIÓN, ELIMINAR Y DESCONTAR INVENTARIO SI ES EL CASO
+			VentPedAnulacionPedido  ventPedAnu = new VentPedAnulacionPedido(framePrincipal, true,0, salirVentana);
+			ventPedAnu.setVisible(true);
 		}
 	}
 	
@@ -1504,4 +1488,96 @@ public class VentPedTomarPedidos extends JFrame {
 		}
 		return(respuesta);
 	}
+	
+	public void borrarDetallePedidoNoInventariado(int idDetalleEliminar)
+	{
+		boolean respEliDetPedido = pedCtrl.eliminarDetallePedido(idDetalleEliminar);
+		//Recorremos el arrayList de detallePedido para eliminar con base en el detallePedido eliminado
+		for(int j = 0; j < detallesPedido.size(); j++)
+		{
+			DetallePedido detCadaPedido = detallesPedido.get(j);
+			// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
+			if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar || detCadaPedido.getIdDetallePedidoMaster() == idDetalleEliminar)
+			{
+				double valorItem = detCadaPedido.getValorTotal();
+				detallesPedido.remove(j);
+				// j se reduce en uno teniendo en cuenta que se eliminó un elemento
+				j--;
+				totalPedido = totalPedido - valorItem;
+				txtValorPedidoSD.setText(Double.toString(totalPedido));
+				txtValorTotal.setText(Double.toString(totalPedido - descuento));
+			}
+		}
+	}
+	
+	//Crearemos un  método que se encargará una vez reciba la confirmación del formulación de anulación encargarse de la anulación del item Pedido
+	public void frameAnulaItemPedido(MotivoAnulacionPedido motAnu, String observacion,  int idDetalleEliminar)
+	{
+		//Validamos si se debe o no realizar descuento de inventarios
+		boolean reinAnPedido = true;
+		boolean anuDetalle = false;
+		if(motAnu.getDescuentaInventario().equals(new String("S")))
+		{
+			invCtrl.reintegrarInventarioDetallePedido(idDetalleEliminar, idPedido);
+		}
+		anuDetalle = pedCtrl.anularDetallePedido(idDetalleEliminar, motAnu.getIdMotivoAnulacion(), observacion);
+		//Se realizar un recorrido del arrayList de detalle pedidos para poner negativo los detalles de pedido
+		for(int j = 0; j < detallesPedido.size(); j++)
+		{
+			DetallePedido detCadaPedido = detallesPedido.get(j);
+			// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
+			if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar || detCadaPedido.getIdDetallePedidoMaster() == idDetalleEliminar)
+			{
+				double valorItem = detCadaPedido.getValorTotal();
+				detCadaPedido.setEstado("A");
+				detallesPedido.set(j, detCadaPedido);
+				totalPedido = totalPedido - valorItem;
+				txtValorPedidoSD.setText(Double.toString(totalPedido));
+				txtValorTotal.setText(Double.toString(totalPedido - descuento));
+			}
+		}
+		pintarDetallePedido();
+	}
+	
+	public void frameAnulaPedido(MotivoAnulacionPedido motAnu, String observacion, boolean salirVentana)
+	{
+			pedCtrl.eliminarDetalleAnulacion(idPedido);
+			//validamos si la anulación fue correcta y el tipo de anulación descuenta pedido
+			if((motAnu.getDescuentaInventario().equals(new String("S"))))
+			{
+				//Realizamos el descuento de inventarios de lo que desconto de inventario y no esta anulado y
+				// adicionalmente realiza la anulación puntual del item reintegrado y anulado
+				boolean reintInv = invCtrl.reintegrarInventarioPedido(idPedido, motAnu.getIdMotivoAnulacion(), observacion);
+				if(!reintInv)
+				{
+					JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el reintegro de los inventarios " , "Error en reintegro de Inventarios ", JOptionPane.ERROR_MESSAGE);
+				}
+			
+			}
+			//Se realiza la anulación del pedido incluyendo el motivo de anulación, y tambien los detalles de pedido
+			boolean anuDetallePedido = pedCtrl.anularPedido(idPedido, motAnu.getIdMotivoAnulacion(), observacion);
+			
+			//Realizamos el limpiado de las variables de la pantalla de pedidos
+			if(salirVentana)
+			{
+				clarearVarEstaticas();
+				clarearVarNoEstaticas(false);
+			}else
+			{
+				clarearVarEstaticasNoSalir();
+				clarearVarNoEstaticasNoSalir();
+				for(int j = 0; j < detallesPedido.size(); j++)
+				{
+					DetallePedido detCadaPedido = detallesPedido.get(j);
+					detCadaPedido.setEstado("A");
+					detallesPedido.set(j, detCadaPedido);
+				}
+				//Marcamos que fue anulado el pedido y se quitará esta marca en caso de agregar un producto
+				esAnulado = true;
+				pintarDetallePedido();
+			}
+			
+		
+	}
+	
 }
