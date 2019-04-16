@@ -1576,7 +1576,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, a.total_bruto, a.total_neto, a.impuesto, b.telefono, b.observacion, b.zona, (e.valorformapago - a.total_neto) as cambio, a.usuariopedido, f.nombre as nombreformapago, e.valorformapago, g.nombre_largo nombredomiciliario from pedido a, cliente b, tipo_pedido c, estado d, pedido_forma_pago e, forma_pago f, usuario g  where a.iddomiciliario = g.id and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idpedidotienda = e.idpedidotienda and e.idforma_pago = f.idforma_pago and a.idpedidotienda = " + idPedidoTienda;
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, a.total_bruto, a.total_neto, a.impuesto, b.telefono, b.observacion, b.nombrecompania, b.zona, (e.valorformapago - a.total_neto) as cambio, a.usuariopedido, f.nombre as nombreformapago, e.valorformapago, g.nombre_largo as nombredomiciliario from cliente b, tipo_pedido c, estado d, pedido_forma_pago e, forma_pago f, pedido a left outer join usuario g on a.iddomiciliario = g.id  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idpedidotienda = e.idpedidotienda and e.idforma_pago = f.idforma_pago and a.idpedidotienda = " + idPedidoTienda;
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1613,8 +1613,10 @@ public class PedidoDAO {
 				pedRsta.setNombreFormaPago(nombreFormaPago);
 				double valorFormaPago = rs.getDouble("valorformapago");
 				pedRsta.setTotalFormaPago(valorFormaPago);
-				String nombreDomiciliario = rs.getString("nombreDomiciliario");
+				String nombreDomiciliario = rs.getString("nombredomiciliario");
 				pedRsta.setDomiciliario(nombreDomiciliario);
+				String nombreCompania = rs.getString("nombrecompania");
+				pedRsta.setNombreCompania(nombreCompania);
 				break;
 			}
 			rs.close();
@@ -1822,5 +1824,104 @@ public class PedidoDAO {
 		return(cantPedidoEnEspera);
 	}
 	
+	
+	public static int ObtenerPedidoMinimo(String fechaAnterior, String fechaPosterior )
+	{
+		
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int pedidoMinimo = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select min(idpedidotienda) from pedido where fechapedido >= '" + fechaAnterior + "' and fechapedido <=  '" + fechaPosterior + "'  and idmotivoanulacion IS NULL"; 
+			
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				pedidoMinimo = rs.getInt(1);
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			System.out.println("ERROR EN CÁLCULO de pedido mínimo");
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(0);
+		}
+		return(pedidoMinimo);
+	}
+	
+	public static int ObtenerPedidoMaximo(String fechaAnterior, String fechaPosterior )
+	{
+		
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int pedidoMaximo = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select max(idpedidotienda) from pedido where fechapedido >= '" + fechaAnterior + "' and fechapedido <=  '" + fechaPosterior + "'  and idmotivoanulacion IS NULL"; 
+			
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				pedidoMaximo = rs.getInt(1);
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			System.out.println("ERROR EN CÁLCULO de pedido mínimo");
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(0);
+		}
+		return(pedidoMaximo);
+	}
+	
+	public static double ObtenerValorPedido(int idPedidoTienda )
+	{
+		
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double valorPedido = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select total_neto from pedido where  idpedidotienda =  " + idPedidoTienda + "  and idmotivoanulacion IS NULL"; 
+			
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				valorPedido = rs.getDouble(1);
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			System.out.println("ERROR EN CÁLCULO de pedido mínimo");
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(0);
+		}
+		return(valorPedido);
+	}
 	
 	}

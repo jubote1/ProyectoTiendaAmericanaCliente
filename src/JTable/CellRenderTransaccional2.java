@@ -40,7 +40,6 @@ public class CellRenderTransaccional2 extends DefaultTableCellRenderer implement
         	Estado estadoTemp = arregloEstados.get(i);
         	//System.out.println(table.getValueAt(row, 6));
         	int cantidadColumnas = table.getColumnCount();
-        	System.out.println("CANTIDAD COLUMNAS " +  cantidadColumnas);
         	if (((long)table.getValueAt(row, 6)== estadoTemp.getIdTipoPedido())&&((long)table.getValueAt(row, 7)== estadoTemp.getIdestado()))
         	{
         		colorFila = new Color(estadoTemp.getColorr(), estadoTemp.getColorg(), estadoTemp.getColorb());

@@ -13,8 +13,10 @@ import capaControlador.InventarioCtrl;
 import capaControlador.ParametrosCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.DetallePedido;
+import capaModelo.FormaPago;
 import capaModelo.Parametro;
 import capaModelo.TipoPedido;
+import capaModelo.FormaPagoIng;
 
 import javax.swing.JTextPane;
 import javax.swing.JButton;
@@ -28,6 +30,7 @@ import javax.swing.Action;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import javax.swing.JTextField;
@@ -46,22 +49,39 @@ public class VentPedFinPago extends JDialog implements Runnable {
 	private final Action action = new SwingAction();
 	private JTextField displayPago;
 	private JTextField txtCantidadAdeudada;
+	//Tendremos un arreglo con los botones de las formas de pago para procesarlos en los momentos de click
+	private ArrayList<JButton> btnFormasPago = new ArrayList();
+	//Tendremos un arreglo con las formas de pago recuperadas de la base de datos
+	private ArrayList<FormaPago> formasPago;
+	//Tendremos un entero con el id de la forma de pago seleccionada
+	private int idFormaPagoSel;
+	//Tendremos un arreglo para el control de la manera como estamos pagando el pedido
+	private ArrayList<FormaPagoIng> formasPagoIng = new ArrayList();
+	//Definimos un arreglo con los colores que manejará las formas de pago
+	private ArrayList<Color> coloresFormaPago = new ArrayList();
 	
-	public double Efectivo = 0, Tarjeta = 0, Cambio = 0 , Total = VentPedTomarPedidos.totalPedido - VentPedTomarPedidos.descuento ,Deuda = Total ;
+	public double Cambio = 0 , Total = VentPedTomarPedidos.totalPedido - VentPedTomarPedidos.descuento ,Deuda = Total ;
 	public  boolean boolEfectivo = true, boolTarjeta = false; 
 	private JTable tablePago;
 	private JTextField displayTotal;
+	private JButton btnAplicar;
 	private boolean hayFormaPago = false;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	Thread hiloDescInventario;
+	private JButton btnFormaPago;
+	private JPanel panelMetodosPagos;
 	public void clarearVarEstaticas()
 	{
-		Efectivo = 0;
-		Tarjeta = 0;
+		for(int i = 0; i < formasPagoIng.size(); i++)
+		{
+			FormaPagoIng formaTemp = formasPagoIng.get(i);
+			formaTemp.setValorPago(0);
+			formasPagoIng.set(i, formaTemp);
+			
+		}
 		Cambio = 0;
-		boolEfectivo = true;
-		boolTarjeta = false;
+
 	}
 		
 	/**
@@ -109,12 +129,6 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		return StrResultado;
 	}
 	
-//	public void limiteDisplay(KeyEvent evt){
-//		int limite = 12;
-//		if (displayPago.getText().length() >= limite) {
-//			evt.consume();
-//		}
-//	}
 
 	/**
 	 * Create the frame.
@@ -146,7 +160,7 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		btnNum_1.setBackground(new Color(45,107,113));
 		btnNum_1.setForeground(new Color(255,255,255));
 		contentenorFinPago.add(btnNum_1);
-		
+		formasPago = parCtrl.obtenerFormasPago();
 		JButton btnNum_2 = new JButton("2");
 		btnNum_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -347,7 +361,7 @@ public class VentPedFinPago extends JDialog implements Runnable {
 					}
 				}
 				// Se envían datos para la inserción de la forma de pago.
-				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, 0, Total, Cambio, VentPedTomarPedidos.idPedido);
+				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(formasPagoIng, Total, Cambio, VentPedTomarPedidos.idPedido);
 				if(resFormaPago)
 				{
 					
@@ -422,9 +436,9 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		btnBorrar.setBounds(462, 452, 100, 70);
 		contentenorFinPago.add(btnBorrar);
 		
-		JButton btnAplicar = new JButton("Aplicar Efectivo");
+		btnAplicar = new JButton("Aplicar");
 		btnAplicar.setFont(new Font("Calibri", Font.BOLD, 24));
-		btnAplicar.setBounds(719, 394, 202, 70);
+		btnAplicar.setBounds(600, 452, 323, 70);
 		btnAplicar.setBackground(new Color(86,106,187));
 		btnAplicar.setForeground(new Color(255,255,255));
 		contentenorFinPago.add(btnAplicar);
@@ -435,21 +449,12 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		tablePago.setShowHorizontalLines(false);
 		tablePago.setShowVerticalLines(false);
 		tablePago.setEnabled(false);
-		tablePago.setFont(new Font("Calibri", Font.PLAIN, 20));
-		tablePago.setModel(new DefaultTableModel(
-			new Object[][] {
-				{"Total", Formato(Total)},
-				{"Efectivo", Formato(Efectivo)},
-				{"Tarjeta", Formato(Tarjeta)},
-				{"Cambio", Formato(Cambio)},
-			},
-			new String[] {
-				"New column", "New column"
-			}
-		));
-		tablePago.setBounds(10, 366, 202, 120);
+		tablePago.setFont(new Font("Calibri", Font.PLAIN, 16));
+		tablePago.setBounds(10, 366, 202, 156);
 		contentenorFinPago.add(tablePago);
 		tablePago.setRowHeight(30);
+		
+		
 		
 		displayTotal = new JTextField();
 		displayTotal.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -462,26 +467,10 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		contentenorFinPago.add(displayTotal);
 		displayTotal.setText(Formato(Deuda));
 		
-		JPanel panelMetodosPagos = new JPanel();
-		panelMetodosPagos.setBounds(719, 178, 204, 205);
+		panelMetodosPagos = new JPanel();
+		panelMetodosPagos.setBounds(719, 66, 204, 317);
 		contentenorFinPago.add(panelMetodosPagos);
-		panelMetodosPagos.setLayout(new GridLayout(2, 1, 0, 0));
-		
-		JButton btnEfectivo = new JButton("Efectivo");
-		btnEfectivo.setHorizontalAlignment(SwingConstants.TRAILING);
-		btnEfectivo.setIcon(new ImageIcon(VentPedFinPago.class.getResource("/icons/efectivo.jpg")));
-		panelMetodosPagos.add(btnEfectivo);
-		btnEfectivo.setBackground(new Color(230,230,230));
-		btnEfectivo.setBackground(new Color(86,106,187));
-		btnEfectivo.setForeground(new Color(255,255,255));
-		btnEfectivo.setFont(new Font("Calibri", Font.BOLD, 26));
-		
-		JButton btnTarjeta = new JButton("Tarjeta");
-		btnTarjeta.setHorizontalAlignment(SwingConstants.TRAILING);
-		btnTarjeta.setIcon(new ImageIcon(VentPedFinPago.class.getResource("/icons/credito.jpg")));
-		panelMetodosPagos.add(btnTarjeta);
-		btnTarjeta.setBackground(new Color(230,230,230));
-		btnTarjeta.setFont(new Font("Calibri", Font.BOLD, 26));
+		panelMetodosPagos.setLayout(new GridLayout(0, 1, 0, 0));
 		
 		JPanel panelPagoRapido = new JPanel();
 		panelPagoRapido.setBounds(462, 211, 247, 230);
@@ -567,7 +556,7 @@ public class VentPedFinPago extends JDialog implements Runnable {
 				
 				//Tomamos la información para insertar la forma de pago
 				// Se envían datos para la inserción de la forma de pago.
-				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(Efectivo, Tarjeta, 0, Total, Cambio, VentPedTomarPedidos.idPedido);
+				boolean resFormaPago = pedCtrl.insertarPedidoFormaPago(formasPagoIng, Total, Cambio, VentPedTomarPedidos.idPedido);
 				if(resFormaPago)
 				{
 					clarearVarEstaticas();
@@ -582,74 +571,67 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		//Por un tiempo mientras corroboramos que no es necesario no lo adicionaremos, luego de esto lo eliminaremos
 		//contentenorFinPago.add(btnIngRetornar);
 		
-		btnEfectivo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				btnAplicar.setText("Aplicar "+btnEfectivo.getText());
-				btnAplicar.setBackground(new Color(86,106,187));
-				btnAplicar.setForeground(new Color(255,255,255));
-				btnEfectivo.setBackground(new Color(86,106,187));
-				btnEfectivo.setForeground(new Color(255,255,255));
-				btnTarjeta.setBackground(new Color(230,230,230));
-				btnAplicar.setEnabled(true);
-				boolEfectivo = true;
-				boolTarjeta = false;
-			}
-		});
-		
-		btnTarjeta.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				btnAplicar.setText("Aplicar "+btnTarjeta.getText());
-				btnAplicar.setBackground(new Color(255,106,98));
-				btnAplicar.setForeground(new Color(255,255,255));
-				btnTarjeta.setBackground(new Color(255,106,98));
-				btnTarjeta.setForeground(new Color(255,255,255));
-				btnEfectivo.setBackground(new Color(230,230,230));
-				btnAplicar.setEnabled(true);
-				boolEfectivo = false;
-				boolTarjeta = true;
-			}
-		});
-		
+				
 		btnAplicar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				//Limpiamos el aplicar
 				btnAplicar.setText("Aplicar");
-				if (boolEfectivo) {
-					if (!displayPago.getText().equals("")) {
-						Deuda -= Double.parseDouble(displayPago.getText());
-						Efectivo += Double.parseDouble(displayPago.getText()); 
-					} else {
-						Efectivo = Deuda;
-						Deuda = 0;
-					}
-					displayPago.setText("");
-					tablePago.setValueAt(Formato(Efectivo), 1, 1);
-					if (Total < Efectivo + Tarjeta) {
-						Cambio = Deuda * - 1;
-						tablePago.setValueAt(Formato(Cambio), 3, 1);
-						Deuda = 0;
-					}
-				}else if (boolTarjeta) {
-					if (!displayPago.getText().equals("")) {
-						Deuda -= Double.parseDouble(displayPago.getText());
-						Tarjeta += Double.parseDouble(displayPago.getText());
-					}else {
-						Tarjeta = Deuda;
-						Deuda = 0;
-					}
-					displayPago.setText("");
-					tablePago.setValueAt(Formato(Tarjeta), 2, 1);
-					if (Total < Efectivo + Tarjeta) {
-						Cambio = Deuda * - 1;
-						tablePago.setValueAt(Formato(Cambio), 3, 1);
-						Deuda = 0;
+				//Variable donde vamos a almacenar cuanto se ha pagado del pedido
+				double totalRecalculado = 0;
+				//Debemos de realizar la validación para la forma de pago seleccionada con base en la forma de pago seleccionada en la variable idFormaPagoSel
+				for(int i = 0; i < formasPagoIng.size(); i++)
+				{
+					FormaPagoIng formaTemp = formasPagoIng.get(i);
+					//Vamos valiando si el idformapago seleccionado es el mismo del recorrido de las formas de pago
+					if(formaTemp.getIdFormaPago() == idFormaPagoSel)
+					{
+						//Variable para almacenar el valor
+						double valorAnt = 0;
+						//Validamos si no se ha ingresado valor para pagar.
+						if (!displayPago.getText().equals("")) {
+							//Tomamos el valor digitado y lo fijamos en el ArrayList
+							formaTemp.setValorPago(Double.parseDouble(displayPago.getText()));
+							valorAnt = Double.parseDouble(displayPago.getText());
+						}else
+						{
+							//Tomamos el total del pedido
+							formaTemp.setValorPago(Deuda);
+							valorAnt = Deuda;
+						}
+						//Acumulamos en el Total Pedido Recalculado
+						totalRecalculado = totalRecalculado + valorAnt;
+						//Actualizamos la forma de pago dentro del arreglo que almacena esta información
+						formasPagoIng.set(i, formaTemp);
+						//Limpiamos el campo donde se almacena lo digitado
+						displayPago.setText("");
+					}else
+					{
+						totalRecalculado = totalRecalculado + formaTemp.getValorPago();
 					}
 				}
+				Deuda = Total - totalRecalculado;
+				System.out.println("TOTAL  " + Total  + " totalRecalculado " + totalRecalculado);
+				if (Total < totalRecalculado) {
+					Cambio = Deuda * - 1;
+					Deuda = 0;
+				}
+				//Construida y fijado los valores de  Deuda y Cambio y el arreglo de las formas de pago pintamos el Jtable con el resumen
+				//de la información ingresada
+				pintarFormaPagoPedido();
+				//Mostramos en pantalla el valor de total de deuda
 				displayTotal.setText(Formato(Deuda));
+				//Si deuda es igual a cero sea porque es menor o mayor se habilitan los botones y se funciona normal
 				if (Deuda == 0) {
+					//Se habilitan los botones
 					btnFinalizar.setEnabled(true);
 					btnIngRetornar.setEnabled(true);
-					btnEfectivo.setEnabled(false);
-					btnTarjeta.setEnabled(false);
+					//Se inhabilitan los botones de forma de pago
+					for(int j = 0; j < btnFormasPago.size(); j++)
+					{
+						JButton btnTemp = btnFormasPago.get(j);
+						btnTemp.setEnabled(false);
+					}
+					//El botón aplicar se desactiva
 					btnAplicar.setEnabled(false);
 				}
 			}
@@ -661,6 +643,15 @@ public class VentPedFinPago extends JDialog implements Runnable {
 			
 			
 		}
+		//Realizamos el pintado en la pantalla y panel de las formas de pago parametrizadas en el sistema
+		//Agregamos los colores de las forma de pago
+		coloresFormaPago.add(new Color(86,106,187));
+		coloresFormaPago.add(new Color(255,106,98));
+		coloresFormaPago.add(new Color(50,106,98));
+		//Adicionamos las formas de pago qeu existen en el sistema
+		adicionarFormasPago();
+		//Pintamos en el Jtable de resumen las formas de pago
+		pintarFormaPagoPedido();
 		
 	}
 	private class SwingAction extends AbstractAction {
@@ -693,5 +684,85 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		{
 			JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
 		}
+	}
+	
+	public void adicionarFormasPago()
+	{
+		
+		for(int i = 0; i < formasPago.size(); i++)
+		{
+			FormaPago formaTemp = formasPago.get(i);
+			btnFormaPago = new JButton(formaTemp.getNombre());
+			btnFormaPago.setFont(new Font("Calibri", Font.BOLD, 18));
+			btnFormaPago.setActionCommand(Integer.toString(formaTemp.getIdformapago()));
+			btnFormaPago.setIcon(new ImageIcon(VentPedFinPago.class.getResource(formaTemp.getIcono())));
+			//Inicializamos el botón aplicar
+			if(i == 0)
+			{
+				btnAplicar.setText("Aplicar "+ btnFormaPago.getText());
+				idFormaPagoSel = formaTemp.getIdformapago();
+				btnAplicar.setBackground(coloresFormaPago.get(idFormaPagoSel-1));
+			}
+			panelMetodosPagos.add(btnFormaPago);
+			btnFormasPago.add(btnFormaPago);
+			FormaPagoIng formaIngTemp = new FormaPagoIng(formaTemp.getIdformapago(), 0, false, formaTemp.getNombre());
+			formasPagoIng.add(formaIngTemp);
+			btnFormaPago.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) 
+				{
+					JButton botAccion = ((JButton)arg0.getSource());
+					//Extraemos la acción del botón
+					String actCom =  botAccion.getActionCommand();
+					idFormaPagoSel = Integer.parseInt(actCom);
+					System.out.println("forma de pago seleccionada " + idFormaPagoSel);
+					//Realizamos un recorrido por los botones para saber como debemos de colorearlo
+					for(int j = 0; j < btnFormasPago.size(); j++)
+					{
+						JButton btnTemp = btnFormasPago.get(j);
+						int idFormaPagoBtn = Integer.parseInt(btnTemp.getActionCommand());
+						System.out.println("id forma pago cada boton " + idFormaPagoBtn);
+						if(idFormaPagoBtn == idFormaPagoSel)
+						{
+							btnTemp.setForeground(Color.white);
+							btnTemp.setBackground(coloresFormaPago.get(idFormaPagoSel-1));
+							btnAplicar.setText("Aplicar "+botAccion.getText());
+							btnAplicar.setBackground(coloresFormaPago.get(idFormaPagoSel-1));
+							btnAplicar.setEnabled(true);
+						}
+						else
+						{
+							btnTemp.setForeground(Color.black);
+							btnTemp.setBackground(null);
+						}
+					}
+				}
+			});
+		}
+	}
+	
+	public void pintarFormaPagoPedido()
+	{
+		Object[] columnsName = new Object[2];
+		columnsName[0] = "**";
+        columnsName[1] = "Valor";
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.setColumnIdentifiers(columnsName);
+        String[] fila = new String[2];
+        fila[0] = "TOTAL";
+        fila[1] = Formato(Total);
+        modelo.addRow(fila);
+        for(int i = 0; i < formasPagoIng.size(); i++)
+        {
+        	FormaPagoIng formaTemp = formasPagoIng.get(i);
+        	fila = new String[2];
+        	fila[0] = formaTemp.getNombreFormaPago();
+        	fila[1] = Formato(formaTemp.getValorPago());
+        	modelo.addRow(fila);
+        }
+        fila = new String[2];
+    	fila[0] = "CAMBIO";
+    	fila[1] = Formato(Cambio);
+    	modelo.addRow(fila);
+        tablePago.setModel(modelo);
 	}
 }

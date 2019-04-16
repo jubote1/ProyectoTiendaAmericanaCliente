@@ -25,6 +25,7 @@ import capaDAO.EstadoAnteriorDAO;
 import capaDAO.EstadoDAO;
 import capaDAO.EstadoPosteriorDAO;
 import capaDAO.GeneralDAO;
+import capaDAO.ImprimirAdmDAO;
 import capaDAO.MotivoAnulacionPedidoDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.PedidoDescuentoDAO;
@@ -49,6 +50,8 @@ import capaModelo.EstadoAnterior;
 import capaModelo.EstadoPedidoTienda;
 import capaModelo.EstadoPosterior;
 import capaModelo.FechaSistema;
+import capaModelo.FormaPagoIng;
+import capaModelo.ImprimirAdm;
 import capaModelo.Ingreso;
 import capaModelo.ItemInventario;
 import capaModelo.MotivoAnulacionPedido;
@@ -185,6 +188,12 @@ public class PedidoCtrl implements Runnable {
 		return(respuesta);
 	}
 	
+	public ArrayList<String[]> consultarFormaPagoArreglo(int idPedido)
+	{
+		ArrayList<String[]> formasPagoArreglo = PedidoFormaPagoDAO.consultarFormaPagoArreglo(idPedido, auditoria);
+		return(formasPagoArreglo);
+	}
+	
 	public boolean insertarPedidoFormaPago(double efectivo, double tarjeta, double pagoOnLine, double valorTotal, double cambio, int idPedidoTienda)
 	{
 		
@@ -219,6 +228,28 @@ public class PedidoCtrl implements Runnable {
 			return(false);
 		}
 		
+	}
+	
+	public boolean insertarPedidoFormaPago(ArrayList<FormaPagoIng> formasPagoIng, double valorTotal, double cambio, int idPedidoTienda)
+	{
+		//Hacemos validación si el pedido tiene un valor de cero igual se inserta como forma de pago efectivo y en cero
+		if(valorTotal == 0)
+		{
+			PedidoFormaPago forEfectivo = new PedidoFormaPago(0,idPedidoTienda,1,valorTotal,0);
+			PedidoFormaPagoDAO.InsertarPedidoFormaPago(forEfectivo, auditoria);
+			return(true);
+		}
+		//Realizamos la inserción de la forma de pago con base en ArrayList recibido
+		for(int i = 0 ; i < formasPagoIng.size(); i++)
+		{
+			FormaPagoIng formaTemp = formasPagoIng.get(i);
+			if(formaTemp.getValorPago() > 0)
+			{
+				PedidoFormaPago pedFormaPago = new PedidoFormaPago(0, idPedidoTienda,formaTemp.getIdFormaPago(), valorTotal, formaTemp.getValorPago());
+				PedidoFormaPagoDAO.InsertarPedidoFormaPago(pedFormaPago, auditoria);
+			}
+		}
+		return(true);
 	}
 	
 	public boolean existeFormaPago(int idPedido)
@@ -265,6 +296,39 @@ public class PedidoCtrl implements Runnable {
 	}
 	
 	/**
+	 * Creamos un método de finalizar pedido para la adecuación de ambientes
+	 * @param idPedido
+	 * @param tiempoPedido
+	 * @param idTipoPedido
+	 * @return
+	 */
+	public boolean finalizarPedidoAdecuacion(int idPedido, double tiempoPedido, int idTipoPedido)
+	{
+		//Antes de finalizar pedido realizaremos el cálculo de los impuestos
+		//Clareamos los impuestos liquidados, si existe con anterioridad
+		DetallePedidoImpuestoDAO.eliminarDetallePedidoImpuesto(idPedido, auditoria);
+		//Realizamos la liquidación de los impuestos para el pedido
+		//Podemos paralelizar con otro hilo el descuento de los impuestos, para lo cual aqui lo haremos
+		//Definimos para la clase cual es el idPedido bajo  el cual trabajaremos
+		this.idPedidoActual = idPedido;
+		this.idTipoPedidoActual = idTipoPedido;
+		//Arrancamos el hilo que se encarga de descontar inventarios
+		hiloImpuestos.start();
+		while(hiloImpuestos.isAlive())
+		{
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		boolean respuesta = PedidoDAO.finalizarPedido(idPedido, tiempoPedido, idTipoPedido, auditoria);
+		//Arrancamos hilo que se encarga de dejar consistente el estado del pedido
+		return(true);
+	}
+	
+	/**
 	 * Método que realiza anulación de un pedido, teniendo en cuenta que tiene un pedido y detalles de pedido
 	 * @param idPedido, se recibe la identificación del pedido que se desea eliminar
 	 * @param idMotivoAnulacion Se recibe un motivo de anulación para realizar el descuento o no de inventarios
@@ -276,7 +340,9 @@ public class PedidoCtrl implements Runnable {
 		boolean respuesta = true;
 		if(respuesta)
 		{
-			respuesta = PedidoDAO.anularPedido(idPedido, idMotivoAnulacion, observacion,  auditoria);
+			// 05-04/2019 Realizamos comentario de esta linea, la idea es que el pedido en su completitud nunca se 
+			//anule para así no tener problemas con su visualización.
+			//respuesta = PedidoDAO.anularPedido(idPedido, idMotivoAnulacion, observacion,  auditoria);
 		}
 		if(respuesta)
 		{
@@ -1397,7 +1463,7 @@ public class PedidoCtrl implements Runnable {
 		{
 			//Recuperamos la fecha actual del sistema con la fecha apertura
 			FechaSistema fecha = obtenerFechasSistema();
-			String fechaActual = fecha.getFechaApertura();
+			String fechaActual = fecha.getFechaUltimoCierre();
 			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
 			Date datFechaAnterior;
 			String fechaAnterior = "";
@@ -1460,7 +1526,7 @@ public class PedidoCtrl implements Runnable {
 		{
 			//Recuperamos la fecha actual del sistema con la fecha apertura
 			FechaSistema fecha = obtenerFechasSistema();
-			String fechaActual = fecha.getFechaApertura();
+			String fechaActual = fecha.getFechaUltimoCierre();
 			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
 			Date datFechaAnterior;
 			String fechaAnterior = "";
@@ -1523,7 +1589,7 @@ public class PedidoCtrl implements Runnable {
 		{
 			//Recuperamos la fecha actual del sistema con la fecha apertura
 			FechaSistema fecha = obtenerFechasSistema();
-			String fechaActual = fecha.getFechaApertura();
+			String fechaActual = fecha.getFechaUltimoCierre();
 			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
 			Date datFechaAnterior;
 			String fechaAnterior = "";
@@ -1587,7 +1653,7 @@ public class PedidoCtrl implements Runnable {
 		{
 			//Recuperamos la fecha actual del sistema con la fecha apertura
 			FechaSistema fecha = obtenerFechasSistema();
-			String fechaActual = fecha.getFechaApertura();
+			String fechaActual = fecha.getFechaUltimoCierre();
 			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
 			Date datFechaAnterior;
 			String fechaAnterior = "";
@@ -1713,7 +1779,7 @@ public class PedidoCtrl implements Runnable {
 		{
 			//Recuperamos la fecha actual del sistema con la fecha apertura
 			FechaSistema fecha = obtenerFechasSistema();
-			String fechaActual = fecha.getFechaApertura();
+			String fechaActual = fecha.getFechaUltimoCierre();
 			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
 			Date datFechaAnterior;
 			String fechaAnterior = "";
@@ -2294,14 +2360,28 @@ public class PedidoCtrl implements Runnable {
 				{
 					//Vamos a realizar la impresión de la comanda
 					String strComanda = generarStrImpresionComanda(idPedidoActual);
-					Impresion.main(strComanda);
+					if(Sesion.getModeloImpresion() != 1)
+					{
+						ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+					}
+					else
+					{
+						Impresion.main(strComanda);
+					}
 					//Obtenemos el string de la factura que se imprimirá 2 veces
 					String strFactura = generarStrImpresionFactura(idPedidoActual);
-					//Primera Impresión
-					Impresion.main(strFactura);
-					//Segunda Impresión
-					Impresion.main(strFactura);
-					
+					if(Sesion.getModeloImpresion() != 1)
+					{
+						ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+						ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+					}
+					else
+					{
+						//Primera Impresión
+						Impresion.main(strFactura);
+						//Segunda Impresión
+						Impresion.main(strFactura);
+					}
 				}
 			}
 				
@@ -2320,21 +2400,21 @@ public class PedidoCtrl implements Runnable {
 			Tienda tienda = TiendaDAO.obtenerTienda( auditoria);
 			ArrayList<DetallePedido> detPedido = obtenerDetallePedidoPintar(idPedido);
 			DetallePedido detTemp;
-			String factura = "    " + tienda.getNombretienda() +"\n"
-					+ "    " + tienda.getDireccion() +"\n"
-					+ "    " + "tel:"+tienda.getTelefono() +"\n"
-					+ "    " + tienda.getRazonSocial() +"\n"
-					+ "    " +  tienda.getIdentificacion()+ "\n"
-					+ "    " + tienda.getTipoContribuyente() + "\n"
-					+ "    " + tienda.getResolucion() + "\n"
-					+ "    " + tienda.getFechaResolucion()+ "\n"
-					+ "    Desde " + tienda.getPuntoVenta() + " " + tienda.getNumeroInicialResolucion() + " Hasta " + tienda.getPuntoVenta() + " " + tienda.getNumeroFinalResolucion() + " \n"
-					+ "    " + tienda.getUbicacion() + "\n"
-					+ "    Factura de Venta: " + tienda.getPuntoVenta() + " - "+idPedido +"\n"
-					+ "  Fecha/Hora Actual: " + strFechaHora + "\n"
-		            + "  ======================================\n"
-		            + "    Cant    Descripcion            Costo\n"
-		            + "  ======================================\n";
+			String factura = tienda.getNombretienda() +"\n"
+					+ tienda.getDireccion() +"\n"
+					+ "tel:"+tienda.getTelefono() +"\n"
+					+ tienda.getRazonSocial() +"\n"
+					+ tienda.getIdentificacion()+ "\n"
+					+ tienda.getTipoContribuyente() + "\n"
+					+ tienda.getResolucion() + "\n"
+					+ tienda.getFechaResolucion()+ "\n"
+					+ "Desde " + tienda.getPuntoVenta() + " " + tienda.getNumeroInicialResolucion() + " Hasta " + tienda.getPuntoVenta() + " " + tienda.getNumeroFinalResolucion() + " \n"
+					+ tienda.getUbicacion() + "\n"
+					+ "Factura de Venta: " + tienda.getPuntoVenta() + " - "+idPedido +"\n"
+					+ "Fecha/Hora Actual: " + strFechaHora + "\n"
+		            + "==================================\n"
+		            + "Cant    Descripcion            Costo\n"
+		            + "==================================\n";
 			double cantidad;
 			for(int i = 0; i < detPedido.size(); i++)
 			{
@@ -2343,11 +2423,11 @@ public class PedidoCtrl implements Runnable {
 				//if ((cantidad - Math.floor(cantidad)) == 0) 
 				if (detTemp.getValorTotal() == 0) 
 				{
-					factura = factura + "     " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + "\n";
+					factura = factura + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + "\n";
 				}
 				else
 				{
-					factura = factura + "     " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + formatea.format(detTemp.getValorTotal()) + "\n";
+					factura = factura +  detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + formatea.format(detTemp.getValorTotal()) + "\n";
 				}
 				
 			}
@@ -2355,6 +2435,11 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos los posibles descuentos del pedido
 			PedidoDescuento  pedDesc = PedidoDescuentoDAO.obtenerPedidoDescuento(idPedido, auditoria);
 			String observacion = pedImpFac.getObservacion();
+			String nombreCompania = pedImpFac.getNombreCompania();
+			if (nombreCompania == null)
+			{
+				nombreCompania = "";
+			}
 			if(observacion == null || observacion.equals(null))
 			{
 				observacion = "";
@@ -2365,41 +2450,47 @@ public class PedidoCtrl implements Runnable {
 				zonaObser = "";
 			}
 			//Procesamos la forma de pago para distinguirla
-			String nombreFormaPago = "";
-			if(pedImpFac.getNombreFormaPago().equals(new String("EFECTIVO")))
-			{
-				nombreFormaPago = pedImpFac.getNombreFormaPago();
-			}else
-			{
-				nombreFormaPago = "^W" + pedImpFac.getNombreFormaPago();
-			}
-			factura = factura + "    ======================================\n";
-			factura = factura + "    TOTAL BRUTO:      " + formatea.format(pedImpFac.getValorbruto())+"\n";
-			factura = factura + "    IMP CONS 8%   :      " + formatea.format(pedImpFac.getImpuesto())+"\n";
+			ArrayList<String[]> formasPagoPedido = consultarFormaPagoArreglo(idPedido);
+	        String[] fila;
+	        String nombreFormaPago = "";
+	        double totalParaCambio = 0;
+	        for(int i = 0; i < formasPagoPedido.size(); i++)
+	        {
+	        	fila = formasPagoPedido.get(i);
+	        	nombreFormaPago =  nombreFormaPago + "   " + " " + fila[0] + " : " + formatea.format(Double.parseDouble(fila[1])) + "\n";
+	        	totalParaCambio = totalParaCambio + Double.parseDouble(fila[1]);
+	        }
+			
+			factura = factura + "==================================\n";
+			factura = factura + "TOTAL BRUTO:      " + formatea.format(pedImpFac.getValorbruto())+"\n";
+			factura = factura + "IMP CONS 8%   :      " + formatea.format(pedImpFac.getImpuesto())+"\n";
 			//Validamos si hay algún descuento lo mostramos en Factura junto con su observacion
 			if(pedDesc.getDescuentoPesos() > 0 || pedDesc.getDescuentoPorcentaje() >0)
 			{
-				factura = factura + "    DESCUENTO   :      " + formatea.format(pedDesc.getDescuentoPesos())+"\n";
-				factura = factura + "    OBS DESC    :      " + pedDesc.getObservacion() +"\n";
+				factura = factura + "DESCUENTO   :      " + formatea.format(pedDesc.getDescuentoPesos())+"\n";
+				factura = factura + "OBS DESC    :      " + pedDesc.getObservacion() +"\n";
 			}
-			factura = factura + "    ======================================\n";
-			factura = factura  + "   TOTAL : " + formatea.format(pedImpFac.getValorneto()) + "\n";
-			factura = factura  + "   CAMBIO : " + formatea.format(pedImpFac.getCambio()) +"\n";
-			factura = factura  + "    ======================================\n";
-			factura = factura  + "   " + nombreFormaPago + " : " + formatea.format(pedImpFac.getTotalFormaPago()) + "\n";
-			factura = factura  + "    ======================================\n";
-			factura = factura  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
-			factura = factura  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
-			factura = factura  + "   OBS : " + observacion + " " + zonaObser + "\n";
-			factura = factura  + "   TELEFONO : " + pedImpFac.getTelefono() + "\n";
-			factura = factura  + "   " + pedImpFac.getTipoPedido().toUpperCase() + "\n";
-			factura = factura  + "   !FELICITACIONES! HAZ COMPRADO LA MEJOR " + "\n";
-			factura = factura  + "   PIZZA DE LA CIUDAD " + "\n";
-			factura = factura  + "   PQRS - pizzaamericanacolombia@gmail.com " + "\n";
-			factura = factura  + "    GRACIAS POR SU COMPRA...\n"
-		            + "                ******::::::::*******"
-		            + "\n\n\n\n\n\n\n           "
-		            + "\n           ";
+			factura = factura + "==================================\n";
+			factura = factura  + "TOTAL : " + formatea.format(pedImpFac.getValorneto()) + "\n";
+			factura = factura  + "CAMBIO : " + formatea.format(totalParaCambio - pedImpFac.getValorneto()) +"\n";
+			factura = factura  + "==================================\n";
+			factura = factura  + nombreFormaPago;
+			factura = factura  + "==================================\n";
+			factura = factura  + "CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
+			factura = factura  + "DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
+			factura = factura  + "OBS : " + observacion + " " + zonaObser + "\n";
+			if((!nombreCompania.equals(new String (""))) && (!nombreCompania.equals(null)))
+			{
+				factura = factura  + "NOMBRE COMPAÑIA : " + nombreCompania + "\n";
+			}
+			factura = factura  + "TELEFONO : " + pedImpFac.getTelefono() + "\n";
+			factura = factura  +  pedImpFac.getTipoPedido().toUpperCase() + "\n";
+			factura = factura  + "!FELICITACIONES! HAZ COMPRADO" + "\n";
+			factura = factura  + "LA MEJOR PIZZA DE LA CIUDAD" + "\n";
+			factura = factura  + "pizzaamericanacolombia@gmail.com" + "\n";
+			factura = factura  + "...GRACIAS POR SU COMPRA...\n"
+		            + "           ******::::::::*******"
+		            + "\n";
 			System.out.println(factura);
 			return(factura);
 		}
@@ -2412,14 +2503,14 @@ public class PedidoCtrl implements Runnable {
 			Pedido infoPedido = obtenerPedido(idPedido); 
 			DetallePedido detTemp;
 			Date fechaActual = new Date();
-			String factura = "======================================\n" 
-					+ "    Factura de Venta: "+idPedido +"\n"
-					+ "   " + infoPedido.getTipoPedido().toUpperCase() +"\n"
-		            + "    Usuario: " + infoPedido.getUsuariopedido() + "\n"
-		            + " " + fechaActual.toString()
-		            + "    ======================================\n"
-		            + "      Cant    Descripcion            Costo   \n"
-		            + "    ======================================\n";
+			String factura = "====================================\n" 
+					+ "Factura de Venta: "+idPedido +"\n"
+					+ infoPedido.getTipoPedido().toUpperCase() +"\n"
+		            + "Usuario: " + infoPedido.getUsuariopedido() + "\n"
+		            + fechaActual.toString() + "\n"
+		            + "====================================\n"
+		            + "Cant    Descripcion                 \n"
+		            + "====================================\n";
 			double cantidad;
 			for(int i = 0; i < detPedido.size(); i++)
 			{
@@ -2437,13 +2528,11 @@ public class PedidoCtrl implements Runnable {
 			}
 			//Obtenemos información del pedido para colocar unos pocos datos en la comanda
 			Pedido pedImpFac = obtenerPedido(idPedido);
-			factura = factura  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
-			factura = factura  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
-			factura = factura  + "   OBS : " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "\n";
-			factura = factura  + "   TELEFONO : " + pedImpFac.getTelefono() + "\n";
-			factura = factura  + "    GRACIAS POR SU COMPRA...\n"
-		            + "                ******::::::::*******"
-		            + "\n\n\n\n\n\n\n           "
+			factura = factura  + "CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
+			factura = factura  + "DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
+			factura = factura  + "OBS : " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "\n";
+			factura = factura  + "TELEFONO : " + pedImpFac.getTelefono() + "\n";
+			factura = factura  + "             ********::::::::*******"
 		            + "\n           ";
 			System.out.println(factura);
 			return(factura);
@@ -2454,19 +2543,25 @@ public class PedidoCtrl implements Runnable {
 			
 			Pedido pedImpFac = obtenerPedido(idPedido);
 			Date fechaActual = new Date();
-			String comandaSalida = "======================================\n" 
-					+ "    SALIDA DOMICILIO -" + pedImpFac.getDomiciliario() +"\n" + "\n"
-					+ "    Factura de Venta: "+idPedido +"\n"
-		            + "    Usuario: " + pedImpFac.getUsuariopedido() + "\n"
-		            + " " + fechaActual.toString();
-			comandaSalida = comandaSalida  + "   CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
-			comandaSalida = comandaSalida  + "   DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
-			comandaSalida = comandaSalida  + "   OBS : " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "\n";
-			comandaSalida = comandaSalida  + "   TELEFONO : " + pedImpFac.getTelefono() + "\n"
-		            + "                ******::::::::*******"
-		            + "\n\n\n\n\n\n\n           "
+			String comandaSalida = "==================================\n" 
+					+ "SALIDA DOMICILIO -" + pedImpFac.getDomiciliario() +"\n" + "\n"
+					+ "Factura de Venta: "+idPedido +"\n"
+		            + "Usuario: " + pedImpFac.getUsuariopedido() + "\n"
+		            + fechaActual.toString()+ "\n";
+			comandaSalida = comandaSalida  + "CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
+			comandaSalida = comandaSalida  + "DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
+			comandaSalida = comandaSalida  + "OBS : " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "\n";
+			comandaSalida = comandaSalida  + "TELEFONO : " + pedImpFac.getTelefono() + "\n"
+		            + "           ********::::::::*******"
 		            + "\n           ";
-			Impresion.main(comandaSalida);
+			if(Sesion.getModeloImpresion() != 1)
+			{
+				ImprimirAdmDAO.insertarImpresion(comandaSalida, auditoria);
+			}
+			else
+			{
+				Impresion.main(comandaSalida);
+			}
 		}
 		
 		public String resumenGeneralVentasImprimir()
@@ -2755,7 +2850,14 @@ public class PedidoCtrl implements Runnable {
 			respuesta = respuesta + "======================================\n";
 			respuesta = respuesta  + "\n\n\n\n\n\n\n           "
 		            + "\n           ";
-			Impresion.main(respuesta);
+			if(Sesion.getModeloImpresion() != 1)
+			{
+				ImprimirAdmDAO.insertarImpresion(respuesta, auditoria);
+			}
+			else
+			{
+				Impresion.main(respuesta);
+			}
 		}
 		
 		//Impresión de Corte de Caja
@@ -2768,7 +2870,14 @@ public class PedidoCtrl implements Runnable {
 			respuesta = respuesta + "======================================\n";
 			respuesta = respuesta  + "\n\n\n\n\n\n\n           "
 		            + "\n           ";
-			Impresion.main(respuesta);
+			if(Sesion.getModeloImpresion() != 1)
+			{
+				ImprimirAdmDAO.insertarImpresion(respuesta, auditoria);
+			}
+			else
+			{
+				Impresion.main(respuesta);
+			}
 		}
 		
 		public String generarCorteCajaImpresora(String fechaActual)

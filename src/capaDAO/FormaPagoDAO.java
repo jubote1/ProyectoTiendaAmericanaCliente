@@ -193,7 +193,7 @@ public class FormaPagoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idforma_pago, a.nombre, a.tipoformapago from forma_pago a";
+			String consulta = "select a.idforma_pago, a.nombre, a.tipoformapago, a.icono from forma_pago a";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -202,11 +202,14 @@ public class FormaPagoDAO {
 			int idformapago;
 			String nombre;
 			String tipoformapago;
+			String icono;
 			while(rs.next()){
 				idformapago = rs.getInt("idforma_pago");
 				nombre = rs.getString("nombre");
 				tipoformapago = rs.getString("tipoformapago");
+				icono = rs.getString("icono");
 				FormaPago forma = new FormaPago( idformapago,nombre, tipoformapago);
+				forma.setIcono(icono);
 				formaspago.add(forma);
 			}
 			rs.close();

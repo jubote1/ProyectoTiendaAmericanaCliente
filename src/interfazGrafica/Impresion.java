@@ -3,8 +3,16 @@ package interfazGrafica;
 import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Date;
 
 import javax.print.*;
+
+import capaDAO.GeneralDAO;
+import capaDAO.TiendaDAO;
+import capaModelo.Correo;
+import capaModelo.Tienda;
+import utilidades.ControladorEnvioCorreo;
 
 
 
@@ -37,23 +45,37 @@ public class Impresion
 	   try {
 	     //Mandamos a impremir el documento
 		   
-	     pj.print(doc, null);
+	     //pj.print(doc, null);
+	     cortehoja.printer(impresion, impresoraPrincipal);
 	   }
-	   catch (PrintException e) {
+	   //catch (PrintException e) {
+		   catch (Exception e) {
 	     System.out.println("Error al imprimir: "+e.getMessage());
+	     ArrayList correos = GeneralDAO.obtenerCorreosParametro("ERRORIMPRESION", false);
+		 Tienda tienda = TiendaDAO.obtenerTienda(false);
+		 Date fecha = new Date();
+		 Correo correo = new Correo();
+		 correo.setAsunto("ERROR IMPRESIÓN TIENDA " + tienda.getNombretienda() + " " + fecha.toString());
+		 correo.setContrasena("Pizzaamericana2017");
+		 correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+		 correo.setMensaje("En este momento existen problemas de impresión en la tienda " + tienda.getNombretienda() + "\n" + e.toString());
+		 ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+		 contro.enviarCorreo();
 	   }
 	      
 	   
 	   
-	   try {
-		cortehoja.printer("", impresoraPrincipal);
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	} catch (PrinterException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
+//	   try {
+//		 //Cuando se cambie el método a cortecaja se debe quitar esto
+//		cortehoja.printer("", impresoraPrincipal);
+//	} catch (IOException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	} catch (PrinterException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	}
+	   
    }
    
    

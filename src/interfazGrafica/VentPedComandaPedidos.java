@@ -48,9 +48,11 @@ import capaControlador.AutenticacionCtrl;
 import capaControlador.EmpleadoCtrl;
 import capaControlador.ParametrosCtrl;
 import capaControlador.ReportesCtrl;
+import capaDAO.ImprimirAdmDAO;
 import capaControlador.PedidoCtrl;
 import capaModelo.Cliente;
 import capaModelo.FechaSistema;
+import capaModelo.FormaPagoIng;
 import capaModelo.Parametro;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
@@ -114,9 +116,9 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	//Esta variable inicará qeu se asignó correctamente el usuario para dar salida al domiciliario
 	public static boolean indUsuarioTemp = false;
 	private JLabel lblNewLabel;
-	private JTextField txtFormaPago;
 	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
 	int valPresentacion;
+	private JTable tableFormaPago;
 	/**
 	 * Launch the application.
 	 */
@@ -369,7 +371,9 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		    if( tblMaestroPedidos.getSelectedRows().length == 1 ) {
 			   	  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
 				  int idPedidoFP = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 1).toString());
-				  txtFormaPago.setText(pedCtrl.consultarFormaPago(idPedidoFP));
+				  //Intervenimos esta parte para retornar la forma de pago
+				  //txtFormaPago.setText(pedCtrl.consultarFormaPago(idPedidoFP));
+				  pintarFormaPagoPedido(idPedidoFP);
 				  //Agregar la acción de cuando uno da clic en cualquier parte de la columna poder
 				  //chequear el pedido
 				  boolean cheq = (boolean) tblMaestroPedidos.getValueAt(filaSeleccionada, 0);
@@ -389,7 +393,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 			}
 			else
 			{
-			 	  txtFormaPago.setText("");
+				pintarFormaPagoPedidoBlanco();
 			}  
 		    Window ventanaPadre = SwingUtilities.getWindowAncestor(
 	                        (Component) e.getSource());
@@ -446,7 +450,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		});
 		
 		JButton btnAvanzarEstado = new JButton("Avanzar Estado");
-		btnAvanzarEstado.setBounds(467, 602, 180, 44);
+		btnAvanzarEstado.setBounds(467, 602, 180, 37);
 		btnAvanzarEstado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
@@ -457,7 +461,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		contentPane.add(btnAvanzarEstado);
 		
 		JButton btnRetrocederEstado = new JButton("Devolver Estado");
-		btnRetrocederEstado.setBounds(277, 601, 180, 46);
+		btnRetrocederEstado.setBounds(277, 601, 180, 37);
 		btnRetrocederEstado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
@@ -475,7 +479,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		
 		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
 		lblFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 16));
-		lblFechaSistema.setBounds(10, 616, 133, 29);
+		lblFechaSistema.setBounds(10, 602, 133, 29);
 		contentPane.add(lblFechaSistema);
 		
 		txtFechaSistema = new JTextField();
@@ -484,7 +488,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		txtFechaSistema.setForeground(Color.RED);
 		txtFechaSistema.setEditable(false);
 		txtFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 16));
-		txtFechaSistema.setBounds(147, 616, 120, 29);
+		txtFechaSistema.setBounds(147, 602, 120, 29);
 		contentPane.add(txtFechaSistema);
 		txtFechaSistema.setColumns(10);
 		txtFechaSistema.setText(fechaSis);
@@ -516,7 +520,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 				}
 			}
 		});
-		btnVerDomicilios.setBounds(657, 601, 164, 44);
+		btnVerDomicilios.setBounds(657, 601, 164, 37);
 		contentPane.add(btnVerDomicilios);
 		
 		JPanel panelFiltroDom = new JPanel();
@@ -644,15 +648,8 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		
 		lblNewLabel = new JLabel("FORMA DE PAGO");
 		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 12));
-		lblNewLabel.setBounds(130, 662, 120, 27);
+		lblNewLabel.setBounds(10, 642, 120, 27);
 		contentPane.add(lblNewLabel);
-		
-		txtFormaPago = new JTextField();
-		txtFormaPago.setFont(new Font("Tahoma", Font.BOLD, 12));
-		txtFormaPago.setEditable(false);
-		txtFormaPago.setBounds(287, 666, 133, 20);
-		contentPane.add(txtFormaPago);
-		txtFormaPago.setColumns(10);
 		
 		JButton btnReimprimirFactura = new JButton("Reimprimir Factura");
 		btnReimprimirFactura.addActionListener(new ActionListener() {
@@ -669,13 +666,27 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 					int idPedidoTienda = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 1).toString());
 					//La nueva impresión de la factura se realiza de la siguiente manera
 					String strFactura = pedCtrl.generarStrImpresionFactura(idPedidoTienda);
-					Impresion.main(strFactura);
+					if(Sesion.getModeloImpresion() != 1)
+					{
+						ImprimirAdmDAO.insertarImpresion(strFactura, false);
+					}
+					else
+					{
+						Impresion.main(strFactura);
+					}
 				}
 			}
 		});
 		btnReimprimirFactura.setFont(new Font("Tahoma", Font.BOLD, 11));
 		btnReimprimirFactura.setBounds(467, 652, 180, 37);
 		contentPane.add(btnReimprimirFactura);
+		
+		JScrollPane scrollPaneFormaPago = new JScrollPane();
+		scrollPaneFormaPago.setBounds(134, 642, 216, 58);
+		contentPane.add(scrollPaneFormaPago);
+		
+		tableFormaPago = new JTable();
+		scrollPaneFormaPago.setViewportView(tableFormaPago);
 		
 
 		btnLlegadaDeDomicilio.setVisible(false);
@@ -1260,5 +1271,34 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 				btnLlegadaDeDomicilio.setVisible(false);
 			}
 		}
+	}
+	
+	public void pintarFormaPagoPedido(int idPedido)
+	{
+		Object[] columnsName = new Object[2];
+		columnsName[0] = "FORMA PAGO";
+		columnsName[1] = "VALOR";
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.setColumnIdentifiers(columnsName);
+        ArrayList<String[]> formasPagoPedido = pedCtrl.consultarFormaPagoArreglo(idPedido);
+        String[] fila;
+        for(int i = 0; i < formasPagoPedido.size(); i++)
+        {
+        	String[]  formaTemp = formasPagoPedido.get(i);
+        	fila = new String[2];
+        	fila[0] = formaTemp[0];
+        	fila[1] = formaTemp[1];
+        	modelo.addRow(fila);
+        }
+        tableFormaPago.setModel(modelo);
+	}
+	
+	public void pintarFormaPagoPedidoBlanco()
+	{
+		Object[] columnsName = new Object[1];
+		columnsName[0] = "FORMA PAGO";
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.setColumnIdentifiers(columnsName);
+        tableFormaPago.setModel(modelo);
 	}
 }

@@ -136,7 +136,7 @@ public class ModificadorInventarioDAO {
 		{
 			//Realizamos la inserción del IdInventario
 			Statement stm = con1.createStatement();
-			String consulta = "select sum(cantidad) from retiro_inventario, retiro_inventario_detalle where fecha_sistema ='" + fecha + "' and iditem = " + idItem; 
+			String consulta = "select sum(b.cantidad) from retiro_inventario a, retiro_inventario_detalle b where a.idretiro_inventario = b.idretiro_inventario and a.fecha_sistema ='" + fecha + "' and b.iditem = " + idItem; 
 			if(auditoria)
 			{
 				logger.info(consulta);

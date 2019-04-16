@@ -9,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 
 import capaControlador.AutenticacionCtrl;
 import capaControlador.ParametrosCtrl;
+import capaControlador.PedidoCtrl;
 import capaControlador.ReportesCtrl;
 
 import javax.swing.JTabbedPane;
@@ -36,6 +37,7 @@ public class VentPrincipalModificada extends JFrame {
 	private JPanel contentPane;
 	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+	PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	JFrame ventPrincipal;
 	JLabel lblInformacionUsuario;
 	/**
@@ -67,7 +69,8 @@ public class VentPrincipalModificada extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
+		setIconImage(img.getImage());
 		JTabbedPane tabbedPaneModulos = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPaneModulos.setBounds(10, 29, 1004, 663);
 		contentPane.add(tabbedPaneModulos);
@@ -659,5 +662,12 @@ public class VentPrincipalModificada extends JFrame {
 		lblInformacionUsuario.setFont(new Font("Tahoma", Font.BOLD, 13));
 		lblInformacionUsuario.setBounds(26, 11, 461, 14);
 		contentPane.add(lblInformacionUsuario);
+		
+		//Realizamos validación de si el sistema esta cerrado para cerrar el sistema
+		boolean estaAperturado = pedCtrl.isSistemaAperturado();
+		if(!estaAperturado)
+		{
+			System.exit(0);
+		}		
 	}
 }

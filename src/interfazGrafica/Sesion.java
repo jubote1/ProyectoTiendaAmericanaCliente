@@ -15,9 +15,19 @@ public class Sesion {
 	private static int presentacion;
 	private static String host;
 	private static String estacion;
+	private static int modeloImpresion;
 	
 	
-	
+
+
+	public static int getModeloImpresion() {
+		return modeloImpresion;
+	}
+
+	public static void setModeloImpresion(int modeloImpresion) {
+		Sesion.modeloImpresion = modeloImpresion;
+	}
+
 	public static String getEstacion() {
 		return estacion;
 	}

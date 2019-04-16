@@ -85,5 +85,47 @@ public class ItemInventarioHistoricoDAO {
 		}
 		return(cantidad);	
 	}
+	
+	
+	public static boolean existeItemInventarioHistorico(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		int cantidad = 0;	
+		boolean respuesta = false;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select count(*) from item_inventario_historico where fecha = '" + fecha + "'" ;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				cantidad = rs.getInt(1);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		if(cantidad == 0)
+		{
+			respuesta = false;
+		}else
+		{
+			respuesta = true;
+		}
+		return(respuesta);	
+	}
 
 }

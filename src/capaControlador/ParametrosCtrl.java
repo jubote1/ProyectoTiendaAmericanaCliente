@@ -104,6 +104,12 @@ public class ParametrosCtrl {
 			return listJSON.toJSONString();
 		}
 		
+		public ArrayList<FormaPago> obtenerFormasPago()
+		{
+			ArrayList<FormaPago> formasPago = FormaPagoDAO.obtenerFormasPago(auditoria);
+			return(formasPago);
+		}
+		
 		public FormaPago retornarFormaPago(int idFormaPago)
 		{
 			FormaPago forPago = FormaPagoDAO.retornarFormaPago(idFormaPago, auditoria);

@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import capaConexion.ConexionBaseDatos;
 import capaDAO.EgresoDAO;
 import capaDAO.GeneralDAO;
+import capaDAO.ImprimirAdmDAO;
 import capaDAO.IngresoDAO;
 import capaDAO.ItemInventarioHistoricoDAO;
 import capaDAO.ModificadorInventarioDAO;
@@ -32,6 +33,7 @@ import capaModelo.PorcionesControlDiario;
 import capaModelo.Tienda;
 import interfazGrafica.Impresion;
 import interfazGrafica.PrincipalLogueo;
+import interfazGrafica.Sesion;
 import utilidades.ControladorEnvioCorreo;
 
 public class OperacionesTiendaCtrl {
@@ -88,7 +90,7 @@ public boolean validarCierreSemanal()
 {
 	PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
 	FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
-	String fechaActual = fechasSistema.getFechaApertura();
+	String fechaActual = fechasSistema.getFechaUltimoCierre();
 	Calendar calendarioActual = Calendar.getInstance();
 	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	try
@@ -128,6 +130,21 @@ public String aumentarFecha(String fecha)
 	return(sdf.format(fechaDate));
 }
 
+//reAPERTURA DEL DÍA
+public boolean realizarReaperturaDia(String fecha)
+{
+	//Se fija fecha del sistema 
+	AvanzarFechaSistemaApertura(fecha);
+	//Se fija fecha de último cierre
+	boolean respuesta = disminuirFechaUltimoCierre();
+	return(respuesta);
+}
+
+public boolean disminuirFechaUltimoCierre()
+{
+	boolean resultado = TiendaDAO.disminuirFechaUltimoCierre(auditoria);
+	return(resultado);
+}
 //APERTURA DEL DÍA
 public boolean realizarAperturaDia(String fecha)
 {
@@ -136,6 +153,13 @@ public boolean realizarAperturaDia(String fecha)
 	//Realizamos salida de todos los usuarios 
 	UsuarioDAO.darSalidaTodosEmpleados(auditoria);
 	return(true);
+}
+
+//Método que verifica si el sistema ya fue aperturado a la fecha
+public boolean verificarSistemaYaAperturado(String fecha)
+{
+	boolean sistemaAbierto = ItemInventarioHistoricoDAO.existeItemInventarioHistorico(fecha, auditoria);
+	return(sistemaAbierto);
 }
 
 //APERTURA DEL DÍA
@@ -295,8 +319,15 @@ public void realizarInventarioHistorico(String fecha)
 	{
 		int idIns = EgresoDAO.insertarEgreso(egrIns, auditoria);
 		egrIns.setIdEgreso(idIns);
-		String comandaIngreso = generarStrImpresionEgreso(egrIns);
-		Impresion.main(comandaIngreso);
+		String comandaEgreso = generarStrImpresionEgreso(egrIns);
+		if(Sesion.getModeloImpresion() != 1)
+		{
+			ImprimirAdmDAO.insertarImpresion(comandaEgreso, auditoria);
+		}
+		else
+		{
+			Impresion.main(comandaEgreso);
+		}
 		return(idIns);
 	}
 	
@@ -355,7 +386,14 @@ public void realizarInventarioHistorico(String fecha)
 		int idIns = IngresoDAO.insertarIngreso(ingIns, auditoria);
 		ingIns.setIdIngreso(idIns);
 		String comandaIngreso = generarStrImpresionIngreso(ingIns);
-		Impresion.main(comandaIngreso);
+		if(Sesion.getModeloImpresion() != 1)
+		{
+			ImprimirAdmDAO.insertarImpresion(comandaIngreso, auditoria);
+		}
+		else
+		{
+			Impresion.main(comandaIngreso);
+		}
 		return(idIns);
 	}
 	

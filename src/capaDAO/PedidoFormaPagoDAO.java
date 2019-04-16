@@ -155,6 +155,53 @@ public class PedidoFormaPagoDAO {
 		return(respuesta);
 	}
 	
+	
+	public static ArrayList<String[]> consultarFormaPagoArreglo(int idPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<String[]> respuesta = new ArrayList();
+		String[] formaPagoTemp = new String[2];
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select b.nombre, a.valorformapago from pedido_forma_pago a, forma_pago b where a.idforma_pago = b.idforma_pago and  a.idpedidotienda = " + idPedido; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			System.out.println(consulta);
+			while(rs.next())
+			{
+				formaPagoTemp = new String[2];
+				formaPagoTemp[0] = rs.getString("nombre");
+				formaPagoTemp[1] = rs.getString("valorformapago");
+				respuesta.add(formaPagoTemp);
+			}
+			for(int i = 0; i < respuesta.size(); i++)
+			{
+				System.out.println(respuesta.get(i)[0]);
+			}
+			
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+				
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
 	public static ArrayList<PedidoFormaPago> consultarFormaPagoPedido(int idPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");

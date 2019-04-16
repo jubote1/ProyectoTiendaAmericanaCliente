@@ -59,13 +59,13 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	OperacionesTiendaCtrl operTienda;
 	Calendar calendario;    
 	Thread h1;
-	Thread hiloValidacion;
+//	Thread hiloValidacion;
 	AutenticacionCtrl aut = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	//Variable que almacenará que tipo de presentación manejará el sistema si 1 la clásica o 2 la vista modificada
 	int valPresentacion;
-	
+	int valModeloImpr;
 	/**
 	 * Launch the application.
 	 */
@@ -98,20 +98,9 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		//Leemos archivos properties para fijar el valor de host
-		Properties prop = new Properties();
-		InputStream is = null;
-		
-		try {
-			is = new FileInputStream("C:\\Program Files\\POSPM\\pospm.properties");
-			prop.load(is);
-		} catch(IOException e) {
-			System.out.println(e.toString());
-		}
-		Sesion.setHost((String)prop.getProperty("host"));
-		Sesion.setEstacion((String)prop.getProperty("estacion"));
-		
-		
+		//Realizamos un cargue inicial de la variable Sesion
+		cargarEntornoInicial();
+				
 		boolean estaAperturado = pedCtrl.isSistemaAperturado();
 		
 		//Traemos de base de datos el valor del parametro de auditoria
@@ -126,19 +115,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		{
 			habilitaAuditoria = false;
 		}
-		//Tomamos el valor del parámetro relacionado la interface gráfica
-		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
-		valPresentacion = 0;
-		try
-		{
-			valPresentacion = parametro.getValorNumerico();
-		}catch(Exception e)
-		{
-			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
-			valPresentacion = 0;
-		}
-		
-		
+				
 		JLabel lblNombreSistema = new JLabel("SISTEMA TIENDA PIZZA AMERICANA");
 		lblNombreSistema.setFont(new Font("Traditional Arabic", Font.BOLD, 17));
 		lblNombreSistema.setBounds(64, 11, 338, 40);
@@ -201,7 +178,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 					
 					if(resultado)
 					{
-						hiloValidacion.start();
+//						hiloValidacion.start();
 						//Cuando se supera el logueo asignamos la variable estática de idUsuario.
 						idUsuario = objUsuario.getIdUsuario();
 						JOptionPane.showConfirmDialog(null,  "Bienvenido al Sistema " + objUsuario.getNombreLargo() , "Ingresaste al Sistema!!", JOptionPane.OK_OPTION);
@@ -226,17 +203,29 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 							}
 							else
 							{
-								//Realizar cambio de la fecha
-								operCtrl.realizarAperturaDia(seleccion.toString());
+								//Vamos a realizar la validación si el día ya está abierto
+								boolean sistemaAbierto = operCtrl.verificarSistemaYaAperturado(seleccion.toString());
+								if(!sistemaAbierto)
+								{
+									//Realizar cambio de la fecha
+									operCtrl.realizarAperturaDia(seleccion.toString());
+								}else
+								{
+									int resp = JOptionPane.showConfirmDialog(null, "¿Está seguro de Reabrir el sistema, pues el día ya fue abierto anteriormente y posiblemente tenga ventas. Si contesta si, recuerde volver a cerrar el sistema.", "Confirmación Reapertura Sistema" , JOptionPane.YES_NO_OPTION);
+									if (resp == 0)
+									{
+										operCtrl.realizarReaperturaDia(seleccion.toString());
+									}
+									else
+									{
+										dispose();
+										return;
+									}
+								}
 							}
 						}
 						//Fijamos el usuario que se está loguendo
-						Sesion.setUsuario(usuario);
-						Sesion.setIdUsuario(idUsuario);
-						Sesion.setAccesosMenus(aut.obtenerAccesosPorMenuUsuario(usuario));
-						Sesion.setAccesosOpcion(aut.obtenerAccesosPorOpcionObj(objUsuario.getidTipoEmpleado()));
-						Sesion.setIdTipoEmpleado(objUsuario.getidTipoEmpleado());
-						Sesion.setPresentacion(valPresentacion);
+						cargarEntornoFinal(usuario, idUsuario, objUsuario, objUsuario.getidTipoEmpleado());
 												
 						if(objUsuario.getTipoInicio().equals("Ventana Menús"))
 						{
@@ -352,7 +341,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 			txtEstadoCierre.setText("El día en cuestión no se encuentra abierto.");
 		}
 		h1 = new Thread(this);
-		hiloValidacion = new Thread(this);
+//		hiloValidacion = new Thread(this);
 		h1.start();
 	}
 	
@@ -367,20 +356,21 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 				   Thread.sleep(1000);
 				  }catch(InterruptedException e) {}
 				 }
-		 }else if (ct == hiloValidacion) 
-		 {
-			while(true)
-			{
-				boolean estaAperturado = pedCtrl.isSistemaAperturado();
-				if(!estaAperturado)
-				{
-					System.exit(0);
-				}
-				try {
-					   Thread.sleep(20000);
-					  }catch(InterruptedException e) {}
-			}
 		 }
+//		 else if (ct == hiloValidacion) 
+//		 {
+//			while(true)
+//			{
+//				boolean estaAperturado = pedCtrl.isSistemaAperturado();
+//				if(!estaAperturado)
+//				{
+//					System.exit(0);
+//				}
+//				try {
+//					   Thread.sleep(20000);
+//					  }catch(InterruptedException e) {}
+//			}
+//		 }
 		
 		}
 	
@@ -402,5 +392,57 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 			minutos = calendario.get(Calendar.MINUTE)>9?""+calendario.get(Calendar.MINUTE):"0"+calendario.get(Calendar.MINUTE);
 			segundos = calendario.get(Calendar.SECOND)>9?""+calendario.get(Calendar.SECOND):"0"+calendario.get(Calendar.SECOND); 
 		}
+	
+	public void cargarEntornoInicial()
+	{
+		//Leemos archivos properties para fijar el valor de host
+				Properties prop = new Properties();
+				InputStream is = null;
+				
+				try {
+					is = new FileInputStream("C:\\Program Files\\POSPM\\pospm.properties");
+					prop.load(is);
+				} catch(IOException e) {
+					System.out.println(e.toString());
+				}
+				Sesion.setHost((String)prop.getProperty("host"));
+				Sesion.setEstacion((String)prop.getProperty("estacion"));		
+	}
+	
+	public void cargarEntornoFinal(String usu, int idUsu, Usuario objUsu, int idTipoEmpleado )
+	{
+		Sesion.setUsuario(usu);
+		Sesion.setIdUsuario(idUsu);
+		Sesion.setAccesosMenus(aut.obtenerAccesosPorMenuUsuario(usu));
+		Sesion.setAccesosOpcion(aut.obtenerAccesosPorOpcionObj(objUsu.getidTipoEmpleado()));
+		Sesion.setIdTipoEmpleado(objUsu.getidTipoEmpleado());
+		//Tomamos el valor del parámetro relacionado la interface gráfica
+		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
+		valPresentacion = 0;
+		try
+		{
+			valPresentacion = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
+			valPresentacion = 0;
+		}
+		if(valPresentacion == 0)
+		{
+			valPresentacion =1;
+		}
+		Sesion.setPresentacion(valPresentacion);
+		valModeloImpr = 0;
+		parametro = parCtrl.obtenerParametro("MODELOIMPRESION");
+		try
+		{
+			valModeloImpr = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN MODELO IMPRESION");
+			valModeloImpr = 0;
+		}
+		Sesion.setModeloImpresion(valModeloImpr);
+	}
 }
 	

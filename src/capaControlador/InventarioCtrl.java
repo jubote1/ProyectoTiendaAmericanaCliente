@@ -236,7 +236,7 @@ public class InventarioCtrl {
 		PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
 		//Recuperamos la fecha actual del sistema con la fecha apertura
 		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
-		String fechaActual = fecha.getFechaApertura();
+		String fechaActual = fecha.getFechaUltimoCierre();
 		//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
 		Date datFecha;
 		String fechaAnterior = "";

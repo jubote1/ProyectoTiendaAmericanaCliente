@@ -30,8 +30,16 @@ public class Pedido {
 	private double totalFormaPago;
 	private String nombreFormaPago;
 	private String domiciliario;
+	private String nombreCompania;
+	
 	
 		
+	public String getNombreCompania() {
+		return nombreCompania;
+	}
+	public void setNombreCompania(String nombreCompania) {
+		this.nombreCompania = nombreCompania;
+	}
 	public String getDomiciliario() {
 		return domiciliario;
 	}

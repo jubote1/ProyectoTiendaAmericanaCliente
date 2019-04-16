@@ -60,6 +60,7 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 	Thread hiloValidacion;
 	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
 		int valPresentacion;
+		int valModeloImpr;
 	/**
 	 * Launch the application.
 	 */
@@ -74,24 +75,6 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 				}
 			}
 		});
-	}
-	
-	public void fijarValorPresentacion()
-	{
-		//Tomamos el valor del parámetro relacionado la interface gráfica
-		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
-		try
-		{
-			valPresentacion = parametro.getValorNumerico();
-		}catch(Exception e)
-		{
-			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
-			valPresentacion = 0;
-		}
-		if(valPresentacion == 0)
-		{
-			valPresentacion =1;
-		}
 	}
 	
 		/**
@@ -116,7 +99,6 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 		boolean estaAperturado = pedCtrl.isSistemaAperturado();
 		FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
 		JButton btnNum_1 = new JButton("1");
-		fijarValorPresentacion();
 		btnNum_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				contraRapida.setText(contraRapida.getText()+"1");
@@ -274,16 +256,29 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 						}
 						else
 						{
-							//Realizar cambio de la fecha
-							operCtrl.realizarAperturaDia(seleccion.toString());
+							//Vamos a realizar la validación si el día ya está abierto
+							boolean sistemaAbierto = operCtrl.verificarSistemaYaAperturado(seleccion.toString());
+							if(!sistemaAbierto)
+							{
+								//Realizar cambio de la fecha
+								operCtrl.realizarAperturaDia(seleccion.toString());
+							}else
+							{
+								int resp = JOptionPane.showConfirmDialog(null, "¿Está seguro de Reabrir el sistema, pues el día ya fue abierto anteriormente y posiblemente tenga ventas. Si contesta si, recuerde volver a cerrar el sistema.", "Confirmación Reapertura Sistema" , JOptionPane.YES_NO_OPTION);
+								if (resp == 0)
+								{
+									operCtrl.realizarReaperturaDia(seleccion.toString());
+								}
+								else
+								{
+									dispose();
+									return;
+								}
+							}
 						}
 					}
 					//Fijamos el usuario que se está loguendo
-					Sesion.setUsuario(usuLogueado.getNombreUsuario());
-					Sesion.setIdUsuario(usuLogueado.getIdUsuario());
-					Sesion.setAccesosMenus(autCtrl.obtenerAccesosPorMenuUsuario(usuLogueado.getNombreUsuario()));
-					Sesion.setAccesosOpcion(autCtrl.obtenerAccesosPorOpcionObj(usuLogueado.getIdTipoEmpleado()));
-					Sesion.setIdTipoEmpleado(usuLogueado.getidTipoEmpleado());
+					cargarEntornoFinal(usuLogueado.getNombreUsuario(), usuLogueado.getIdUsuario(), usuLogueado, usuLogueado.getidTipoEmpleado());
 										
 					if(usuLogueado.getTipoInicio().equals("Ventana Menús"))
 					{
@@ -379,5 +374,57 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 		{
 			JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el descuento de los inventarios " , "Error en Descuento de Inventarios ", JOptionPane.ERROR_MESSAGE);
 		}
+	}
+	
+	public void cargarEntornoInicial()
+	{
+		//Leemos archivos properties para fijar el valor de host
+				Properties prop = new Properties();
+				InputStream is = null;
+				
+				try {
+					is = new FileInputStream("C:\\Program Files\\POSPM\\pospm.properties");
+					prop.load(is);
+				} catch(IOException e) {
+					System.out.println(e.toString());
+				}
+				Sesion.setHost((String)prop.getProperty("host"));
+				Sesion.setEstacion((String)prop.getProperty("estacion"));		
+	}
+	
+	public void cargarEntornoFinal(String usu, int idUsu, Usuario objUsu, int idTipoEmpleado )
+	{
+		Sesion.setUsuario(usu);
+		Sesion.setIdUsuario(idUsu);
+		Sesion.setAccesosMenus(autCtrl.obtenerAccesosPorMenuUsuario(usu));
+		Sesion.setAccesosOpcion(autCtrl.obtenerAccesosPorOpcionObj(objUsu.getidTipoEmpleado()));
+		Sesion.setIdTipoEmpleado(objUsu.getidTipoEmpleado());
+		//Tomamos el valor del parámetro relacionado la interface gráfica
+		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
+		valPresentacion = 0;
+		try
+		{
+			valPresentacion = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
+			valPresentacion = 0;
+		}
+		if(valPresentacion == 0)
+		{
+			valPresentacion =1;
+		}
+		Sesion.setPresentacion(valPresentacion);
+		valModeloImpr = 0;
+		parametro = parCtrl.obtenerParametro("MODELOIMPRESION");
+		try
+		{
+			valModeloImpr = parametro.getValorNumerico();
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN MODELO IMPRESION");
+			valModeloImpr = 0;
+		}
+		Sesion.setModeloImpresion(valModeloImpr);
 	}
 }

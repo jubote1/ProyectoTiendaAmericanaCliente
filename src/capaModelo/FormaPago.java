@@ -11,11 +11,17 @@ public class FormaPago {
 	private int idformapago;
 	private String nombre;
 	private String tipoformapago;
+	private String icono;
 	
 	
 	
 	
-	
+	public String getIcono() {
+		return icono;
+	}
+	public void setIcono(String icono) {
+		this.icono = icono;
+	}
 	public int getIdformapago() {
 		return idformapago;
 	}

@@ -47,6 +47,7 @@ import capaControlador.AutenticacionCtrl;
 import capaControlador.EmpleadoCtrl;
 import capaControlador.ParametrosCtrl;
 import capaControlador.ReportesCtrl;
+import capaDAO.ImprimirAdmDAO;
 import capaControlador.PedidoCtrl;
 import capaModelo.Cliente;
 import capaModelo.DetallePedido;
@@ -83,9 +84,9 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 	//Variable booleana para saber si se está consultando un domiciliario
 	boolean consDomi = false;
 	int idDomiCon = 0;
-	private JTextField txtFormaPago;
 	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
 	int valPresentacion;
+	private JTable tableFormaPago;
 	/**
 	 * Launch the application.
 	 */
@@ -137,7 +138,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
 		JPanel panelBotones = new JPanel();
-		panelBotones.setBounds(10, 603, 978, 74);
+		panelBotones.setBounds(10, 603, 978, 61);
 		contentPane.add(panelBotones);
 		panelBotones.setLayout(new GridLayout(0, 6, 0, 0));
 		
@@ -226,7 +227,14 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 					int idPedidoTienda = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
 					//La nueva impresión de la factura se realiza de la siguiente manera
 					String strFactura = pedCtrl.generarStrImpresionFactura(idPedidoTienda);
-					Impresion.main(strFactura);
+					if(Sesion.getModeloImpresion() != 1)
+					{
+						ImprimirAdmDAO.insertarImpresion(strFactura, false);
+					}
+					else
+					{
+						Impresion.main(strFactura);
+					}
 				}
 			}
 		});
@@ -449,11 +457,13 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		      if( tblMaestroPedidos.getSelectedRows().length == 1 ) {
 		    	  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
 				  int idPedidoFP = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
-				  txtFormaPago.setText(pedCtrl.consultarFormaPago(idPedidoFP));
+				  //Intervenimos esta parte para retornar la forma de pago
+				  //txtFormaPago.setText(pedCtrl.consultarFormaPago(idPedidoFP));
+				  pintarFormaPagoPedido(idPedidoFP);
 		      }
 		      else
 		      {
-		    	  txtFormaPago.setText("");
+		    	  pintarFormaPagoPedidoBlanco();
 		      }
 		      if(e.getClickCount()==2){
 		    	  avanzarEstado();
@@ -510,14 +520,15 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		
 		JLabel lblFormaDePago = new JLabel("FORMA DE PAGO");
 		lblFormaDePago.setFont(new Font("Tahoma", Font.BOLD, 12));
-		lblFormaDePago.setBounds(78, 688, 150, 21);
+		lblFormaDePago.setBounds(20, 674, 131, 21);
 		contentPane.add(lblFormaDePago);
 		
-		txtFormaPago = new JTextField();
-		txtFormaPago.setEditable(false);
-		txtFormaPago.setBounds(245, 688, 180, 20);
-		contentPane.add(txtFormaPago);
-		txtFormaPago.setColumns(10);
+		JScrollPane scrollPaneFormaPago = new JScrollPane();
+		scrollPaneFormaPago.setBounds(184, 675, 214, 45);
+		contentPane.add(scrollPaneFormaPago);
+		
+		tableFormaPago = new JTable();
+		scrollPaneFormaPago.setViewportView(tableFormaPago);
 		
 		//Agregamos los botones dinámicos de domiciliarios
 		//Vamos  a adicionar los domiciliarios del sistema
@@ -816,5 +827,34 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 			}
 			
 		}
+	}
+	
+	public void pintarFormaPagoPedido(int idPedido)
+	{
+		Object[] columnsName = new Object[2];
+		columnsName[0] = "FORMA PAGO";
+		columnsName[1] = "VALOR";
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.setColumnIdentifiers(columnsName);
+        ArrayList<String[]> formasPagoPedido = pedCtrl.consultarFormaPagoArreglo(idPedido);
+        String[] fila;
+        for(int i = 0; i < formasPagoPedido.size(); i++)
+        {
+        	String[]  formaTemp = formasPagoPedido.get(i);
+        	fila = new String[2];
+        	fila[0] = formaTemp[0];
+        	fila[1] = formaTemp[1];
+        	modelo.addRow(fila);
+        }
+        tableFormaPago.setModel(modelo);
+	}
+	
+	public void pintarFormaPagoPedidoBlanco()
+	{
+		Object[] columnsName = new Object[1];
+		columnsName[0] = "FORMA PAGO";
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.setColumnIdentifiers(columnsName);
+        tableFormaPago.setModel(modelo);
 	}
 }
