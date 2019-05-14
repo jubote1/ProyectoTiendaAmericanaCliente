@@ -107,7 +107,7 @@ public class TiendaDAO {
 		return(true);
 	}
 	
-	public static boolean actualizarFechaUltimoCierre(boolean auditoria)
+	public static boolean actualizarFechaUltimoCierre(String fecha, boolean auditoria)
 	{
 		boolean respuesta = false;
 		Logger logger = Logger.getLogger("log_file");
@@ -116,7 +116,10 @@ public class TiendaDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update tienda set fecha_ultimo_cierre = DATE_ADD(fecha_ultimo_cierre, INTERVAL 1 DAY)";
+			//String update = "update tienda set fecha_ultimo_cierre = DATE_ADD(fecha_ultimo_cierre, INTERVAL 1 DAY)";
+			// 01-05/2019-JDBD
+			//Se realiza cambio para prevenir error inconveniente de avance de fecha de último cierre y mala generación de la reportería
+			String update = "update tienda set fecha_ultimo_cierre = '"+fecha+"'";
 			if(auditoria)
 			{
 				logger.info(update);

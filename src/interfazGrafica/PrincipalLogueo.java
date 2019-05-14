@@ -66,6 +66,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	//Variable que almacenará que tipo de presentación manejará el sistema si 1 la clásica o 2 la vista modificada
 	int valPresentacion;
 	int valModeloImpr;
+	boolean imprimeComandaFactura;
 	/**
 	 * Launch the application.
 	 */
@@ -443,6 +444,17 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 			valModeloImpr = 0;
 		}
 		Sesion.setModeloImpresion(valModeloImpr);
+		imprimeComandaFactura = true;
+		parametro = parCtrl.obtenerParametro("IMPRIMECOMANDAFACTURA");
+		try
+		{
+			imprimeComandaFactura = Boolean.parseBoolean(parametro.getValorTexto());
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE IMPRESIÓN COMANDA PEDIDO");
+			imprimeComandaFactura = true;
+		}
+		Sesion.setImprimirComandaPedido(imprimeComandaFactura);
 	}
 }
 	

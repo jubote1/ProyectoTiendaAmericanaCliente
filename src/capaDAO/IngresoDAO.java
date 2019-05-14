@@ -11,6 +11,7 @@ import capaModelo.Impuesto;
 import capaModelo.ImpuestoProducto;
 import capaModelo.Ingreso;
 import capaModelo.AgrupadorMenu;
+import capaModelo.Egreso;
 import capaModelo.Tienda;
 import capaModelo.TipoEmpleado;
 
@@ -270,6 +271,52 @@ public class IngresoDAO {
 			
 		}
 		return(totalIngresos);
+	}
+	
+	public static ArrayList<Ingreso> obtenerIngresosSemana(String fechaInferior, String fechaSuperior, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<Ingreso> ingresos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from ingreso  where fecha >= '" + fechaInferior + "' and fecha <= '" + fechaSuperior+"'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idIngreso;
+			double valorIngreso;
+			String descripcion;
+			String fecha;
+			Ingreso ingTemp = new Ingreso(0,0,"", "");
+			while(rs.next()){
+				idIngreso = rs.getInt("idingreso");
+				valorIngreso = rs.getDouble("valoringreso");
+				descripcion = rs.getString("descripcion");
+				fecha = rs.getString("fecha");
+				ingTemp = new Ingreso(idIngreso, valorIngreso, fecha, descripcion);
+				ingresos.add(ingTemp);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(ingresos);
+		
 	}
 		
 }

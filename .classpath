@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="jgoodies-looks-2.4.1.jar"/>
 	<classpathentry kind="lib" path="jogl-all-2.0.2.jar"/>
 	<classpathentry kind="lib" path="junit-4.6.jar"/>
+	<classpathentry kind="lib" path="DS_Desktop_Notify.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

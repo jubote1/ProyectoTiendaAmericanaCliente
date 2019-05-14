@@ -121,6 +121,16 @@ public class VentProEleccionForzada extends JDialog {
 						VentPedTomarPedidos.totalPedido = VentPedTomarPedidos.totalPedido - valorItem;
 					}
 				}
+				//Realizamos tambien elimininación de los items nuevos que se guardan en el arrayList para este fin
+				for(int j = 0; j < VentPedTomarPedidos.detallesPedidoNuevo.size(); j++)
+				{
+					DetallePedido detCadaPedido = VentPedTomarPedidos.detallesPedidoNuevo.get(j);
+					// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
+					if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar || detCadaPedido.getIdDetallePedidoMaster() == idDetalleEliminar)
+					{
+						VentPedTomarPedidos.detallesPedidoNuevo.remove(j);
+					}
+				}
 				preguntaActual = 0;
 			}
 		});
@@ -903,6 +913,7 @@ public class VentProEleccionForzada extends JDialog {
 					if(idDetalle > 0)
 					{
 						VentPedTomarPedidos.detallesPedido.add(detPedido);
+						VentPedTomarPedidos.detallesPedidoNuevo.add(detPedido);
 						VentPedTomarPedidos.totalPedido = VentPedTomarPedidos.totalPedido + detPedido.getValorTotal();
 						//Para pintar la nueva adición de producto y fijar el nuevo valor se ejecutará cuando se active la ventana
 					}

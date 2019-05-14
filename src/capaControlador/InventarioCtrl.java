@@ -184,6 +184,32 @@ public class InventarioCtrl {
 		return(true);
 	}
 	
+	
+	
+	/**
+	 * Este método reintegregrá al inventario aquellos items que independientes del motivo de anulación siempre se deberán devolver
+	 * al inventario.
+	 * @param idPedido
+	 * @return
+	 */
+	public boolean reintegrarEspecialInventarioPedido(int idPedido)
+	{
+		ArrayList<DetallePedido> detallesPedido = DetallePedidoDAO.obtenerDetallePedidoReintegro(idPedido, auditoria);
+		ArrayList<ModificadorInventario> descInventario = new ArrayList();
+		ArrayList<ModificadorInventario> modsInv = new ArrayList();
+		for(int i = 0; i < detallesPedido.size(); i++)
+		{
+			DetallePedido detTemp = detallesPedido.get(i);
+			//Validamos que el detallePedido no haya sido descargado al inventario en cuyo caso realizremos el descargo al inventario
+			if(detTemp.getDescargoInventario().equals(new String("S"))&& (!detTemp.getEstado().equals(new String("A"))))
+			{
+				modsInv = ItemInventarioProductoDAO.obtenerItemsInventarioProducto(detTemp.getIdProducto(), detTemp.getCantidad()*-1, auditoria);
+				boolean respuesta = ModificadorInventarioDAO.insertarConsumoInventarios(modsInv, idPedido, auditoria);
+			}
+		}
+		return(true);
+	}
+	
 	/**
 	 * Método que se encargará de reintegrar al inventario dado un idDetallePedido específico, validando si este descontó o no
 	 * inventario
@@ -359,9 +385,9 @@ public class InventarioCtrl {
 		//Obtenemos el reporte
 		String reporte = obtenerVarianzaDiasSemana(resumida);
 		Correo correo = new Correo();
-		correo.setAsunto("SEMANAL Reporte Varianzas Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+		correo.setAsunto(tiendaReporte.getNombretienda() + " : " + "SEMANAL VARIANZAS " + fechaSis);
 		correo.setContrasena("Pizzaamericana2017");
-		ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
+		ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMVARIANZA", auditoria);
 		correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
 		correo.setMensaje("A continuación el reporte semanal de Varianzas: \n" + reporte);
 		ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);

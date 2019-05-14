@@ -394,6 +394,85 @@ public class EstadoDAO {
 	}
 	
 	
+	public static ArrayList<Estado> obtenerEstadosDiferentes(int idEstado, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<Estado> estados = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from estado where idestado <> " + idEstado;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int idestado, idTipoPedido;
+			String descripcion, descripcionCorta;
+			boolean estInicial = false;
+			boolean estFinal = false;
+			boolean impresion = false;
+			boolean rutaDomicilio = false;
+			boolean entregaDomicilio = false;
+			int intEstInicial, intEstFinal, intImpresion, intRutaDomicilio, intEntregaDomicilio;
+			int colorr=0, colorg=0, colorb=0;
+			while(rs.next()){
+				idestado = rs.getInt("idestado");
+				descripcion = rs.getString("descripcion");
+				descripcionCorta = rs.getString("descripcion_corta");
+				idTipoPedido = rs.getInt("idtipopedido");
+				intEstInicial = rs.getInt("estado_inicial");
+				intEstFinal = rs.getInt("estado_final");
+				colorr = rs.getInt("colorr");
+				colorg = rs.getInt("colorg");
+				colorb = rs.getInt("colorb");
+				intImpresion = rs.getInt("impresion");
+				intEntregaDomicilio = rs.getInt("ruta_domicilio");
+				intRutaDomicilio = rs.getInt("entrega_domicilio");
+				if(intImpresion == 1)
+				{
+					impresion = true;
+				}
+				if(intEstInicial == 1)
+				{
+					estInicial = true;
+				}
+				if(intEstFinal == 1)
+				{
+					estFinal = true;
+				}
+				if(intEntregaDomicilio == 1)
+				{
+					entregaDomicilio = true;
+				}
+				if(intRutaDomicilio == 1)
+				{
+					rutaDomicilio = true;
+				}
+				Estado est = new Estado(idestado, descripcion, descripcionCorta, idTipoPedido, "", estInicial, estFinal, colorr, colorg, colorb, impresion,rutaDomicilio, entregaDomicilio);
+				estados.add(est);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(estados);
+		
+	}
+	
+	
 	public static int insertarEstado(Estado estado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");

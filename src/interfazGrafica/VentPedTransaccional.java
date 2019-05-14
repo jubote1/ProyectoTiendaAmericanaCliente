@@ -181,7 +181,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 					VentPedTomarPedidos.idCliente = clientePedido.getIdcliente();
 					VentPedTomarPedidos.nombreCliente = clientePedido.getNombres() + " " + clientePedido.getApellidos();
 					VentPedTomarPedidos.direccion = clientePedido.getDireccion();
-					System.out.println("OJO LOS DATOS DE CLIENTE QUE ESTAMOS FIJANDO " + VentPedTomarPedidos.direccion );
+					//System.out.println("OJO LOS DATOS DE CLIENTE QUE ESTAMOS FIJANDO " + VentPedTomarPedidos.direccion );
 					boolean tieneFormaPago = pedCtrl.existeFormaPago(idPedido);
 					if(tieneFormaPago)
 					{
@@ -529,6 +529,37 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		
 		tableFormaPago = new JTable();
 		scrollPaneFormaPago.setViewportView(tableFormaPago);
+		
+		JButton btnReimprimirComanda = new JButton("Reimprimir Comanda");
+		btnReimprimirComanda.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//Acción para reimpresión de factura
+				int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
+				if(filaSeleccionada == -1)
+				{
+					JOptionPane.showMessageDialog(null, "Debe Seleccionar un pedido para Reimprimir la comanda " , "No ha Seleccionado Pedido", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				else
+				{
+					int idPedidoTienda = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 0).toString());
+					//La nueva impresión de la factura se realiza de la siguiente manera
+					String strComanda = pedCtrl.generarStrImpresionComanda(idPedidoTienda);
+					if(Sesion.getModeloImpresion() != 1)
+					{
+						ImprimirAdmDAO.insertarImpresion(strComanda, false);
+					}
+					else
+					{
+						Impresion.main(strComanda);
+					}
+				}
+			
+			}
+		});
+		btnReimprimirComanda.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnReimprimirComanda.setBounds(458, 674, 163, 35);
+		contentPane.add(btnReimprimirComanda);
 		
 		//Agregamos los botones dinámicos de domiciliarios
 		//Vamos  a adicionar los domiciliarios del sistema

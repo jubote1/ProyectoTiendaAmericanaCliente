@@ -381,11 +381,9 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 					pedCtrl.imprimirResumenCorteCaja(fechaSis);
 					//Se implementa hilo para generar la reportería
 					hiloReporteria.start();
-					System.out.println("mande la reportería diaria");
 					if(operTiendaCtrl.validarCierreSemanal())
 					{
 						hiloReportSemanal.start();
-						System.out.println("mande la reportería semanal");
 					}
 					//Se realiza la impresión de la comanda con el resumen de las ventas
 					pedCtrl.imprimirResumenGeneralVentas();

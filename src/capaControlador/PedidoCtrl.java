@@ -1,7 +1,14 @@
 package capaControlador;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,6 +18,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -26,6 +34,7 @@ import capaDAO.EstadoDAO;
 import capaDAO.EstadoPosteriorDAO;
 import capaDAO.GeneralDAO;
 import capaDAO.ImprimirAdmDAO;
+import capaDAO.IngresoDAO;
 import capaDAO.MotivoAnulacionPedidoDAO;
 import capaDAO.PedidoDAO;
 import capaDAO.PedidoDescuentoDAO;
@@ -85,8 +94,15 @@ public class PedidoCtrl implements Runnable {
 	//Tendremos un idPedido definido para poder paralelizar
 	private int idPedidoActual;
 	private int idTipoPedidoActual;
+	private int tipoImpresion;
+	private ArrayList<DetallePedido> detPedidoNuevo = new ArrayList();
 	OperacionesTiendaCtrl operTiendaCtrl = new OperacionesTiendaCtrl(auditoria);
 	ParametrosProductoCtrl parProductoCtrl = new ParametrosProductoCtrl(auditoria);
+	public boolean esPedidoReabierto = false;
+	public boolean imprimeSiReabierto = false;
+	public boolean reabiertoAnulado = false;
+	public boolean cambioTipoPedido = false;
+	public int idEstadoInicialCambio = 0;
 	public PedidoCtrl(boolean auditoria)
 	{
 		this.auditoria = auditoria;
@@ -265,8 +281,16 @@ public class PedidoCtrl implements Runnable {
 	 * @param idTipoPedido
 	 * @return
 	 */
-	public boolean finalizarPedido(int idPedido, double tiempoPedido, int idTipoPedido)
+	public boolean finalizarPedido(int idPedido, double tiempoPedido, int idTipoPedido, int tipoImpresion, ArrayList<DetallePedido> detPedidoNuevo,boolean  esPedidoReabierto, boolean imprimeSiReabierto, boolean reabiertoAnulado, boolean cambioTipoPedido, int idEstadoInicialCambio)
 	{
+		//Llevamos la variable tipo Impresión recibida como parámetro como un valor de la clase
+		this.tipoImpresion = tipoImpresion;
+		this.detPedidoNuevo = detPedidoNuevo;
+		this.esPedidoReabierto = esPedidoReabierto;
+		this.imprimeSiReabierto = imprimeSiReabierto;
+		this.reabiertoAnulado = reabiertoAnulado;
+		this.cambioTipoPedido = cambioTipoPedido;
+		this.idEstadoInicialCambio = idEstadoInicialCambio;
 		//Antes de finalizar pedido realizaremos el cálculo de los impuestos
 		//Clareamos los impuestos liquidados, si existe con anterioridad
 		DetallePedidoImpuestoDAO.eliminarDetallePedidoImpuesto(idPedido, auditoria);
@@ -468,6 +492,15 @@ public class PedidoCtrl implements Runnable {
 	{
 		boolean respuesta = EstadoDAO.editarEstado(estado, auditoria);
 		return(respuesta);
+	}
+	
+	//ESTADOS NORMALES
+	
+	public ArrayList<Estado> obtenerEstadosDiferentes(int idEstado)
+	{
+		ArrayList<Estado> estados =  EstadoDAO.obtenerEstadosDiferentes(idEstado, auditoria);
+		return(estados);
+		
 	}
 	
 	//ESTADOS ANTERIORES
@@ -969,6 +1002,13 @@ public class PedidoCtrl implements Runnable {
 		public ArrayList<DetallePedido> obtenerDetallePedidoPintar(int idPedido)
 		{
 			ArrayList<DetallePedido> detPedidos = DetallePedidoDAO.obtenerDetallePedidoPintar(idPedido, auditoria);
+			detPedidos = ordenarDetallePedido(detPedidos);
+			return(detPedidos);
+		}
+		
+		public ArrayList<DetallePedido> obtenerDetallePedidoPintarMaster(int idPedido)
+		{
+			ArrayList<DetallePedido> detPedidos = DetallePedidoDAO.obtenerDetallePedidoPintarMaster(idPedido, auditoria);
 			detPedidos = ordenarDetallePedido(detPedidos);
 			return(detPedidos);
 		}
@@ -1712,6 +1752,69 @@ public class PedidoCtrl implements Runnable {
 			return(egresosRangosFecha);
 		}
 		
+		public ArrayList<Ingreso> obtenerIngresosSemana()
+		{
+			//Recuperamos la fecha actual del sistema con la fecha apertura
+			FechaSistema fecha = obtenerFechasSistema();
+			String fechaActual = fecha.getFechaUltimoCierre();
+			//Variables donde manejaremos la fecha anerior con el fin realizar los cálculos de ventas
+			Date datFechaAnterior;
+			String fechaAnterior = "";
+			//Creamos el objeto calendario
+			Calendar calendarioActual = Calendar.getInstance();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			try
+			{
+				//Al objeto calendario le fijamos la fecha actual del sitema
+				calendarioActual.setTime(dateFormat.parse(fechaActual));
+				
+			}catch(Exception e)
+			{
+				System.out.println(e.toString());
+			}
+			//Retormanos el día de la semana actual segun la fecha del calendario
+			int diaActual = calendarioActual.get(Calendar.DAY_OF_WEEK);
+			//Domingo
+			if(diaActual == 1)
+			{
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -6);
+			}
+			else if(diaActual == 2)
+			{
+				//Si es lunes no se hace nada
+			}
+			else if(diaActual == 3)
+			{
+				//Si es martes se resta uno solo
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -1);
+			}
+			else if(diaActual == 4)
+			{
+				//Si es miercoles se resta dos
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -2);
+			}
+			else if(diaActual == 5)
+			{
+				//Si es jueves se resta tres
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -3);
+			}
+			else if(diaActual == 6)
+			{
+				//Si es viernes se resta cuatro
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -4);
+			}
+			else if(diaActual == 7)
+			{
+				//Si es sabado se resta cinco
+				calendarioActual.add(Calendar.DAY_OF_YEAR, -5);
+			}
+			//Llevamos a un string la fecha anterior para el cálculo de la venta
+			datFechaAnterior = calendarioActual.getTime();
+			fechaAnterior = dateFormat.format(datFechaAnterior);
+			ArrayList<Ingreso> ingresosRangosFecha = IngresoDAO.obtenerIngresosSemana(fechaAnterior, fechaActual, auditoria);
+			return(ingresosRangosFecha);
+		}
+		
 		public ArrayList obtenerDomiciliosSemana()
 		{
 			//Recuperamos la fecha actual del sistema con la fecha apertura
@@ -2353,36 +2456,142 @@ public class PedidoCtrl implements Runnable {
 				}
 			}else if(ct == hiloEstadoPedido) 
 			{
-				Estado estadoIni = EstadoDAO.obtenerEstadoInicial(idTipoPedidoActual, auditoria);
-				int idEstadoPostIni = estadoIni.getIdestado();
-				PedidoDAO.ActualizarEstadoPedido(idPedidoActual, 0 , idEstadoPostIni,Sesion.getUsuario(), auditoria);
-				if(estadoIni.isImpresion())
+				//Es decir es un pedido nuevo
+				if(!esPedidoReabierto)
 				{
-					//Vamos a realizar la impresión de la comanda
-					String strComanda = generarStrImpresionComanda(idPedidoActual);
-					if(Sesion.getModeloImpresion() != 1)
+					Estado estadoIni = EstadoDAO.obtenerEstadoInicial(idTipoPedidoActual, auditoria);
+					int idEstadoPostIni = estadoIni.getIdestado();
+					PedidoDAO.ActualizarEstadoPedido(idPedidoActual, 0 , idEstadoPostIni,Sesion.getUsuario(), auditoria);
+					if(estadoIni.isImpresion())
 					{
-						ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
-					}
-					else
-					{
-						Impresion.main(strComanda);
-					}
-					//Obtenemos el string de la factura que se imprimirá 2 veces
-					String strFactura = generarStrImpresionFactura(idPedidoActual);
-					if(Sesion.getModeloImpresion() != 1)
-					{
-						ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
-						ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
-					}
-					else
-					{
-						//Primera Impresión
-						Impresion.main(strFactura);
-						//Segunda Impresión
-						Impresion.main(strFactura);
+						//Con el tipo de impresion es 1 se imprime normal
+						if (tipoImpresion == 1)
+						{
+							//Vamos a realizar la impresión de la comanda
+							//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
+							if(Sesion.isImprimirComandaPedido())
+							{
+								String strComanda = generarStrImpresionComanda(idPedidoActual);
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+								}
+								else
+								{
+									Impresion.main(strComanda);
+								}
+							}//En caso de que NO, no se debería hacer nada
+
+							//Obtenemos el string de la factura que se imprimirá 2 veces
+							String strFactura = generarStrImpresionFactura(idPedidoActual);
+							if(Sesion.getModeloImpresion() != 1)
+							{
+								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+							}
+							else
+							{
+								//Primera Impresión
+								Impresion.main(strFactura);
+								//Segunda Impresión
+								Impresion.main(strFactura);
+							}
+							actualizarImpresionPedido(idPedidoActual);
+						//SI el tipo de impresión es 0 es porque deberíamos solo de imprimir lo nuevo
+						} 
 					}
 				}
+				else if(esPedidoReabierto)
+				{
+					
+					if(imprimeSiReabierto)
+					{
+						//Con el tipo de impresion es 1 se imprime normal
+						if (tipoImpresion == 1)
+						{
+							//Vamos a realizar la impresión de la comanda
+							//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
+							if(Sesion.isImprimirComandaPedido())
+							{
+								String strComanda = generarStrImpresionComanda(idPedidoActual);
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+								}
+								else
+								{
+									Impresion.main(strComanda);
+								}
+							}//En caso de que NO, no se debería hacer nada
+
+							//Obtenemos el string de la factura que se imprimirá 2 veces
+							String strFactura = generarStrImpresionFactura(idPedidoActual);
+							if(Sesion.getModeloImpresion() != 1)
+							{
+								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+							}
+							else
+							{
+								//Primera Impresión
+								Impresion.main(strFactura);
+								//Segunda Impresión
+								Impresion.main(strFactura);
+							}
+							actualizarImpresionPedido(idPedidoActual);
+						//SI el tipo de impresión es 0 es porque deberíamos solo de imprimir lo nuevo
+						} else if(tipoImpresion == 0)
+						{
+							//Vamos a realizar la impresión de la comanda
+							//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
+							if(Sesion.isImprimirComandaPedido())
+							{
+								String strComanda = generarStrImpresionComandaItemsNuevos(idPedidoActual, detPedidoNuevo);
+								System.out.println(strComanda );
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+								}
+								else
+								{
+									Impresion.main(strComanda);
+								}
+							}//En caso de que NO, no se debería hacer nada
+
+							//Obtenemos el string de la factura que se imprimirá 2 veces
+							String strFactura = generarStrImpresionFactura(idPedidoActual);
+							System.out.println(strFactura );
+							if(Sesion.getModeloImpresion() != 1)
+							{
+								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+							}
+							else
+							{
+								//Primera Impresión
+								Impresion.main(strFactura);
+								//Segunda Impresión
+								Impresion.main(strFactura);
+							}
+						}
+
+					}
+					//Validamos si el pedido es reabierto anulado en cuyo caso no hay impresión y se pone en el estado final
+					//del tipo de pedido que se recibe como parámetro
+					if(reabiertoAnulado)
+					{
+						//Se obtiene el id de estado final
+						int idEstadoFin = EstadoDAO.obtenerEstadoFinal(idTipoPedidoActual, auditoria);
+						// Se actualiza el pedido
+						PedidoDAO.ActualizarEstadoPedido(idPedidoActual, 0 , idEstadoFin ,Sesion.getUsuario(), auditoria);
+					}
+					if(cambioTipoPedido)
+					{
+						PedidoDAO.ActualizarEstadoPedido(idPedidoActual, 0 , idEstadoInicialCambio ,Sesion.getUsuario(), auditoria);
+						desasignarDomiciliarioPedido(idPedidoActual);
+					}
+				}
+
 			}
 				
 		}
@@ -2411,7 +2620,7 @@ public class PedidoCtrl implements Runnable {
 					+ "Desde " + tienda.getPuntoVenta() + " " + tienda.getNumeroInicialResolucion() + " Hasta " + tienda.getPuntoVenta() + " " + tienda.getNumeroFinalResolucion() + " \n"
 					+ tienda.getUbicacion() + "\n"
 					+ "Factura de Venta: " + tienda.getPuntoVenta() + " - "+idPedido +"\n"
-					+ "Fecha/Hora Actual: " + strFechaHora + "\n"
+					+ "Fecha/Hora: " + strFechaHora + " \n"
 		            + "==================================\n"
 		            + "Cant    Descripcion            Costo\n"
 		            + "==================================\n";
@@ -2476,15 +2685,15 @@ public class PedidoCtrl implements Runnable {
 			factura = factura  + "==================================\n";
 			factura = factura  + nombreFormaPago;
 			factura = factura  + "==================================\n";
-			factura = factura  + "CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
-			factura = factura  + "DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
-			factura = factura  + "OBS : " + observacion + " " + zonaObser + "\n";
+			factura = factura  + "CLIENTE: " + pedImpFac.getNombreCliente() + " \n";
+			factura = factura  + "DIR CLIENTE: " + pedImpFac.getDirCliente() + " \n";
+			factura = factura  + "OBS: " + observacion + " " + zonaObser + " \n";
 			if((!nombreCompania.equals(new String (""))) && (!nombreCompania.equals(null)))
 			{
-				factura = factura  + "NOMBRE COMPAÑIA : " + nombreCompania + "\n";
+				factura = factura  + "NOMBRE COMPAÑIA: " + nombreCompania + " \n";
 			}
-			factura = factura  + "TELEFONO : " + pedImpFac.getTelefono() + "\n";
-			factura = factura  +  pedImpFac.getTipoPedido().toUpperCase() + "\n";
+			factura = factura  + "TELEFONO: " + pedImpFac.getTelefono() + " \n";
+			factura = factura  +  pedImpFac.getTipoPedido().toUpperCase() + " \n";
 			factura = factura  + "!FELICITACIONES! HAZ COMPRADO" + "\n";
 			factura = factura  + "LA MEJOR PIZZA DE LA CIUDAD" + "\n";
 			factura = factura  + "pizzaamericanacolombia@gmail.com" + "\n";
@@ -2503,14 +2712,14 @@ public class PedidoCtrl implements Runnable {
 			Pedido infoPedido = obtenerPedido(idPedido); 
 			DetallePedido detTemp;
 			Date fechaActual = new Date();
-			String factura = "====================================\n" 
+			String factura = "================================\n" 
 					+ "Factura de Venta: "+idPedido +"\n"
 					+ infoPedido.getTipoPedido().toUpperCase() +"\n"
 		            + "Usuario: " + infoPedido.getUsuariopedido() + "\n"
 		            + fechaActual.toString() + "\n"
-		            + "====================================\n"
+		            + "==================================\n"
 		            + "Cant    Descripcion                 \n"
-		            + "====================================\n";
+		            + "==================================\n";
 			double cantidad;
 			for(int i = 0; i < detPedido.size(); i++)
 			{
@@ -2528,10 +2737,60 @@ public class PedidoCtrl implements Runnable {
 			}
 			//Obtenemos información del pedido para colocar unos pocos datos en la comanda
 			Pedido pedImpFac = obtenerPedido(idPedido);
-			factura = factura  + "CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
-			factura = factura  + "DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
-			factura = factura  + "OBS : " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "\n";
-			factura = factura  + "TELEFONO : " + pedImpFac.getTelefono() + "\n";
+			factura = factura  + "CLIENTE: " + pedImpFac.getNombreCliente() + " \n";
+			factura = factura  + "DIR CLIENTE: " + pedImpFac.getDirCliente() + " \n";
+			factura = factura  + "OBS: " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + " \n";
+			factura = factura  + "TELEFONO: " + pedImpFac.getTelefono() + " \n";
+			factura = factura  + "             ********::::::::*******"
+		            + "\n           ";
+			System.out.println(factura);
+			return(factura);
+		}
+		
+		public String generarStrImpresionComandaItemsNuevos(int idPedido, ArrayList<DetallePedido> detPedidoNuevo)
+		{
+			
+			//Obtenemos la tienda sobre la que estamos trabajando
+			ArrayList<DetallePedido> detPedido = obtenerDetallePedidoPintar(idPedido);
+			Pedido infoPedido = obtenerPedido(idPedido); 
+			DetallePedido detTemp, detTempNuevo;
+			Date fechaActual = new Date();
+			String factura = "================================\n" 
+					+ "Factura de Venta: "+idPedido +"\n"
+					+ infoPedido.getTipoPedido().toUpperCase() +"\n"
+		            + "Usuario: " + infoPedido.getUsuariopedido() + "\n"
+		            + fechaActual.toString() + "\n"
+		            + "==================================\n"
+		            + "Cant    Descripcion                 \n"
+		            + "==================================\n";
+			double cantidad;
+			for(int i = 0; i < detPedido.size(); i++)
+			{
+				detTemp = detPedido.get(i);
+				for(int j = 0; j < detPedidoNuevo.size(); j++)
+				{
+					detTempNuevo = detPedidoNuevo.get(j);
+					if(detTempNuevo.getIdDetallePedido() == detTemp.getIdDetallePedido())
+					{
+						cantidad = detTemp.getValorTotal();
+						if ((cantidad - Math.floor(cantidad)) == 0) 
+						{
+							factura = factura + "  " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + "\n";
+						}
+						else
+						{
+							factura = factura + "  " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + detTemp.getValorTotal() + "\n";
+						}
+						break;
+					}
+				}
+			}
+			//Obtenemos información del pedido para colocar unos pocos datos en la comanda
+			Pedido pedImpFac = obtenerPedido(idPedido);
+			factura = factura  + "CLIENTE: " + pedImpFac.getNombreCliente() + " \n";
+			factura = factura  + "DIR CLIENTE: " + pedImpFac.getDirCliente() + " \n";
+			factura = factura  + "OBS: " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + " \n";
+			factura = factura  + "TELEFONO: " + pedImpFac.getTelefono() + " \n";
 			factura = factura  + "             ********::::::::*******"
 		            + "\n           ";
 			System.out.println(factura);
@@ -2543,15 +2802,15 @@ public class PedidoCtrl implements Runnable {
 			
 			Pedido pedImpFac = obtenerPedido(idPedido);
 			Date fechaActual = new Date();
-			String comandaSalida = "==================================\n" 
+			String comandaSalida = "================================\n" 
 					+ "SALIDA DOMICILIO -" + pedImpFac.getDomiciliario() +"\n" + "\n"
 					+ "Factura de Venta: "+idPedido +"\n"
 		            + "Usuario: " + pedImpFac.getUsuariopedido() + "\n"
 		            + fechaActual.toString()+ "\n";
-			comandaSalida = comandaSalida  + "CLIENTE : " + pedImpFac.getNombreCliente() + "\n";
-			comandaSalida = comandaSalida  + "DIR CLIENTE : " + pedImpFac.getDirCliente() + "\n";
-			comandaSalida = comandaSalida  + "OBS : " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "\n";
-			comandaSalida = comandaSalida  + "TELEFONO : " + pedImpFac.getTelefono() + "\n"
+			comandaSalida = comandaSalida  + "CLIENTE: " + pedImpFac.getNombreCliente() + " \n";
+			comandaSalida = comandaSalida  + "DIR CLIENTE: " + pedImpFac.getDirCliente() + " \n";
+			comandaSalida = comandaSalida  + "OBS: " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + "  \n";
+			comandaSalida = comandaSalida  + "TELEFONO: " + pedImpFac.getTelefono() + "  \n"
 		            + "           ********::::::::*******"
 		            + "\n           ";
 			if(Sesion.getModeloImpresion() != 1)
@@ -2813,6 +3072,27 @@ public class PedidoCtrl implements Runnable {
 				respuesta = respuesta + "<tr><td>" + egrTemp.getDescripcion() + "</td><td> " + formatea.format(egrTemp.getValorEgreso()) + "</td><td>" + egrTemp.getFecha()  +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
+			
+			
+			//Incorporamos la información de los ingresos al reporte 
+			//09-05/2019
+			ArrayList<Ingreso> ingresosSemana = obtenerIngresosSemana();
+			if(ingresosSemana.size() > 0 )
+			{
+				respuesta = respuesta + "<table border='2'> <tr> RESUMEN SEMANAL DE INGRESOS </tr>";
+				respuesta = respuesta + "<tr>"
+						+  "<td><strong>Descripción Ingreso</strong></td>"
+						+  "<td><strong>Valor Ingreso</strong></td>"
+						+  "<td><strong>Fecha Ingreso</strong></td>"
+						+  "</tr>";
+				Ingreso ingTemp;
+				for(int y = 0; y < ingresosSemana.size();y++)
+				{
+					ingTemp = ingresosSemana.get(y);
+					respuesta = respuesta + "<tr><td>" + ingTemp.getDescripcion() + "</td><td> " + formatea.format(ingTemp.getValorIngreso()) + "</td><td>" + ingTemp.getFecha()  +"</td></tr>";
+				}
+				respuesta = respuesta + "</table> <br/>";
+			}
 			return(respuesta);
 		}
 		
@@ -2910,7 +3190,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenGeneralVentas(fechaSis);
 			Correo correo = new Correo();
-			correo.setAsunto("DIARIO Reporte General de Ventas Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto(tiendaReporte.getNombretienda()+" : " + "Reporte Ventas " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTEGENERALVENTAS", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -2929,7 +3209,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenInventarios();
 			Correo correo = new Correo();
-			correo.setAsunto("DIARIO Inventario Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto(tiendaReporte.getNombretienda() + " : " + "Inventario "  + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTEGENERALVENTAS", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -2948,7 +3228,7 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenSemanalDomicilios();
 			Correo correo = new Correo();
-			correo.setAsunto("SEMANAL Resumen de Domicilios" + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto(tiendaReporte.getNombretienda() + " : " + "SEMANAL Resumen de Domicilios " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
 			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
@@ -2967,9 +3247,9 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = reporteSemanalDescuentos();
 			Correo correo = new Correo();
-			correo.setAsunto("SEMANAL Reporte Descuentos Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto(tiendaReporte.getNombretienda() + " : " + "SEMANAL Reporte Descuentos " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
-			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMDESCUENTOS", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
 			correo.setMensaje("A continuación el reporte semanal de descuentos: \n" + reporte);
 			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
@@ -2986,9 +3266,9 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenSemanalAnulaciones();
 			Correo correo = new Correo();
-			correo.setAsunto("SEMANAL Reporte Anulaciones Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto(tiendaReporte.getNombretienda() + " : " + "SEMANAL Reporte Anulaciones - No Devuelve Inventario " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
-			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANULA", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
 			correo.setMensaje("A continuación el reporte semanal de Anulaciones: \n" + reporte);
 			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
@@ -3005,9 +3285,9 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenSemanalAnulacionesDescuento();
 			Correo correo = new Correo();
-			correo.setAsunto("SEMANAL Reporte Anulaciones Cambio de Opinión-Descuenta Inventario Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto(tiendaReporte.getNombretienda() + " : " + "SEMANAL Reporte Anulaciones Devuelve Inventario " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
-			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANULADESC", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
 			correo.setMensaje("A continuación el reporte semanal de Anulaciones que provienen de un cambio de opinión y que por lo tanto de devuelven al inventario lo anulado: \n" + reporte);
 			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
@@ -3025,9 +3305,9 @@ public class PedidoCtrl implements Runnable {
 			//Obtenemos el reporte
 			String reporte = resumenSemanalEgresos();
 			Correo correo = new Correo();
-			correo.setAsunto("SEMANAL Reporte Egresos/Vales Punto de Venta " + tiendaReporte.getNombretienda() + " " + fechaSis);
+			correo.setAsunto(tiendaReporte.getNombretienda() + " : " +"SEMANAL Reporte Egresos/Ingresos " + fechaSis);
 			correo.setContrasena("Pizzaamericana2017");
-			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMANALES", auditoria);
+			ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMEGRESOS", auditoria);
 			correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
 			correo.setMensaje("A continuación el reporte semanal de los egresos/vales de la semana que acaba de finalizar: \n" + reporte);
 			ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
@@ -3069,5 +3349,382 @@ public class PedidoCtrl implements Runnable {
 			int cantidad = PedidoDAO.obtenerCantidadPedidoPorEstado(fechaSistema, idEstado, auditoria);
 			return(cantidad);
 					
+		}
+		
+		//Pedidos para de ventana de Cocina
+		
+		public ArrayList obtenerPedidosVentanaCocina(ArrayList<Integer> estadosCocina)
+		{
+			//Cuando el empleado es domiciliario, se deberán mostrar los pedidos propios del tipo domiciliario, ddeberán mostrar los pedidos que ha llevado y con los que salío
+			//hace poco para llevar.
+			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema( auditoria);
+			ArrayList pedidos = new ArrayList();
+			if(sePuedeFacturar(fechaSistema))
+			{
+				//Obtenemos los pedidos
+				pedidos = PedidoDAO.obtenerPedidosVentanaCocina(fechaSistema.getFechaApertura(), estadosCocina, auditoria);
+				//Obtenemos los tiempos de Pedido
+				ArrayList<TiempoPedido> tiemposPedido = calcularTiemposPedidos(fechaSistema.getFechaApertura());
+				
+				int idPedido = 0;
+				TiempoPedido tiempoPedidoTemp = new TiempoPedido(0,"");
+				String tiempoPedido = "";
+				//Recorremos el resultado de los pedidos para ir agregando el tiempo de pedido
+				for(int i = 0 ; i < pedidos.size(); i++)
+				{
+					//Sacamos cada fila del pedido
+					String[]fila = (String[]) pedidos.get(i);
+					//Extraemos el idPedido
+					idPedido =Integer.parseInt(fila[0]);
+					// Recorremos el ArrayList de los tiempos pedidos.
+					for(int j = 0; j < tiemposPedido.size(); j++)
+					{
+						tiempoPedidoTemp = tiemposPedido.get(j);
+						// SI el pedido es igual al que estamos procesando extraemos el tiempo del pedido
+						if(tiempoPedidoTemp.getIdPedidoTienda() == idPedido)
+						{
+							tiempoPedido = tiempoPedidoTemp.getTiempoPedido();
+							break;
+						}
+					}
+					fila[fila.length-1] = tiempoPedido;
+					pedidos.set(i, fila);
+				}
+			}
+			return(pedidos);
+		}
+		
+		//PINTAR PEDIDOS EN DIFERENTES LUGARES DEL SISTEMA
+		
+		/**
+		 * Método que permite pintar un pedido con el fin de quien lo va a montar tenga el detalle de lo que se está preparando
+		 */
+		public int pintarPedido(int idPedido, Graphics2D g2d)
+		{
+			//Consultamos los detalles del pedido
+			ArrayList<DetallePedido> detPedidos = obtenerDetallePedidoPintar(idPedido);
+			//Definimos tamaños de ancho y alto para los diferentes tamanos
+			int anchoXL = 200;
+			int anchoGD = 180;
+			int anchoMD = 130;
+			int anchoPZ = 120;
+			//Retornamos el graphics con el cual vamos a pintar el pedido
+			g2d.setColor(Color.BLACK);
+			//Fijamos un ancho a las lineas 
+			g2d.setStroke( new BasicStroke( 2 ) );
+			//Con este tomamos el idDetallePedidoMaster del detalle que estamos procesando en el momento
+			int idMasterActual = 0;
+			//Con este tomamos el idDetallePedidoMaster del detalle que procesamos en el detalle anterior
+			//esto con el objetivo si ya hay un cambio del detalle padre delpedido.
+			int idMasterAnterior = 0;
+			//Tomamos el tipo de producto del Detalle Master
+			String tipProdMaster = "";
+			//Con esta variable tomamos el tamano para el caso de que sea un producto que lo tiene.
+			String tamano = "";
+			//Con las variables booleanas div1 y div2, controlamos si estamos procesando que mitad para los tipos de producto Principal
+			boolean div1 = false;
+			boolean div2 = false;
+			//Variable en la que se llevará el control del ancho actual del producto
+			int anchoActual = 0;
+			//Variable que controla los items pedidos a pintar.
+			int itemPintar = 1;
+			//Por intermedio de este ciclo recorremos todos los detalles pedidos que vamos a pintar
+			//Variables donde almacenaremos los string de las adiciones de la pizza
+			String adicion1 = "";
+			String adicion2 = "";
+			String con1 = "";
+			String con2 = "";
+			String sin1 = "";
+			String sin2 = "";
+			for(int i = 0; i < detPedidos.size(); i++)
+			{
+				//Obtenemos el detalle pedido que estamos recorriendo.
+				DetallePedido detTem = detPedidos.get(i);
+				//Luego de obtenido del detallePedido debemos validar si este esta anulado para saber qeu no lo debemos de pintar
+				if((detTem.getEstado() == null)||(detTem.getEstado().equals(new String(""))))
+				{
+					//Obtenemos el tipo de producto del detalle que estamos procesando
+					String tipPro = detTem.getTipoProducto();
+					
+					//Tomamos el iddetalleMaster del detalle pedido que estamos procesando 
+					idMasterActual = detTem.getIdDetallePedidoMaster();
+					//Si se da la condición de que idMasterActual = 0 es poruqe el item es un master
+					if(idMasterActual == 0)
+					{
+						idMasterActual = detTem.getIdDetallePedido();
+					}
+					//Almacenamos el tamano del producto en caso de requerirse más adelante
+					tamano = detTem.getTamano();
+					//Comparamos si el Detalle Master actual es igual al anterior, significa qeu estamos procesando los detalles del pedido
+					if((idMasterActual == idMasterAnterior)&&(!tipPro.equals(new String("O"))))
+					{
+						//Preguntamos si el tipo de producto es "D" Detalle en este punto vendría el sabor de la pizza
+						if(tipPro.trim().equals(new String("D")))
+						{
+							// Si la div1 es verdadero signfica que vamos para la segunda división, prendemos la segunda división
+							if(div1)
+							{
+								div2 = true;
+							}
+							else
+							{
+								//Si es un tipo de producto división y no estaba prendido div1, signfica que se debe de prender.
+								div1 = true;
+								//Debemos de pintar la especialidad 1
+							}
+							if(div1 & !div2)
+							{
+								//Pintamos el sabor en la primera parte PERO PARA SABER EL PUNTO ES IMPORTANTE SABER EL TAMAÑO
+								g2d.setFont( new Font( "Tahoma", Font.BOLD, 10 ) );
+								g2d.setColor(Color.BLACK);
+								g2d.drawString(detTem.getDescCortaProducto().toUpperCase(), 160, (250*(itemPintar - 1)+40));
+							}
+							else if(div1 & div2)
+							{
+								//Pintamos el sabor en la segunda parte
+								g2d.setFont( new Font( "Tahoma", Font.BOLD, 10 ) );
+								g2d.setColor(Color.BLACK);
+								g2d.drawString(detTem.getDescCortaProducto().toUpperCase(), 260 + (anchoActual/2), (250*(itemPintar - 1)+40));
+							}
+						}else if(tipPro.trim().equals(new String("A")))
+						{
+							//DEBEMOS DE PINTAR LA ADICIÓN
+							if(div1 & !div2)
+							{
+								//Pintamos la adición en la primera parte
+								adicion1 = adicion1 + "+" + detTem.getDescCortaProducto();
+							}
+							else if(div1 & div2)
+							{
+								//Pintamos la adicion en la segunda parte
+								adicion2 = adicion2 + "+" + detTem.getDescCortaProducto();
+							}
+						}
+						else if(tipPro.trim().equals(new String("MC")))
+						{
+							//DEBEMOS DE PINTAR EL MODIFICADOR
+							if(div1 & !div2)
+							{
+								//Pintamos el modificador con en la primera parte
+								con1 = con1 + " " + detTem.getDescCortaProducto();
+							}
+							else if(div1 & div2)
+							{
+								//Pintamos el modificador con en la segunda parte
+								con2 = con2 + " " + detTem.getDescCortaProducto();
+							}
+						}
+						else if(tipPro.trim().equals(new String("MS")))
+						{
+							//DEBEMOS DE PINTAR EL MODIFICADOR
+							if(div1 & !div2)
+							{
+								//Pintamos el modificador sin en la primera parte
+								sin1 = sin1 + " " + detTem.getDescCortaProducto();
+							}
+							else if(div1 & div2)
+							{
+								//Pintamos el modificador sin en la  segunda parte
+								sin2 = sin2 + " " + detTem.getDescCortaProducto();
+							}
+						}
+						
+					}
+					else//Por este camino debería de irse cuando hay una especie de quiebre en id Detalle pedido Master
+					{
+						//Antes de hacer los cambios preguntamos si hay adiciones en cuyo caso las pintamos
+						// SI se cumple esta condición es porque hay una adición
+						if(!adicion1.equals(new String(""))||!adicion2.equals(new String(""))||!con1.equals(new String(""))||!con2.equals(new String(""))||!sin1.equals(new String(""))||!sin2.equals(new String("")))
+						{
+							//pintamos las adicines
+							g2d.setFont( new Font( "Tahoma", Font.BOLD, 10 ) );
+							g2d.setColor(Color.BLACK);
+							// Se dibujan las adiciones
+							g2d.drawString(adicion1, 160 , (100*(itemPintar - 1)+60));
+							g2d.drawString(adicion2, 260 + (anchoActual/2), (100*(itemPintar - 1)+60));
+							// Se dibujan los modificadores con
+							g2d.drawString(con1, 160 , (100*(itemPintar - 1)+80));
+							g2d.drawString(con2, 260 + (anchoActual/2), (100*(itemPintar - 1)+80));
+							// Se dibujan los modificadore sin
+							g2d.drawString(sin1, 160 , (100*(itemPintar - 1)+100));
+							g2d.drawString(sin2, 260 + (anchoActual/2), (100*(itemPintar - 1)+100));
+							adicion1="";
+							adicion2="";
+							sin1 = "";
+							sin2 = "";
+							con1 = "";
+							con2 = "";
+						}
+						
+						if (div1 && div2)
+						{
+							itemPintar++;
+						}
+						
+						//Pintar la linea separadora del pedido
+						g2d.setColor(Color.BLACK);
+						g2d.drawLine(0, 200*(itemPintar-1), 701, 200*(itemPintar-1));
+						//Aumentamos los items a pintar
+						tipProdMaster = tipPro;
+						div1 = false;
+						div2 = false;
+						if(tipPro.trim().equals(new String("P")))
+						{
+							//Antes de cualquier drawString deberemos tener el setfont y el setcolor
+							g2d.setFont( new Font( "Tahoma", Font.BOLD, 32 ) );
+							g2d.setColor(Color.BLACK);
+							g2d.drawString(tamano, 10, (250*(itemPintar - 1)+40));
+							if(tamano.trim().equals(new String("XL")))
+							{
+								anchoActual = anchoXL;
+								//Pintamos el círculo, teniendo en cuenta itemPintar que nos da el credimiento en la coordenanda Y para deliminar el item que estamos pintando
+								//Tenemos unas variables fijas de ancho por tamaño
+								g2d.setColor(Color.BLUE);
+								g2d.drawOval(250, 250*(itemPintar-1), anchoXL,  anchoXL);
+								g2d.drawLine(250+(anchoXL/2), 250*(itemPintar-1), 250+(anchoXL/2), 250*(itemPintar-1) + anchoXL);
+							}else if(tamano.trim().equals(new String("GD")))
+							{
+								anchoActual = anchoGD;
+								g2d.setColor(Color.RED);
+								g2d.drawOval(250, 250*(itemPintar-1), anchoGD,  anchoGD);
+								g2d.drawLine(250+(anchoGD/2), 250*(itemPintar-1), 250+(anchoGD/2), 250*(itemPintar-1) + anchoGD);
+							}else if(tamano.trim().equals(new String("MD")))
+							{
+								anchoActual = anchoMD;
+								g2d.setColor(Color.GREEN);
+								g2d.drawOval(250, 250*(itemPintar-1), anchoMD,  anchoMD);
+								g2d.drawLine(250+(anchoMD/2), 250*(itemPintar-1), 250+(anchoMD/2), 250*(itemPintar-1) + anchoMD);
+							}else if(tamano.trim().equals(new String("PZ")))
+							{
+								anchoActual = anchoPZ;
+								g2d.setColor(Color.ORANGE);
+								g2d.drawOval(250, 250*(itemPintar-1), anchoPZ,  anchoPZ);
+								g2d.drawLine(250+(anchoPZ/2), 250*(itemPintar-1), 250+(anchoPZ/2), 250*(itemPintar-1) + anchoPZ);
+							}
+							
+						}else if(tipPro.trim().equals(new String("O")))
+						{
+							//Pintamos con la imagen que tambien se almacenaría en base de datos
+							//Obtenemos el idProducto
+							int idProd = detTem.getIdProducto();
+							Producto otroProd = parProductoCtrl.obtenerProducto(idProd);
+							
+							try
+							{
+								Image image = null;
+								InputStream in = new ByteArrayInputStream(otroProd.getImagen());
+								image = ImageIO.read(in);
+								//ImageIcon imgi = new ImageIcon(image.getScaledInstance(60, 60, 0));
+								g2d.drawImage(image,250, 250*(itemPintar-1) , null);
+							}catch(Exception e)
+							{
+								
+							}
+							itemPintar++;
+						}
+						//PINTAMOS LA CANTIDAD DEL PRODUCTO
+						g2d.setFont( new Font( "Tahoma", Font.BOLD, 15 ) );
+						g2d.setColor(Color.BLACK);
+						g2d.drawString("CANTIDAD " + Double.toString(detTem.getCantidad()), 10, (250*(itemPintar - 1)+100));
+						
+					}
+					//Independinete del camino debemos de tomar cual es  id Detalle Pedido Master anterior
+					idMasterAnterior = idMasterActual;
+				}
+				
+			}
+			//MOD 29/08/2018
+			//Se realiza esta modificación para que si solo hubo un producto master al final se pinte las adiciones y los productos CON que se tienen
+			//Lo anterior debido a que como no hay cambio de producto master no se cumple la condición y no se está imprimiendo esta información
+			if(!adicion1.equals(new String(""))||!adicion2.equals(new String(""))||!con1.equals(new String(""))||!con2.equals(new String(""))||!sin1.equals(new String(""))||!sin2.equals(new String("")))
+			{
+				//pintamos las adicines
+				g2d.setFont( new Font( "Tahoma", Font.BOLD, 10 ) );
+				g2d.setColor(Color.BLACK);
+				// Se dibujan las adiciones
+				g2d.drawString(adicion1, 220 , (100*(itemPintar - 1)+60));
+				g2d.drawString(adicion2, 260 + (anchoActual/2), (100*(itemPintar - 1)+70));
+				// Se dibujan los modificadores con
+				g2d.drawString(con1, 50 , (100*(itemPintar - 1)+80));
+				g2d.drawString(con2, 260 + (anchoActual/2), (100*(itemPintar - 1)+90));
+				// Se dibujan los modificadore sin
+				g2d.drawString(sin1, 220 , (100*(itemPintar - 1)+100));
+				g2d.drawString(sin2, 260 + (anchoActual/2), (100*(itemPintar - 1)+110));
+				adicion1="";
+				adicion2="";
+				sin1 = "";
+				sin2 = "";
+				con1 = "";
+				con2 = "";
+			}
+			return(itemPintar);
+		}
+		
+		/**
+		 * Método que se encargaría de pintar los productos principales de un pedido de manera que ayude en el montaje de los mismos.
+		 * @param g2d Parámetros de tipo Graphics para pintar en el panel determinado
+		 * @param pedidos ArrayList con los pedidos que se van a pintar
+		 */
+		public int pintarPedidos(Graphics2D g2d, ArrayList pedidos)
+		{
+			int idPedidoTrabajar = 0;
+			ArrayList<DetallePedido> detPedidos;
+			int contadorPintar = 0;
+			for(int j = 0; j < pedidos.size(); j++)
+			{
+				String[] infTemp = (String[]) pedidos.get(j);
+				idPedidoTrabajar = Integer.parseInt(infTemp[0]);
+				//Fijamos el número de pedido en el encabezado gráfico
+				g2d.setFont( new Font( "Tahoma", Font.BOLD, 30 ) );
+				g2d.setColor(Color.RED);
+				g2d.drawString(Integer.toString(idPedidoTrabajar), 0, (60*(contadorPintar))+30);
+				contadorPintar++;
+				//Retornamos el graphics con el cual vamos a pintar el pedido
+				g2d.setColor(Color.BLACK);
+				//Fijamos un ancho a las lineas 
+				g2d.setStroke( new BasicStroke( 2 ) );
+				//Con este tomamos el idDetallePedidoMaster del detalle que estamos procesando en el momento
+				//Tomamos el tipo de producto del Detalle Master
+				String tipProdMaster = "";
+				//Con esta variable tomamos el tamano para el caso de que sea un producto que lo tiene.
+				String tamano = "";
+				//Con las variables booleanas div1 y div2, controlamos si estamos procesando que mitad para los tipos de producto Principal
+				//Variable en la que se llevará el control del ancho actual del producto
+				//Por intermedio de este ciclo recorremos todos los detalles pedidos que vamos a pintar
+				//Variables donde almacenaremos los string de las adiciones de la pizza
+				detPedidos = obtenerDetallePedidoPintarMaster(idPedidoTrabajar);
+				for(int i = 0; i < detPedidos.size(); i++)
+				{
+					//Obtenemos el detalle pedido que estamos recorriendo.
+					DetallePedido detTem = detPedidos.get(i);
+					//Luego de obtenido del detallePedido debemos validar si este esta anulado para saber qeu no lo debemos de pintar
+					if((detTem.getEstado() == null)||(detTem.getEstado().equals(new String(""))))
+					{
+						//Almacenamos el tamano del producto en caso de requerirse más adelante
+						tamano = detTem.getTamano();
+						g2d.setFont( new Font( "Tahoma", Font.BOLD, 22 ) );
+						g2d.setColor(Color.BLACK);
+						g2d.drawString(tamano, 20, ((60*(contadorPintar))+30));
+						contadorPintar++;
+					}
+					
+				}
+				//Dibujamos la linea separador entre pedidos
+				g2d.drawLine(0, ((60*(contadorPintar-1))+35), 231, ((60*(contadorPintar-1))+35));
+			}
+			return(((60*(contadorPintar-1))+35));
+		}
+		
+		public boolean actualizarImpresionPedido(int idPedido)
+		{
+			boolean respuesta =  PedidoDAO.actualizarImpresionPedido(idPedido,auditoria);
+			return(respuesta);
+		}
+		
+		
+		public boolean verificarPedidoReabiertoAnulado(int idPedido)
+		{
+			boolean respuesta =  DetallePedidoDAO.verificarPedidoReabiertoAnulado(idPedido,auditoria);
+			return(respuesta);
 		}
 }

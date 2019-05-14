@@ -31,9 +31,18 @@ public class Pedido {
 	private String nombreFormaPago;
 	private String domiciliario;
 	private String nombreCompania;
+	private boolean impresion;
+	
+	
 	
 	
 		
+	public boolean isImpresion() {
+		return impresion;
+	}
+	public void setImpresion(boolean impresion) {
+		this.impresion = impresion;
+	}
 	public String getNombreCompania() {
 		return nombreCompania;
 	}

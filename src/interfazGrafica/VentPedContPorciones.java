@@ -22,6 +22,7 @@ import capaModelo.PorcionesControlDiario;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -314,7 +315,7 @@ public class VentPedContPorciones extends JDialog {
 //					boolean resp = pedCtrl.insertarPedidoDescuento(descuento);
 					
 					//Finalizamos el pedido -- el tipo pedido se quema mientras tanto
-					boolean respuesta = pedCtrl.finalizarPedido(idPedidoTienda, 0, 2);
+					boolean respuesta = pedCtrl.finalizarPedido(idPedidoTienda, 0, 2,1, new ArrayList<DetallePedido>(), false, false, false, false, 0);
 					//Si se finaliza bien el pedido cambiamos el estado de las porciones para el día
 					if(respuesta)
 					{

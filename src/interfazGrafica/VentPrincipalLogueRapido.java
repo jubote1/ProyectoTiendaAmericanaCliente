@@ -61,6 +61,7 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
 		int valPresentacion;
 		int valModeloImpr;
+		boolean imprimeComandaFactura;
 	/**
 	 * Launch the application.
 	 */
@@ -426,5 +427,16 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 			valModeloImpr = 0;
 		}
 		Sesion.setModeloImpresion(valModeloImpr);
+		imprimeComandaFactura = true;
+		parametro = parCtrl.obtenerParametro("IMPRIMECOMANDAFACTURA");
+		try
+		{
+			imprimeComandaFactura = Boolean.parseBoolean(parametro.getValorTexto());
+		}catch(Exception e)
+		{
+			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE IMPRESIÓN COMANDA PEDIDO");
+			imprimeComandaFactura = true;
+		}
+		Sesion.setImprimirComandaPedido(imprimeComandaFactura);
 	}
 }

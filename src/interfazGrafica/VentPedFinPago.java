@@ -13,8 +13,10 @@ import capaControlador.InventarioCtrl;
 import capaControlador.ParametrosCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.DetallePedido;
+import capaModelo.Estado;
 import capaModelo.FormaPago;
 import capaModelo.Parametro;
+import capaModelo.Pedido;
 import capaModelo.TipoPedido;
 import capaModelo.FormaPagoIng;
 
@@ -22,8 +24,12 @@ import javax.swing.JTextPane;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import java.awt.Font;
 import java.awt.Color;
+import java.awt.Component;
+
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
@@ -38,6 +44,8 @@ import java.awt.event.KeyAdapter;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.awt.GridLayout;
+import java.awt.Window;
+
 import javax.swing.border.LineBorder;
 import javax.swing.ImageIcon;
 
@@ -314,9 +322,14 @@ public class VentPedFinPago extends JDialog implements Runnable {
 		JButton btnFinalizar = new JButton("Finalizar");
 		btnFinalizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-
+				
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				//Tomamos la información para insertar la forma de pago
 				//Si el pedido tenía forma de pago, deberemos de eliminar la forma de pago anterior
+				//Ingresamos lógica para tomar el tipo de pedido 
+				//Este parámetro es general para el método
+				int idTipoPedido;
 				if(hayFormaPago)
 				{
 					pedCtrl.eliminarPedidoFormaPago( VentPedTomarPedidos.idPedido);
@@ -365,21 +378,36 @@ public class VentPedFinPago extends JDialog implements Runnable {
 				if(resFormaPago)
 				{
 					
-					//Ingresamos lógica para tomar el tipo de pedido 
-					int idTipoPedido;
+					
+					//Capturamos el tipoPedido seleccionado
+					TipoPedido tipPedido = null;
 					try
 					{
-						TipoPedido tipPedido = VentPedTomarPedidos.tiposPedidos.get(VentPedTomarPedidos.numTipoPedidoAct);
+						//Intentamos obtener los valores que vienen por pantalla
+						tipPedido = VentPedTomarPedidos.tiposPedidos.get(VentPedTomarPedidos.numTipoPedidoAct);
 						idTipoPedido = tipPedido.getIdTipoPedido();
 					}catch(Exception e)
 					{
+						// Sino podemos obtener los valores les dejamos un valor lo que significa qeu posiblemente no es por pantalla la fijación
 						idTipoPedido = 0;
+						tipPedido = null;
 					}
-					
-					//Aclaramos la informacion para el tiempo pedido
-					//Inicializamos la variable de habilitaAuditoria
-					//Traemos de base de datos el valor del parametro de auditoria
-					Parametro parametroAud = parCtrl.obtenerParametro("TIEMPOPEDIDO");
+					//Validamos según como sea el tipo de pedido recuperado e intentamos tomar el tiempo que sea correspondiente si el punto de venta o el domicilio
+					Parametro parametroAud;
+					if(tipPedido == null)
+					{
+						parametroAud = parCtrl.obtenerParametro("TIEMPOPEDIDO");
+					}
+					else
+					{
+						if(tipPedido.isEsDomicilio())
+						{
+							parametroAud = parCtrl.obtenerParametro("TIEMPOPEDIDO");
+						}else
+						{
+							parametroAud = parCtrl.obtenerParametro("TIEMPOPEDIDOTIENDA");
+						}
+					}
 					//Extraemos el valor del campo de ValorTexto
 					int tiempoPedido;
 					try
@@ -390,9 +418,81 @@ public class VentPedFinPago extends JDialog implements Runnable {
 						tiempoPedido = 0;
 					}
 					
+					//Se validar si el pedido es reabierto para mostrar JOptionPane con 3 opciones disponibles
+					//Opción de impresión la fijamos en 1 que significa que se imprime todo normalmente
+					int opcionImpresion = 1;
+					boolean resFinPedido = true;
+					boolean imprimeSiReabierto = false;
+					if(VentPedTomarPedidos.esReabierto)
+					{
+						//En este punto verificamos si el pedido reabierto... le fueron anulados los detalles pedidos
+						boolean esPedReabiertoAnulado = pedCtrl.verificarPedidoReabiertoAnulado(VentPedTomarPedidos.idPedido);
+						//Si se cumple esta condición es porque el pedido reabierto esta anulado completamente por lo tanto deberemos llevar al estado
+						//final de este estado de pedido y no deberemos de reimprimir ni nada
+						if(esPedReabiertoAnulado)
+						{
+							//Finalizamos el pedido indicador que es un pedido reabierto, que no queremos que imprima
+							resFinPedido = pedCtrl.finalizarPedido(VentPedTomarPedidos.idPedido, tiempoPedido, idTipoPedido, opcionImpresion, VentPedTomarPedidos.detallesPedidoNuevo, true, false, true, false, 0);
+						}
+						else // es la situación de un pedido normal
+						{
+							//Obtenemos el pedido para ver si ya fue impreso
+							Pedido pedido = pedCtrl.obtenerPedido(VentPedTomarPedidos.idPedido);
+							//Definimos variable para traernos el tipo de pedido que tiene en base de datos
+							int idTipoPedidoBD = pedido.getIdTipoPedido();
+							int idEstadoActual = 0;
+							Estado estadoActual;
+							boolean cambioEstadoPedido = false;
+							if(idTipoPedidoBD != idTipoPedido)
+							{
+								idEstadoActual = pedCtrl.obtenerEstadoInicial(idTipoPedido);
+								estadoActual = pedCtrl.obtenerEstado(idEstadoActual);
+								cambioEstadoPedido = true;
+							}
+							else
+							{
+								//Validamos si el estado actual debe imprimir
+								estadoActual = pedCtrl.obtenerEstadoPedido(VentPedTomarPedidos.idPedido);
+							}
+							
+							
+							//System.out.println("PEDIDO REABIERTO " + VentPedTomarPedidos.idPedido + " - " + estadoActual.getIdestado() + " " + estadoActual.isImpresion() );
+							// Si se cumple cualquier de estas dos condiciones el sistema preguntará por la impresion
+							if(estadoActual.isImpresion() || pedido.isImpresion())
+							{
+								imprimeSiReabierto = true;
+								Object[] opcionesImpresion = {"Imprimir solo lo Nuevo",
+						                "Imprimir todo" , "No imprimir nada(ni comanda ni factura)"};
+										//Mostramos la pantalla de confirmación para validar si deseamos o no la anulación
+										int resp = JOptionPane.showOptionDialog(ventanaPadre, "¿Que opción de impresión desea para la comanda, Imprimir lo nuevo del pedido, Imprimir todo de nuevo o no Imprimir nada?", "Confirmación impresión pantalla" , JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,null,     //do not use a custom Icon
+												opcionesImpresion,  //the titles of buttons
+												opcionesImpresion[0]);
+										// Opcion 0 impresión de lo nuevo
+										// Opcion 1 impresión de todo
+										// Opción 2 no impresion
+										
+										if (resp == 0)
+										{
+											opcionImpresion = 0;
+										}else if(resp == 1)
+										{	
+											opcionImpresion = 1;
+										}else if(resp ==2)
+										{
+											opcionImpresion = 2;
+										}
+							}
+							
+							resFinPedido = pedCtrl.finalizarPedido(VentPedTomarPedidos.idPedido, tiempoPedido, idTipoPedido, opcionImpresion, VentPedTomarPedidos.detallesPedidoNuevo, true, imprimeSiReabierto, false, cambioEstadoPedido, idEstadoActual);
+						}
+					}else
+					{
+						//System.out.println("PEDIDO NUEVO " + VentPedTomarPedidos.idPedido );
+						resFinPedido = pedCtrl.finalizarPedido(VentPedTomarPedidos.idPedido, tiempoPedido, idTipoPedido, opcionImpresion, VentPedTomarPedidos.detallesPedidoNuevo, false, imprimeSiReabierto, false, false , 0);
+					}
 					
 					// En este punto finalizamos el pedido
-					boolean resFinPedido = pedCtrl.finalizarPedido(VentPedTomarPedidos.idPedido, tiempoPedido, idTipoPedido);
+					
 					if (resFinPedido)
 					{
 						clarearVarEstaticas();

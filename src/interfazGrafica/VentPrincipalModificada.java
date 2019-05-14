@@ -204,6 +204,27 @@ public class VentPrincipalModificada extends JFrame {
 		btnSalir.setBounds(811, 532, 166, 42);
 		tuspedidos.add(btnSalir);
 		
+		JButton btnCocina = new JButton("Cocina");
+		btnCocina.setEnabled(false);
+		btnCocina.setIcon(new ImageIcon(VentPrincipalModificada.class.getResource("/icons/cocina.jpg")));
+		btnCocina.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_017", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentPedCocina ventPedCocina = new VentPedCocina();
+					ventPedCocina.setVisible(true);
+					dispose();
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		btnCocina.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnCocina.setBounds(244, 446, 346, 121);
+		tuspedidos.add(btnCocina);
+		
 		JPanel ventas = new JPanel();
 		tabbedPaneModulos.addTab("Ventas", null, ventas, null);
 		ventas.setLayout(null);

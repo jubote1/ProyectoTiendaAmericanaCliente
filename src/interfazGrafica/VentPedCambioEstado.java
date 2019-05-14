@@ -11,6 +11,7 @@ import javax.swing.border.EmptyBorder;
 import capaControlador.ParametrosCtrl;
 import capaControlador.ParametrosDireccionCtrl;
 import capaControlador.ReportesCtrl;
+import capaDAO.ImprimirAdmDAO;
 import capaControlador.PedidoCtrl;
 import capaModelo.Estado;
 import capaModelo.EstadoAnterior;
@@ -31,6 +32,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.awt.event.ActionEvent;
+import java.awt.Font;
+import java.awt.Color;
 
 public class VentPedCambioEstado extends JDialog {
 
@@ -72,12 +75,13 @@ public class VentPedCambioEstado extends JDialog {
 		super(parent, modal);
 		this.anterior = anterior;
 		this.posterior = posterior;
-		setTitle("CAMBIO ESTADO");
+		setTitle("CAMBIO ESTADO DE PEDIDOS");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(0,0, 544, 406);
+		setBounds(0,0, 544, 320);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 544, 406);
+		//setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 544, 406);
+	    setBounds(20, (alto / 2) - (this.getHeight() / 2), 544, 275);
 		panelPrincipal = new JPanel();
 		panelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(panelPrincipal);
@@ -85,7 +89,8 @@ public class VentPedCambioEstado extends JDialog {
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
 		JLabel lblIdPedido = new JLabel("Id Pedido");
-		lblIdPedido.setBounds(36, 50, 100, 14);
+		lblIdPedido.setFont(new Font("Tahoma", Font.BOLD, 16));
+		lblIdPedido.setBounds(20, 26, 100, 14);
 		panelPrincipal.add(lblIdPedido);
 		long valNum = 0;
 		Parametro parametro = parCtrl.obtenerParametro("ENRUTADOMICILIO");
@@ -100,30 +105,35 @@ public class VentPedCambioEstado extends JDialog {
 		estEnRutaDom = valNum;
 		
 		txtIdPedido = new JTextField();
+		txtIdPedido.setForeground(Color.RED);
+		txtIdPedido.setFont(new Font("Tahoma", Font.BOLD, 16));
 		txtIdPedido.setEditable(false);
-		txtIdPedido.setBounds(156, 47, 165, 20);
+		txtIdPedido.setBounds(156, 23, 113, 20);
 		panelPrincipal.add(txtIdPedido);
 		txtIdPedido.setColumns(10);
 		
 		JLabel lblEstadoActual = new JLabel("Estado Actual");
-		lblEstadoActual.setBounds(36, 138, 100, 14);
+		lblEstadoActual.setFont(new Font("Tahoma", Font.BOLD, 16));
+		lblEstadoActual.setBounds(83, 88, 147, 14);
 		panelPrincipal.add(lblEstadoActual);
 		
 		txtEstadoActual = new JTextField();
 		txtEstadoActual.setEditable(false);
-		txtEstadoActual.setBounds(156, 135, 165, 20);
+		txtEstadoActual.setBounds(279, 85, 221, 20);
 		panelPrincipal.add(txtEstadoActual);
 		txtEstadoActual.setColumns(10);
 		
 		JLabel lblEstadoObjetivo = new JLabel("Siguiente Estado");
-		lblEstadoObjetivo.setBounds(36, 207, 100, 14);
+		lblEstadoObjetivo.setFont(new Font("Tahoma", Font.BOLD, 16));
+		lblEstadoObjetivo.setBounds(85, 141, 155, 14);
 		panelPrincipal.add(lblEstadoObjetivo);
 		
 		cmbEstadoObjetivo = new JComboBox();
-		cmbEstadoObjetivo.setBounds(156, 204, 165, 20);
+		cmbEstadoObjetivo.setBounds(279, 138, 221, 20);
 		panelPrincipal.add(cmbEstadoObjetivo);
 		
-		JButton btnContinuar = new JButton("Continuar");
+		JButton btnContinuar = new JButton("OK");
+		btnContinuar.setFont(new Font("Tahoma", Font.BOLD, 40));
 		btnContinuar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				EstadoAnterior estAnt;
@@ -149,21 +159,49 @@ public class VentPedCambioEstado extends JDialog {
 					respuesta = pedCtrl.ActualizarEstadoPedido(idPedidoTienda,estadoPedido.getIdestado() , estPos.getIdEstadoPosterior(),Sesion.getUsuario(),true, idDomiciliario,salidaDomiciliario);
 					if(estPos.isImprimeEstPosterior())
 					{
-//						ReportesCtrl repCtrl = new ReportesCtrl();
-//						repCtrl.generarFactura(idPedido);
-						String strFactura = pedCtrl.generarStrImpresionFactura(idPedidoTienda);
-						ImpresionBK imp = new ImpresionBK();
-						imp.imprimirFactura(strFactura);
+						//Vamos a realizar la impresión de la comanda
+						//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
+						if(Sesion.isImprimirComandaPedido())
+						{
+							String strComanda = pedCtrl.generarStrImpresionComanda(idPedidoTienda);
+							
+							if(Sesion.getModeloImpresion() != 1)
+							{
+								//Cambiar esta comunicación porque estamos en capa de presentación
+								ImprimirAdmDAO.insertarImpresion(strComanda, PrincipalLogueo.habilitaAuditoria);
+							}
+							else
+							{
+								Impresion.main(strComanda);
+							}
+						}//En caso de que NO, no se debería hacer nada
+
+						//Obtenemos el string de la factura que se imprimirá 2 veces
+						String strFactura = pedCtrl.generarStrImpresionFactura(idPedido);
+						if(Sesion.getModeloImpresion() != 1)
+						{
+							ImprimirAdmDAO.insertarImpresion(strFactura, PrincipalLogueo.habilitaAuditoria);
+							ImprimirAdmDAO.insertarImpresion(strFactura, PrincipalLogueo.habilitaAuditoria);
+						}
+						else
+						{
+							//Primera Impresión
+							Impresion.main(strFactura);
+							//Segunda Impresión
+							Impresion.main(strFactura);
+						}
+						pedCtrl.actualizarImpresionPedido(idPedidoTienda);
 					}
 				}
 				if(!respuesta)
 				{
 					JOptionPane.showMessageDialog(null, "Se tuvo Error al momento de actualizar el estado del pedido " , "Error al Actualizar Estado Pedido", JOptionPane.ERROR_MESSAGE);
 				}
+				//Valido si el padre es la pantalla de cocina
 				dispose();
 			}
 		});
-		btnContinuar.setBounds(36, 287, 113, 33);
+		btnContinuar.setBounds(289, 169, 189, 56);
 		panelPrincipal.add(btnContinuar);
 		
 		JButton btnCancelar = new JButton("Cancelar");
@@ -172,18 +210,20 @@ public class VentPedCambioEstado extends JDialog {
 				dispose();
 			}
 		});
-		btnCancelar.setBounds(390, 287, 110, 32);
+		btnCancelar.setBounds(140, 192, 110, 32);
 		panelPrincipal.add(btnCancelar);
 		//Lógica para la inicialización
 		
 		
 		JLabel lblTipoPedido = new JLabel("Tipo Pedido");
-		lblTipoPedido.setBounds(36, 97, 100, 14);
+		lblTipoPedido.setFont(new Font("Tahoma", Font.BOLD, 16));
+		lblTipoPedido.setBounds(279, 28, 110, 14);
 		panelPrincipal.add(lblTipoPedido);
 		
 		txtTipoPedido = new JTextField();	
+		txtTipoPedido.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtTipoPedido.setEditable(false);
-		txtTipoPedido.setBounds(155, 94, 166, 20);
+		txtTipoPedido.setBounds(387, 25, 141, 20);
 		panelPrincipal.add(txtTipoPedido);
 		txtTipoPedido.setColumns(10);
 		
@@ -196,19 +236,19 @@ public class VentPedCambioEstado extends JDialog {
 		JButton btnVerPedido = new JButton("Ver Pedido");
 		btnVerPedido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VentPedPintar ventPedidoPintar = new VentPedPintar(null, true,idPedidoTienda);
+				VentPedPintar ventPedidoPintar = new VentPedPintar(null, true,idPedidoTienda, false, null);
 				ventPedidoPintar.setVisible(true);
 			}
 		});
-		btnVerPedido.setBounds(213, 287, 118, 32);
+		btnVerPedido.setBounds(2, 192, 118, 32);
 		panelPrincipal.add(btnVerPedido);
 		
 		lblImgEstActual = new JLabel("");
-		lblImgEstActual.setBounds(341, 138, 75, 56);
+		lblImgEstActual.setBounds(2, 51, 75, 56);
 		panelPrincipal.add(lblImgEstActual);
 		
 		lblImgEstObj = new JLabel("");
-		lblImgEstObj.setBounds(341, 220, 75, 56);
+		lblImgEstObj.setBounds(2, 118, 75, 56);
 		panelPrincipal.add(lblImgEstObj);
 		ArrayList<EstadoAnterior> estadosAnt = new ArrayList();
 		ArrayList<EstadoPosterior> estadosPost = new ArrayList();
@@ -265,6 +305,11 @@ public class VentPedCambioEstado extends JDialog {
 		if (anterior)
 		{
 			EstadoAnterior estAnt = (EstadoAnterior) cmbEstadoObjetivo.getSelectedItem();
+			if(estAnt == null)
+			{
+				JOptionPane.showMessageDialog(null, "El estado actual no tiene parametrizado un estado anterior." , "OJO  Operación Inválida", JOptionPane.ERROR_MESSAGE);
+				return; 
+			}
 			Estado est = pedCtrl.obtenerEstado(estAnt.getIdEstadoAnterior());
 			try
 			{

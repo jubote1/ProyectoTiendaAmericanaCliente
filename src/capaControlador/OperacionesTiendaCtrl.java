@@ -57,34 +57,54 @@ public class OperacionesTiendaCtrl {
  * Método qeu se encarga de retornar la información de los días que se podrían aperturar en el sistema
  * @return
  */
-public String validarEstadoFechaSistema()
-{
-	PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
-	FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
-	String fechaPOS = fechasSistema.getFechaApertura();
-	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-	Date fechaHoy = new Date();
-	Date fechaPosDate = new Date();
-	try {
-		fechaPosDate = sdf.parse(fechaPOS);
-		//NO es necesario ya fechaHoy tiene la fecha actual
-		fechaHoy = sdf.parse(sdf.format(new Date()));
-	} catch (ParseException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	//Se realiza resta en días para saber la diferencia
-	int dias =Math.abs((int) (fechaHoy.getTime() - fechaPosDate.getTime())/86400000);
-	
-	if(dias >= 2)
+//public String validarEstadoFechaSistema()
+//{
+//	PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
+//	FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
+//	String fechaPOS = fechasSistema.getFechaApertura();
+//	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//	Date fechaHoy = new Date();
+//	Date fechaPosDate = new Date();
+//	try {
+//		fechaPosDate = sdf.parse(fechaPOS);
+//		System.out.println("fechaposdate " + fechaPosDate);
+//		//NO es necesario ya fechaHoy tiene la fecha actual
+//		fechaHoy = sdf.parse(sdf.format(new Date()));
+//		System.out.println("fecha hoy"+ fechaHoy);
+//	} catch (ParseException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	}
+//	//Se realiza resta en días para saber la diferencia
+//	int dias =Math.abs((int) (fechaHoy.getTime() - fechaPosDate.getTime())/86400000);
+//	System.out.println("mostrar días "  + dias );
+//	if(dias >= 2)
+//	{
+//		return(sdf.format(fechaHoy));
+//	}
+//	else
+//	{
+//		return("");
+//	}
+//}
+	//22-04-2019 Se simplifica el método ya que simplemente es retornar la fecha actual
+	public String validarEstadoFechaSistema()
 	{
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date fechaHoy = new Date();
+		try {
+			//NO es necesario ya fechaHoy tiene la fecha actual
+			fechaHoy = sdf.parse(sdf.format(new Date()));
+			System.out.println("fecha hoy"+ fechaHoy);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return(sdf.format(fechaHoy));
 	}
-	else
-	{
-		return("");
-	}
-}
+	
+	
+	
 
 public boolean validarCierreSemanal()
 {
@@ -227,7 +247,7 @@ public void realizarInventarioHistorico(String fecha)
 			Parametro parametro = parCtrl.obtenerParametro("INDICADORCIERRE");
 			String fechaParametro = parametro.getValorTexto();
 			boolean respAvanFech = fijarFechaCierreParametro(fechaParametro);
-			TiendaDAO.actualizarFechaUltimoCierre(auditoria);
+			TiendaDAO.actualizarFechaUltimoCierre(fecha, auditoria);
 			//Realizamos la validación de facturación
 			validarEstadoNumeracionFacturacion();
 			//Realizamos borrado de tablas temporales de ingresos, retiros y varianzas de inventarios
@@ -246,9 +266,9 @@ public void realizarInventarioHistorico(String fecha)
 	}
 
 //FINALIZAR EL DÍA
-	public boolean AvanzarFechaUltimoCierre()
+	public boolean AvanzarFechaUltimoCierre(String fecha)
 	{
-		boolean respuesta = TiendaDAO.actualizarFechaUltimoCierre(auditoria);
+		boolean respuesta = TiendaDAO.actualizarFechaUltimoCierre(fecha, auditoria);
 		return(respuesta);
 	}
 	

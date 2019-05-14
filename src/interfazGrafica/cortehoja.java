@@ -72,7 +72,7 @@ public class cortehoja implements Printable
 		}
     	
     	for (int i = 0; i < AuxDivision.size(); i++) {
-    		if (fm.stringWidth(AuxDivision.get(i)) < 190) {
+    		if (fm.stringWidth(AuxDivision.get(i)) < 180) {
     			StrDivision.add(AuxDivision.get(i));
 			}else {
 				inferior = 0;
@@ -84,9 +84,9 @@ public class cortehoja implements Printable
 						SizeSupCaracter = fm.stringWidth(AuxString);
 						SupCaracter++;
 						if (SupCaracter  == AuxDivision.get(i).length()) {
-							SizeSupCaracter = 190;
+							SizeSupCaracter = 180;
 						}
-					} while (SizeSupCaracter < 190);
+					} while (SizeSupCaracter < 180);
 					StrDivision.add(AuxString);
 					inferior = SupCaracter - 1 ;
 				}

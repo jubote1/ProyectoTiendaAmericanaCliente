@@ -78,6 +78,9 @@ public class VentPedFijarTiempoPedidos extends JDialog implements Runnable {
 	//variable para estado pendiente domicilios
 	private final long estPenDomicilio;
 	private FechaSistema fecha;
+	//Variable booleana que almacenará el cambio de pedido para domicilio o no domicilio, se inicializa en true
+	boolean domicilio = true;
+	private JButton btnDomicilio;
 	/**
 	 * Launch the application.
 	 */
@@ -98,7 +101,14 @@ public class VentPedFijarTiempoPedidos extends JDialog implements Runnable {
 	public void fijarValorTiempoPedido()
 	{
 		//Tomamos el valor del parámetro relacionado la interface gráfica
-		Parametro parametro = parCtrl.obtenerParametro("TIEMPOPEDIDO");
+		Parametro parametro;
+		if(domicilio)
+		{
+			parametro = parCtrl.obtenerParametro("TIEMPOPEDIDO");
+		}else
+		{
+			parametro = parCtrl.obtenerParametro("TIEMPOPEDIDOTIENDA");
+		}
 		try
 		{
 			tiempoPedido = parametro.getValorNumerico();
@@ -498,56 +508,67 @@ public class VentPedFijarTiempoPedidos extends JDialog implements Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 				String strTiempoPedido = txtTiempoPedido.getText();
 				//Fijamos el tiempo en base de datos actualizando la tabla de parámetros
-				Parametro parametroEditado = new Parametro("TIEMPOPEDIDO", Integer.parseInt(strTiempoPedido), "");
+				Parametro parametroEditado;
+				if(domicilio)
+				{
+					parametroEditado = new Parametro("TIEMPOPEDIDO", Integer.parseInt(strTiempoPedido), "");
+				}else
+				{
+					parametroEditado = new Parametro("TIEMPOPEDIDOTIENDA", Integer.parseInt(strTiempoPedido), "");
+				}
 				boolean respuesta = parCtrl.EditarParametro(parametroEditado);				
 				//Buscamos la URL que nos servirá como buscaador
 				//Traemos de base de datos el valor del parametro de auditoria
-				Tienda tienda = parCtrl.obtenerTiendaObj();
-				//Extraemos el valor del campo de ValorTexto
-				String rutaURL = tienda.getUrlContact() + "CRUDTiempoPedido?idoperacion=1&nuevotiempo=" + strTiempoPedido+ "&idtienda=" + tienda.getIdTienda();
-				URL url=null;
-				try {
-				    url = new URL(rutaURL);
-				    try {
-				        Desktop.getDesktop().browse(url.toURI());
-				    } catch (IOException e) {
-				        e.printStackTrace();
-				    } catch (URISyntaxException e) {
-				        e.printStackTrace();
-				    }
-				} catch (MalformedURLException e1) {
-				    e1.printStackTrace();
-				}
-				//Verificamos el nuevo tiempo si esté está por encima de un parámetro se envía correo eletrónico
-				int valNuevoTiempo = Integer.parseInt(strTiempoPedido);
-				//Recuperamos el valor de la variable máximo tiempo para alertar tiempos pedidos
-				Parametro parametro = parCtrl.obtenerParametro("TIEMPOMAXIMOALERTA");
-				long valNum = 0;
-				try
+				if(domicilio)
 				{
-					valNum = (long) parametro.getValorNumerico();
-				}catch(Exception e)
-				{
-					System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE TIEMPOMAXIMOALERTA");
-					valNum = 0;
+					Tienda tienda = parCtrl.obtenerTiendaObj();
+					//Extraemos el valor del campo de ValorTexto
+					String rutaURL = tienda.getUrlContact() + "CRUDTiempoPedido?idoperacion=1&nuevotiempo=" + strTiempoPedido+ "&idtienda=" + tienda.getIdTienda();
+					URL url=null;
+					try {
+					    url = new URL(rutaURL);
+					    try {
+					        Desktop.getDesktop().browse(url.toURI());
+					    } catch (IOException e) {
+					        e.printStackTrace();
+					    } catch (URISyntaxException e) {
+					        e.printStackTrace();
+					    }
+					} catch (MalformedURLException e1) {
+					    e1.printStackTrace();
+					}
+					//Verificamos el nuevo tiempo si esté está por encima de un parámetro se envía correo eletrónico
+					int valNuevoTiempo = Integer.parseInt(strTiempoPedido);
+					//Recuperamos el valor de la variable máximo tiempo para alertar tiempos pedidos
+					Parametro parametro = parCtrl.obtenerParametro("TIEMPOMAXIMOALERTA");
+					long valNum = 0;
+					try
+					{
+						valNum = (long) parametro.getValorNumerico();
+					}catch(Exception e)
+					{
+						System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE TIEMPOMAXIMOALERTA");
+						valNum = 0;
+					}
+					if(valNuevoTiempo >= valNum)
+					{
+						Correo correo = new Correo();
+						correo.setAsunto("ALERTA TIEMPOS PEDIDO");
+						ArrayList correos = GeneralDAO.obtenerCorreosParametro("TIEMPOPEDIDO", PrincipalLogueo.habilitaAuditoria);
+						correo.setContrasena("Pizzaamericana2017");
+						correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+						correo.setMensaje("La tienda " + tienda.getNombretienda() + " está aumentando el tiempo de entrega a " + valNuevoTiempo + " minutos");
+						ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+						contro.enviarCorreo();
+					}
 				}
-				if(valNuevoTiempo >= valNum)
-				{
-					Correo correo = new Correo();
-					correo.setAsunto("ALERTA TIEMPOS PEDIDO");
-					ArrayList correos = GeneralDAO.obtenerCorreosParametro("TIEMPOPEDIDO", PrincipalLogueo.habilitaAuditoria);
-					correo.setContrasena("Pizzaamericana2017");
-					correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
-					correo.setMensaje("La tienda " + tienda.getNombretienda() + " está aumentando el tiempo de entrega a " + valNuevoTiempo + " minutos");
-					ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
-					contro.enviarCorreo();
-				}
+				
 				dispose();
 				
 			}
 		});
 		btnFijarTiempo.setFont(new Font("Tahoma", Font.BOLD, 18));
-		btnFijarTiempo.setBounds(60, 460, 220, 44);
+		btnFijarTiempo.setBounds(53, 491, 220, 44);
 		contentPane.add(btnFijarTiempo);
 		
 		btnSalir = new JButton("SALIR");
@@ -558,7 +579,7 @@ public class VentPedFijarTiempoPedidos extends JDialog implements Runnable {
 			}
 		});
 		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 13));
-		btnSalir.setBounds(354, 460, 138, 44);
+		btnSalir.setBounds(349, 493, 138, 44);
 		contentPane.add(btnSalir);
 		
 		JLabel lblEstadoTienda = new JLabel("ESTADO DE LA TIENDA");
@@ -683,6 +704,39 @@ public class VentPedFijarTiempoPedidos extends JDialog implements Runnable {
 		txtPuntoVenta.setColumns(10);
 		txtPuntoVenta.setBounds(233, 101, 86, 31);
 		panelInfoPedidos.add(txtPuntoVenta);
+		
+		btnDomicilio = new JButton("DOMICILIO");
+		btnDomicilio.setBackground(Color.YELLOW);
+		btnDomicilio.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				quitarBackgroundBotones();
+				if(domicilio)
+				{
+					domicilio = false;
+				}else
+				{
+					domicilio = true;
+				}
+				if(domicilio)
+				{
+					btnDomicilio.setText("DOMICILIO");
+				}else
+				{
+					btnDomicilio.setText("PUNTO DE VENTA");
+				}
+				fijarValorTiempoPedido();
+			}
+		});
+		if(domicilio)
+		{
+			btnDomicilio.setText("DOMICILIO");
+		}else
+		{
+			btnDomicilio.setText("PUNTO DE VENTA");
+		}
+		btnDomicilio.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnDomicilio.setBounds(208, 445, 158, 35);
+		contentPane.add(btnDomicilio);
 		fijarValorTiempoPedido();
 		cargarEstadoTienda();
 		actualizarEstadoPedidosTienda();

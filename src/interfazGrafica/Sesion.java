@@ -16,9 +16,18 @@ public class Sesion {
 	private static String host;
 	private static String estacion;
 	private static int modeloImpresion;
+	//La inicializamos en true es decir que debe de imprimir 
+	private static boolean imprimirComandaPedido = true;
 	
 	
 
+	public static boolean isImprimirComandaPedido() {
+		return imprimirComandaPedido;
+	}
+
+	public static void setImprimirComandaPedido(boolean imprimirComandaPedido) {
+		Sesion.imprimirComandaPedido = imprimirComandaPedido;
+	}
 
 	public static int getModeloImpresion() {
 		return modeloImpresion;

@@ -107,11 +107,12 @@ public class VentPedTomarPedidos extends JFrame {
 	public static String nombreCliente = "";
 	public static int idDetallePedidoMaster = 0;
 	public static ArrayList<DetallePedido> detallesPedido = new ArrayList();
+	public static ArrayList<DetallePedido> detallesPedidoNuevo = new ArrayList();
 	public static String direccion;
 	public static String zona;
 	public static String observacion;
 	static int numTipoPedido = 0;
-	static int numTipoPedidoAct = 0;
+	public static int numTipoPedidoAct = 0;
 	static ArrayList<TipoPedido> tiposPedidos;
 	static boolean tieneFormaPago = false;
 	static boolean tieneDescuento = false;
@@ -158,6 +159,7 @@ public class VentPedTomarPedidos extends JFrame {
 		nombreCliente = "";
 		idDetallePedidoMaster = 0;
 		detallesPedido = new ArrayList();
+		detallesPedidoNuevo = new ArrayList();
 		numTipoPedido = 0;
 		numTipoPedidoAct = 0;
 		tieneFormaPago = false;
@@ -913,7 +915,7 @@ public class VentPedTomarPedidos extends JFrame {
 					// En este punto finalizamos el pedido
 					//VentPedConfirmarPedido ventConfirmarPedido = new VentPedConfirmarPedido(nombreCliente, totalPedido, descuento, idPedido, new javax.swing.JFrame(), true);
 					//	ventConfirmarPedido.setVisible(true);
-					boolean resFinPedido = pedCtrl.finalizarPedido(idPedido, 30/*tiempoPedido*/, idTipoPedido);
+					boolean resFinPedido = pedCtrl.finalizarPedido(idPedido, 30/*tiempoPedido*/, idTipoPedido, 1, detallesPedidoNuevo, false, false, false, false, 0);
 					if (resFinPedido)
 					{
 						//En este punto es cuando clareamos las variables del tipo de pedido que son estáticas y sabiendo qeu se finalizó
@@ -1254,6 +1256,7 @@ public class VentPedTomarPedidos extends JFrame {
 		if(idDetalle > 0)
 		{
 			detallesPedido.add(detPedido);
+			detallesPedidoNuevo.add(detPedido);
 			totalPedido = totalPedido + detPedido.getValorTotal();
 			//En esta parte del código realizamos el recorrido
 			for(int i = 0; i< proIncluido.size(); i++)
@@ -1266,6 +1269,7 @@ public class VentPedTomarPedidos extends JFrame {
 				detPedido.setIdDetallePedido(idDetProInc);
 				totalPedido = totalPedido + detPedido.getValorTotal();
 				detallesPedido.add(detPedido);
+				detallesPedidoNuevo.add(detPedido);
 			}
 			txtValorPedidoSD.setText(Double.toString(totalPedido));
 			txtValorTotal.setText(Double.toString(totalPedido - descuento));
@@ -1430,6 +1434,7 @@ public class VentPedTomarPedidos extends JFrame {
 					// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
 					double valorItem = detCadaPedido.getValorTotal();
 					detallesPedido.remove(j);
+					detallesPedidoNuevo.remove(j);
 					// j se reduce en uno teniendo en cuenta que se eliminó un elemento
 					j--;
 					totalPedido = totalPedido - valorItem;
@@ -1508,6 +1513,17 @@ public class VentPedTomarPedidos extends JFrame {
 				txtValorTotal.setText(Double.toString(totalPedido - descuento));
 			}
 		}
+		//Deberemos de borra tambien del arrayList donde guardamos los temas de pedidos nuevos
+		for(int j = 0; j < detallesPedidoNuevo.size(); j++)
+		{
+			DetallePedido detCadaPedido = detallesPedidoNuevo.get(j);
+			// Cambiamos para la eliminación que se tenga el iddetalle_pedido o el iddetalle_pedido_master
+			if(detCadaPedido.getIdDetallePedido() == idDetalleEliminar || detCadaPedido.getIdDetallePedidoMaster() == idDetalleEliminar)
+			{
+				detallesPedidoNuevo.remove(j);
+				j--;
+			}
+		}
 	}
 	
 	//Crearemos un  método que se encargará una vez reciba la confirmación del formulación de anulación encargarse de la anulación del item Pedido
@@ -1552,7 +1568,14 @@ public class VentPedTomarPedidos extends JFrame {
 				{
 					JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el reintegro de los inventarios " , "Error en reintegro de Inventarios ", JOptionPane.ERROR_MESSAGE);
 				}
-			
+			//Haremos la diferenciación del else porque si será suceptible a que devuelvan items de inventario
+			}else
+			{
+				boolean reintInv = invCtrl.reintegrarEspecialInventarioPedido(idPedido);
+				if(!reintInv)
+				{
+					JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el reintegro de los inventarios de items, que aunque el pedido esta marcado que nos los devuelve por configuración si debe devolver ciertas cosas." , "Error en reintegro de Inventarios ", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 			//Se realiza la anulación del pedido incluyendo el motivo de anulación, y tambien los detalles de pedido
 			boolean anuDetallePedido = pedCtrl.anularPedido(idPedido, motAnu.getIdMotivoAnulacion(), observacion);

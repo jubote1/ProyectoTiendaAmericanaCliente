@@ -164,6 +164,78 @@ public class PedidoDAO {
 		return(totalVenta);
 	}
 	
+	public static double obtenerTotalesBrutoPedidosSemana(String fechaAnterior, String fechaPosterior , boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double totalVentaBruta = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select sum(total_bruto) from pedido where fechapedido >= '" + fechaAnterior + "' and fechapedido <=  '" + fechaPosterior + "'  and idmotivoanulacion IS NULL"; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				totalVentaBruta = rs.getDouble(1);
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(0);
+		}
+		return(totalVentaBruta);
+	}
+	
+	public static double obtenerTotalesImpuestoPedidosSemana(String fechaAnterior, String fechaPosterior , boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		double totalImpuesto = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select sum(impuesto) from pedido where fechapedido >= '" + fechaAnterior + "' and fechapedido <=  '" + fechaPosterior + "'  and idmotivoanulacion IS NULL"; 
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				totalImpuesto = rs.getDouble(1);
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(0);
+		}
+		return(totalImpuesto);
+	}
+	
 	public static double obtenerTotalBrutoPedido(int idpedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -660,7 +732,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idestado, b.descripcion, c.descripcion as desc_tipo, a.idtipopedido, b.imagen  from pedido a, estado b, tipo_pedido c   where  a.idtipopedido = c.idtipopedido and a.idestado = b.idestado and a.idtipopedido = b.idtipopedido and idpedidotienda = " + idPedidoTienda + "";
+			String consulta = "select a.idestado, b.descripcion, c.descripcion as desc_tipo, a.idtipopedido, b.imagen, b.impresion  from pedido a, estado b, tipo_pedido c   where  a.idtipopedido = c.idtipopedido and a.idestado = b.idestado and a.idtipopedido = b.idtipopedido and idpedidotienda = " + idPedidoTienda + "";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -671,17 +743,24 @@ public class PedidoDAO {
 			String descEstado = "";
 			String descTipo = "";
 			byte[] imagen = null;
+			int impresion  = 0;
+			boolean isImpresion = false;
 			while(rs.next()){
 				idEstado = rs.getInt("idestado");
 				idTipoPedido = rs.getInt("idtipopedido");
 				descEstado = rs.getString("descripcion");
 				descTipo = rs.getString("desc_tipo");
 				imagen = rs.getBytes("imagen");
-				
+				impresion = rs.getInt("impresion");
+				if(impresion == 1 )
+				{
+					isImpresion = true;
+				}
 			}
 			estadoPedido = new Estado(idEstado,descEstado, descEstado, idTipoPedido, "", false, false, 0, 0, 0, false, false,false);
 			estadoPedido.setImagen(imagen);
 			estadoPedido.setTipoPedido(descTipo);
+			estadoPedido.setImpresion(isImpresion);
 			rs.close();
 			stm.close();
 			con1.close();
@@ -1576,7 +1655,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, a.total_bruto, a.total_neto, a.impuesto, b.telefono, b.observacion, b.nombrecompania, b.zona, (e.valorformapago - a.total_neto) as cambio, a.usuariopedido, f.nombre as nombreformapago, e.valorformapago, g.nombre_largo as nombredomiciliario from cliente b, tipo_pedido c, estado d, pedido_forma_pago e, forma_pago f, pedido a left outer join usuario g on a.iddomiciliario = g.id  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idpedidotienda = e.idpedidotienda and e.idforma_pago = f.idforma_pago and a.idpedidotienda = " + idPedidoTienda;
+			String consulta = "select a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, a.total_bruto, a.total_neto, a.impuesto, b.telefono, b.observacion, b.nombrecompania, b.zona, (e.valorformapago - a.total_neto) as cambio, a.usuariopedido, f.nombre as nombreformapago, e.valorformapago, g.nombre_largo as nombredomiciliario, a.impreso from cliente b, tipo_pedido c, estado d, pedido_forma_pago e, forma_pago f, pedido a left outer join usuario g on a.iddomiciliario = g.id  where a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and a.idpedidotienda = e.idpedidotienda and e.idforma_pago = f.idforma_pago and a.idpedidotienda = " + idPedidoTienda;
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1617,6 +1696,15 @@ public class PedidoDAO {
 				pedRsta.setDomiciliario(nombreDomiciliario);
 				String nombreCompania = rs.getString("nombrecompania");
 				pedRsta.setNombreCompania(nombreCompania);
+				int idTipoPedido = rs.getInt("idtipopedido");
+				pedRsta.setIdTipoPedido(idTipoPedido);
+				int impreso = rs.getInt("impreso");
+				boolean impresion = false;
+				if(impreso == 1)
+				{
+					impresion = true;
+				}
+				pedRsta.setImpresion(impresion);
 				break;
 			}
 			rs.close();
@@ -1923,5 +2011,103 @@ public class PedidoDAO {
 		}
 		return(valorPedido);
 	}
+	
+	//Obtener los pedidos de la cocina 
+	/**
+	 * Método que se encarga de consultar los pedidos que se visualizarán en la ventana de cocina con el objetivo de allí administrar los pedidos que están en el estado de cocina
+	 * @param fechaPedido. Parámetro para filtro de la fecha de sistema con los pedidos
+	 * @param estadosCocina. Estados de Cocina con base en los cuales se filtran los pedidos que se desean observar.
+	 * @param auditoria. Auditoría de si se desea mostrar log o no de la operación en base de datos.
+	 * @return
+	 */
+	public static ArrayList obtenerPedidosVentanaCocina(String fechaPedido, ArrayList<Integer> estadosCocina, boolean auditoria)
+	{
+		//Procesamos el in de los estados de cocina
+		String condEstados = "(";
+		for(int i = 0; i < estadosCocina.size(); i++)
+		{
+			if (i == 0)
+			{
+				condEstados = condEstados +  Integer.toString(estadosCocina.get(i));
+			}else
+			{
+				condEstados = condEstados + "," + Integer.toString(estadosCocina.get(i));
+			}
+		}
+		condEstados = condEstados  + " )";
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "";
+			consulta = "select a.idpedidotienda, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, a.tiempopedido, a.idestado, a.idtipopedido, '' from estado d, cliente b, tipo_pedido c, pedido a where a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in " + condEstados + " order by a.idpedidotienda asc";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
+	
+	public static boolean actualizarImpresionPedido(int idPedido,boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			double valorTotal = 0;
+			Statement stm = con1.createStatement();
+			String update = "update pedido set impreso = 1 where idpedidotienda= " + idPedido ;
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			System.out.println(e.toString());
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
 	
 	}
