@@ -48,5 +48,12 @@ public class ImpuestoCtrl {
 		}
 		return(respuesta);
 	}
+	
+	//Desarrollamos un método que recibe rango de fechas y tipo de item de inventario
+	public ArrayList obtenerCierreSemanalInsumos(String fechaActual, String fechaAnterior, String tipoItemInventario)
+	{
+		ArrayList respuesta = new ArrayList();
+		return(respuesta);
+	}
 
 }

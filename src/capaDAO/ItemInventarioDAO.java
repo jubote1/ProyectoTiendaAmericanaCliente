@@ -764,4 +764,53 @@ public class ItemInventarioDAO {
 		return(itemsInvActual);
 	}
 	
+	//Crearemos método que obtendrá la información base para desplegar en el informe
+	public static ArrayList obtenerCierreSemanalInsumos(String fechaActual, String fechaAnterior, String tipoItemInventario, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList itemsInvCierre = new ArrayList();
+		int cantItems = 0;
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "SELECT a.nombre_item, a.unidad_medida," + 
+					"(SELECT b.cantidad FROM item_inventario_historico b WHERE a.iditem = b.iditem AND B.fecha = '" + fechaAnterior + "') AS INVENTARIO_INICIAL " +
+					" ,(SELECT SUM(d.cantidad) FROM ingreso_inventario c, ingreso_inventario_detalle d WHERE c.idingreso_inventario = d.idingreso_inventario AND d.iditem = a.iditem AND c.fecha_real >= '" + fechaAnterior + "' AND c.fecha_real <= '" + fechaActual + "')  AS ENVIADO_A_TIENDA" +
+					" ,ifnull( (select sum(c.cantidad) from retiro_inventario d, retiro_inventario_detalle c where c.idretiro_inventario = d.idretiro_inventario and c.iditem = a.iditem and d.fecha_sistema >= '" + fechaAnterior +"' AND d.fecha_sistema <= '" + fechaActual + "' ),0) AS RETIROS_OTRAS_TIENDAS " + 
+					" , a.cantidad AS INVENTARIO_FINAL   from item_inventario a WHERE " +
+					" a.categoria LIKE '" + tipoItemInventario + "%'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				itemsInvCierre.add(fila);
+				
+			}
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(itemsInvCierre);
+	}
+	
 }
