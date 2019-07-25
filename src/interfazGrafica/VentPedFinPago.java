@@ -692,10 +692,18 @@ public class VentPedFinPago extends JDialog implements Runnable {
 							//Tomamos el valor digitado y lo fijamos en el ArrayList
 							formaTemp.setValorPago(Double.parseDouble(displayPago.getText()));
 							valorAnt = Double.parseDouble(displayPago.getText());
+							if((totalRecalculado + valorAnt) <= Total)
+							{
+								formaTemp.setValorDisminuido(valorAnt);
+							}else if((totalRecalculado + valorAnt) > Total)
+							{
+								formaTemp.setValorDisminuido(Deuda);
+							}
 						}else
 						{
 							//Tomamos el total del pedido
 							formaTemp.setValorPago(Deuda);
+							formaTemp.setValorDisminuido(Deuda);
 							valorAnt = Deuda;
 						}
 						//Acumulamos en el Total Pedido Recalculado
@@ -710,7 +718,7 @@ public class VentPedFinPago extends JDialog implements Runnable {
 					}
 				}
 				Deuda = Total - totalRecalculado;
-				System.out.println("TOTAL  " + Total  + " totalRecalculado " + totalRecalculado);
+				//System.out.println("TOTAL  " + Total  + " totalRecalculado " + totalRecalculado);
 				if (Total < totalRecalculado) {
 					Cambio = Deuda * - 1;
 					Deuda = 0;
@@ -805,7 +813,7 @@ public class VentPedFinPago extends JDialog implements Runnable {
 			}
 			panelMetodosPagos.add(btnFormaPago);
 			btnFormasPago.add(btnFormaPago);
-			FormaPagoIng formaIngTemp = new FormaPagoIng(formaTemp.getIdformapago(), 0, false, formaTemp.getNombre());
+			FormaPagoIng formaIngTemp = new FormaPagoIng(formaTemp.getIdformapago(), 0, false, formaTemp.getNombre(),0);
 			formasPagoIng.add(formaIngTemp);
 			btnFormaPago.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) 

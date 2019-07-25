@@ -7,7 +7,15 @@ public class PedidoFormaPago {
 	private int idFormaPago;
 	private double valorTotal;
 	private double valorFormaPago;
+	private double valorDisminuido;
 	
+		
+	public double getValorDisminuido() {
+		return valorDisminuido;
+	}
+	public void setValorDisminuido(double valorDisminuido) {
+		this.valorDisminuido = valorDisminuido;
+	}
 	public int getIdPedidoFormaPago() {
 		return idPedidoFormaPago;
 	}
@@ -39,13 +47,14 @@ public class PedidoFormaPago {
 		this.valorFormaPago = valorFormaPago;
 	}
 	public PedidoFormaPago(int idPedidoFormaPago, int idPedidoTienda, int idFormaPago, double valorTotal,
-			double valorFormaPago) {
+			double valorFormaPago, double valorDisminuido) {
 		super();
 		this.idPedidoFormaPago = idPedidoFormaPago;
 		this.idPedidoTienda = idPedidoTienda;
 		this.idFormaPago = idFormaPago;
 		this.valorTotal = valorTotal;
 		this.valorFormaPago = valorFormaPago;
+		this.valorDisminuido = valorDisminuido;
 	}
 	
 	

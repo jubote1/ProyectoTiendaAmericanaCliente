@@ -27,43 +27,66 @@ public ControladorEnvioCorreo(Correo co, ArrayList correosenv)
 
 public boolean enviarCorreo()
 {
-	try
+	boolean bandera = true;
+	int contadorErrores = 0;
+	while(bandera)
 	{
-		Properties p = new Properties();
-		p.put("mail.smtp.host", "smtp.gmail.com");
-		p.setProperty("mail.smtp.starttls.enable", "true");
-		p.setProperty("mail.smtp.port", "587");
-		p.setProperty("mail.smtp.user", c.getUsuarioCorreo());
-		p.setProperty("mail.smtp.auth", "true");
-		
-		Session s = Session.getDefaultInstance(p, null);
-		BodyPart texto = new MimeBodyPart();
-		texto.setContent(c.getMensaje(), "text/html; charset=utf-8");
-		//texto.setText(c.getMensaje());
-		MimeMultipart m = new MimeMultipart();
-		
-		m.addBodyPart(texto);
-		MimeMessage mensaje = new MimeMessage(s);
-		mensaje.setFrom(new InternetAddress(c.getUsuarioCorreo()));
-		for(int i = 0; i< correos.size(); i++)
+		try
 		{
-			mensaje.addRecipient(Message.RecipientType.TO, new InternetAddress((String)correos.get(i)));
+			Properties p = new Properties();
+			p.put("mail.smtp.host", "smtp.gmail.com");
+			p.setProperty("mail.smtp.starttls.enable", "true");
+			p.setProperty("mail.smtp.port", "587");
+			p.setProperty("mail.smtp.user", c.getUsuarioCorreo());
+			p.setProperty("mail.smtp.auth", "true");
+			
+			Session s = Session.getDefaultInstance(p, null);
+			BodyPart texto = new MimeBodyPart();
+			texto.setContent(c.getMensaje(), "text/html; charset=utf-8");
+			//texto.setText(c.getMensaje());
+			MimeMultipart m = new MimeMultipart();
+			
+			m.addBodyPart(texto);
+			MimeMessage mensaje = new MimeMessage(s);
+			mensaje.setFrom(new InternetAddress(c.getUsuarioCorreo()));
+			for(int i = 0; i< correos.size(); i++)
+			{
+				mensaje.addRecipient(Message.RecipientType.TO, new InternetAddress((String)correos.get(i)));
+			}
+			mensaje.setSubject(c.getAsunto());
+			mensaje.setContent(m, "text/html");
+			Transport t = s.getTransport("smtp");
+			t.connect(c.getUsuarioCorreo(),c.getContrasena());
+			t.sendMessage(mensaje, mensaje.getAllRecipients());
+			t.close();
+			bandera = false;
+			
 		}
-		mensaje.setSubject(c.getAsunto());
-		mensaje.setContent(m, "text/html");
-		Transport t = s.getTransport("smtp");
-		t.connect(c.getUsuarioCorreo(),c.getContrasena());
-		t.sendMessage(mensaje, mensaje.getAllRecipients());
-		t.close();
-		return(true);
-		
+		catch(Exception e)
+		{
+			System.out.println(e.toString());
+			contadorErrores ++;
+			try
+			{
+				Thread.sleep(10000);
+			}catch(Exception ex)
+			{
+				
+			}
+			if (contadorErrores == 4)
+			{
+				bandera = false;
+			}
+		}
 	}
-	catch(Exception e)
+	if(contadorErrores < 4)
 	{
-		System.out.println(e.toString());
+		return(true);
+	}
+	else
+	{
 		return(false);
 	}
-	
 }
 	
 }

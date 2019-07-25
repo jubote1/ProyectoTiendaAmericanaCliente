@@ -103,7 +103,7 @@ public class PedidoDAO {
 			}
 			else if(valorDescuento > 0)
 			{
-				valorImpuesto = (valorTotal - valorDescuento)* 0.08;
+				valorImpuesto = (valorTotal-valorDescuento) - ((valorTotal-valorDescuento) / 1.08);
 				update = "update pedido set total_bruto =" + (valorTotal - valorImpuesto - valorDescuento) + " , impuesto = " + (valorImpuesto) + " , total_neto =" + (valorTotal - valorDescuento) + " , idtipopedido =" + idTipoPedido + " , tiempopedido = " + tiempopedido +" where idpedidotienda = " + idpedido;
 			}
 			if(auditoria)
@@ -679,6 +679,55 @@ public class PedidoDAO {
 		
 	}
 	
+	/** 
+	 * Método que se encargará de entregar un resumen en un arrayList de los pedidos tomados para la fecha 
+	 * @param fechaPedido fecha de los pedidos base para extraer la información de pedidos por fecha.
+	 * @return un ArrayList con los horas y cantidad de pedidos para la fecha recibida como parámetro
+	 */
+	public static ArrayList obtenerPedidosPorHoras(String fechaPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select substr(fechainsercion,12,2), count(*)  from pedido where fechapedido = '" + fechaPedido +"' group by substr(fechainsercion,12,2)";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
 	public static ArrayList obtenerPedidosEmpacadosDomicilio(String fechaPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -1017,7 +1066,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select c.nombre , sum(a.total_neto), count(*) from pedido a , pedido_forma_pago b, forma_pago c where a.idmotivoanulacion IS NULL and a.idpedidotienda = b.idpedidotienda and b.idforma_pago = c.idforma_pago and a.fechapedido = '" + fechaPedido +"' group by c.nombre ";
+			String consulta = "select c.nombre , sum(b.valordisminuido), count(*) from pedido a , pedido_forma_pago b, forma_pago c where a.idmotivoanulacion IS NULL and a.idpedidotienda = b.idpedidotienda and b.idforma_pago = c.idforma_pago and a.fechapedido = '" + fechaPedido +"' group by c.nombre ";
 			System.out.println(consulta);
 			if(auditoria)
 			{
@@ -1250,7 +1299,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select  a.idpedidotienda, a.fechainsercion, c.descripcion, b.valortotal, a.usuariopedido, d.descripcion as motivoanulacion, b.obs_anulacion from pedido a, detalle_pedido b, producto c, motivo_anulacion_pedido d where a.idpedidotienda = b.idpedidotienda and b.idproducto = c.idproducto and b.idmotivoanulacion = d.idmotivoanulacion and d.descuento_inventario = 'S' and a.fechapedido >= '" + fechaAnterior + "' and a.fechapedido <= '" + fechaActual + "' and b.iddetalle_pedido_master = 0";
+			String consulta = "select  a.idpedidotienda, a.fechainsercion, c.descripcion, b.valortotal, a.usuariopedido, d.descripcion as motivoanulacion, b.obs_anulacion from pedido a, detalle_pedido b, producto c, motivo_anulacion_pedido d where a.idpedidotienda = b.idpedidotienda and b.idproducto = c.idproducto and b.idmotivoanulacion = d.idmotivoanulacion and d.descuento_inventario = 'S' and a.fechapedido >= '" + fechaAnterior + "' and a.fechapedido <= '" + fechaActual + "' and b.iddetalle_pedido_master = 0 and c.tipo_producto = 'P'";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1313,11 +1362,11 @@ public class PedidoDAO {
 			String consulta = "";
 			if(idTipoEmpleado != 0)
 			{
-				consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido AS a LEFT JOIN usuario AS e on a.iddomiciliario = e.id  where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
+				consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion, '' from estado d, cliente b, tipo_pedido c, pedido AS a LEFT JOIN usuario AS e on a.iddomiciliario = e.id  where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
 			}
 			else
 			{
-				consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido AS a LEFT JOIN usuario AS e on a.iddomiciliario = e.id  where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "'  order by  a.idpedidotienda desc";
+				consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion, '' from estado d, cliente b, tipo_pedido c, pedido AS a LEFT JOIN usuario AS e on a.iddomiciliario = e.id  where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "'  order by  a.idpedidotienda desc";
 			}
 			System.out.println(consulta);
 			if(auditoria)
@@ -1376,7 +1425,7 @@ public class PedidoDAO {
 //					"(select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.ruta_domicilio = 1 and a.iddomiciliario = " + idDomiciliario  + ")"
 //					+ " UNION " +
 //					"(select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.entrega_domicilio = 1 and a.iddomiciliario = " + idDomiciliario + ") order by idpedidotienda desc";
-			String consulta = " select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id  where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select f.idestado from tipo_empleado_estados f, estado g  where f.idestado = g.idestado and g.ruta_domicilio = 0 and f.idtipoempleado =" + idTipoEmpleado +") order by idpedidotienda desc";
+			String consulta = " select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id  where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select f.idestado from tipo_empleado_estados f, estado g  where f.idestado = g.idestado and g.ruta_domicilio = 0 and f.idtipoempleado =" + idTipoEmpleado +") order by idpedidotienda desc";
 			System.out.println("consulta cuando está en tienda " + consulta);
 			if(auditoria)
 			{
@@ -1425,7 +1474,7 @@ public class PedidoDAO {
 //					"(select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.ruta_domicilio = 1 and a.iddomiciliario = " + idDomiciliario  + ")"
 //					+ " UNION " +
 //					"(select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.entrega_domicilio = 1 and a.iddomiciliario = " + idDomiciliario + ") order by idpedidotienda desc";
-			String consulta = " select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id  where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select f.idestado from tipo_empleado_estados f, estado g  where f.idestado = g.idestado and g.ruta_domicilio = 0 and f.idtipoempleado =" + idTipoEmpleado +") order by idpedidotienda asc";
+			String consulta = " select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id  where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idestado in (select f.idestado from tipo_empleado_estados f, estado g  where f.idestado = g.idestado and g.ruta_domicilio = 0 and f.idtipoempleado =" + idTipoEmpleado +") order by idpedidotienda asc";
 			System.out.println("consulta cuando está en tienda " + consulta);
 			if(auditoria)
 			{
@@ -1477,7 +1526,7 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			//La consulta original en su primera parte trae los pedidos para salir a entregar, el segundo trae los pedidos que están en ruta y el tercero trae los pedidos entregados, vamos a modificar que solo traiga lo disponible para salir a llevar.
-			String consulta ="select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.ruta_domicilio = 1 and a.iddomiciliario = " + idDomiciliario  + " order by idpedidotienda desc";
+			String consulta ="select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.ruta_domicilio = 1 and a.iddomiciliario = " + idDomiciliario  + " order by idpedidotienda desc";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1520,7 +1569,7 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			//La consulta original en su primera parte trae los pedidos para salir a entregar, el segundo trae los pedidos que están en ruta y el tercero trae los pedidos entregados, vamos a modificar que solo traiga lo disponible para salir a llevar.
-			String consulta ="select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.ruta_domicilio = 1 and a.iddomiciliario = " + idDomiciliario  + " order by idpedidotienda asc";
+			String consulta ="select 'false',a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and d.ruta_domicilio = 1 and a.iddomiciliario = " + idDomiciliario  + " order by idpedidotienda asc";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1563,7 +1612,7 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			String consulta;
-			consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 1 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' order by a.idpedidotienda desc";
+			consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 1 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' order by a.idpedidotienda desc";
 			
 			if(auditoria)
 			{
@@ -1609,11 +1658,11 @@ public class PedidoDAO {
 			String consulta;
 			if(idTipoEmpleado != 0)
 			{
-				consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido + " and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
+				consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion,  '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido + " and a.idestado in (select e.idestado from tipo_empleado_estados e where e.idtipoempleado =" + idTipoEmpleado +") order by tipopedido , a.idpedidotienda desc";
 			}
 			else
 			{
-				consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido +" order by a.idpedidotienda desc";
+				consulta = "select 'false', a.idpedidotienda, a.fechapedido, concat_ws(' ', b.nombre,  b.apellido) as nombres, c.descripcion as tipopedido, d.descripcion_corta as estado, b.direccion, a.idtipopedido, a.idestado, e.nombre_largo, a.tiempopedido, a.observacion,  '' from estado d, cliente b, tipo_pedido c, pedido a left outer join usuario e on a.iddomiciliario = e.id where d.estado_final = 0 and c.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idestado = d.idestado and a.idcliente = b.idcliente and a.idtipopedido = c.idtipopedido and fechapedido = '" + fechaPedido + "' and a.idtipopedido = " + idTipoPedido +" order by a.idpedidotienda desc";
 			}
 			if(auditoria)
 			{
@@ -1740,11 +1789,11 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select sum(total_neto), d.nombre_largo as usuariopedido, g.nombre from pedido a , tipo_pedido b, estado c, usuario d , pedido_forma_pago e, forma_pago g where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado AND a.idpedidotienda = e.idpedidotienda AND e.idforma_pago = g.idforma_pago and b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = '" + fechaActual + "' group by d.nombre_largo, g.nombre " + 
+			String consulta = "select sum(e.valordisminuido), d.nombre_largo as usuariopedido, g.nombre from pedido a , tipo_pedido b, estado c, usuario d , pedido_forma_pago e, forma_pago g where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado AND a.idpedidotienda = e.idpedidotienda AND e.idforma_pago = g.idforma_pago and b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = '" + fechaActual + "' group by d.nombre_largo, g.nombre " + 
 					"union " + 
-					"select sum(total_neto), 'CAJA-NO DOMICILIO' as usucaja, e.nombre from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido AND a.idpedidotienda = d.idpedidotienda AND d.idforma_pago = e.idforma_pago and a.idestado = c.idestado and b.esdomicilio = 0 and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' group by usucaja, e.nombre " +
+					"select sum(d.valordisminuido), 'CAJA-NO DOMICILIO' as usucaja, e.nombre from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido AND a.idpedidotienda = d.idpedidotienda AND d.idforma_pago = e.idforma_pago and a.idestado = c.idestado and b.esdomicilio = 0 and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' group by usucaja, e.nombre " +
 					"union " + 
-					"select sum(total_neto), 'DOMICILIOS EN ESPERA' as usucaja, e.nombre from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido AND a.idpedidotienda = d.idpedidotienda AND d.idforma_pago = e.idforma_pago and a.idestado = c.idestado and b.esdomicilio = 1 and a.iddomiciliario IS NULL and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' group by usucaja, e.nombre";
+					"select sum(d.valordisminuido), 'DOMICILIOS EN ESPERA' as usucaja, e.nombre from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido AND a.idpedidotienda = d.idpedidotienda AND d.idforma_pago = e.idforma_pago and a.idestado = c.idestado and b.esdomicilio = 1 and a.iddomiciliario IS NULL and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' group by usucaja, e.nombre";
 			System.out.println(consulta);
 			if(auditoria)
 			{
@@ -1796,11 +1845,11 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.total_neto, d.nombre_largo as usuario, a.idpedidotienda, g.nombre as formapago from pedido a , tipo_pedido b, estado c, usuario d, pedido_forma_pago e, forma_pago g  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and a.iddomiciliario = d.id and b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idpedidotienda = e.idpedidotienda and e.idforma_pago = g.idforma_pago  and a.fechapedido = '" + fechaActual + "' " + 
+			String consulta = "select e.valordisminuido , d.nombre_largo as usuario, a.idpedidotienda, g.nombre as formapago from pedido a , tipo_pedido b, estado c, usuario d, pedido_forma_pago e, forma_pago g  where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and a.iddomiciliario = d.id and b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.idpedidotienda = e.idpedidotienda and e.idforma_pago = g.idforma_pago  and a.fechapedido = '" + fechaActual + "' " + 
 					"union " + 
-					"select a.total_neto, 'CAJA NO DOMICILIO' as usuario, a.idpedidotienda, e.nombre as formapago from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and b.esdomicilio = 0 and a.idpedidotienda = d.idpedidotienda and d.idforma_pago = e.idforma_pago and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' " +
+					"select d.valordisminuido , 'CAJA NO DOMICILIO' as usuario, a.idpedidotienda, e.nombre as formapago from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and b.esdomicilio = 0 and a.idpedidotienda = d.idpedidotienda and d.idforma_pago = e.idforma_pago and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' " +
 					"union " + 
-					"select a.total_neto, 'DOMICILIOS EN ESPERA' as usuario, a.idpedidotienda, e.nombre as formapago from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and b.esdomicilio = 1 and a.iddomiciliario IS NULL and a.idpedidotienda = d.idpedidotienda and d.idforma_pago = e.idforma_pago and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' " +
+					"select d.valordisminuido, 'DOMICILIOS EN ESPERA' as usuario, a.idpedidotienda, e.nombre as formapago from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and b.esdomicilio = 1 and a.iddomiciliario IS NULL and a.idpedidotienda = d.idpedidotienda and d.idforma_pago = e.idforma_pago and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' " +
 					"order by usuario,formapago";
 			if(auditoria)
 			{
@@ -2109,5 +2158,319 @@ public class PedidoDAO {
 		return(true);
 	}
 	
+	public static boolean generarObservacionPedido(int idPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		try
+		{
+			
+			Statement stm = con1.createStatement();
+			String select = "SELECT b.descripcion FROM detalle_pedido a, producto b WHERE a.idproducto = b.idproducto AND b.genera_observacion = 'S' AND a.idpedidotienda = " + idPedido ; 
+			if(auditoria)
+			{
+				logger.info(select);
+			}
+			ResultSet rs = stm.executeQuery(select);
+			String descripcion = "";
+			while(rs.next())
+			{
+				descripcion = descripcion + " " + rs.getString("descripcion");
+			}
+			
+			
+			//En este punto realizaremos revisión para saber si la forma de pago es con tarjeta.
+			select = "select a.idforma_pago from forma_pago a, pedido_forma_pago b where a.idforma_pago = b.idforma_pago and b.idpedidotienda = " + idPedido + " and a.tipoformapago = 'TARJETA'";
+			if(auditoria)
+			{
+				logger.info(select);
+			}
+			rs = stm.executeQuery(select);
+			boolean llevarDatafono = false;
+			String descripcionDatafono = "";
+			while(rs.next())
+			{
+				llevarDatafono = true;
+				break;
+			}
+			if (llevarDatafono)
+			{
+				descripcionDatafono = " TENGA CUIDADO!! RECUERDE LLEVAR DATAFONO PARA ESTE PEDIDO "; 
+			}
+				
+				
+			if((descripcion.equals(new String("")))&&(descripcionDatafono.equals(new String(""))))
+			{
+				
+			}else
+			{
+				String observacion = "";
+				if ((!descripcion.equals(new String("")))&&(descripcionDatafono.equals(new String(""))))
+				{
+					observacion = "OJO EL PEDIDO INCLUYE " + descripcion;
+				}else if ((!descripcion.equals(new String("")))&&(!descripcionDatafono.equals(new String(""))))
+				{
+					observacion = "OJO EL PEDIDO INCLUYE " + descripcion + descripcionDatafono;
+				}else if ((descripcion.equals(new String("")))&&(!descripcionDatafono.equals(new String(""))))
+				{
+					observacion = descripcionDatafono;
+				}
+				
+				//En este punto realizaremos la actualizacion
+				String update = "update pedido set observacion  = '" + observacion + "' where idpedidotienda= " + idPedido ;
+				if(auditoria)
+				{
+					logger.info(update);
+				}
+				stm.executeUpdate(update);
+			}
+			
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(false);
+		}
+		return(true);
+	}
+	
+	//Método que retona totales por tamaño de pizzas en un día determinado
+	public static ArrayList obtenerTotalPizzasDiario(String fechaPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
+			String consulta = "SELECT c.tamano, COUNT(*) FROM pedido a, detalle_pedido b , producto c WHERE a.idpedidotienda = b.idpedidotienda AND b.idproducto = c.idproducto AND c.tamano IN ('MD', 'GD', 'XL', 'PZ') AND a.fechapedido = '" + fechaPedido + "' GROUP BY tamano";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
+	//Método que retona totales por especialidades de pizzas en un día determinado
+		public static ArrayList obtenerTotalTipoDiario(String fechaPedido, boolean auditoria)
+		{
+			Logger logger = Logger.getLogger("log_file");
+			ConexionBaseDatos con = new ConexionBaseDatos();
+			Connection con1 = con.obtenerConexionBDLocal();
+			ArrayList pedidos = new ArrayList();
+			
+			try
+			{
+				Statement stm = con1.createStatement();
+				//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
+				String consulta = "SELECT c.descripcion, COUNT(*) FROM pedido a, detalle_pedido b , producto c WHERE a.idpedidotienda = b.idpedidotienda AND b.idproducto = c.idproducto AND b.iddetalle_pedido_master = 0 and c.tamano IN ('MD', 'GD', 'XL', 'PZ') AND a.fechapedido = '" + fechaPedido +"' GROUP BY c.descripcion";
+				if(auditoria)
+				{
+					logger.info(consulta);
+				}
+				ResultSet rs = stm.executeQuery(consulta);
+				ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+				int numeroColumnas = rsMd.getColumnCount();
+				while(rs.next()){
+					String [] fila = new String[numeroColumnas];
+					for(int y = 0; y < numeroColumnas; y++)
+					{
+						fila[y] = rs.getString(y+1);
+					}
+					pedidos.add(fila);
+				}
+				rs.close();
+				stm.close();
+				con1.close();
+			}catch (Exception e){
+				logger.info(e.toString());
+				try
+				{
+					con1.close();
+				}catch(Exception e1)
+				{
+				}
+			}
+			return(pedidos);
+			
+		}
+		
+		//Método que retona totales por tamaño de pizzas en un día determinado
+		public static ArrayList obtenerTotalPizzasFechas(String fechaInicial, String fechaFinal, boolean auditoria)
+		{
+			Logger logger = Logger.getLogger("log_file");
+			ConexionBaseDatos con = new ConexionBaseDatos();
+			Connection con1 = con.obtenerConexionBDLocal();
+			ArrayList pedidos = new ArrayList();
+			
+			try
+			{
+				Statement stm = con1.createStatement();
+				//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
+				String consulta = "SELECT c.tamano, COUNT(*) FROM pedido a, detalle_pedido b , producto c WHERE a.idpedidotienda = b.idpedidotienda AND b.idproducto = c.idproducto AND c.tamano IN ('MD', 'GD', 'XL', 'PZ') AND a.fechapedido >= '" + fechaInicial + " and a.fechapedido <= " + fechaFinal + "' GROUP BY tamano";
+				if(auditoria)
+				{
+					logger.info(consulta);
+				}
+				ResultSet rs = stm.executeQuery(consulta);
+				ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+				int numeroColumnas = rsMd.getColumnCount();
+				while(rs.next()){
+					String [] fila = new String[numeroColumnas];
+					for(int y = 0; y < numeroColumnas; y++)
+					{
+						fila[y] = rs.getString(y+1);
+					}
+					pedidos.add(fila);
+				}
+				rs.close();
+				stm.close();
+				con1.close();
+			}catch (Exception e){
+				logger.info(e.toString());
+				try
+				{
+					con1.close();
+				}catch(Exception e1)
+				{
+				}
+			}
+			return(pedidos);
+			
+		}
+		
+		//Método que retona totales por especialidades de pizzas en un día determinado
+			public static ArrayList obtenerTotalTipoDiario(String fechaInicial, String fechaFinal, boolean auditoria)
+			{
+				Logger logger = Logger.getLogger("log_file");
+				ConexionBaseDatos con = new ConexionBaseDatos();
+				Connection con1 = con.obtenerConexionBDLocal();
+				ArrayList pedidos = new ArrayList();
+				
+				try
+				{
+					Statement stm = con1.createStatement();
+					//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
+					String consulta = "SELECT c.descripcion, COUNT(*) FROM pedido a, detalle_pedido b , producto c WHERE a.idpedidotienda = b.idpedidotienda AND b.idproducto = c.idproducto AND b.iddetalle_pedido_master = 0 and c.tamano IN ('MD', 'GD', 'XL', 'PZ') AND a.fechapedido >= '" + fechaInicial + " and a.fechapedido <=" + fechaFinal +"' GROUP BY c.descripcion";
+					if(auditoria)
+					{
+						logger.info(consulta);
+					}
+					ResultSet rs = stm.executeQuery(consulta);
+					ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+					int numeroColumnas = rsMd.getColumnCount();
+					while(rs.next()){
+						String [] fila = new String[numeroColumnas];
+						for(int y = 0; y < numeroColumnas; y++)
+						{
+							fila[y] = rs.getString(y+1);
+						}
+						pedidos.add(fila);
+					}
+					rs.close();
+					stm.close();
+					con1.close();
+				}catch (Exception e){
+					logger.info(e.toString());
+					try
+					{
+						con1.close();
+					}catch(Exception e1)
+					{
+					}
+				}
+				return(pedidos);
+				
+			}
+			
+			/**
+			 * Método que se encargará de recoger todos los parámetros para retornar las porciones de ciertos tipos vendidas en el día
+			 * @param fechaAnterior
+			 * @param fechaPosterior
+			 * @param idProductoPorcion
+			 * @param idPorcionTemporal
+			 * @param idPorcionEmpleado
+			 * @param idPorcionDesecho
+			 * @param auditoria
+			 * @return
+			 */
+			public static ArrayList obtenerResumenPorciones( String fechaAnterior, String  fechaPosterior, int idProductoPorcion, int idPorcionTemporal, int idPorcionEmpleado, int idPorcionDesecho, boolean auditoria )
+			{
+				Logger logger = Logger.getLogger("log_file");
+				ConexionBaseDatos con = new ConexionBaseDatos();
+				Connection con1 = con.obtenerConexionBDLocal();
+				ArrayList resumenPorciones = new ArrayList();
+				
+				try
+				{
+					Statement stm = con1.createStatement();
+					//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
+					String consulta = "SELECT a.descripcion, SUM(b.cantidad)AS cantidad, c.fechapedido AS fecha  FROM producto a, detalle_pedido b, pedido c WHERE a.idproducto IN (" + idProductoPorcion + " , " + idPorcionTemporal + " , " + idPorcionEmpleado + " , " + idPorcionDesecho + ") AND a.idproducto = b.idproducto AND b.idmotivoanulacion IS NULL AND b.idpedidotienda = c.idpedidotienda " + 
+							" AND c.fechapedido >= '" + fechaAnterior + "' AND c.fechapedido <= '" + fechaPosterior + "' GROUP BY a.descripcion, c.fechapedido order by c.fechapedido";
+					if(auditoria)
+					{
+						logger.info(consulta);
+					}
+					ResultSet rs = stm.executeQuery(consulta);
+					ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+					int numeroColumnas = rsMd.getColumnCount();
+					while(rs.next()){
+						String [] fila = new String[numeroColumnas];
+						for(int y = 0; y < numeroColumnas; y++)
+						{
+							fila[y] = rs.getString(y+1);
+						}
+						resumenPorciones.add(fila);
+					}
+					rs.close();
+					stm.close();
+					con1.close();
+				}catch (Exception e){
+					logger.info(e.toString());
+					try
+					{
+						con1.close();
+					}catch(Exception e1)
+					{
+					}
+				}
+				return(resumenPorciones);
+			}
 	
 	}

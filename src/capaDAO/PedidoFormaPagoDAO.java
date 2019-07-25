@@ -20,7 +20,7 @@ public class PedidoFormaPagoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String insert = "insert pedido_forma_pago (idpedidotienda, idforma_pago, valortotal, valorformapago) values (" + pedFormaPago.getIdPedidoTienda() + " , " + pedFormaPago.getIdFormaPago() + " , " + pedFormaPago.getValorTotal() + " , " + pedFormaPago.getValorFormaPago() + ")";
+			String insert = "insert pedido_forma_pago (idpedidotienda, idforma_pago, valortotal, valorformapago, valordisminuido) values (" + pedFormaPago.getIdPedidoTienda() + " , " + pedFormaPago.getIdFormaPago() + " , " + pedFormaPago.getValorTotal() + " , " + pedFormaPago.getValorFormaPago() + " , " + pedFormaPago.getValorDisminuido() + ")";
 			if(auditoria)
 			{
 				logger.info(insert);

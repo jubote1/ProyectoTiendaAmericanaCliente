@@ -343,6 +343,23 @@ public class InventarioCtrl {
 		return(respuesta);
 	}
 	
+	//GENERAR INFORMACIÓN DIARIA
+	
+		public String obtenerVarianzaDiaria(String fecha, boolean resumida)
+		{
+			String respuesta = "";
+			ArrayList varianza;
+			if(resumida)
+			{
+				varianza =  obtenerInventarioVarianzaRes(fecha);
+			}else
+			{
+				varianza =  obtenerInventarioVarianza(fecha);
+			}
+			respuesta = respuesta + resumenVarianzaDiaria(varianza, fecha);
+			return(respuesta);
+		}
+	
 	//GENERAR STRING DE CORREO ELECTRÓNICO
 	
 	public String resumenVarianzaDiaria(ArrayList varianza, String fecha)
@@ -390,6 +407,26 @@ public class InventarioCtrl {
 		ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTESEMVARIANZA", auditoria);
 		correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
 		correo.setMensaje("A continuación el reporte semanal de Varianzas: \n" + reporte);
+		ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
+		contro.enviarCorreo();
+	}
+	
+	public void enviarCorreoVarianzaDiaria(boolean resumida)
+	{
+		PedidoCtrl pedCtrl = new PedidoCtrl(auditoria);
+		//Obtenemos la fecha del rango del reporte
+		FechaSistema fecha = pedCtrl.obtenerFechasSistema();
+		String fechaSis = fecha.getFechaUltimoCierre();
+		//Obtenemos la tienda
+		Tienda tiendaReporte = TiendaDAO.obtenerTienda(auditoria);
+		//Obtenemos el reporte
+		String reporte = obtenerVarianzaDiaria(fechaSis, resumida);
+		Correo correo = new Correo();
+		correo.setAsunto(tiendaReporte.getNombretienda() + " : " + "Varianza " + fechaSis);
+		correo.setContrasena("Pizzaamericana2017");
+		ArrayList correos = GeneralDAO.obtenerCorreosParametro("REPORTEGENERALVENTAS", auditoria);
+		correo.setUsuarioCorreo("alertaspizzaamericana@gmail.com");
+		correo.setMensaje("A continuación el reporte diario de Varianza: \n" + reporte);
 		ControladorEnvioCorreo contro = new ControladorEnvioCorreo(correo, correos);
 		contro.enviarCorreo();
 	}

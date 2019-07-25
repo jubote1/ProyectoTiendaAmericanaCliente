@@ -1129,52 +1129,114 @@ public class VentProEleccionForzada extends JDialog {
 		ArrayList<EleccionForzadaTemporal> eleTemp =(ArrayList)eleccionesTemporales.clone();
 		//Este arreglo será el final quien al final sustituiera el arreglo inicial
 		ArrayList<EleccionForzadaTemporal> eleFinal = new ArrayList();
+		//Tendremos un ciclo que controlará cuando debemos de terminar y será recorriendo
+		// el arrayList y verificando si solo queda gaseosa
 		int contPregunta = 0;
-		/**
-		 * Se ejecutará mientras el contador de preguntas sea menor o igual y se recorrera agregando las mitade uno en orden sin agregar gaseosa
-		 */
-		while(contPregunta <= numPreguntas)
+		boolean indIniPrimeraMitad = false;
+		boolean indIniSegundaMitad = false;
+		while(!soloGaseosaElecciones(eleTemp))
 		{
+			
+			//Tendremos unos indicadores de cuando es necesario quebrar los ordenes
+			indIniPrimeraMitad = false;
+			indIniSegundaMitad = false;
+			/**
+			 * Se ejecutará mientras el contador de preguntas sea menor o igual y se recorrera agregando las mitade uno en orden sin agregar gaseosa
+			 */
+
+			//Si hay elemento iniciamos contPregunta en la pregunta inicial en la que quedamos
+			//Realizamos esto principalmente cuando estamos procesando productos dobles
+			if(eleTemp.size()> 0)
+			{
+				contPregunta = eleTemp.get(0).getNumeroPregunta();
+			}
 			/*
 			 * Recorremos primero buscando el contador de preguntas y la mitad 1
-			 */
-			for(int i = 0; i < eleTemp.size(); i++)
-			{
-				EleccionForzadaTemporal elemenTemp = eleTemp.get(i);
-				if((elemenTemp.getNumeroPregunta() == contPregunta)&&elemenTemp.getNumeroMitad() == 1 &&(!elemenTemp.getTipoProducto().equals(new String("G"))))
+			*/
+				for(int i = 0; i < eleTemp.size(); i++)
 				{
-					eleFinal.add(elemenTemp);
-					eleTemp.remove(i);
-					i--;
+					EleccionForzadaTemporal elemenTemp = eleTemp.get(i);
+					//Validamos si hay cambio de pregunta, entonces lo igualamos, con el fin de seguir con el procesamiento
+					if(elemenTemp.getNumeroPregunta() != contPregunta)
+					{
+						if (contPregunta < numPreguntas)
+						{
+							contPregunta++;
+						}
+					}
+					//Validamos si el tipo de producto es Detalle en cuyo caso verificaremos que indicador es
+					if(elemenTemp.getTipoProducto().equals(new String("D")))
+					{
+						//Se prende indicador si es el primer detalle
+						if(!indIniPrimeraMitad)
+						{
+							indIniPrimeraMitad = true;
+						//Se prende indicador si es el segundo detalle
+						}else if((indIniPrimeraMitad) && (!indIniSegundaMitad))
+						{
+							indIniSegundaMitad = true;
+						//Si es el detalle de la doble hay una salida para procesar la otra mitad
+						}else if((indIniPrimeraMitad) && (indIniSegundaMitad))
+						{
+							break;
+						}
+						
+					}
+					//En este punto se valida si coincide todo para agregar al arrayList final y se valida que no sea gaseosa
+					if((elemenTemp.getNumeroPregunta() == contPregunta)&& (elemenTemp.getNumeroMitad() == 1) &&(!elemenTemp.getTipoProducto().equals(new String("G"))))
+					{
+						eleFinal.add(elemenTemp);
+						eleTemp.remove(i);
+						i--;
+					}
 				}
-			}
-			contPregunta++;
-		}
-		
-		contPregunta = 0;
-		/**
-		 * Se ejecutará mientras el contador de preguntas sea menor o igual y se recorrera agregando las mitade dos en orden sin agregar gaseosa
-		 */
-		while(contPregunta <= numPreguntas)
-		{
-			/*
-			 * Recorremos primero buscando el contador de preguntas y la mitad 2
-			 */
-			for(int i = 0; i < eleTemp.size(); i++)
+			
+			//Si hay elemento iniciamos contPregunta en la pregunta inicial en la que quedamos
+			if(eleTemp.size()> 0)
 			{
-				EleccionForzadaTemporal elemenTemp = eleTemp.get(i);
-				if((elemenTemp.getNumeroPregunta() == contPregunta)&&elemenTemp.getNumeroMitad() == 2 &&(!elemenTemp.getTipoProducto().equals(new String("G"))))
-				{
-					eleFinal.add(elemenTemp);
-					eleTemp.remove(i);
-					i--;
-				}
+				contPregunta = eleTemp.get(0).getNumeroPregunta();
 			}
-			//Avanzamos la pregunta.
-			contPregunta++;
+			//Tendremos unos indicadores de cuando es necesario quebrar los ordenes
+			indIniPrimeraMitad = false;
+			indIniSegundaMitad = false;
+			/**
+			 * Se ejecutará mientras el contador de preguntas sea menor o igual y se recorrera agregando las mitade dos en orden sin agregar gaseosa
+			 */
+					/*
+					 * Recorremos primero buscando el contador de preguntas y la mitad 2
+					 */
+					for(int i = 0; i < eleTemp.size(); i++)
+					{
+						EleccionForzadaTemporal elemenTemp = eleTemp.get(i);
+						if(elemenTemp.getNumeroPregunta() != contPregunta)
+						{
+							if (contPregunta < numPreguntas)
+							{
+								contPregunta++;
+							}
+						}
+						if(elemenTemp.getTipoProducto().equals(new String("D")))
+						{
+							//Se valida con el primer detalle de la segunda mitad
+							if(!indIniPrimeraMitad)
+							{
+								indIniPrimeraMitad = true;
+							//Se verifica si es el primer detalle de la doble y en este punto se saldría
+							}else if(indIniPrimeraMitad)
+							{
+						    	break;
+							}
+							
+						}
+						if((elemenTemp.getNumeroPregunta() == contPregunta)&&elemenTemp.getNumeroMitad() == 2 &&(!elemenTemp.getTipoProducto().equals(new String("G"))))
+						{
+							eleFinal.add(elemenTemp);
+							eleTemp.remove(i);
+							i--;
+						}
+					}
+
 		}
-		
-		contPregunta = 0;
 		//En el último ciclo agregamos los productos tipo gaseosa con el fin de que queden en el orden correcto
 		//Realizaremos el recorrido pero no haremos ninguna validación dado que son las gaseosas las únicos que faltan
 		// y se deberán agregar a lo último.
@@ -1185,11 +1247,34 @@ public class VentProEleccionForzada extends JDialog {
 			eleTemp.remove(i);
 			i--;
 		}
-
 	/*
 	 * llevamos al arreglo importante el arreglo ya ordenado.
 	 */
 		eleccionesTemporales = (ArrayList) eleFinal.clone();
 	}
-	
+
+	/**
+	 * Método que se encarga recorrer el Arreglo de elecciones temoporales
+	 * identificando si solo queda gaseosa en cuyo caso retornará un valor booleano
+	 * @param elecciones Se recibirá como parámetro las elecciones forzadas temporales.
+	 * @return Se retornará un valor booleano qeu será verdadero cuando en el ArrayList solo
+	 * quedén valores booleanos.
+	 */
+public boolean soloGaseosaElecciones(ArrayList<EleccionForzadaTemporal> elecciones)
+{
+	boolean respuesta = true;
+	for(int i = 0; i < elecciones.size(); i++)
+	{
+		EleccionForzadaTemporal elemenTemp = elecciones.get(i);
+		if(elemenTemp.getTipoProducto().equals(new String("G")))
+		{
+		}else
+		{
+			respuesta = false;
+			break;
+		}
 	}
+	return(respuesta);
+}
+
+}

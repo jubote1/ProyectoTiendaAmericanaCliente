@@ -70,6 +70,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 	private JTable tableResFormaPago;
 	JDialog jDialogPadre;
 	DecimalFormat formatea = new DecimalFormat("###,###");
+	private JTable tableTotalDomiciliario;
 	/**
 	 * Launch the application.
 	 */
@@ -126,14 +127,14 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		
 		JLabel lblFechaSistema = new JLabel("FECHA SISTEMA");
 		lblFechaSistema.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblFechaSistema.setBounds(372, 11, 167, 14);
+		lblFechaSistema.setBounds(305, 14, 167, 14);
 		contentPanePrincipal.add(lblFechaSistema);
 		
 		txtFechaInventario = new JTextField();
 		txtFechaInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtFechaInventario.setEnabled(false);
 		txtFechaInventario.setEditable(false);
-		txtFechaInventario.setBounds(569, 8, 135, 20);
+		txtFechaInventario.setBounds(463, 11, 135, 20);
 		contentPanePrincipal.add(txtFechaInventario);
 		txtFechaInventario.setColumns(10);
 		
@@ -328,11 +329,11 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		
 		JLabel lblTotalesPorForma = new JLabel("TOTALES POR FORMA DE PAGO");
 		lblTotalesPorForma.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblTotalesPorForma.setBounds(410, 37, 240, 14);
+		lblTotalesPorForma.setBounds(329, 42, 240, 14);
 		contentPanePrincipal.add(lblTotalesPorForma);
 		
 		JScrollPane scrollPaneFormaPago = new JScrollPane();
-		scrollPaneFormaPago.setBounds(407, 61, 243, 112);
+		scrollPaneFormaPago.setBounds(326, 66, 243, 112);
 		contentPanePrincipal.add(scrollPaneFormaPago);
 		
 		tableResFormaPago = new JTable();
@@ -345,8 +346,20 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 				pedCtrl.imprimirResumenCorteCaja(fechaSis);
 			}
 		});
-		btnImprimirCorteCaja.setBounds(432, 204, 189, 23);
+		btnImprimirCorteCaja.setBounds(350, 204, 189, 23);
 		contentPanePrincipal.add(btnImprimirCorteCaja);
+		
+		JLabel lblPedidosTotalesdomiciliario = new JLabel("PEDIDOS TOTALES/DOMICILIARIO");
+		lblPedidosTotalesdomiciliario.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblPedidosTotalesdomiciliario.setBounds(579, 42, 258, 14);
+		contentPanePrincipal.add(lblPedidosTotalesdomiciliario);
+		
+		JScrollPane scrollPaneTotalDomiciliario = new JScrollPane();
+		scrollPaneTotalDomiciliario.setBounds(589, 66, 240, 112);
+		contentPanePrincipal.add(scrollPaneTotalDomiciliario);
+		
+		tableTotalDomiciliario = new JTable();
+		scrollPaneTotalDomiciliario.setViewportView(tableTotalDomiciliario);
 		btnReporteGeneralVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
@@ -412,6 +425,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		// Se llena Datatable con la información
 		
 		pintarTotTipoPedido();
+		pintarTotalDomiciliario();
 		//Instanciamos el hilo
 		hiloReporteria = new Thread(this);
 		hiloReportSemanal = new Thread(this);
@@ -507,6 +521,33 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		
 		tableResFormaPago.setModel(modeloFormaPago);
 	}
+	
+	//Agregamos para el total por domiciliario
+	
+	public void pintarTotalDomiciliario()
+	{
+		Object[] columnsName = new Object[3];
+        
+        columnsName[0] = "Total/Liq";
+        columnsName[1] = "Domiciliario";
+        columnsName[2] = "Cant/Pedidos";
+        ArrayList totDomiciliario = pedCtrl.obtenerTotalesPedidosPorDomiciliario(fechaSis);
+        DefaultTableModel modelo = new DefaultTableModel(){
+       	    public boolean isCellEditable(int rowIndex,int columnIndex){
+       	    	return false;
+       	    }
+       	    
+       	    
+       	};
+		modelo.setColumnIdentifiers(columnsName);
+		for(int y = 0; y < totDomiciliario.size();y++)
+		{
+			String[] fila =(String[]) totDomiciliario.get(y);
+			modelo.addRow(fila);
+		}
+		
+		tableTotalDomiciliario.setModel(modelo);
+	}
 
 	@Override
 	public void run() {
@@ -517,6 +558,8 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		{ 
 			pedCtrl.enviarCorreoResumenGeneralVentas();
 			pedCtrl.enviarCorreoResumenInventario();
+			invCtrl.enviarCorreoVarianzaDiaria(true);
+			pedCtrl.enviarCorreoResumenGeneralOperacion();
 		}else if(ct == hiloReportSemanal) 
 		{ 
 			pedCtrl.enviarCorreoDescuentosSemanal();
@@ -525,7 +568,9 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 			pedCtrl.enviarCorreoAnulacionesDescuentaSemanal();
 			pedCtrl.enviarCorreoEgresosSemanal();
 			//Realizamos la generación de la varianza  y enviamos el indicador de resumida en true
-			invCtrl.enviarCorreoVarianzaSemanal(true);
+			invCtrl.enviarCorreoVarianzaSemanal(false);
+			//Realizamos la generación del reporte semanal de porciones
+			pedCtrl.enviarCorreoPorcionesSemanal();
 		}
 	}
 }

@@ -57,6 +57,8 @@ import capaModelo.Parametro;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
 import capaModelo.Usuario;
+import ds.desktop.notify.DesktopNotify;
+
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -371,6 +373,12 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		    if( tblMaestroPedidos.getSelectedRows().length == 1 ) {
 			   	  int filaSeleccionada = tblMaestroPedidos.getSelectedRow();
 				  int idPedidoFP = Integer.parseInt(tblMaestroPedidos.getValueAt(filaSeleccionada, 1).toString());
+				  //En este punto vamos a intervenir para verificar si el pedido tiene observación
+				  String observacion = tblMaestroPedidos.getValueAt(filaSeleccionada, 11).toString();
+				  if(!observacion.equals(new String("0")))
+				  {
+					  DesktopNotify.showDesktopMessage("OBSERVACIÓN PEDIDO", "PEDIDO # " + idPedidoFP + " " + observacion, DesktopNotify.WARNING);
+				  }
 				  //Intervenimos esta parte para retornar la forma de pago
 				  //txtFormaPago.setText(pedCtrl.consultarFormaPago(idPedidoFP));
 				  pintarFormaPagoPedido(idPedidoFP);
@@ -837,7 +845,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 	
 	public void pintarPedidos()
 	{
-		Object[] columnsName = new Object[12];
+		Object[] columnsName = new Object[13];
         
 		columnsName[0] = "ACT";
 		columnsName[1] = "Id Pedido";
@@ -850,7 +858,8 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
         columnsName[8] = "idestado";
         columnsName[9] = "Domiciliario";
         columnsName[10] = "TP";
-        columnsName[11] = "Tiempo";
+        columnsName[11] = "Observacion";
+        columnsName[12] = "Tiempo";
         ArrayList<Object> pedidos = new ArrayList();
         //La lógica de pintar pedidos debemos de dividirla en varios items
         // Hay filtros de tipo pedido, en cuyo caso se cumple condición para que el sistema filtre por ellos
@@ -880,7 +889,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
         }
         
         //Definimos cuales serán las columnas editables dentro de la tabla
-        boolean[] editarCampos = {true, false, false, false, false, false, false, false, false, false, false,false};
+        boolean[] editarCampos = {true, false, false, false, false, false, false, false, false, false, false,false, false};
       
         //Definimos los tipos de objetos que se manejarán en el jtable en cada columna
         
@@ -889,7 +898,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
        	    	return editarCampos[columnIndex];
        	    }
        	    
-       	    Class[] types = new Class[] {java.lang.Boolean.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.Long.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class};
+       	    Class[] types = new Class[] {java.lang.Boolean.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.Long.class,java.lang.Long.class,java.lang.String.class,java.lang.String.class,java.lang.String.class,java.lang.String.class};
          
 //       	    Class[] types = new Class[] {java.lang.Boolean.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class};
          
@@ -903,7 +912,7 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		{
 			String[] fila =(String[]) pedidos.get(y);
 			//modelo.addRow(fila);
-			Object[] filaFinal = {false,Long.parseLong(fila[1]), fila[2], fila[3], fila[4], fila[5], fila[6], Long.parseLong(fila[7]),Long.parseLong(fila[8]),fila[9], fila[10], fila[11]};
+			Object[] filaFinal = {false,Long.parseLong(fila[1]), fila[2], fila[3], fila[4], fila[5], fila[6], Long.parseLong(fila[7]),Long.parseLong(fila[8]),fila[9], fila[10], fila[11], fila[12]};
 			modelo.addRow(filaFinal);
 		}
 		tblMaestroPedidos.setModel(modelo);
@@ -933,9 +942,12 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		//Modificamos el ancho del la Tiempo Pedido
 		tblMaestroPedidos.getColumnModel().getColumn(10).setMinWidth(20);
 		tblMaestroPedidos.getColumnModel().getColumn(10).setMaxWidth(20);
+		//Campo observacion
+		tblMaestroPedidos.getColumnModel().getColumn(11).setMinWidth(0);
+		tblMaestroPedidos.getColumnModel().getColumn(11).setMaxWidth(0);
 		//Modificamos el ancho del la muestra del tiempo
-		tblMaestroPedidos.getColumnModel().getColumn(11).setMinWidth(135);
-		tblMaestroPedidos.getColumnModel().getColumn(11).setMaxWidth(135);
+		tblMaestroPedidos.getColumnModel().getColumn(12).setMinWidth(135);
+		tblMaestroPedidos.getColumnModel().getColumn(12).setMaxWidth(135);
 		
 		
 		//Checkbox
@@ -964,9 +976,12 @@ public class VentPedComandaPedidos extends JFrame implements Runnable{
 		//Modificamos el ancho del tiempo dado pedido
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMinWidth(20);
 		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(10).setMaxWidth(20);
+		//Observacion
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(11).setMinWidth(0);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(11).setMaxWidth(0);
 		//Modificamos el ancho del Tiempo Pedido
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(11).setMinWidth(135);
-		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(11).setMaxWidth(135);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(12).setMinWidth(135);
+		tblMaestroPedidos.getTableHeader().getColumnModel().getColumn(12).setMaxWidth(135);
 
 		tblMaestroPedidos.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		tblMaestroPedidos.getColumnModel().getColumn(4).setCellRenderer( new CellRenderTransaccional());

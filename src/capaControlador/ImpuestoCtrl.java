@@ -17,6 +17,13 @@ public class ImpuestoCtrl {
 	{
 		this.auditoria = auditoria;
 	}
+	
+	/**
+	 * Fue necesario realizar cambios dado que se estaban liquidando mal los impuestos, en cuento a que se 
+	 * debe de tener el subtotal como Valor del item/ 1 + porcentaje/100 del impuesto.
+	 * @param idPedido
+	 * @return
+	 */
 	public boolean liquidarImpuestosPedido(int idPedido)
 	{
 		boolean respuesta = true;
@@ -38,7 +45,9 @@ public class ImpuestoCtrl {
 			for(int j = 0; j < impProd.size(); j++)
 			{
 				porcImpuesto = ImpuestoDAO.obtenerImpuesto(impProd.get(j).getIdImpuesto(), auditoria);
-				impuestoParcial = porcImpuesto * (valorTotal/100);
+				//Cambiamos la formula del impuesto parcial en cuanto es el valor total - valor total / 1.0 + valor del impuesto/100
+				//Lo anterior sale de una regla de tres sencilla
+				impuestoParcial = (valorTotal) - (valorTotal / (1 + (porcImpuesto/100)));
 				totalImpuesto = totalImpuesto + impuestoParcial;
 				DetallePedidoImpuesto detPedImp = new DetallePedidoImpuesto(idPedido,detPed.getIdDetallePedido(),impProd.get(j).getIdImpuesto(),impuestoParcial);
 				DetallePedidoImpuestoDAO.insertarDetallePedidoImpuesto(detPedImp, auditoria);

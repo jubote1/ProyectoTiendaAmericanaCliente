@@ -7,6 +7,15 @@ public class FormaPagoIng
 	private String nombreFormaPago;
 	private double valorPago;
 	private boolean seleccionado;
+	private double valorDisminuido;
+	
+		
+	public double getValorDisminuido() {
+		return valorDisminuido;
+	}
+	public void setValorDisminuido(double valorDisminuido) {
+		this.valorDisminuido = valorDisminuido;
+	}
 	public int getIdFormaPago() {
 		return idFormaPago;
 	}
@@ -31,12 +40,13 @@ public class FormaPagoIng
 	public void setNombreFormaPago(String nombreFormaPago) {
 		this.nombreFormaPago = nombreFormaPago;
 	}
-	public FormaPagoIng(int idFormaPago, double valorPago, boolean seleccionado, String nombreFormaPago) {
+	public FormaPagoIng(int idFormaPago, double valorPago, boolean seleccionado, String nombreFormaPago, double valorDisminuido) {
 		super();
 		this.idFormaPago = idFormaPago;
 		this.valorPago = valorPago;
 		this.seleccionado = seleccionado;
 		this.nombreFormaPago = nombreFormaPago;
+		this.valorDisminuido = valorDisminuido;
 	}
 	
 	
