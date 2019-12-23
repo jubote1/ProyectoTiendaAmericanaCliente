@@ -181,6 +181,7 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		panelReportes.setLayout(null);
 		
 		JButton btnReporteGeneralVentas = new JButton("Reporte General Ventas");
+		btnReporteGeneralVentas.setEnabled(false);
 		btnReporteGeneralVentas.setBounds(10, 116, 182, 23);
 		panelReportes.add(btnReporteGeneralVentas);
 		
@@ -247,8 +248,24 @@ public class VentPedFinalizarDia extends JDialog  implements Runnable{
 		panelReportes.add(btnImpResumenGenVentas);
 		
 		JButton btnVentaSemanal = new JButton("Venta Semanal");
+		btnVentaSemanal.setEnabled(false);
+		btnVentaSemanal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+			}
+		});
 		btnVentaSemanal.setBounds(202, 116, 186, 23);
 		panelReportes.add(btnVentaSemanal);
+		
+		JButton btnPorcionesVendidas = new JButton("Porciones Vendidas");
+		btnPorcionesVendidas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentPedReportes ventReportePorciones = new VentPedReportes(jDialogPadre,true, fechaSis, 5);
+				ventReportePorciones.setVisible(true);
+			}
+		});
+		btnPorcionesVendidas.setBounds(10, 150, 182, 23);
+		panelReportes.add(btnPorcionesVendidas);
 		
 		JButton btnValidarCierre = new JButton("Validar Cierre");
 		btnValidarCierre.addActionListener(new ActionListener() {

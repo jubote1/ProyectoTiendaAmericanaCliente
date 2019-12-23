@@ -16,8 +16,31 @@ public class Usuario {
 	private boolean administrador;
 	private int estadoDomiciliario;
 	private int ingreso;
+	private String ultimoIngreso;
+	private int esEmpleado;
+	private int caducado;
+	
+	
 	
 		
+	public String getUltimoIngreso() {
+		return ultimoIngreso;
+	}
+	public void setUltimoIngreso(String ultimoIngreso) {
+		this.ultimoIngreso = ultimoIngreso;
+	}
+	public int getEsEmpleado() {
+		return esEmpleado;
+	}
+	public void setEsEmpleado(int esEmpleado) {
+		this.esEmpleado = esEmpleado;
+	}
+	public int getCaducado() {
+		return caducado;
+	}
+	public void setCaducado(int caducado) {
+		this.caducado = caducado;
+	}
 	public int getIngreso() {
 		return ingreso;
 	}

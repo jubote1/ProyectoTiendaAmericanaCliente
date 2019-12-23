@@ -47,6 +47,7 @@ public class VentInvInventarios extends JDialog {
 	private JButton btnRetornarAMen;
 	InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
 	AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
+	private JButton btnPreingresarInventario;
 	/**
 	 * Launch the application.
 	 */
@@ -141,7 +142,7 @@ public class VentInvInventarios extends JDialog {
 				
 			}
 		});
-		btnIngresarInventario.setBounds(557, 83, 191, 61);
+		btnIngresarInventario.setBounds(557, 159, 191, 61);
 		contentPaneInventario.add(btnIngresarInventario);
 		
 		JButton btnRetirarInventario = new JButton("Retirar Inventario");
@@ -160,7 +161,7 @@ public class VentInvInventarios extends JDialog {
 				
 			}
 		});
-		btnRetirarInventario.setBounds(557, 155, 191, 61);
+		btnRetirarInventario.setBounds(557, 231, 191, 61);
 		contentPaneInventario.add(btnRetirarInventario);
 		
 		btnRealizarPedidoEspecial = new JButton("Realizar Pedido Especial");
@@ -178,7 +179,7 @@ public class VentInvInventarios extends JDialog {
 				
 			}
 		});
-		btnRealizarPedidoEspecial.setBounds(557, 226, 191, 61);
+		btnRealizarPedidoEspecial.setBounds(557, 292, 191, 61);
 		contentPaneInventario.add(btnRealizarPedidoEspecial);
 		
 		btnRealizarVarianzaCierre = new JButton("Realizar Varianza Cierre");
@@ -216,6 +217,23 @@ public class VentInvInventarios extends JDialog {
 		btnRetornarAMen.setFont(new Font("Tahoma", Font.BOLD, 13));
 		btnRetornarAMen.setBounds(10, 360, 191, 61);
 		contentPaneInventario.add(btnRetornarAMen);
+		
+		btnPreingresarInventario = new JButton("<html><center>Ingresar PreInventario Bodega</center></html>");
+		btnPreingresarInventario.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("INV_007", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentInvIngresarPreInventario preInventario = new VentInvIngresarPreInventario(null, true);
+					preInventario.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla" , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		btnPreingresarInventario.setBounds(557, 83, 191, 61);
+		contentPaneInventario.add(btnPreingresarInventario);
 		pintarResumenInventario(fecha);
 	}
 	

@@ -8,6 +8,8 @@ import java.util.Date;
 
 import capaDAO.DetallePedidoDAO;
 import capaDAO.GeneralDAO;
+import capaDAO.IngresoInventarioDetalleTmpDAO;
+import capaDAO.IngresoInventarioTmpDAO;
 import capaDAO.InventariosTemporalDAO;
 import capaDAO.ItemInventarioDAO;
 import capaDAO.ItemInventarioHistoricoDAO;
@@ -36,16 +38,58 @@ public class InventarioCtrl {
 		return(itemsIngresar);
 	}
 	
+	public ArrayList obtenerInventarioPreIngresar()
+	{
+		ArrayList itemsPreIngresar = IngresoInventarioDetalleTmpDAO.obtenerInventarioPreIngresar(auditoria);
+		return(itemsPreIngresar);
+	}
+	
+	public String obtenerObsInventarioPreIngresar(int idDespacho)
+	{
+		String observacion = IngresoInventarioTmpDAO.obtenerObsInventarioPreIngresar(idDespacho,auditoria);
+		return(observacion);
+	}
+	
+	public ArrayList<Integer> obtenerInventariosPreIngresar(String fecha)
+	{
+		ArrayList<Integer> preInventarios = IngresoInventarioTmpDAO.obtenerInventarioPreIngresar(fecha, auditoria);
+		return(preInventarios);
+	}
+	
+	public boolean borrarIngresoInventarioDetalleTmp(int idDespacho)
+	{
+		boolean respuesta = IngresoInventarioDetalleTmpDAO.borrarIngresoInventarioDetalleTmp(idDespacho, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean cambiarEstadoIngresoInventarioTmp(int idDespacho, String estado)
+	{
+		boolean respuesta = IngresoInventarioTmpDAO.cambiarEstadoIngresoInventarioTmp(idDespacho, estado, auditoria);
+		return(respuesta);
+	}
+	
 	public ArrayList obtenerItemInventarioIngresar(String fechaSistema, String tipo)
 	{
 		ArrayList itemsIngresar = ItemInventarioDAO.obtenerItemInventarioIngresar(fechaSistema, tipo, auditoria);
 		return(itemsIngresar);
 	}
 	
-	public int insertarIngresosInventarios(ArrayList <ModificadorInventario> ingresos, String fecha )
+	public int insertarIngresosInventarios(ArrayList <ModificadorInventario> ingresos, String observacion,  String fecha )
 	{
-		int idIngreso = ModificadorInventarioDAO.insertarIngresosInventarios(ingresos, fecha, auditoria);
+		int idIngreso = ModificadorInventarioDAO.insertarIngresosInventarios(ingresos, observacion,  fecha, auditoria);
 		return(idIngreso);
+	}
+	
+	public ArrayList obtenerEncabezadoRetiros(String fechaInicial, String fechaFinal)
+	{
+		ArrayList encabezadosRetiros = ModificadorInventarioDAO.obtenerEncabezadoRetiros(fechaInicial, fechaFinal, auditoria);
+		return(encabezadosRetiros);
+	}
+	
+	public ArrayList obtenerEncabezadoIngresos(String fechaInicial, String fechaFinal)
+	{
+		ArrayList encabezadosIngresos= ModificadorInventarioDAO.obtenerEncabezadoIngresos(fechaInicial, fechaFinal, auditoria);
+		return(encabezadosIngresos);
 	}
 	
 	public boolean insertarInventariosTemp(ArrayList <InventariosTemporal> ingresosTemp)
@@ -66,9 +110,9 @@ public class InventarioCtrl {
 		return(respuesta);
 	}
 	
-	public int insertarRetirosInventarios(ArrayList <ModificadorInventario> retiros, String fecha )
+	public int insertarRetirosInventarios(ArrayList <ModificadorInventario> retiros, String fecha , String observacion )
 	{
-		int idRetiro = ModificadorInventarioDAO.insertarRetirosInventarios(retiros, fecha, auditoria);
+		int idRetiro = ModificadorInventarioDAO.insertarRetirosInventarios(retiros, fecha, observacion, auditoria);
 		return(idRetiro);
 	}
 
@@ -158,13 +202,28 @@ public class InventarioCtrl {
 		InventariosTemporalDAO.limpiarTipoInventariosTemporal(fechaSistema, tipoInventario, auditoria);
 	}
 	
+	public void limpiarIngresoInventarioDetalleTmp(String fechaSistema)
+	{
+		//Retornamos los idDespacho para la fecha en cuestión
+		ArrayList<Integer> despachos = IngresoInventarioTmpDAO.obtenerInventarioPreIngresar(fechaSistema, auditoria);
+		int idDespachoTemp = 0;
+		for(int i = 0; i < despachos.size(); i++)
+		{
+			idDespachoTemp = (Integer) despachos.get(i);
+			//Borramos los destalles de este despacho
+			IngresoInventarioDetalleTmpDAO.borrarIngresoInventarioDetalleTmp(idDespachoTemp, auditoria);
+			//Borramos el encabezado de este despacho
+			IngresoInventarioTmpDAO.borrarIngresoInventarioTmp(idDespachoTemp, auditoria);
+		}
+	}
+	
 	public boolean existeInventariosTemporal(String fechaSistema, String tipoInventario)
 	{
 		boolean respuesta = InventariosTemporalDAO.existeInventariosTemporal(fechaSistema, tipoInventario, auditoria);
 		return(respuesta);
 	}
 	
-	public boolean reintegrarInventarioPedido(int idPedido, int idMotivoAnulacion, String observacion)
+	public boolean reintegrarInventarioPedido(int idPedido, int idMotivoAnulacion, String observacion, String usuario, String usuarioAutorizo)
 	{
 		ArrayList<DetallePedido> detallesPedido = DetallePedidoDAO.obtenerDetallePedido(idPedido, auditoria);
 		ArrayList<ModificadorInventario> descInventario = new ArrayList();
@@ -178,7 +237,7 @@ public class InventarioCtrl {
 				modsInv = ItemInventarioProductoDAO.obtenerItemsInventarioProducto(detTemp.getIdProducto(), detTemp.getCantidad()*-1, auditoria);
 				boolean respuesta = ModificadorInventarioDAO.insertarConsumoInventarios(modsInv, idPedido, auditoria);
 				//Devuelve el inventario y lo marca como anulado
-				DetallePedidoDAO.anularDetallePedidoPuntual(detTemp.getIdDetallePedido(), idMotivoAnulacion, observacion,  auditoria);
+				DetallePedidoDAO.anularDetallePedidoPuntual(detTemp.getIdDetallePedido(), idMotivoAnulacion, observacion, usuario, usuarioAutorizo,  auditoria);
 			}
 		}
 		return(true);
@@ -340,6 +399,9 @@ public class InventarioCtrl {
 			//Si es sabado se resta cinco
 			calendarioActual.add(Calendar.DAY_OF_YEAR, -5);
 		}
+		//Incluimos la información de ingresos y retiros de inventario
+		respuesta = respuesta + resumenEncabezadoIngresos(fechaAnterior, fechaActual);
+		respuesta = respuesta + resumenEncabezadoRetiros(fechaAnterior, fechaActual);
 		return(respuesta);
 	}
 	
@@ -357,6 +419,9 @@ public class InventarioCtrl {
 				varianza =  obtenerInventarioVarianza(fecha);
 			}
 			respuesta = respuesta + resumenVarianzaDiaria(varianza, fecha);
+			//Incluimos la información de ingresos y retiros de inventario
+			respuesta = respuesta + resumenEncabezadoIngresos(fecha, fecha);
+			respuesta = respuesta + resumenEncabezadoRetiros(fecha, fecha);
 			return(respuesta);
 		}
 	
@@ -366,7 +431,7 @@ public class InventarioCtrl {
 	{
 		String respuesta  = "";
 		DecimalFormat formatea = new DecimalFormat("###,###");
-		respuesta = respuesta + "<table border='2'> <tr> RESUMEN VARIANZA " + fecha + " </tr>";
+		respuesta = respuesta + "<table border='2'> <tr> <td colspan='8'>  RESUMEN VARIANZA " + fecha + "</td> </tr>";
 		respuesta = respuesta + "<tr>"
 				+  "<td><strong>Nombre Item</strong></td>"
 				+  "<td><strong>Inicio</strong></td>"
@@ -384,6 +449,46 @@ public class InventarioCtrl {
 			//Calculamos la varianza entendiendo que la varianza es la resta de los valores teorico y real
 			double varCalculada = Double.parseDouble(fila[6]) - teoricoReal;
 			respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td>" + formatea.format(Double.parseDouble(fila[2])) + "</td><td>" + formatea.format(Double.parseDouble(fila[3])) + "</td><td>" + formatea.format(Double.parseDouble(fila[4])) + "</td><td> " + formatea.format(Double.parseDouble(fila[5])) + "</td><td> " + formatea.format(teoricoReal) + "</td><td>" + formatea.format(Double.parseDouble(fila[6])) + "</td><td>" + formatea.format(varCalculada) +"</td></tr>";
+		}
+		respuesta = respuesta + "</table> <br/>";
+		return(respuesta);
+	}
+	
+	public String resumenEncabezadoRetiros(String fechaInicial, String fechaFinal)
+	{
+		String respuesta  = "";
+		ArrayList retiros = obtenerEncabezadoRetiros(fechaInicial, fechaFinal);
+		respuesta = respuesta + "<table border='2'> <tr> <td colspan='4'> RESUMEN RETIROS " + fechaInicial + " " + fechaFinal +  "</td> </tr>";
+		respuesta = respuesta + "<tr>"
+				+  "<td><strong>Id Retiro</strong></td>"
+				+  "<td><strong>Fecha Real</strong></td>"
+				+  "<td><strong>Fecha Sistema</strong></td>"
+				+  "<td><strong>Observacion</strong></td>"
+				+  "</tr>";
+		for(int y = 0; y < retiros.size();y++)
+		{
+			String[] fila =(String[]) retiros.get(y);
+			respuesta = respuesta + "<tr><td>" + fila[0] + "</td><td>" + fila[1] + "</td><td>" + fila[2] + "</td><td>" + fila[3]  +"</td></tr>";
+		}
+		respuesta = respuesta + "</table> <br/>";
+		return(respuesta);
+	}
+	
+	public String resumenEncabezadoIngresos(String fechaInicial, String fechaFinal)
+	{
+		String respuesta  = "";
+		ArrayList ingresos = obtenerEncabezadoIngresos(fechaInicial, fechaFinal);
+		respuesta = respuesta + "<table border='2'> <tr> <td colspan='4'> RESUMEN INGRESOS " + fechaInicial + " " + fechaFinal +  "</td> </tr>";
+		respuesta = respuesta + "<tr>"
+				+  "<td><strong>Id Ingreso</strong></td>"
+				+  "<td><strong>Fecha Real</strong></td>"
+				+  "<td><strong>Fecha Sistema</strong></td>"
+				+  "<td><strong>Observacion</strong></td>"
+				+  "</tr>";
+		for(int y = 0; y < ingresos.size();y++)
+		{
+			String[] fila =(String[]) ingresos.get(y);
+			respuesta = respuesta + "<tr><td>" + fila[0] + "</td><td>" + fila[1] + "</td><td>" + fila[2] + "</td><td>" + fila[3]  +"</td></tr>";
 		}
 		respuesta = respuesta + "</table> <br/>";
 		return(respuesta);

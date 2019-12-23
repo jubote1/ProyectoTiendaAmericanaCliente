@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
 
 import capaConexion.ConexionBaseDatos;
 import capaDAO.EgresoDAO;
@@ -235,6 +236,8 @@ public void realizarInventarioHistorico(String fecha)
 		invCtrl.limpiarTipoInventariosTemporal(fecha, "I");
 		invCtrl.limpiarTipoInventariosTemporal(fecha, "R");
 		invCtrl.limpiarTipoInventariosTemporal(fecha, "V");
+		//Realizamos limpiado de las tablas temporales de inventario de bodega
+		invCtrl.limpiarIngresoInventarioDetalleTmp(fecha);
 	}
 	
 	public String finalizarDia(String fecha)
@@ -637,6 +640,16 @@ public void realizarInventarioHistorico(String fecha)
 	{
 		int secuenciaAct = TiendaDAO.retornarSecuenciaFacturacion(auditoria);
 		return(secuenciaAct);
+	}
+	
+	public String obtenerRutaMapa()
+	{
+		Tienda tienda =  TiendaDAO.obtenerRutaMapa(auditoria);
+		JSONObject respuesta = new JSONObject();
+		respuesta.put("rutamapa",  tienda.getRutaMapa());
+		respuesta.put("latitud",  tienda.getLatitud());
+		respuesta.put("longitud",  tienda.getLongitud());
+		return(respuesta.toJSONString());
 	}
 	
 }

@@ -380,6 +380,16 @@ public class VentPrincipalModificada extends JFrame {
 		btnSalir4.setBounds(823, 525, 166, 42);
 		horarios.add(btnSalir4);
 		
+		JButton btnEventoJornada = new JButton("Registrar Entrada/Salida Jornada");
+		btnEventoJornada.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentSegRegEventoEmpleado ventRegEmpleado = new VentSegRegEventoEmpleado(null, true);
+				ventRegEmpleado.setVisible(true);
+			}
+		});
+		btnEventoJornada.setBounds(278, 47, 254, 66);
+		horarios.add(btnEventoJornada);
+		
 		JPanel administracion = new JPanel();
 		tabbedPaneModulos.addTab("Administrador", null, administracion, null);
 		administracion.setLayout(null);
@@ -678,6 +688,35 @@ public class VentPrincipalModificada extends JFrame {
 		btnSalir5.setFont(new Font("Tahoma", Font.BOLD, 12));
 		btnSalir5.setBounds(822, 532, 166, 42);
 		administracion.add(btnSalir5);
+		
+		JPanel panelSeguridadGeneral = new JPanel();
+		panelSeguridadGeneral.setBounds(452, 225, 360, 96);
+		administracion.add(panelSeguridadGeneral);
+		panelSeguridadGeneral.setLayout(null);
+		
+		JLabel lblSeguridadGeneral = new JLabel("SEGURIDAD GENERAL");
+		lblSeguridadGeneral.setBounds(10, 0, 270, 23);
+		panelSeguridadGeneral.add(lblSeguridadGeneral);
+		lblSeguridadGeneral.setFont(new Font("Tahoma", Font.BOLD, 22));
+		
+		JButton btnNewButton = new JButton("Administraci\u00F3n de Usuarios/General");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				boolean tienePermiso = autCtrl.validarAccesoOpcion("SEG_009", Sesion.getAccesosOpcion());
+				if (tienePermiso)
+				{
+					VentSegCrearEmpleado ventCrearEmpleado = new VentSegCrearEmpleado(null, true);
+					ventCrearEmpleado.setVisible(true);
+				}else
+				{
+					JOptionPane.showMessageDialog(null, "Su perfil de usuario no tiene acceso a esta opción/pantalla. \n Si desea crear un empleado o enrolarlo de nuevo por favor tenga en cuenta \n que esta accion se realiza de manera centralizada en la Bodega." , "Ingreso no permitido", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnNewButton.setBounds(10, 34, 270, 51);
+		panelSeguridadGeneral.add(btnNewButton);
 		
 		lblInformacionUsuario = new JLabel("USUARIO");
 		lblInformacionUsuario.setFont(new Font("Tahoma", Font.BOLD, 13));

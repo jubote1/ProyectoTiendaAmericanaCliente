@@ -298,12 +298,12 @@ public class VentCliCliente extends JFrame {
 				int idNomemclatura = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getIdnomemclatura();
 				//conformamos el campo dirección con base en la nomenclatura definida
 				String direccion = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getNomenclatura() + " " + numNomen1 + " # " + numNomen2 + " - " + num3;
-				Cliente crearCliente = new Cliente(0, telefono, nombre, apellido, compania, direccion, "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "");
+				Cliente crearCliente = new Cliente(0, telefono, nombre, apellido, compania, direccion, "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "", 0);
 				//Retornamos el id de la tienda y los fijamos en el cliente para su creación
 				int idTienda = operTienda.obtenerIdTienda();
 				crearCliente.setIdtienda(idTienda);
-				ClienteCtrl clienteCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
-				int idCliIns = clienteCtrl.insertarCliente(crearCliente);
+				cliCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
+				int idCliIns = cliCtrl.insertarCliente(crearCliente);
 				if(idCliIns > 0)
 				{
 					JOptionPane.showMessageDialog(null, "El cliente fue ingresado correctamente " , "Ingreso de Cliente ", JOptionPane.OK_OPTION);
@@ -541,6 +541,8 @@ public class VentCliCliente extends JFrame {
 	public void seleccionarCliente(Cliente clienteConsultado)
 	{
 		textIdCliente.setText(Integer.toString(clienteConsultado.getIdcliente()));
+		//Fijamos el valor del idCliente
+		idCliente = clienteConsultado.getIdcliente();
 		textTelefono.setText(clienteConsultado.getTelefono());
 		textNombre.setText(clienteConsultado.getNombres());
 		textApellido.setText(clienteConsultado.getApellidos());
@@ -587,9 +589,9 @@ public class VentCliCliente extends JFrame {
 		int idMunicipio = ((Municipio)comboMunicipio.getSelectedItem()).getIdmunicipio();
 		int idNomemclatura = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getIdnomemclatura();
 		String direccion = ((NomenclaturaDireccion)comboNomenclatura.getSelectedItem()).getNomenclatura() + " " + numNomen1 + " # " + numNomen2 + " - " + num3;
-		Cliente actCliente = new Cliente(idCliente, telefono, nombre, apellido, compania, direccion, "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "");
+		Cliente actCliente = new Cliente(idCliente, telefono, nombre, apellido, compania, direccion, "", idMunicipio,0, 0, zona , observacion, "", 0, 0, idNomemclatura, numNomen1, numNomen2, num3, "", 0);
 		//Esto lo realizaremos de manera transitoria mientra hacemos algo estándar en el ingreso de la tienda
-		actCliente.setIdtienda(1);
+		actCliente.setIdtienda(operTienda.obtenerIdTienda());
 		ClienteCtrl clienteCtrl = new ClienteCtrl(PrincipalLogueo.habilitaAuditoria);
 		int idClienteAct = clienteCtrl.actualizarCliente(actCliente);
 		if(idClienteAct > 0)

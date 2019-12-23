@@ -9,9 +9,16 @@ public class AnulacionPedido {
 	private String usuario;
 	private String tipoAnulacion;
 	private String observacion;
+	private String usuarioAutAnulacion;
 	
 	
 	
+	public String getUsuarioAutAnulacion() {
+		return usuarioAutAnulacion;
+	}
+	public void setUsuarioAutAnulacion(String usuarioAutAnulacion) {
+		this.usuarioAutAnulacion = usuarioAutAnulacion;
+	}
 	public String getObservacion() {
 		return observacion;
 	}

@@ -1,4 +1,5 @@
  service found OneNote
  service found Microsoft XPS Document Writer
+ service found HPD3E217 (HP Officejet Pro 8600)
  service found Fax
  service found Caja

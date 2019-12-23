@@ -32,6 +32,7 @@ public class VentPedAnulacionPedido extends JDialog {
 	JTextArea textAreaObservacion;
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private JDialog ventanaPadre;
+	public static String usuarioAutorizo;
 	/**
 	 * Launch the application.
 	 */
@@ -117,10 +118,10 @@ public class VentPedAnulacionPedido extends JDialog {
 						//Del formulario padre ejecutamos la anulación del item de inventario
 						if(idDetalleEliminar > 0)
 						{
-							parent.frameAnulaItemPedido(motAnu, observacion, idDetalleEliminar);
+							parent.frameAnulaItemPedido(motAnu, observacion, idDetalleEliminar, usuarioAutorizo);
 						}else
 						{
-							parent.frameAnulaPedido(motAnu, observacion, salirVentana);
+							parent.frameAnulaPedido(motAnu, observacion, salirVentana, usuarioAutorizo);
 						}
 						
 						dispose();

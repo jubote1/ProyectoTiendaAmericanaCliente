@@ -728,6 +728,55 @@ public class PedidoDAO {
 		
 	}
 	
+	/** 
+	 * Método que se encargará de retornar las porciones vendidas en el día por hora.
+	 * @param fechaPedido fecha de los pedidos base para extraer la información de pedidos por fecha.
+	 * @return un ArrayList con los horas y cantidad de pedidos para la fecha recibida como parámetro
+	 */
+	public static ArrayList obtenerPorcionesPorHoras(String fechaPedido, int idProductoPorcion, int idPorcionTemporal, int idPorcionEmpleado, int idPorcionDesecho, int idGaseosaPorcion, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select substr(a.fechainsercion,12,2), count(*)  from pedido a, detalle_pedido b where a.idpedidotienda = b.idpedidotienda and a.fechapedido = '" + fechaPedido +"' AND b.idproducto IN (" + idProductoPorcion + " , " + idPorcionTemporal + " , " + idPorcionEmpleado + " , " + idPorcionDesecho +  ") group by substr(a.fechainsercion,12,2)";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
 	public static ArrayList obtenerPedidosEmpacadosDomicilio(String fechaPedido, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -1246,7 +1295,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select  a.idpedidotienda, a.fechainsercion, c.descripcion, b.valortotal, a.usuariopedido, d.descripcion as motivoanulacion, b.obs_anulacion from pedido a, detalle_pedido b, producto c, motivo_anulacion_pedido d where a.idpedidotienda = b.idpedidotienda and b.idproducto = c.idproducto and b.idmotivoanulacion = d.idmotivoanulacion and d.descuento_inventario = 'N' and a.fechapedido >= '" + fechaAnterior + "' and a.fechapedido <= '" + fechaActual + "'";
+			String consulta = "select  a.idpedidotienda, a.fechainsercion, c.descripcion, b.valortotal, b.usuario_anulacion, d.descripcion as motivoanulacion, b.obs_anulacion, b.usuario_aut_anulacion from pedido a, detalle_pedido b, producto c, motivo_anulacion_pedido d where a.idpedidotienda = b.idpedidotienda and b.idproducto = c.idproducto and b.idmotivoanulacion = d.idmotivoanulacion and d.descuento_inventario = 'N' and a.fechapedido >= '" + fechaAnterior + "' and a.fechapedido <= '" + fechaActual + "'";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1261,15 +1310,18 @@ public class PedidoDAO {
 			String tipoAnulacion;		
 			AnulacionPedido anulTemp;
 			String observacion;
+			String usuarioAutoriza;
 			while(rs.next()){
 				idPedido = rs.getInt("idpedidotienda");
 				fecha = rs.getString("fechainsercion");
 				producto = rs.getString("descripcion");
 				valor = rs.getDouble("valortotal");
-				usuario = rs.getString("usuariopedido");
+				usuario = rs.getString("usuario_anulacion");
 				tipoAnulacion = rs.getString("motivoanulacion");
 				observacion = rs.getString("obs_anulacion");
+				usuarioAutoriza = rs.getString("usuario_aut_anulacion");
 				anulTemp = new AnulacionPedido(idPedido, fecha, producto, valor, usuario, tipoAnulacion, observacion);
+				anulTemp.setUsuarioAutAnulacion(usuarioAutoriza);
 				anulacionesRangoFecha.add(anulTemp);
 			}
 			rs.close();
@@ -1299,7 +1351,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select  a.idpedidotienda, a.fechainsercion, c.descripcion, b.valortotal, a.usuariopedido, d.descripcion as motivoanulacion, b.obs_anulacion from pedido a, detalle_pedido b, producto c, motivo_anulacion_pedido d where a.idpedidotienda = b.idpedidotienda and b.idproducto = c.idproducto and b.idmotivoanulacion = d.idmotivoanulacion and d.descuento_inventario = 'S' and a.fechapedido >= '" + fechaAnterior + "' and a.fechapedido <= '" + fechaActual + "' and b.iddetalle_pedido_master = 0 and c.tipo_producto = 'P'";
+			String consulta = "select  a.idpedidotienda, a.fechainsercion, c.descripcion, b.valortotal, b.usuario_anulacion, d.descripcion as motivoanulacion, b.obs_anulacion, b.usuario_aut_anulacion from pedido a, detalle_pedido b, producto c, motivo_anulacion_pedido d where a.idpedidotienda = b.idpedidotienda and b.idproducto = c.idproducto and b.idmotivoanulacion = d.idmotivoanulacion and d.descuento_inventario = 'S' and a.fechapedido >= '" + fechaAnterior + "' and a.fechapedido <= '" + fechaActual + "' and b.iddetalle_pedido_master = 0 and c.tipo_producto = 'P'";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -1314,15 +1366,18 @@ public class PedidoDAO {
 			String tipoAnulacion;		
 			AnulacionPedido anulTemp;
 			String observacion;
+			String usuarioAutorizo;
 			while(rs.next()){
 				idPedido = rs.getInt("idpedidotienda");
 				fecha = rs.getString("fechainsercion");
 				producto = rs.getString("descripcion");
 				valor = rs.getDouble("valortotal");
-				usuario = rs.getString("usuariopedido");
+				usuario = rs.getString("usuario_anulacion");
 				tipoAnulacion = rs.getString("motivoanulacion");
 				observacion = rs.getString("obs_anulacion");
+				usuarioAutorizo = rs.getString("usuario_aut_anulacion");
 				anulTemp = new AnulacionPedido(idPedido, fecha, producto, valor, usuario, tipoAnulacion, observacion);
+				anulTemp.setUsuarioAutAnulacion(usuarioAutorizo);
 				anulacionesRangoFecha.add(anulTemp);
 			}
 			rs.close();
@@ -1789,11 +1844,11 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select sum(e.valordisminuido), d.nombre_largo as usuariopedido, g.nombre from pedido a , tipo_pedido b, estado c, usuario d , pedido_forma_pago e, forma_pago g where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado AND a.idpedidotienda = e.idpedidotienda AND e.idforma_pago = g.idforma_pago and b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = '" + fechaActual + "' group by d.nombre_largo, g.nombre " + 
+			String consulta = "select resultado.valor, resultado.usucaja, resultado.forma from (select sum(e.valordisminuido) as valor, d.nombre_largo as usucaja, g.nombre as forma from pedido a , tipo_pedido b, estado c, usuario d , pedido_forma_pago e, forma_pago g where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado AND a.idpedidotienda = e.idpedidotienda AND e.idforma_pago = g.idforma_pago and b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = '" + fechaActual + "' group by d.nombre_largo, g.nombre " + 
 					"union " + 
-					"select sum(d.valordisminuido), 'CAJA-NO DOMICILIO' as usucaja, e.nombre from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido AND a.idpedidotienda = d.idpedidotienda AND d.idforma_pago = e.idforma_pago and a.idestado = c.idestado and b.esdomicilio = 0 and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' group by usucaja, e.nombre " +
+					"select sum(d.valordisminuido) as valor, 'CAJA-NO DOMICILIO' as usucaja, e.nombre as forma from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido AND a.idpedidotienda = d.idpedidotienda AND d.idforma_pago = e.idforma_pago and a.idestado = c.idestado and b.esdomicilio = 0 and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' group by usucaja, e.nombre " +
 					"union " + 
-					"select sum(d.valordisminuido), 'DOMICILIOS EN ESPERA' as usucaja, e.nombre from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido AND a.idpedidotienda = d.idpedidotienda AND d.idforma_pago = e.idforma_pago and a.idestado = c.idestado and b.esdomicilio = 1 and a.iddomiciliario IS NULL and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' group by usucaja, e.nombre";
+					"select sum(d.valordisminuido) as valor, 'DOMICILIOS EN ESPERA' as usucaja, e.nombre as forma from pedido a , tipo_pedido b, estado c, pedido_forma_pago d, forma_pago e where a.idtipopedido = b.idtipopedido AND a.idpedidotienda = d.idpedidotienda AND d.idforma_pago = e.idforma_pago and a.idestado = c.idestado and b.esdomicilio = 1 and a.iddomiciliario IS NULL and a.idmotivoanulacion IS NULL and a.fechapedido = '" + fechaActual + "' group by usucaja, e.nombre) resultado order by resultado.usucaja, resultado.forma";
 			System.out.println(consulta);
 			if(auditoria)
 			{
@@ -2255,7 +2310,7 @@ public class PedidoDAO {
 		{
 			Statement stm = con1.createStatement();
 			//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
-			String consulta = "SELECT c.tamano, COUNT(*) FROM pedido a, detalle_pedido b , producto c WHERE a.idpedidotienda = b.idpedidotienda AND b.idproducto = c.idproducto AND c.tamano IN ('MD', 'GD', 'XL', 'PZ') AND a.fechapedido = '" + fechaPedido + "' GROUP BY tamano";
+			String consulta = "SELECT c.tamano, COUNT(*) FROM pedido a, detalle_pedido b , producto c WHERE a.idpedidotienda = b.idpedidotienda AND b.idproducto = c.idproducto AND c.tamano IN ('MD', 'GD', 'XL', 'PZ', 'DEDITOS') AND a.fechapedido = '" + fechaPedido + "' GROUP BY tamano";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -2430,7 +2485,7 @@ public class PedidoDAO {
 			 * @param auditoria
 			 * @return
 			 */
-			public static ArrayList obtenerResumenPorciones( String fechaAnterior, String  fechaPosterior, int idProductoPorcion, int idPorcionTemporal, int idPorcionEmpleado, int idPorcionDesecho, boolean auditoria )
+			public static ArrayList obtenerResumenPorciones( String fechaAnterior, String  fechaPosterior, int idProductoPorcion, int idPorcionTemporal, int idPorcionEmpleado, int idPorcionDesecho, int idGaseosaPorcion, boolean auditoria )
 			{
 				Logger logger = Logger.getLogger("log_file");
 				ConexionBaseDatos con = new ConexionBaseDatos();
@@ -2441,7 +2496,7 @@ public class PedidoDAO {
 				{
 					Statement stm = con1.createStatement();
 					//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
-					String consulta = "SELECT a.descripcion, SUM(b.cantidad)AS cantidad, c.fechapedido AS fecha  FROM producto a, detalle_pedido b, pedido c WHERE a.idproducto IN (" + idProductoPorcion + " , " + idPorcionTemporal + " , " + idPorcionEmpleado + " , " + idPorcionDesecho + ") AND a.idproducto = b.idproducto AND b.idmotivoanulacion IS NULL AND b.idpedidotienda = c.idpedidotienda " + 
+					String consulta = "SELECT a.descripcion, SUM(b.cantidad)AS cantidad, c.fechapedido AS fecha  FROM producto a, detalle_pedido b, pedido c WHERE a.idproducto IN (" + idProductoPorcion + " , " + idPorcionTemporal + " , " + idPorcionEmpleado + " , " + idPorcionDesecho + " , " + idGaseosaPorcion +  ") AND a.idproducto = b.idproducto AND b.idmotivoanulacion IS NULL AND b.idpedidotienda = c.idpedidotienda " + 
 							" AND c.fechapedido >= '" + fechaAnterior + "' AND c.fechapedido <= '" + fechaPosterior + "' GROUP BY a.descripcion, c.fechapedido order by c.fechapedido";
 					if(auditoria)
 					{
@@ -2471,6 +2526,45 @@ public class PedidoDAO {
 					}
 				}
 				return(resumenPorciones);
+			}
+			
+			public static boolean esPedidoPorciones(int idProductoPorcion, int idProductoGaseosa, int idPedido,  boolean auditoria)
+			{
+				Logger logger = Logger.getLogger("log_file");
+				ConexionBaseDatos con = new ConexionBaseDatos();
+				Connection con1 = con.obtenerConexionBDLocal();
+				boolean esPedPorciones = true;
+				try
+				{
+					double valorTotal = 0;
+					double valorImpuesto = 0;
+					Statement stm = con1.createStatement();
+					String consulta = "select * from detalle_pedido where idpedidotienda = " + idPedido + "   and idmotivoanulacion IS NULL and iddetalle_pedido_master = 0  and idproducto NOT IN ("+ idProductoPorcion + " , " + idProductoGaseosa + ")"; 
+					System.out.println("son porciones " + consulta);
+					if(auditoria)
+					{
+						logger.info(consulta);
+					}
+					ResultSet rs = stm.executeQuery(consulta);
+					while(rs.next()){
+						esPedPorciones = false; 
+						break;
+					}
+					rs.close();
+					stm.close();
+					con1.close();
+				}
+				catch (Exception e){
+					logger.error(e.toString());
+					try
+					{
+						con1.close();
+					}catch(Exception e1)
+					{
+					}
+					return(false);
+				}
+				return(esPedPorciones);
 			}
 	
 	}

@@ -18,6 +18,7 @@ import javax.swing.JPasswordField;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Panel;
 import java.awt.Window;
@@ -63,10 +64,10 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	AutenticacionCtrl aut = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 	//Variable que almacenará que tipo de presentación manejará el sistema si 1 la clásica o 2 la vista modificada
-	int valPresentacion;
-	int valModeloImpr;
-	boolean imprimeComandaFactura;
+	Window ventanaPadre;
+	FechaSistema fechasSistema;
 	/**
 	 * Launch the application.
 	 */
@@ -89,20 +90,21 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 	public PrincipalLogueo() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		//setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		setBounds(0,0, 450, 380);
+		setBounds(0,0, 450, 382);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 450, 361);
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 450, 400);
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+		ventanaPadre = this;
 		//Realizamos un cargue inicial de la variable Sesion
 		cargarEntornoInicial();
 				
 		boolean estaAperturado = pedCtrl.isSistemaAperturado();
+		String fechaMayor = operCtrl.validarEstadoFechaSistema();
 		
 		//Traemos de base de datos el valor del parametro de auditoria
 		Parametro parametroAud = parCtrl.obtenerParametro("AUDITORIA");
@@ -116,7 +118,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		{
 			habilitaAuditoria = false;
 		}
-				
+		
 		JLabel lblNombreSistema = new JLabel("SISTEMA TIENDA PIZZA AMERICANA");
 		lblNombreSistema.setFont(new Font("Traditional Arabic", Font.BOLD, 17));
 		lblNombreSistema.setBounds(64, 11, 338, 40);
@@ -144,7 +146,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		contentPane.add(jpassClave);
 		
 		JButton btnAutenticar = new JButton("Autenticar");
-		FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
+		fechasSistema = pedCtrl.obtenerFechasSistema();
 		
 		//Fijamos el idTienda del sistema
 		operTienda = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
@@ -177,8 +179,18 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 					objUsuario = new Usuario(0,usuario, claveFinal, "", 0,"" , false);
 					boolean  resultado = aut.autenticarUsuario(objUsuario);
 					
+										
 					if(resultado)
 					{
+						System.out.println("CADUCADO " + objUsuario.getCaducado());
+						// Antes de validar el resultado del logueo validamos si la contraseña esta caducadada o no
+						if(objUsuario.getCaducado() == 1)
+						{
+							JOptionPane.showMessageDialog(ventanaPadre, "El usuario está caducado deberá asignar de nuevo la clave rápida!!", "Renovación de clave rápida", JOptionPane.OK_OPTION);
+							VentSegAsignacionClaveRapida asigClaveRapida = new VentSegAsignacionClaveRapida((Frame)ventanaPadre, objUsuario, true); 
+							asigClaveRapida.setVisible(true);
+							// Se desplegará una nueva pantalla que tomará la asignación de Clave
+						}
 //						hiloValidacion.start();
 						//Cuando se supera el logueo asignamos la variable estática de idUsuario.
 						idUsuario = objUsuario.getIdUsuario();
@@ -186,8 +198,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 						if(!estaAperturado)
 						{
 							//Llamamos método para validar el estado de la fecha respecto a la última apertura.
-							OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
-							String fechaMayor = operCtrl.validarEstadoFechaSistema();
+							
 							//String fechaAumentada = operCtrl.aumentarFecha(fechasSistema.getFechaApertura());
 							Object seleccion = JOptionPane.showInputDialog(
 									   null,
@@ -223,18 +234,29 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 										return;
 									}
 								}
+								//Realizamos actualización de la fecha del sistema con el fin de que no aparezcan validaciones innecesarias
+								fechasSistema = pedCtrl.obtenerFechasSistema();
 							}
 						}
+						//En este punto del ingreso validaremos el estado de las fechas
+						if(fechaMayor.equals(fechasSistema.getFechaApertura()))
+						{
+							
+						}else
+						{
+							JOptionPane.showMessageDialog(ventanaPadre, "La fecha actual del sistema " + fechasSistema.getFechaApertura() + ",difiere de la fecha real que es " + fechaMayor + 
+									". \n Si esto no es normal por favor comunicarse con el administrador del sistema.",  "Atención", JOptionPane.ERROR_MESSAGE);
+						}
 						//Fijamos el usuario que se está loguendo
-						cargarEntornoFinal(usuario, idUsuario, objUsuario, objUsuario.getidTipoEmpleado());
+						aut.cargarEntornoFinal(usuario, idUsuario, objUsuario, objUsuario.getidTipoEmpleado());
 												
 						if(objUsuario.getTipoInicio().equals("Ventana Menús"))
 						{
-							if(valPresentacion == 1)
+							if(Sesion.getPresentacion() == 1)
 							{
 								VentPrincipal ventPrincipal = new VentPrincipal();
 								ventPrincipal.setVisible(true);
-							}else if(valPresentacion == 2)
+							}else if(Sesion.getPresentacion() == 2)
 							{
 								VentPrincipalModificada ventPrincipal = new VentPrincipalModificada();
 								ventPrincipal.lblInformacionUsuario.setText("USUARIO: " + Sesion.getUsuario());
@@ -259,7 +281,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 				}
 			}
 		});
-		btnAutenticar.setBounds(46, 277, 134, 46);
+		btnAutenticar.setBounds(64, 277, 134, 46);
 		contentPane.add(btnAutenticar);
 		
 		JButton btnCancelar = new JButton("Cancelar");
@@ -268,7 +290,7 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 				System.exit(0);
 			}
 		});
-		btnCancelar.setBounds(246, 277, 132, 46);
+		btnCancelar.setBounds(217, 277, 132, 46);
 		contentPane.add(btnCancelar);
 		
 		JLabel lblImagen = new JLabel("");
@@ -334,6 +356,29 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 		});
 		btnIngresoRapido.setBounds(226, 154, 176, 23);
 		contentPane.add(btnIngresoRapido);
+		
+		JButton btnConfigSeguridad = new JButton("");
+		btnConfigSeguridad.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentSegConfSeguridad ventConfSeguridad= new VentSegConfSeguridad((Frame)ventanaPadre, true);
+				ventConfSeguridad.setVisible(true);
+				//Evento de apertura para ventana para configuración de seguridad
+			}
+		});
+		btnConfigSeguridad.setIcon(new ImageIcon(PrincipalLogueo.class.getResource("/icons/ConfSeg.jpg")));
+		btnConfigSeguridad.setBounds(359, 258, 65, 53);
+		contentPane.add(btnConfigSeguridad);
+		
+		JButton btnEventoEmpleados = new JButton("REGISTRO");
+		btnEventoEmpleados.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VentSegRegEventoEmpleado ventRegEmpleado = new VentSegRegEventoEmpleado(null, true);
+				ventRegEmpleado.setVisible(true);
+			}
+		});
+		btnEventoEmpleados.setFont(new Font("Tahoma", Font.PLAIN, 8));
+		btnEventoEmpleados.setBounds(352, 322, 72, 35);
+		contentPane.add(btnEventoEmpleados);
 		if(estaAperturado)
 		{
 			txtEstadoCierre.setText("El día en cuestión ya se encuentra abierto.");
@@ -408,53 +453,6 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 				}
 				Sesion.setHost((String)prop.getProperty("host"));
 				Sesion.setEstacion((String)prop.getProperty("estacion"));		
-	}
-	
-	public void cargarEntornoFinal(String usu, int idUsu, Usuario objUsu, int idTipoEmpleado )
-	{
-		Sesion.setUsuario(usu);
-		Sesion.setIdUsuario(idUsu);
-		Sesion.setAccesosMenus(aut.obtenerAccesosPorMenuUsuario(usu));
-		Sesion.setAccesosOpcion(aut.obtenerAccesosPorOpcionObj(objUsu.getidTipoEmpleado()));
-		Sesion.setIdTipoEmpleado(objUsu.getidTipoEmpleado());
-		//Tomamos el valor del parámetro relacionado la interface gráfica
-		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
-		valPresentacion = 0;
-		try
-		{
-			valPresentacion = parametro.getValorNumerico();
-		}catch(Exception e)
-		{
-			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
-			valPresentacion = 0;
-		}
-		if(valPresentacion == 0)
-		{
-			valPresentacion =1;
-		}
-		Sesion.setPresentacion(valPresentacion);
-		valModeloImpr = 0;
-		parametro = parCtrl.obtenerParametro("MODELOIMPRESION");
-		try
-		{
-			valModeloImpr = parametro.getValorNumerico();
-		}catch(Exception e)
-		{
-			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN MODELO IMPRESION");
-			valModeloImpr = 0;
-		}
-		Sesion.setModeloImpresion(valModeloImpr);
-		imprimeComandaFactura = true;
-		parametro = parCtrl.obtenerParametro("IMPRIMECOMANDAFACTURA");
-		try
-		{
-			imprimeComandaFactura = Boolean.parseBoolean(parametro.getValorTexto());
-		}catch(Exception e)
-		{
-			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE IMPRESIÓN COMANDA PEDIDO");
-			imprimeComandaFactura = true;
-		}
-		Sesion.setImprimirComandaPedido(imprimeComandaFactura);
 	}
 }
 	

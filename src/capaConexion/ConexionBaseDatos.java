@@ -94,7 +94,7 @@ public class ConexionBaseDatos {
 	 * Método que se encarga de tener conexión al sistema principal de temas generales
 	 * @return
 	 */
-	public Connection obtenerConexionBDGeneral(){
+	public Connection obtenerConexionBDGeneral(String ubicacion){
 		try {
 		    Class.forName("com.mysql.jdbc.Driver").newInstance();
 		    
@@ -115,7 +115,7 @@ public class ConexionBaseDatos {
 		    //        + "user=root&password=4m32017");
 			
 			con = DriverManager.getConnection(
-		            "jdbc:mysql://192.168.0.25/general?"
+		            "jdbc:mysql://" + ubicacion + "?"
 		            + "user=root&password=4m32017");
 
 		    // Otros y operaciones sobre la base de datos...

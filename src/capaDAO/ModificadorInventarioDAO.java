@@ -15,7 +15,7 @@ import capaModelo.ModificadorInventario;
 
 public class ModificadorInventarioDAO {
 	
-	public static int insertarIngresosInventarios(ArrayList <ModificadorInventario> ingresos, String fecha, boolean auditoria )
+	public static int insertarIngresosInventarios(ArrayList <ModificadorInventario> ingresos, String observacion,  String fecha, boolean auditoria )
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idIngresoInv = 0;
@@ -25,7 +25,7 @@ public class ModificadorInventarioDAO {
 		{
 			//Realizamos la inserción del IdInventario
 			Statement stm = con1.createStatement();
-			String insert = "insert into ingreso_inventario (fecha_sistema) values ('" + fecha + "')"; 
+			String insert = "insert into ingreso_inventario (fecha_sistema, observacion) values ('" + fecha + "' , '" + observacion +"')"; 
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -214,7 +214,7 @@ public class ModificadorInventarioDAO {
 	}
 	
 	
-	public static int insertarRetirosInventarios(ArrayList <ModificadorInventario> retiros, String fecha, boolean auditoria )
+	public static int insertarRetirosInventarios(ArrayList <ModificadorInventario> retiros, String fecha, String observacion, boolean auditoria )
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idRetiroInv = 0;
@@ -224,7 +224,7 @@ public class ModificadorInventarioDAO {
 		{
 			//Realizamos la inserción del IdInventario
 			Statement stm = con1.createStatement();
-			String insert = "insert into retiro_inventario (fecha_sistema) values ('" + fecha + "')"; 
+			String insert = "insert into retiro_inventario (fecha_sistema, observacion) values ('" + fecha + "' , '" + observacion + "')"; 
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -514,6 +514,94 @@ public class ModificadorInventarioDAO {
 			}
 		}
 		return(productosDescuentan);
+		
+	}
+	
+	public static ArrayList obtenerEncabezadoRetiros(String fechaInicial, String fechaFinal, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList encabezadoRetiros = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idretiro_inventario, a.fecha_real, a.fecha_sistema, a.observacion from retiro_inventario a where a.fecha_sistema >= '" + fechaInicial + "' and a.fecha_sistema <= '" + fechaFinal +"'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				encabezadoRetiros.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(encabezadoRetiros);
+		
+	}
+	
+	public static ArrayList obtenerEncabezadoIngresos(String fechaInicial, String fechaFinal, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList encabezadoIngresos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.idingreso_inventario, a.fecha_real, a.fecha_sistema, a.observacion from ingreso_inventario a where a.fecha_sistema >= '" + fechaInicial + "' and a.fecha_sistema <= '" + fechaFinal +"'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				encabezadoIngresos.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(encabezadoIngresos);
 		
 	}
 	

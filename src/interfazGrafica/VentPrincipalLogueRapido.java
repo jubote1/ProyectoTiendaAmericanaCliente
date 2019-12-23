@@ -26,6 +26,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingConstants;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Color;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
@@ -44,6 +45,8 @@ import java.awt.event.KeyAdapter;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.awt.GridLayout;
+import java.awt.Window;
+
 import javax.swing.border.LineBorder;
 import javax.swing.ImageIcon;
 
@@ -57,11 +60,12 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 	private AutenticacionCtrl autCtrl = new AutenticacionCtrl(PrincipalLogueo.habilitaAuditoria);
 	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
 	Thread hiloValidacion;
 	//Variable que almacena el tipo de presnetación qeu tiene actualmente el sistema.
-		int valPresentacion;
-		int valModeloImpr;
-		boolean imprimeComandaFactura;
+		FechaSistema fechasSistema;
+		String fechaMayor;
+		Window ventanaPadre;
 	/**
 	 * Launch the application.
 	 */
@@ -90,15 +94,17 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 		//setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 400, 520);
-	    setBounds(0, 0, 400, 520);
+	    setBounds(0, 0, 400, 560);
 		contentenorFinPago = new JPanel();
 		contentenorFinPago.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentenorFinPago);
 		contentenorFinPago.setLayout(null);
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
+		ventanaPadre = this;
 		boolean estaAperturado = pedCtrl.isSistemaAperturado();
-		FechaSistema fechasSistema = pedCtrl.obtenerFechasSistema();
+		fechasSistema = pedCtrl.obtenerFechasSistema();
+		fechaMayor = operCtrl.validarEstadoFechaSistema();
 		JButton btnNum_1 = new JButton("1");
 		btnNum_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -227,6 +233,13 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 				Usuario usuLogueado = autCtrl.validarAutenticacionRapida(claveRapida);
 				if(usuLogueado.getIdUsuario() > 0)
 				{
+					if(usuLogueado.getCaducado() == 1)
+					{
+						JOptionPane.showMessageDialog(ventanaPadre, "El usuario está caducado deberá asignar de nuevo la clave rápida!!", "Renovación de clave rápida", JOptionPane.OK_OPTION);
+						VentSegAsignacionClaveRapida asigClaveRapida = new VentSegAsignacionClaveRapida(null, usuLogueado, true); 
+						asigClaveRapida.setVisible(true);
+						// Se desplegará una nueva pantalla que tomará la asignación de Clave
+					}
 					//Cuando se supera el logueo asignamos la variable estática de idUsuario.
 					PrincipalLogueo.idUsuario = usuLogueado.getIdUsuario();
 					if(usuLogueado.getIngreso() == 0)
@@ -239,8 +252,6 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 					if(!estaAperturado)
 					{
 						//Llamamos método para validar el estado de la fecha respecto a la última apertura.
-						OperacionesTiendaCtrl operCtrl = new OperacionesTiendaCtrl(PrincipalLogueo.habilitaAuditoria);
-						String fechaMayor = operCtrl.validarEstadoFechaSistema();
 						//String fechaAumentada = operCtrl.aumentarFecha(fechasSistema.getFechaApertura());
 						Object seleccion = JOptionPane.showInputDialog(
 								   null,
@@ -276,18 +287,29 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 									return;
 								}
 							}
+							//Realizamos actualización de la fecha del sistema con el fin de que no aparezcan validaciones innecesarias
+							fechasSistema = pedCtrl.obtenerFechasSistema();
 						}
 					}
+					//En este punto del ingreso validaremos el estado de las fechas
+					if(fechaMayor.equals(fechasSistema.getFechaApertura()))
+					{
+						
+					}else
+					{
+						JOptionPane.showMessageDialog(ventanaPadre, "La fecha actual del sistema " + fechasSistema.getFechaApertura() + ",difiere de la fecha real que es " + fechaMayor + 
+								". \n Si esto no es normal por favor comunicarse con el administrador del sistema.",  "Atención", JOptionPane.ERROR_MESSAGE);
+					}
 					//Fijamos el usuario que se está loguendo
-					cargarEntornoFinal(usuLogueado.getNombreUsuario(), usuLogueado.getIdUsuario(), usuLogueado, usuLogueado.getidTipoEmpleado());
+					autCtrl.cargarEntornoFinal(usuLogueado.getNombreUsuario(), usuLogueado.getIdUsuario(), usuLogueado, usuLogueado.getidTipoEmpleado());
 										
 					if(usuLogueado.getTipoInicio().equals("Ventana Menús"))
 					{
-						if(valPresentacion == 1)
+						if(Sesion.getPresentacion() == 1)
 						{
 							VentPrincipal ventPrincipal = new VentPrincipal();
 							ventPrincipal.setVisible(true);
-						}else if(valPresentacion == 2)
+						}else if(Sesion.getPresentacion() == 2)
 						{
 							VentPrincipalModificada ventPrincipal = new VentPrincipalModificada();
 							ventPrincipal.lblInformacionUsuario.setText("USUARIO: " + Sesion.getUsuario());
@@ -312,7 +334,7 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 			}
 		});
 		btnIngresar.setFont(new Font("Calibri", Font.BOLD, 35));
-		btnIngresar.setBounds(10, 413, 182, 53);
+		btnIngresar.setBounds(95, 415, 182, 53);
 		contentenorFinPago.add(btnIngresar);
 		
 				
@@ -334,8 +356,18 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 			}
 		});
 		btnSalir.setFont(new Font("Calibri", Font.BOLD, 35));
-		btnSalir.setBounds(202, 413, 182, 53);
+		btnSalir.setBounds(10, 477, 182, 53);
 		contentenorFinPago.add(btnSalir);
+		
+		JButton btnLimpiar = new JButton("Limpiar");
+		btnLimpiar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				contraRapida.setText("");
+			}
+		});
+		btnLimpiar.setFont(new Font("Calibri", Font.BOLD, 35));
+		btnLimpiar.setBounds(202, 477, 182, 53);
+		contentenorFinPago.add(btnLimpiar);
 		//Leemos archivos properties para fijar el valor de host
 		Properties prop = new Properties();
 		InputStream is = null;
@@ -393,50 +425,5 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 				Sesion.setEstacion((String)prop.getProperty("estacion"));		
 	}
 	
-	public void cargarEntornoFinal(String usu, int idUsu, Usuario objUsu, int idTipoEmpleado )
-	{
-		Sesion.setUsuario(usu);
-		Sesion.setIdUsuario(idUsu);
-		Sesion.setAccesosMenus(autCtrl.obtenerAccesosPorMenuUsuario(usu));
-		Sesion.setAccesosOpcion(autCtrl.obtenerAccesosPorOpcionObj(objUsu.getidTipoEmpleado()));
-		Sesion.setIdTipoEmpleado(objUsu.getidTipoEmpleado());
-		//Tomamos el valor del parámetro relacionado la interface gráfica
-		Parametro parametro = parCtrl.obtenerParametro("PRESENTACION");
-		valPresentacion = 0;
-		try
-		{
-			valPresentacion = parametro.getValorNumerico();
-		}catch(Exception e)
-		{
-			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN SISTEMA");
-			valPresentacion = 0;
-		}
-		if(valPresentacion == 0)
-		{
-			valPresentacion =1;
-		}
-		Sesion.setPresentacion(valPresentacion);
-		valModeloImpr = 0;
-		parametro = parCtrl.obtenerParametro("MODELOIMPRESION");
-		try
-		{
-			valModeloImpr = parametro.getValorNumerico();
-		}catch(Exception e)
-		{
-			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRESENTACIÓN MODELO IMPRESION");
-			valModeloImpr = 0;
-		}
-		Sesion.setModeloImpresion(valModeloImpr);
-		imprimeComandaFactura = true;
-		parametro = parCtrl.obtenerParametro("IMPRIMECOMANDAFACTURA");
-		try
-		{
-			imprimeComandaFactura = Boolean.parseBoolean(parametro.getValorTexto());
-		}catch(Exception e)
-		{
-			System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE IMPRESIÓN COMANDA PEDIDO");
-			imprimeComandaFactura = true;
-		}
-		Sesion.setImprimirComandaPedido(imprimeComandaFactura);
-	}
+	
 }

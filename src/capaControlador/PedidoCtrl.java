@@ -188,9 +188,9 @@ public class PedidoCtrl implements Runnable {
 		return(respuesta);
 	}
 	
-	public boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion, String observacion)
+	public boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion, String observacion, String usuarioAnulacion,  String usuarioAutorizo)
 	{
-		boolean respuesta = DetallePedidoDAO.anularDetallePedido(idDetallePedido, idMotivoAnulacion, observacion, auditoria);
+		boolean respuesta = DetallePedidoDAO.anularDetallePedido(idDetallePedido, idMotivoAnulacion, observacion, usuarioAnulacion,  usuarioAutorizo, auditoria);
 		return(respuesta);
 	}
 	
@@ -361,7 +361,7 @@ public class PedidoCtrl implements Runnable {
 	 * @param idMotivoAnulacion Se recibe un motivo de anulación para realizar el descuento o no de inventarios
 	 * @return se retorna un valor boolean con el respultado del proceso
 	 */
-	public boolean anularPedido(int idPedido, int idMotivoAnulacion, String observacion)
+	public boolean anularPedido(int idPedido, int idMotivoAnulacion, String observacion, String usuarioAnulacion,  String usuarioAutorizo)
 	{
 		//boolean respuesta = DetallePedidoDAO.AnularDetallesPedido(idPedido);
 		boolean respuesta = true;
@@ -380,7 +380,7 @@ public class PedidoCtrl implements Runnable {
 				//Incluimos una validación para que no repise algo que ya está anulado
 				if(!detPedido.get(i).getEstado().equals(new String("A")))
 				{
-					DetallePedidoDAO.anularDetallePedido(detPedido.get(i).getIdDetallePedido(), idMotivoAnulacion, observacion,  auditoria);
+					DetallePedidoDAO.anularDetallePedido(detPedido.get(i).getIdDetallePedido(), idMotivoAnulacion, observacion, usuarioAnulacion,  usuarioAutorizo,   auditoria);
 				}
 			}
 			return(true);
@@ -1977,6 +1977,8 @@ public class PedidoCtrl implements Runnable {
 					+  "<td><strong>Val Final</strong></td>"
 					+  "<td><strong>% Desc</strong></td>"
 					+  "<td><strong>Observacion</strong></td>"
+					+  "<td><strong>Usuario</strong></td>"
+					+  "<td><strong>Usuario Autorizo</strong></td>"
 					+  "</tr>";
 			PedidoDescuento descTemp;
 			for(int y = 0; y < descuentosFecha.size();y++)
@@ -1991,7 +1993,7 @@ public class PedidoCtrl implements Runnable {
 				{
 					desc = Double.toString(descTemp.getDescuentoPorcentaje());
 				}
-				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + descTemp.getFechaDescuento() + "</td><td> " + formatea.format(descTemp.getValorInicial()) +"</td><td> " + formatea.format(Double.parseDouble(desc)) + "</td><td> " + formatea.format(descTemp.getValorFinal()) + "</td><td> " + formatea.format(descTemp.getDescuentoPorcentaje()) + "</td><td> " + descTemp.getObservacion() +"</td></tr>";
+				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + descTemp.getFechaDescuento() + "</td><td> " + formatea.format(descTemp.getValorInicial()) +"</td><td> " + formatea.format(Double.parseDouble(desc)) + "</td><td> " + formatea.format(descTemp.getValorFinal()) + "</td><td> " + formatea.format(descTemp.getDescuentoPorcentaje()) + "</td><td> " + descTemp.getObservacion() + "</td><td> " + descTemp.getUsuario() + "</td><td> " + descTemp.getUsuarioAutorizo()  +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
 			return(respuesta);
@@ -2488,6 +2490,7 @@ public class PedidoCtrl implements Runnable {
 			}else if(ct == hiloEstadoPedido) 
 			{
 				//Es decir es un pedido nuevo
+				boolean esPedidoPorciones = esPedidoPorciones(Sesion.getIdProductoPorcion(), Sesion.getIdProductoGaseosa(), idPedidoActual);
 				if(!esPedidoReabierto)
 				{
 					Estado estadoIni = EstadoDAO.obtenerEstadoInicial(idTipoPedidoActual, auditoria);
@@ -2498,38 +2501,69 @@ public class PedidoCtrl implements Runnable {
 						//Con el tipo de impresion es 1 se imprime normal
 						if (tipoImpresion == 1)
 						{
-							//Vamos a realizar la impresión de la comanda
-							//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
-							if(Sesion.isImprimirComandaPedido())
+							if(Sesion.getControlEstrictoPorciones().equals("N") || (!esPedidoPorciones))
 							{
-								String strComanda = generarStrImpresionComanda(idPedidoActual);
+								//Vamos a realizar la impresión de la comanda
+								//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
+								if(Sesion.isImprimirComandaPedido())
+								{
+									String strComanda = generarStrImpresionComanda(idPedidoActual);
+									if(Sesion.getModeloImpresion() != 1)
+									{
+										ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+									}
+									else
+									{
+										Impresion.main(strComanda);
+									}
+								}//En caso de que NO, no se debería hacer nada
+
+								//Obtenemos el string de la factura que se imprimirá 2 veces
+								String strFactura = generarStrImpresionFactura(idPedidoActual);
+								System.out.println(strFactura);
 								if(Sesion.getModeloImpresion() != 1)
 								{
-									ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
 								}
 								else
 								{
-									Impresion.main(strComanda);
+									//Primera Impresión
+									Impresion.main(strFactura);
+									//Segunda Impresión
+									Impresion.main(strFactura);
 								}
-							}//En caso de que NO, no se debería hacer nada
-
-							//Obtenemos el string de la factura que se imprimirá 2 veces
-							String strFactura = generarStrImpresionFactura(idPedidoActual);
-							System.out.println(strFactura);
-							if(Sesion.getModeloImpresion() != 1)
+								actualizarImpresionPedido(idPedidoActual);
+							}else if(Sesion.getControlEstrictoPorciones().equals("S") || (esPedidoPorciones))
 							{
-								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
-								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+								//En este punto imprimiremos la factura una sola vez, no imprimiremos comanda e imprimiremos
+								// un resumen para que con este reclamen la porción
+								String strFactura = generarStrImpresionFactura(idPedidoActual);
+								System.out.println(strFactura);
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+								}
+								else
+								{
+									//Primera Impresión
+									Impresion.main(strFactura);
+								}
+								actualizarImpresionPedido(idPedidoActual);
+								//En este punto imprimiremos un comprobante para reclamar la porción
+								String reclamaPorcion = generarStrControlPorciones(idPedidoActual);
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(reclamaPorcion, auditoria);
+								}
+								else
+								{
+									//Primera Impresión
+									Impresion.main(reclamaPorcion);
+								}
+								System.out.println(reclamaPorcion);
 							}
-							else
-							{
-								//Primera Impresión
-								Impresion.main(strFactura);
-								//Segunda Impresión
-								Impresion.main(strFactura);
-							}
-							actualizarImpresionPedido(idPedidoActual);
-						//SI el tipo de impresión es 0 es porque deberíamos solo de imprimir lo nuevo
+							
 						} 
 					}
 				}
@@ -2541,70 +2575,129 @@ public class PedidoCtrl implements Runnable {
 						//Con el tipo de impresion es 1 se imprime normal
 						if (tipoImpresion == 1)
 						{
-							//Vamos a realizar la impresión de la comanda
-							//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
-							if(Sesion.isImprimirComandaPedido())
+							if(Sesion.getControlEstrictoPorciones().equals("N") || (!esPedidoPorciones))
 							{
-								String strComanda = generarStrImpresionComanda(idPedidoActual);
+								//Vamos a realizar la impresión de la comanda
+								//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
+								if(Sesion.isImprimirComandaPedido())
+								{
+									String strComanda = generarStrImpresionComanda(idPedidoActual);
+									if(Sesion.getModeloImpresion() != 1)
+									{
+										ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+									}
+									else
+									{
+										Impresion.main(strComanda);
+									}
+								}//En caso de que NO, no se debería hacer nada
+
+								//Obtenemos el string de la factura que se imprimirá 2 veces
+								String strFactura = generarStrImpresionFactura(idPedidoActual);
 								if(Sesion.getModeloImpresion() != 1)
 								{
-									ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
 								}
 								else
 								{
-									Impresion.main(strComanda);
+									//Primera Impresión
+									Impresion.main(strFactura);
+									//Segunda Impresión
+									Impresion.main(strFactura);
 								}
-							}//En caso de que NO, no se debería hacer nada
-
-							//Obtenemos el string de la factura que se imprimirá 2 veces
-							String strFactura = generarStrImpresionFactura(idPedidoActual);
-							if(Sesion.getModeloImpresion() != 1)
+								actualizarImpresionPedido(idPedidoActual);
+							}else if(Sesion.getControlEstrictoPorciones().equals("S") || (esPedidoPorciones))
 							{
-								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
-								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+								//Obtenemos el string de la factura que se imprimirá 2 veces
+								String strFactura = generarStrImpresionFactura(idPedidoActual);
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+								}
+								else
+								{
+									//Primera Impresión
+									Impresion.main(strFactura);
+								}
+								actualizarImpresionPedido(idPedidoActual);
+								//En este punto imprimiremos un comprobante para reclamar la porción
+								String reclamaPorcion = generarStrControlPorciones(idPedidoActual);
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(reclamaPorcion, auditoria);
+								}
+								else
+								{
+									//Primera Impresión
+									Impresion.main(reclamaPorcion);
+								}
+								System.out.println(reclamaPorcion);
 							}
-							else
-							{
-								//Primera Impresión
-								Impresion.main(strFactura);
-								//Segunda Impresión
-								Impresion.main(strFactura);
-							}
-							actualizarImpresionPedido(idPedidoActual);
 						//SI el tipo de impresión es 0 es porque deberíamos solo de imprimir lo nuevo
 						} else if(tipoImpresion == 0)
 						{
-							//Vamos a realizar la impresión de la comanda
-							//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
-							if(Sesion.isImprimirComandaPedido())
+							if(Sesion.getControlEstrictoPorciones().equals("N") || (!esPedidoPorciones))
 							{
-								String strComanda = generarStrImpresionComandaItemsNuevos(idPedidoActual, detPedidoNuevo);
-								System.out.println(strComanda );
+								//Vamos a realizar la impresión de la comanda
+								//Antes de generar la comanda preguntamos si lo debemos de hacer por parametrizacion
+								if(Sesion.isImprimirComandaPedido())
+								{
+									String strComanda = generarStrImpresionComandaItemsNuevos(idPedidoActual, detPedidoNuevo);
+									System.out.println(strComanda );
+									if(Sesion.getModeloImpresion() != 1)
+									{
+										ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+									}
+									else
+									{
+										Impresion.main(strComanda);
+									}
+								}//En caso de que NO, no se debería hacer nada
+
+								//Obtenemos el string de la factura que se imprimirá 2 veces
+								String strFactura = generarStrImpresionFactura(idPedidoActual);
+								System.out.println(strFactura );
 								if(Sesion.getModeloImpresion() != 1)
 								{
-									ImprimirAdmDAO.insertarImpresion(strComanda, auditoria);
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
 								}
 								else
 								{
-									Impresion.main(strComanda);
+									//Primera Impresión
+									Impresion.main(strFactura);
+									//Segunda Impresión
+									Impresion.main(strFactura);
 								}
-							}//En caso de que NO, no se debería hacer nada
+							}else if(Sesion.getControlEstrictoPorciones().equals("S") || (esPedidoPorciones))
+							{
+								//Obtenemos el string de la factura que se imprimirá 2 veces
+								String strFactura = generarStrImpresionFactura(idPedidoActual);
+								System.out.println(strFactura );
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
+								}
+								else
+								{
+									//Primera Impresión
+									Impresion.main(strFactura);
+								}
+								//En este punto imprimiremos un comprobante para reclamar la porción
+								String reclamaPorcion = generarStrControlPorciones(idPedidoActual);
+								if(Sesion.getModeloImpresion() != 1)
+								{
+									ImprimirAdmDAO.insertarImpresion(reclamaPorcion, auditoria);
+								}
+								else
+								{
+									//Primera Impresión
+									Impresion.main(reclamaPorcion);
+								}
+								System.out.println(reclamaPorcion);
+							}
 
-							//Obtenemos el string de la factura que se imprimirá 2 veces
-							String strFactura = generarStrImpresionFactura(idPedidoActual);
-							System.out.println(strFactura );
-							if(Sesion.getModeloImpresion() != 1)
-							{
-								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
-								ImprimirAdmDAO.insertarImpresion(strFactura, auditoria);
-							}
-							else
-							{
-								//Primera Impresión
-								Impresion.main(strFactura);
-								//Segunda Impresión
-								Impresion.main(strFactura);
-							}
 						}
 
 					}
@@ -2773,6 +2866,43 @@ public class PedidoCtrl implements Runnable {
 			factura = factura  + "DIR CLIENTE: " + pedImpFac.getDirCliente() + " \n";
 			factura = factura  + "OBS: " + pedImpFac.getObservacion() + " " + pedImpFac.getZona() + " \n";
 			factura = factura  + "TELEFONO: " + pedImpFac.getTelefono() + " \n";
+			factura = factura  + "             ********::::::::*******"
+		            + "\n           ";
+			System.out.println(factura);
+			return(factura);
+		}
+		
+		public String generarStrControlPorciones(int idPedido)
+		{
+			
+			//Obtenemos la tienda sobre la que estamos trabajando
+			ArrayList<DetallePedido> detPedido = obtenerDetallePedidoPintar(idPedido);
+			Pedido infoPedido = obtenerPedido(idPedido); 
+			DetallePedido detTemp;
+			Date fechaActual = new Date();
+			String factura = "================================\n" 
+					+ "RECLAMA PORCIONES:  "+idPedido +"\n"
+		            + fechaActual.toString() + "\n"
+		            + "==================================\n"
+		            + "Cant    Descripcion                 \n"
+		            + "==================================\n";
+			double cantidad;
+			for(int i = 0; i < detPedido.size(); i++)
+			{
+				detTemp = detPedido.get(i);
+				cantidad = detTemp.getValorTotal();
+				if ((cantidad - Math.floor(cantidad)) == 0) 
+				{
+					factura = factura + "  " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + "\n";
+				}
+				else
+				{
+					factura = factura + "  " + detTemp.getCantidad() + "   " + detTemp.getDescCortaProducto() + "    " + detTemp.getValorTotal() + "\n";
+				}
+				
+			}
+			//Obtenemos información del pedido para colocar unos pocos datos en la comanda
+			Pedido pedImpFac = obtenerPedido(idPedido);
 			factura = factura  + "             ********::::::::*******"
 		            + "\n           ";
 			System.out.println(factura);
@@ -3008,6 +3138,8 @@ public class PedidoCtrl implements Runnable {
 					+  "<td><strong>Val Final</strong></td>"
 					+  "<td><strong>% Desc</strong></td>"
 					+  "<td><strong>Observacion</strong></td>"
+					+  "<td><strong>Usuario</strong></td>"
+					+  "<td><strong>Usuario Autorizo</strong></td>"
 					+  "</tr>";
 			PedidoDescuento descTemp;
 			for(int y = 0; y < descuentosFecha.size();y++)
@@ -3022,7 +3154,7 @@ public class PedidoCtrl implements Runnable {
 				{
 					desc = Double.toString(descTemp.getDescuentoPorcentaje());
 				}
-				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + descTemp.getFechaDescuento() + "</td><td> " + formatea.format(descTemp.getValorInicial()) +"</td><td> " + formatea.format(Double.parseDouble(desc)) + "</td><td> " + formatea.format(descTemp.getValorFinal()) + "</td><td> " + formatea.format(descTemp.getDescuentoPorcentaje()) + "</td><td> " + descTemp.getObservacion() +"</td></tr>";
+				respuesta = respuesta + "<tr><td>" + descTemp.getIdpedido() + "</td><td> " + descTemp.getFechaDescuento() + "</td><td> " + formatea.format(descTemp.getValorInicial()) +"</td><td> " + formatea.format(Double.parseDouble(desc)) + "</td><td> " + formatea.format(descTemp.getValorFinal()) + "</td><td> " + formatea.format(descTemp.getDescuentoPorcentaje()) + "</td><td> " + descTemp.getObservacion() +  "</td><td> " + descTemp.getUsuario() +  "</td><td> " + descTemp.getUsuarioAutorizo() +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
 			
@@ -3073,6 +3205,23 @@ public class PedidoCtrl implements Runnable {
 			{
 				fila = (String[]) resumenPorciones.get(y);
 				respuesta = respuesta + "<tr><td>" + fila[0] + "</td><td> " + fila[1] + "</td><td> " + fila[2]  +"</td></tr>";
+			}
+			respuesta = respuesta + "</table> <br/>";
+			
+			//Agregaremos un resumen diario de las porciones vendidas por hora
+			//Obtenemos la hora y porciones vendidas por hora
+			
+			ArrayList resumenPorcionesHora = obtenerPorcionesPorHoras(fechasSistema);
+			//Con el arrayList lo recorremos para mostrar la tabla
+			respuesta = respuesta + "<table border='2'> <tr> RESUMEN DE PORCIONES VENDIDAS POR HORAS</tr>";
+			respuesta = respuesta + "<tr>"
+					+  "<td><strong>HORA</strong></td>"
+					+  "<td><strong>CANTIDAD PORCIONES</strong></td>"
+					+  "</tr>";
+			for(int y = 0; y < resumenPorcionesHora.size();y++)
+			{
+				fila = (String[]) resumenPorcionesHora.get(y);
+				respuesta = respuesta + "<tr><td>" + fila[0] + "</td><td> " + fila[1] +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
 			return(respuesta);
@@ -3191,7 +3340,8 @@ public class PedidoCtrl implements Runnable {
 					+  "<td><strong>Fecha</strong></td>"
 					+  "<td><strong>Producto</strong></td>"
 					+  "<td><strong>Valor</strong></td>"
-					+  "<td><strong>Usuario</strong></td>"
+					+  "<td><strong>Usuario-Anulo</strong></td>"
+					+  "<td><strong>Usuario-Autorizo</strong></td>"
 					+  "<td><strong>Anulación</strong></td>"
 					+  "<td><strong>Observacion</strong></td>"
 					+  "</tr>";
@@ -3199,7 +3349,7 @@ public class PedidoCtrl implements Runnable {
 			for(int y = 0; y < anulacionesSemana.size();y++)
 			{
 				anulPedido = anulacionesSemana.get(y);
-				respuesta = respuesta + "<tr><td>" + anulPedido.getIdPedido() + "</td><td>" + anulPedido.getFecha() + "</td><td>" + anulPedido.getProducto() + "</td><td>" + formatea.format(anulPedido.getValor()) + "</td><td> " + anulPedido.getUsuario() + "</td><td> " + anulPedido.getTipoAnulacion() + "</td><td> " + anulPedido.getObservacion() +"</td></tr>";
+				respuesta = respuesta + "<tr><td>" + anulPedido.getIdPedido() + "</td><td>" + anulPedido.getFecha() + "</td><td>" + anulPedido.getProducto() + "</td><td>" + formatea.format(anulPedido.getValor()) + "</td><td> " + anulPedido.getUsuario() + "</td><td> " + anulPedido.getUsuarioAutAnulacion()  + "</td><td> " + anulPedido.getTipoAnulacion() + "</td><td> " + anulPedido.getObservacion() +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
 			return(respuesta);
@@ -3218,7 +3368,8 @@ public class PedidoCtrl implements Runnable {
 					+  "<td><strong>Fecha</strong></td>"
 					+  "<td><strong>Producto</strong></td>"
 					+  "<td><strong>Valor</strong></td>"
-					+  "<td><strong>Usuario</strong></td>"
+					+  "<td><strong>Usuario-Anulo</strong></td>"
+					+  "<td><strong>Usuario-Autorizo</strong></td>"
 					+  "<td><strong>Anulación</strong></td>"
 					+  "<td><strong>Observacion</strong></td>"
 					+  "</tr>";
@@ -3226,7 +3377,7 @@ public class PedidoCtrl implements Runnable {
 			for(int y = 0; y < anulacionesSemana.size();y++)
 			{
 				anulPedido = anulacionesSemana.get(y);
-				respuesta = respuesta + "<tr><td>" + anulPedido.getIdPedido() + "</td><td>" + anulPedido.getFecha() + "</td><td>" + anulPedido.getProducto() + "</td><td>" + formatea.format(anulPedido.getValor()) + "</td><td> " + anulPedido.getUsuario() + "</td><td> " + anulPedido.getTipoAnulacion() + "</td><td> " + anulPedido.getObservacion() +"</td></tr>";
+				respuesta = respuesta + "<tr><td>" + anulPedido.getIdPedido() + "</td><td>" + anulPedido.getFecha() + "</td><td>" + anulPedido.getProducto() + "</td><td>" + formatea.format(anulPedido.getValor()) + "</td><td> " + anulPedido.getUsuario() + "</td><td> " + anulPedido.getUsuarioAutAnulacion() + "</td><td> " + anulPedido.getTipoAnulacion() + "</td><td> " + anulPedido.getObservacion() +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
 			return(respuesta);
@@ -3606,7 +3757,7 @@ public class PedidoCtrl implements Runnable {
 			return(resumenPorcionesSemana);
 		}
 		
-		public ArrayList obtenerResumenPorciones(String fechaAnterior, String fechaPosterior)
+		public ArrayList obtenerPorcionesPorHoras(String fechaPedido)
 		{
 			//Sacamos el resumen de los productos de porción
 			ParametrosCtrl parCtrl = new ParametrosCtrl(auditoria);
@@ -3616,6 +3767,7 @@ public class PedidoCtrl implements Runnable {
 			int idPorcionTemporal = 0;
 			int idPorcionEmpleado = 0;
 			int idPorcionDesecho = 0;
+			int idGaseosaPorcion = 0;
 			try
 			{
 				valNum = (long) parametro.getValorNumerico();
@@ -3662,10 +3814,97 @@ public class PedidoCtrl implements Runnable {
 				System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA PORCIONES DE EMPLEADO");
 			}
 			idPorcionDesecho = (int) valNum;
+			
+			//Capturamos la información de la gaseosa
+			parametro = parCtrl.obtenerParametro("PRODUCTOGASEOSA");
+			valNum = 0;
+			try
+			{
+				valNum = (long) parametro.getValorNumerico();
+			}catch(Exception exc)
+			{
+				System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA LA GASEOSA DE PORCIÓN");
+			}
+			idGaseosaPorcion = (int) valNum;
+			//Ya capturados todos los valores de los productos de porciones llamaremos un método que con está información se encargará de extraer toda la 
+			//información.
+			ArrayList reporteResumenPorcionesHora = PedidoDAO.obtenerPorcionesPorHoras(fechaPedido, idProductoPorcion, idPorcionTemporal, idPorcionEmpleado, idPorcionDesecho, idGaseosaPorcion, auditoria );
+			return(reporteResumenPorcionesHora);
+		}
+		
+		public ArrayList obtenerResumenPorciones(String fechaAnterior, String fechaPosterior)
+		{
+			//Sacamos el resumen de los productos de porción
+			ParametrosCtrl parCtrl = new ParametrosCtrl(auditoria);
+			Parametro parametro = parCtrl.obtenerParametro("PRODUCTOPORCION");
+			long valNum = 0;
+			int idProductoPorcion = 0;
+			int idPorcionTemporal = 0;
+			int idPorcionEmpleado = 0;
+			int idPorcionDesecho = 0;
+			int idGaseosaPorcion = 0;
+			try
+			{
+				valNum = (long) parametro.getValorNumerico();
+			}catch(Exception exc)
+			{
+				System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PORCIÓN");
+			}
+			//Asignamos el producto de porciones para con este facturar
+			idProductoPorcion =(int) valNum;
+			
+			//Tomamos el idProducto para porción de temporales
+			parametro = parCtrl.obtenerParametro("PORCIONTEMPORALES");
+			valNum = 0;
+			try
+			{
+				valNum = (long) parametro.getValorNumerico();
+			}catch(Exception exc)
+			{
+				System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA PORCIONES DE TERMPORALES");
+			}
+			idPorcionTemporal = (int) valNum;
+
+			//Capturamos la informacion para la porcion empleado
+			parametro = parCtrl.obtenerParametro("PORCIONEMPLEADO");
+			valNum = 0;
+			try
+			{
+				valNum = (long) parametro.getValorNumerico();
+			}catch(Exception exc)
+			{
+				System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA PORCIONES DE EMPLEADO");
+			}
+			idPorcionEmpleado = (int) valNum;
+
+			
+			//Capturamos la información de la porcion desecho
+			parametro = parCtrl.obtenerParametro("PORCIONDESECHO");
+			valNum = 0;
+			try
+			{
+				valNum = (long) parametro.getValorNumerico();
+			}catch(Exception exc)
+			{
+				System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA PORCIONES DE EMPLEADO");
+			}
+			idPorcionDesecho = (int) valNum;
+			
+			//Capturamos la información de la gaseosa
+			parametro = parCtrl.obtenerParametro("PRODUCTOGASEOSA");
+			valNum = 0;
+			try
+			{
+				valNum = (long) parametro.getValorNumerico();
+			}catch(Exception exc)
+			{
+				System.out.println("SE TUVO ERROR TOMANDO LA CONSTANTE DE PRODUCTO PARA LA GASEOSA DE PORCIÓN");
+			}
+			idGaseosaPorcion = (int) valNum;
 			//Ya capturados todos los valores de los productos de porciones llamaremos un método que con está información se encargará de extraer toda la 
 			//información.
 			
-			ArrayList reporteResumenPorciones = PedidoDAO.obtenerResumenPorciones(fechaAnterior,  fechaPosterior, idProductoPorcion, idPorcionTemporal, idPorcionEmpleado, idPorcionDesecho, auditoria );
+			ArrayList reporteResumenPorciones = PedidoDAO.obtenerResumenPorciones(fechaAnterior,  fechaPosterior, idProductoPorcion, idPorcionTemporal, idPorcionEmpleado, idPorcionDesecho, idGaseosaPorcion, auditoria );
 			
 						
 			return(reporteResumenPorciones);
@@ -4070,6 +4309,19 @@ public class PedidoCtrl implements Runnable {
 		public boolean verificarPedidoReabiertoAnulado(int idPedido)
 		{
 			boolean respuesta =  DetallePedidoDAO.verificarPedidoReabiertoAnulado(idPedido,auditoria);
+			return(respuesta);
+		}
+		
+		public boolean esPedidoPorciones(int idProductoPorcion, int idProductoGaseosa, int idPedido)
+		{
+			boolean respuesta =  PedidoDAO.esPedidoPorciones(idProductoPorcion, idProductoGaseosa, idPedido,  auditoria);
+			return(respuesta);
+		}
+		
+		public boolean multiplicarDetallePedido(int idDetalleTratar, int multiplicadorPed)
+		{
+			boolean respuesta;
+			respuesta = DetallePedidoDAO.multiplicarDetallePedido(idDetalleTratar, multiplicadorPed, auditoria);
 			return(respuesta);
 		}
 }

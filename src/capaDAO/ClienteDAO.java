@@ -30,7 +30,7 @@ import capaConexion.ConexionBaseDatos;
 			{
 				Statement stm = con1.createStatement();
 				//String consulta = "select a.idcliente, b.nombretienda nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.telefono = '" + tel +"'";
-				String consulta = "select a.idcliente, b.nombretienda nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, a.idmunicipio from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.telefono = '" + tel +"'";
+				String consulta = "select a.idcliente, b.nombretienda nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, a.idmunicipio, a.distancia_tienda from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.telefono = '" + tel +"'";
 				if(auditoria)
 				{
 					logger.info(consulta);
@@ -56,6 +56,7 @@ import capaConexion.ConexionBaseDatos;
 				String numNomenclatura2;
 				String num3;
 				String nomenclatura;
+				double distanciaTienda;
 				while(rs.next()){
 					idcliente = rs.getInt("idcliente");
 					nombreTienda = rs.getString("nombreTienda");
@@ -77,7 +78,8 @@ import capaConexion.ConexionBaseDatos;
 					numNomenclatura2 = rs.getString("num_nomencla2");
 					num3 = rs.getString("num3");
 					nomenclatura = rs.getString("nomenclatura");
-					Cliente clien = new Cliente( idcliente, telefono, nombreCliente,apellido, nombreCompania, direccion,municipio,idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda, memcode,idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura);
+					distanciaTienda = rs.getDouble("distancia_tienda");
+					Cliente clien = new Cliente( idcliente, telefono, nombreCliente,apellido, nombreCompania, direccion,municipio,idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda, memcode,idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura, distanciaTienda);
 					clientes.add(clien);
 				}
 				rs.close();
@@ -110,7 +112,7 @@ import capaConexion.ConexionBaseDatos;
 			try
 			{
 				Statement stm = con1.createStatement();
-				String insert = "insert into cliente (idtienda,nombre, apellido, nombrecompania, direccion, zona, telefono, observacion, idmunicipio, latitud, longitud, idnomenclatura, num_nomencla1, num_nomencla2, num3) values (" + clienteInsertar.getIdtienda() + ", '" +clienteInsertar.getNombres() + "' , '" + clienteInsertar.getApellidos() + "' , '" + clienteInsertar.getNombreCompania() + "' , '" + clienteInsertar.getDireccion() + "' , '" + clienteInsertar.getZonaDireccion() +"' , '" + clienteInsertar.getTelefono() + "' , '" + clienteInsertar.getObservacion() + "' , " + clienteInsertar.getIdMunicipio() + " , " + clienteInsertar.getLatitud() + " , " + clienteInsertar.getLontitud() + " ,  " + clienteInsertar.getIdnomenclatura() + " , '" + clienteInsertar.getNumNomenclatura() + "' , '" + clienteInsertar.getNumNomenclatura2() + "' ,  '" + clienteInsertar.getNum3() + "')"; 
+				String insert = "insert into cliente (idtienda,nombre, apellido, nombrecompania, direccion, zona, telefono, observacion, idmunicipio, latitud, longitud, idnomenclatura, num_nomencla1, num_nomencla2, num3, distancia_tienda) values (" + clienteInsertar.getIdtienda() + ", '" +clienteInsertar.getNombres() + "' , '" + clienteInsertar.getApellidos() + "' , '" + clienteInsertar.getNombreCompania() + "' , '" + clienteInsertar.getDireccion() + "' , '" + clienteInsertar.getZonaDireccion() +"' , '" + clienteInsertar.getTelefono() + "' , '" + clienteInsertar.getObservacion() + "' , " + clienteInsertar.getIdMunicipio() + " , " + clienteInsertar.getLatitud() + " , " + clienteInsertar.getLontitud() + " ,  " + clienteInsertar.getIdnomenclatura() + " , '" + clienteInsertar.getNumNomenclatura() + "' , '" + clienteInsertar.getNumNomenclatura2() + "' ,  '" + clienteInsertar.getNum3() + "' , " + clienteInsertar.getDistanciaTienda()+ ")"; 
 				if(auditoria)
 				{
 					logger.info(insert);
@@ -152,7 +154,7 @@ import capaConexion.ConexionBaseDatos;
 			try
 			{
 				Statement stm = con1.createStatement();
-				String consulta = "select a.idcliente, b.nombretienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, c.idmunicipio from cliente a JOIN tienda b ON a.idtienda = b.idtienda JOIN municipio c ON a.idmunicipio = c.idmunicipio left join nomenclatura_direccion d on a.idnomenclatura = d.idnomenclatura  where a.idcliente = " + id +"";
+				String consulta = "select a.idcliente, b.nombretienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, c.idmunicipio, a.distancia_tienda from cliente a JOIN tienda b ON a.idtienda = b.idtienda JOIN municipio c ON a.idmunicipio = c.idmunicipio left join nomenclatura_direccion d on a.idnomenclatura = d.idnomenclatura  where a.idcliente = " + id +"";
 				if(auditoria)
 				{
 					logger.info(consulta);
@@ -178,6 +180,7 @@ import capaConexion.ConexionBaseDatos;
 				String numNomenclatura2;
 				String num3;
 				String nomenclatura;
+				double distanciaTienda;
 				while(rs.next()){
 					idcliente = rs.getInt("idcliente");
 					nombreTienda = rs.getString("nombretienda");
@@ -200,7 +203,8 @@ import capaConexion.ConexionBaseDatos;
 					num3 = rs.getString("num3");
 					nomenclatura = rs.getString("nomenclatura");
 					idMunicipio = rs.getInt("idmunicipio");
-					clienteConsultado = new Cliente( idcliente, telefono, nombreCliente, apellido, nombreCompania, direccion,municipio,idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda,memcode,idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura);
+					distanciaTienda = rs.getDouble("distancia_tienda");
+					clienteConsultado = new Cliente( idcliente, telefono, nombreCliente, apellido, nombreCompania, direccion,municipio,idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda,memcode,idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura, distanciaTienda);
 					clienteConsultado.setIdMunicipio(idMunicipio);
 				}
 				rs.close();
@@ -237,6 +241,7 @@ import capaConexion.ConexionBaseDatos;
 				if(clienteAct.getIdcliente() > 0)
 				{
 					String update = "update cliente set telefono = '"+clienteAct.getTelefono()+"' , nombre = '" + clienteAct.getNombres() + "' , direccion = '" + clienteAct.getDireccion() + "' , idmunicipio = " + clienteAct.getIdMunicipio() + " , latitud = " + clienteAct.getLatitud() + " , longitud = " + clienteAct.getLontitud() + " , zona = '" + clienteAct.getZonaDireccion() + "' , observacion = '" + clienteAct.getObservacion() +"', apellido = '" + clienteAct.getApellidos() + "' , nombrecompania = '" + clienteAct.getNombreCompania() + "' , idnomenclatura = " + clienteAct.getIdnomenclatura() + " , num_nomencla1 = '" + clienteAct.getNumNomenclatura() + "' , num_nomencla2 = '" + clienteAct.getNumNomenclatura2() + "' , num3 =  '" + clienteAct.getNum3()  + "'  where idcliente = " + clienteAct.getIdcliente(); 
+					System.out.println(update);
 					if(auditoria)
 					{
 						logger.info(update);
@@ -248,13 +253,14 @@ import capaConexion.ConexionBaseDatos;
 				{
 					if(auditoria)
 					{
-						logger.info("No se pudo hacer actualizaci�n dado que el idCliente venia en ceros o vac�o");
+						logger.info("No se pudo hacer actualizacion dado que el idCliente venia en ceros o vacio");
 					}
 				}
 				stm.close();
 				con1.close();
 			}
 			catch (Exception e){
+				System.out.println(e.toString());
 				logger.error(e.toString());
 				try
 				{
@@ -321,7 +327,7 @@ import capaConexion.ConexionBaseDatos;
 			try
 			{
 				Statement stm = con1.createStatement();
-				String consulta = "select a.idcliente, b.nombre nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, c.idmunicipio from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.idtienda = " + idtienda +" and a.idcliente not in (select b.idcliente from geolocaliza_masivo_tienda b )" ;
+				String consulta = "select a.idcliente, b.nombre nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, c.idmunicipio, a.distancia_tienda from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.idtienda = " + idtienda +" and a.idcliente not in (select b.idcliente from geolocaliza_masivo_tienda b )" ;
 				if(auditoria)
 				{
 					logger.info(consulta);
@@ -347,6 +353,7 @@ import capaConexion.ConexionBaseDatos;
 				String numNomenclatura2;
 				String num3;
 				String nomenclatura;
+				double distanciaTienda;
 				while(rs.next()){
 					idcliente = rs.getInt("idcliente");
 					nombreTienda = rs.getString("nombreTienda");
@@ -368,7 +375,8 @@ import capaConexion.ConexionBaseDatos;
 					numNomenclatura2 = rs.getString("num_nomencla2");
 					num3 = rs.getString("num3");
 					nomenclatura = rs.getString("nomenclatura");
-					Cliente clien = new Cliente( idcliente, telefono, nombreCliente,apellido, nombreCompania, direccion,municipio, idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda, memcode, idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura);
+					distanciaTienda = rs.getDouble("distancia_tienda");
+					Cliente clien = new Cliente( idcliente, telefono, nombreCliente,apellido, nombreCompania, direccion,municipio, idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda, memcode, idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura, distanciaTienda);
 					clientes.add(clien);
 				}
 				rs.close();
@@ -442,7 +450,7 @@ import capaConexion.ConexionBaseDatos;
 			try
 			{
 				Statement stm = con1.createStatement();
-				String consulta = "select a.idcliente, b.nombretienda nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, a.idmunicipio from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.telefono = '" + telefono +"'";
+				String consulta = "select a.idcliente, b.nombretienda nombreTienda, a.idtienda, a.nombre, a.apellido, a.nombrecompania, a.direccion, a.zona, a.observacion, a.telefono, c.nombre nombremunicipio, a.latitud, a.longitud, a.memcode, a.idnomenclatura, a.num_nomencla1, a.num_nomencla2, a.num3, d.nomenclatura, a.idmunicipio, a.distancia_tienda from cliente a,tienda b, municipio c, nomenclatura_direccion d where a.idnomenclatura = d.idnomenclatura and a.idtienda = b.idtienda and a.idmunicipio = c.idmunicipio and a.telefono = '" + telefono +"'";
 				if(auditoria)
 				{
 					logger.info(consulta);
@@ -467,6 +475,7 @@ import capaConexion.ConexionBaseDatos;
 				String numNomenclatura2;
 				String num3;
 				String nomenclatura;
+				double distanciaTienda;
 				while(rs.next()){
 					idcliente = rs.getInt("idcliente");
 					nombreTienda = rs.getString("nombreTienda");
@@ -488,7 +497,8 @@ import capaConexion.ConexionBaseDatos;
 					numNomenclatura2 = rs.getString("num_nomencla2");
 					num3 = rs.getString("num3");
 					nomenclatura = rs.getString("nomenclatura");
-					cliente = new Cliente( idcliente, telefono, nombreCliente,apellido, nombreCompania, direccion,municipio, idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda, memcode, idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura);
+					distanciaTienda = rs.getDouble("distancia_tienda");
+					cliente = new Cliente( idcliente, telefono, nombreCliente,apellido, nombreCompania, direccion,municipio, idMunicipio,latitud, longitud, zona, observacion, nombreTienda, idTienda, memcode, idnomenclatura, numNomenclatura1, numNomenclatura2, num3, nomenclatura, distanciaTienda);
 					clientes.add(cliente);
 				}
 				rs.close();

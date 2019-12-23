@@ -548,4 +548,52 @@ public class TiendaDAO {
 		return(secuenciaAct);
 	}
 	
+	
+	/**
+	 * Método que se encargará de devolver la ruta del mapa que hace alusión a la tienda para la division de sus zonas.
+	 * @param auditoria
+	 * @return
+	 */
+	public static Tienda obtenerRutaMapa(boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		String rutaMapa = "";
+		double latitud = 0, longitud = 0;
+		Tienda tienda = new Tienda();
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select ruta_mapa, latitud, longitud from tienda";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			while(rs.next()){
+				rutaMapa = rs.getString("ruta_mapa");
+				latitud = rs.getDouble("latitud");
+				longitud = rs.getDouble("longitud");
+				tienda.setRutaMapa(rutaMapa);
+				tienda.setLatitud(latitud);
+				tienda.setLongitud(longitud);
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(tienda);
+		
+	}
+	
 }

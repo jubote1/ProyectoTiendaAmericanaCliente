@@ -19,9 +19,30 @@ public class Tienda {
 	private long numeroFinalResolucion;
 	private String puntoVenta;
 	private int deltaNumeracion;
+	private String rutaMapa;
+	private double latitud;
+	private double longitud;
 	
 	
 	
+	public double getLatitud() {
+		return latitud;
+	}
+	public void setLatitud(double latitud) {
+		this.latitud = latitud;
+	}
+	public double getLongitud() {
+		return longitud;
+	}
+	public void setLongitud(double longitud) {
+		this.longitud = longitud;
+	}
+	public String getRutaMapa() {
+		return rutaMapa;
+	}
+	public void setRutaMapa(String rutaMapa) {
+		this.rutaMapa = rutaMapa;
+	}
 	public int getDeltaNumeracion() {
 		return deltaNumeracion;
 	}

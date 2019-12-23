@@ -77,7 +77,7 @@ import java.awt.SystemColor;
 public class VentPedTomarPedidos extends JFrame {
 
 	private JPanel contentPane;
-	private JTable table;
+	private JTable tablePedido;
 	private JTable tableMenu;
 	//Creamos una variable Arreglo Global que contendrï¿½ la Configuraciï¿½n Menï¿½
 	private ConfiguracionMenu[][] confiMenu;
@@ -145,6 +145,9 @@ public class VentPedTomarPedidos extends JFrame {
 	/**
 	 * Launch the application.
 	 */
+	//A continuación tenemos la variable para manejar el multiplicador
+	public int multiplicadorPed;
+		
 	public static void clarearVarEstaticas()
 	{
 		idCliente = 0;
@@ -275,10 +278,19 @@ public class VentPedTomarPedidos extends JFrame {
 		contentPane.add(panelPedido);
 		panelPedido.setLayout(null);
 		
-		table = new JTable();
-		table.setBounds(10, 272, 205, -260);
-		panelPedido.add(table);
+		tablePedido = new JTable();
+		tablePedido.setBounds(10, 272, 205, -260);
+		panelPedido.add(tablePedido);
 		
+		//Agregamos una acción para clic sobre el item de multiplicador
+		tablePedido.addMouseListener(new java.awt.event.MouseAdapter() {
+		      public void mouseClicked(java.awt.event.MouseEvent e) {
+		    	  //Validamos que se hayan dado dos clics
+		      System.out.println();
+		      
+
+		 }
+		});
 		JLabel lblValorTotalSD = new JLabel("Valor Total SD");
 		lblValorTotalSD.setBounds(10, 312, 83, 14);
 		panelPedido.add(lblValorTotalSD);
@@ -331,7 +343,68 @@ public class VentPedTomarPedidos extends JFrame {
 						return;
 					}
 					//AQUI TENDREMOS QUE INCLUIR LA LÓGICA IMPORTANTE PARA CAPTURAR MOTIVO DE ANULACIÓN, ELIMINAR Y DESCONTAR INVENTARIO SI ES EL CASO
+					//Validamos si hay autorización al descuento del usuario que está logueado en el sistema
+					boolean esAdministrador = autCtrl.validarEsAdministrador(Sesion.getIdUsuario());
+					if(!esAdministrador)
+					{
+					     JOptionPane opt = new JOptionPane("El usuario no es administrador por lo tanto deberá ser autorizado.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+					     final JDialog dlg = opt.createDialog("NECESIDAD AUTORIZACIÓN");
+					     new Thread(new Runnable()
+					           {
+					             public void run()
+					             {
+					               try
+					               {
+					                 Thread.sleep(2500);
+					                 dlg.dispose();
+
+					               }
+					               catch ( Throwable th )
+					               {
+					                 
+					               }
+					             }
+					           }).start();
+					     dlg.setVisible(true);
+					     VentSegAutenticacionLogueoRapido  ventAut = new VentSegAutenticacionLogueoRapido(framePrincipal , true);
+					     ventAut.setVisible(true);
+					     //Cuando se retorna validaremos como estuvo la autenticación
+					     if(VentSegAutenticacionLogueoRapido.usuarioAutorizado.getIdUsuario()>0)
+					     {
+					    	 VentPedAnulacionPedido.usuarioAutorizo = ventAut.usuarioAutorizado.getNombreLargo();
+					     }
+					     else // Es porque el logueo no fue correcto
+					     {
+					    	 JOptionPane optNoAutorizado = new JOptionPane("La autorización no fue correcta.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+						     final JDialog dlgNoAutorizado = optNoAutorizado.createDialog("AUTORIZACIÓN NO CORRECTA");
+						     new Thread(new Runnable()
+						           {
+						             public void run()
+						             {
+						               try
+						               {
+						                 Thread.sleep(2500);
+						                 dlgNoAutorizado.dispose();
+
+						               }
+						               catch ( Throwable th )
+						               {
+						                 
+						               }
+						             }
+						           }).start();
+						     dlgNoAutorizado.setVisible(true);
+						     return;
+					     }
+					     
+					     
+					}
+					else
+					{
+						VentPedAnulacionPedido.usuarioAutorizo = Sesion.getUsuario();
+					}
 					VentPedAnulacionPedido  ventPedAnu = new VentPedAnulacionPedido(framePrincipal, true,idDetalleEliminar, false);
+					//VentPedAnulacionPedido.lblNombreUsuarioAut.setText(VentPedDescuento.usuarioAutorizo);
 					ventPedAnu.setVisible(true);
 				}
 				pintarDetallePedido();
@@ -408,6 +481,58 @@ public class VentPedTomarPedidos extends JFrame {
 				{
 					btnProductoSin.setEnabled(false);
 				}
+				
+				if(!esReabierto)
+				{
+					//Evento para trabajar el tema del doble clic para multiplicador
+					if(arg0.getClickCount()==2)
+				      {
+						  if( tableDetallePedido.getSelectedRows().length == 1 ) {
+				    		  //Se obtiene en un boolean si el idDetalle es maestro o no, sino lo es, no se puede eliminar, pues se debe
+							  //eliminar el master
+							  boolean esMaster = pedCtrl.validarDetalleMaster(idDetalleTratar);
+							  if(!esMaster)
+							  {
+							  	JOptionPane.showMessageDialog(framePrincipal, "Debe seleccionar un item Master para Multiplicar " , "Error al Multiplicador", JOptionPane.ERROR_MESSAGE);
+							 	return;
+						      }
+							  int idPedidoFP = Integer.parseInt(tableDetallePedido.getValueAt(filaSeleccionada, 0).toString());
+							  //Abrimos la pantalla de Multiplicador para seleccionar allí el valor a multiplicador
+							  VentPedMultiplicador ventMultiplicador = new VentPedMultiplicador(framePrincipal, true);
+							  ventMultiplicador.setVisible(true);
+							  //si el valor es cero o uno no se realizará ningua acción.
+							  if(multiplicadorPed > 1)
+							  {
+								  //se realizará modificación en base de datos y despues sobre el table o grid para confirmar el cambio
+								  boolean respuestaMult = pedCtrl.multiplicarDetallePedido(idDetalleTratar, multiplicadorPed);
+								  //Si se pudo realizar la multiplicación en base de datos procedemos a realizar los cambios en pantalla
+								  if(respuestaMult)
+								  {
+									  for(int j = 0; j < detallesPedido.size(); j++)
+										{
+											DetallePedido detCadaPedido = detallesPedido.get(j);
+											if((detCadaPedido.getIdDetallePedido() == idDetalleTratar) ||(detCadaPedido.getIdDetallePedidoMaster() == idDetalleTratar))
+											{
+												totalPedido = totalPedido - detCadaPedido.getValorTotal();
+												detCadaPedido.setCantidad(multiplicadorPed*detCadaPedido.getCantidad());
+												detCadaPedido.setValorTotal(detCadaPedido.getValorUnitario()*detCadaPedido.getCantidad());
+												totalPedido = totalPedido + detCadaPedido.getValorTotal();
+											}
+										}
+									  	pintarDetallePedido();
+										txtValorPedidoSD.setText(Double.toString(totalPedido));
+										txtValorTotal.setText(Double.toString(totalPedido - descuento));
+								  }
+							  }  
+					      }
+				    	  else
+				    	  {
+				    		  JOptionPane.showMessageDialog(framePrincipal, "Debe seleccionar solo un item para abrir el multiplicador y debe ser el producto principal" , "No ha Seleccionado item para Multiplicar Pedido.", JOptionPane.ERROR_MESSAGE);
+				    		  return;
+				    	  }
+				      }
+				}
+				
 			}
 		});
 		
@@ -656,6 +781,8 @@ public class VentPedTomarPedidos extends JFrame {
 		btnDescuento = new JButton("Descuento");
 		btnDescuento.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+							
 				Window ventanaPadre = SwingUtilities.getWindowAncestor(
                         (Component) e.getSource());
 				VentPedDescuento.idPedido = VentPedTomarPedidos.idPedido;
@@ -683,7 +810,68 @@ public class VentPedTomarPedidos extends JFrame {
 								boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_006", Sesion.getAccesosOpcion());
 								if (tienePermiso)
 								{
+									//Validamos si hay autorización al descuento del usuario que está logueado en el sistema
+									boolean esAdministrador = autCtrl.validarEsAdministrador(Sesion.getIdUsuario());
+									if(!esAdministrador)
+									{
+									     JOptionPane opt = new JOptionPane("El usuario no es administrador por lo tanto deberá ser autorizado.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+									     final JDialog dlg = opt.createDialog("NECESIDAD AUTORIZACIÓN");
+									     new Thread(new Runnable()
+									           {
+									             public void run()
+									             {
+									               try
+									               {
+									                 Thread.sleep(2500);
+									                 dlg.dispose();
+
+									               }
+									               catch ( Throwable th )
+									               {
+									                 
+									               }
+									             }
+									           }).start();
+									     dlg.setVisible(true);
+									     VentSegAutenticacionLogueoRapido  ventAut = new VentSegAutenticacionLogueoRapido(framePrincipal , true);
+									     ventAut.setVisible(true);
+									     //Cuando se retorna validaremos como estuvo la autenticación
+									     if(VentSegAutenticacionLogueoRapido.usuarioAutorizado.getIdUsuario()>0)
+									     {
+									    	 VentPedDescuento.usuarioAutorizo = ventAut.usuarioAutorizado.getNombreLargo();
+									     }
+									     else // Es porque el logueo no fue correcto
+									     {
+									    	 JOptionPane optNoAutorizado = new JOptionPane("La autorización no fue correcta.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+										     final JDialog dlgNoAutorizado = optNoAutorizado.createDialog("AUTORIZACIÓN NO CORRECTA");
+										     new Thread(new Runnable()
+										           {
+										             public void run()
+										             {
+										               try
+										               {
+										                 Thread.sleep(2500);
+										                 dlgNoAutorizado.dispose();
+
+										               }
+										               catch ( Throwable th )
+										               {
+										                 
+										               }
+										             }
+										           }).start();
+										     dlg.setVisible(true);
+										     return;
+									     }
+									     
+									     
+									}
+									else
+									{
+										VentPedDescuento.usuarioAutorizo = Sesion.getUsuario();
+									}
 									VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
+									ventDescuento.lblNombreUsuarioAut.setText(VentPedDescuento.usuarioAutorizo);
 									ventDescuento.setVisible(true);
 									//Será que despues de que retorna ejecuta esto?
 									//descuento = 0;
@@ -705,7 +893,68 @@ public class VentPedTomarPedidos extends JFrame {
 						boolean tienePermiso = autCtrl.validarAccesoOpcion("PED_006", Sesion.getAccesosOpcion());
 						if (tienePermiso)
 						{
+							//Validamos si hay autorización al descuento del usuario que está logueado en el sistema
+							boolean esAdministrador = autCtrl.validarEsAdministrador(Sesion.getIdUsuario());
+							if(!esAdministrador)
+							{
+							     JOptionPane opt = new JOptionPane("El usuario no es administrador por lo tanto deberá ser autorizado.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+							     final JDialog dlg = opt.createDialog("NECESIDAD AUTORIZACIÓN");
+							     new Thread(new Runnable()
+							           {
+							             public void run()
+							             {
+							               try
+							               {
+							                 Thread.sleep(2500);
+							                 dlg.dispose();
+
+							               }
+							               catch ( Throwable th )
+							               {
+							                 
+							               }
+							             }
+							           }).start();
+							     dlg.setVisible(true);
+							     VentSegAutenticacionLogueoRapido  ventAut = new VentSegAutenticacionLogueoRapido(framePrincipal , true);
+							     ventAut.setVisible(true);
+							     //Cuando se retorna validaremos como estuvo la autenticación
+							     if(VentSegAutenticacionLogueoRapido.usuarioAutorizado.getIdUsuario()>0)
+							     {
+							    	 VentPedDescuento.usuarioAutorizo = ventAut.usuarioAutorizado.getNombreLargo();
+							     }
+							     else // Es porque el logueo no fue correcto
+							     {
+							    	 JOptionPane optNoAutorizado = new JOptionPane("La autorización no fue correcta.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+								     final JDialog dlgNoAutorizado = optNoAutorizado.createDialog("AUTORIZACIÓN NO CORRECTA");
+								     new Thread(new Runnable()
+								           {
+								             public void run()
+								             {
+								               try
+								               {
+								                 Thread.sleep(2500);
+								                 dlgNoAutorizado.dispose();
+
+								               }
+								               catch ( Throwable th )
+								               {
+								                 
+								               }
+								             }
+								           }).start();
+								     dlgNoAutorizado.setVisible(true);
+								     return;
+							     }
+							     
+							     
+							}
+							else
+							{
+								VentPedDescuento.usuarioAutorizo = Sesion.getUsuario();
+							}
 							VentPedDescuento ventDescuento = new VentPedDescuento((JFrame) ventanaPadre,true);
+							ventDescuento.lblNombreUsuarioAut.setText(VentPedDescuento.usuarioAutorizo);
 							ventDescuento.setVisible(true);
 						}else
 						{
@@ -973,7 +1222,6 @@ public class VentPedTomarPedidos extends JFrame {
 				fijarCliente();
 				txtValorPedidoSD.setText(Double.toString(totalPedido));
 				pintarDetallePedido();
-				System.out.println("REVISANDO EL VALOR DE DESCUENTO " + descuento);
 				txtDescuento.setText(Double.toString(descuento));
 				txtValorTotal.setText(Double.toString(totalPedido - descuento));
 				txtNroPedido.setText(Integer.toString(idPedido));
@@ -1440,7 +1688,7 @@ public class VentPedTomarPedidos extends JFrame {
 					totalPedido = totalPedido - valorItem;
 					txtValorPedidoSD.setText(Double.toString(totalPedido));
 					txtValorTotal.setText(Double.toString(totalPedido - descuento));
-					}
+				}
 				//Validamos si se debe salir o no de la ventana, que viene en la variable que se recibe como paraémtro
 				if(salirVentana)
 				{
@@ -1459,8 +1707,69 @@ public class VentPedTomarPedidos extends JFrame {
 			//En caso del que el pedido hay sido reabierto
 		}else if(esReabierto)
 		{	
+			//Validamos si hay autorización al descuento del usuario que está logueado en el sistema
+			boolean esAdministrador = autCtrl.validarEsAdministrador(Sesion.getIdUsuario());
+			if(!esAdministrador)
+			{
+			     JOptionPane opt = new JOptionPane("El usuario no es administrador por lo tanto deberá ser autorizado.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+			     final JDialog dlg = opt.createDialog("NECESIDAD AUTORIZACIÓN");
+			     new Thread(new Runnable()
+			           {
+			             public void run()
+			             {
+			               try
+			               {
+			                 Thread.sleep(2500);
+			                 dlg.dispose();
+
+			               }
+			               catch ( Throwable th )
+			               {
+			                 
+			               }
+			             }
+			           }).start();
+			     dlg.setVisible(true);
+			     VentSegAutenticacionLogueoRapido  ventAut = new VentSegAutenticacionLogueoRapido(framePrincipal , true);
+			     ventAut.setVisible(true);
+			     //Cuando se retorna validaremos como estuvo la autenticación
+			     if(VentSegAutenticacionLogueoRapido.usuarioAutorizado.getIdUsuario()>0)
+			     {
+			    	 VentPedAnulacionPedido.usuarioAutorizo = ventAut.usuarioAutorizado.getNombreLargo();
+			     }
+			     else // Es porque el logueo no fue correcto
+			     {
+			    	 JOptionPane optNoAutorizado = new JOptionPane("La autorización no fue correcta.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+				     final JDialog dlgNoAutorizado = optNoAutorizado.createDialog("AUTORIZACIÓN NO CORRECTA");
+				     new Thread(new Runnable()
+				           {
+				             public void run()
+				             {
+				               try
+				               {
+				                 Thread.sleep(2500);
+				                 dlgNoAutorizado.dispose();
+
+				               }
+				               catch ( Throwable th )
+				               {
+				                 
+				               }
+				             }
+				           }).start();
+				     dlgNoAutorizado.setVisible(true);
+				     return;
+			     }
+			     
+			     
+			}
+			else
+			{
+				VentPedAnulacionPedido.usuarioAutorizo = Sesion.getUsuario();
+			}
 			//AQUI TENDREMOS QUE INCLUIR LA LÓGICA IMPORTANTE PARA CAPTURAR MOTIVO DE ANULACIÓN, ELIMINAR Y DESCONTAR INVENTARIO SI ES EL CASO
 			VentPedAnulacionPedido  ventPedAnu = new VentPedAnulacionPedido(framePrincipal, true,0, salirVentana);
+			//VentPedAnulacionPedido.lblNombreUsuarioAut.setText(VentPedDescuento.usuarioAutorizo);
 			ventPedAnu.setVisible(true);
 		}
 	}
@@ -1527,7 +1836,7 @@ public class VentPedTomarPedidos extends JFrame {
 	}
 	
 	//Crearemos un  método que se encargará una vez reciba la confirmación del formulación de anulación encargarse de la anulación del item Pedido
-	public void frameAnulaItemPedido(MotivoAnulacionPedido motAnu, String observacion,  int idDetalleEliminar)
+	public void frameAnulaItemPedido(MotivoAnulacionPedido motAnu, String observacion,  int idDetalleEliminar, String usuarioAutorizo)
 	{
 		//Validamos si se debe o no realizar descuento de inventarios
 		boolean reinAnPedido = true;
@@ -1536,7 +1845,7 @@ public class VentPedTomarPedidos extends JFrame {
 		{
 			invCtrl.reintegrarInventarioDetallePedido(idDetalleEliminar, idPedido);
 		}
-		anuDetalle = pedCtrl.anularDetallePedido(idDetalleEliminar, motAnu.getIdMotivoAnulacion(), observacion);
+		anuDetalle = pedCtrl.anularDetallePedido(idDetalleEliminar, motAnu.getIdMotivoAnulacion(), observacion, Sesion.getUsuario(), usuarioAutorizo);
 		//Se realizar un recorrido del arrayList de detalle pedidos para poner negativo los detalles de pedido
 		for(int j = 0; j < detallesPedido.size(); j++)
 		{
@@ -1555,15 +1864,18 @@ public class VentPedTomarPedidos extends JFrame {
 		pintarDetallePedido();
 	}
 	
-	public void frameAnulaPedido(MotivoAnulacionPedido motAnu, String observacion, boolean salirVentana)
+	public void frameAnulaPedido(MotivoAnulacionPedido motAnu, String observacion, boolean salirVentana, String usuarioAutorizo)
 	{
+			//Realizamos la eliminación de los item de pedido que no han sido descargados de inventario
 			pedCtrl.eliminarDetalleAnulacion(idPedido);
 			//validamos si la anulación fue correcta y el tipo de anulación descuenta pedido
 			if((motAnu.getDescuentaInventario().equals(new String("S"))))
 			{
 				//Realizamos el descuento de inventarios de lo que desconto de inventario y no esta anulado y
 				// adicionalmente realiza la anulación puntual del item reintegrado y anulado
-				boolean reintInv = invCtrl.reintegrarInventarioPedido(idPedido, motAnu.getIdMotivoAnulacion(), observacion);
+				
+				//Este método tambien realiza la anulación de los item de pedido
+				boolean reintInv = invCtrl.reintegrarInventarioPedido(idPedido, motAnu.getIdMotivoAnulacion(), observacion, Sesion.getUsuario(), usuarioAutorizo);
 				if(!reintInv)
 				{
 					JOptionPane.showMessageDialog(null, "Se presentaron inconvenientes en el reintegro de los inventarios " , "Error en reintegro de Inventarios ", JOptionPane.ERROR_MESSAGE);
@@ -1571,6 +1883,7 @@ public class VentPedTomarPedidos extends JFrame {
 			//Haremos la diferenciación del else porque si será suceptible a que devuelvan items de inventario
 			}else
 			{
+				//El método 
 				boolean reintInv = invCtrl.reintegrarEspecialInventarioPedido(idPedido);
 				if(!reintInv)
 				{
@@ -1578,7 +1891,7 @@ public class VentPedTomarPedidos extends JFrame {
 				}
 			}
 			//Se realiza la anulación del pedido incluyendo el motivo de anulación, y tambien los detalles de pedido
-			boolean anuDetallePedido = pedCtrl.anularPedido(idPedido, motAnu.getIdMotivoAnulacion(), observacion);
+			boolean anuDetallePedido = pedCtrl.anularPedido(idPedido, motAnu.getIdMotivoAnulacion(), observacion, Sesion.getUsuario(), usuarioAutorizo);
 			
 			//Realizamos el limpiado de las variables de la pantalla de pedidos
 			if(salirVentana)

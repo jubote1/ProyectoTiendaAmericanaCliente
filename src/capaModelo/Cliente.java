@@ -27,8 +27,23 @@ public class Cliente {
 	private String numNomenclatura2;
 	private String num3;
 	private String nomenclatura;
+	private double distanciaTienda;
 	
 	
+	
+	
+	public double getDistanciaTienda() {
+		return distanciaTienda;
+	}
+
+
+
+	public void setDistanciaTienda(double distanciaTienda) {
+		this.distanciaTienda = distanciaTienda;
+	}
+
+
+
 	public int getMemcode() {
 		return memcode;
 	}
@@ -266,7 +281,7 @@ public class Cliente {
 		
 	public Cliente(int idcliente, String telefono, String nombres, String apellidos, String nombreCompania,
 			String direccion, String municipio, int idMunicipio, float latitud, float lontitud, String zonaDireccion,
-			String observacion, String tienda, int idtienda, int memcode, int idnomenclatura, String numNomenclatura, String numNomenclatura2, String num3, String nomenclatura) {
+			String observacion, String tienda, int idtienda, int memcode, int idnomenclatura, String numNomenclatura, String numNomenclatura2, String num3, String nomenclatura, double distanciaTienda) {
 		super();
 		this.idcliente = idcliente;
 		this.telefono = telefono;
@@ -288,6 +303,7 @@ public class Cliente {
 		this.numNomenclatura2 = numNomenclatura2;
 		this.num3 = num3;
 		this.nomenclatura = nomenclatura; 
+		this.distanciaTienda = distanciaTienda;
 	}
 
 

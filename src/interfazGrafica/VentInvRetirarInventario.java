@@ -47,17 +47,20 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.JProgressBar;
 import java.awt.Color;
+import javax.swing.JTextArea;
 
 public class VentInvRetirarInventario extends JDialog {
 
 	private JPanel contentPanePrincipal;
 	private JTable tableRetInventarios;
 	private JTextField txtFechaInventario;
+	private JTextArea textAreaObservacion;
 	String fechaSis;
 	ArrayList<ModificadorInventario> inventarioRetirar = new ArrayList();
 	InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
 	//Hilo para el JProgressBar
 	Thread hiloProgressBar = new Thread();
+	private JProgressBar progressBar;
 	//Tendremos la definición de las variables de cantidadItems de Inventario y Cantidad Insertados que servirán
 	//para el JProgressBar
 	private int cantidadItems = 100;
@@ -86,10 +89,10 @@ public class VentInvRetirarInventario extends JDialog {
 		setTitle("RETIRAR INVENTARIOS");
 		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setDefaultCloseOperation(0);
-		setBounds(0,0, 800, 500);
+		setBounds(0,0, 800, 600);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 800, 470);
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 800, 600);
 		contentPanePrincipal = new JPanel();
 		contentPanePrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPanePrincipal);
@@ -138,7 +141,17 @@ public class VentInvRetirarInventario extends JDialog {
 		JButton btnConfirmarRetiro = new JButton("Confirmar Retiro");
 		btnConfirmarRetiro.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
+				//Realizamos validación de que si se tenga observacion
+				boolean valObs = validarCampoObservacion();
+				if(!valObs)
+				{
+					JOptionPane.showMessageDialog(ventanaPadre, "La Observación del retiro de inventario debe tener más de 20 carácteres y menos de 500. Actualmente tiene " + textAreaObservacion.getText().length() + " carácteres." , "Error Validación Datos", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				cantAvance = 1;
+				inicializarHiloBarra();
 				hiloProgressBar.start();
 				//Realizamos la desactivación de la edición del JTable
 				if(tableRetInventarios.isEditing())
@@ -163,7 +176,8 @@ public class VentInvRetirarInventario extends JDialog {
 					}catch(Exception e)
 					{
 						//En caso que se dispare la excepción arrojamos el mensaje de error y retornamos, no confitunarmos con el procesamiento.
-						JOptionPane.showMessageDialog(null, "Alguna de las cantidades no cumple con las características de número por favor corrija " , "Error Validación Datos", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaPadre, "Alguna de las cantidades no cumple con las características de número por favor corrija " , "Error Validación Datos", JOptionPane.ERROR_MESSAGE);
+						cantAvance = 100;
 						return;
 					}
 				}
@@ -190,29 +204,32 @@ public class VentInvRetirarInventario extends JDialog {
 				if(controladorIngreso>0)
 				{
 					//Realizamos la invocación para la inclusión de la información de inventarios
-					int idRetiro = invCtrl.insertarRetirosInventarios(inventarioRetirar, fechaSis);
+					String obs = textAreaObservacion.getText();
+					int idRetiro = invCtrl.insertarRetirosInventarios(inventarioRetirar, fechaSis, obs);
 					if(idRetiro  > 0)
 					{
 						cantAvance = 100;
-						JOptionPane.showMessageDialog(null, "El inventario " + idRetiro  + " fue retiroado correctamente." , "Retiro de Inventario", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaPadre, "El inventario " + idRetiro  + " fue retirado correctamente." , "Retiro de Inventario", JOptionPane.INFORMATION_MESSAGE);
 						//Si se confirma el ingreso debemos de borrar de la tabla temporal
 						invCtrl.limpiarTipoInventariosTemporal(fechaSis,"R");
 						dispose();
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(null, "Se tuvo inconvenientes al retirar el inventario" , "Error al Retirar inventarios", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(ventanaPadre, "Se tuvo inconvenientes al retirar el inventario" , "Error al Retirar inventarios", JOptionPane.ERROR_MESSAGE);
+						cantAvance = 100;
 						return;
 					}
 				}
 				else
 				{
-					JOptionPane.showMessageDialog(null, "No retiro ningun Item al inventario, si desea salir de clic sobre el botón cancelar " , "No Ha retirado nada al Inventario", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(ventanaPadre, "No retiro ningun Item al inventario, si desea salir de clic sobre el botón cancelar " , "No Ha retirado nada al Inventario", JOptionPane.ERROR_MESSAGE);
+					cantAvance = 100;
 					return;
 				}
 			}
 		});
-		btnConfirmarRetiro.setBounds(10, 319, 152, 37);
+		btnConfirmarRetiro.setBounds(12, 437, 152, 37);
 		contentPanePrincipal.add(btnConfirmarRetiro);
 		
 		JButton btnCancelar = new JButton("Cancelar");
@@ -227,19 +244,19 @@ public class VentInvRetirarInventario extends JDialog {
 				}
 			}
 		});
-		btnCancelar.setBounds(201, 319, 146, 37);
+		btnCancelar.setBounds(203, 437, 146, 37);
 		contentPanePrincipal.add(btnCancelar);
 		
 		JLabel lblFechaRetiroInventario = new JLabel("FECHA RETIRO INVENTARIO");
 		lblFechaRetiroInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblFechaRetiroInventario.setBounds(121, 370, 240, 14);
+		lblFechaRetiroInventario.setBounds(123, 488, 240, 14);
 		contentPanePrincipal.add(lblFechaRetiroInventario);
 		
 		txtFechaInventario = new JTextField();
 		txtFechaInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtFechaInventario.setEnabled(false);
 		txtFechaInventario.setEditable(false);
-		txtFechaInventario.setBounds(393, 367, 135, 20);
+		txtFechaInventario.setBounds(395, 485, 135, 20);
 		contentPanePrincipal.add(txtFechaInventario);
 		txtFechaInventario.setColumns(10);
 		
@@ -250,52 +267,17 @@ public class VentInvRetirarInventario extends JDialog {
 		txtFechaInventario.setText(fechaSis);
 		
 		JLabel lblImagen = new JLabel("");
-		lblImagen.setBounds(574, 306, 198, 126);
+		lblImagen.setBounds(576, 424, 198, 126);
 		ImageIcon icon = new ImageIcon(getClass().getResource("/imagenes/LogoPizzaAmericana.png"));
 		Image imagen = icon.getImage();
 		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
 		lblImagen.setIcon(iconoEscalado);
 		contentPanePrincipal.add(lblImagen);
 		//Creamos la barra de progreso que va a funcionar cuando ingresemos los inventarios
-		JProgressBar progressBar = new JProgressBar();
-		//Creamos el hilo encargado de llenar el ProgressBar
-		hiloProgressBar = new Thread()
-		{
-			public void run()
-			{
-				//Definimos los parámetros de mínimo y máximo del JProgressBar
-				progressBar.setMinimum(0);
-				progressBar.setMaximum(cantidadItems);
-				
-				try
-				{
-					progressBar.setIndeterminate(true);
-					progressBar.setStringPainted(true);
-					progressBar.setBorderPainted(true);
-					//El ciclo que manejará se ejecutará mientras la cantidad de items sea menor igual a los insertados
-					// estas variables cambiarán en el hilo principal
-					while((cantAvance > 0) && (cantAvance < 100))
-					{
-						//Actualizamos el valor del JProgressBar
-		                SwingUtilities.invokeLater(new Runnable() {
-		                    public void run() {
-		                    	progressBar.setValue(cantAvance);
-		                    }
-		                  });
-						//Dormimos el hilo por un momento
-						hiloProgressBar.sleep(5);
-						System.out.println("ESTOY DENTRO " + cantAvance );
-					}
-					progressBar.setStringPainted(false);
-					progressBar.setBorderPainted(true);
-					progressBar.setIndeterminate(false);
-				}catch(Exception exc)
-				{
-					System.out.println(exc.toString());
-				}
-			}
-		};
-		progressBar.setBounds(91, 395, 292, 31);
+		progressBar = new JProgressBar();
+		progressBar.setBounds(93, 513, 292, 31);
+		//Inicializamos el hilo
+		inicializarHiloBarra();
 		contentPanePrincipal.add(progressBar);
 		
 		JButton btnGuardarSinConfirmar = new JButton("Guardar sin Confirmar");
@@ -361,19 +343,34 @@ public class VentInvRetirarInventario extends JDialog {
 						else
 						{
 							JOptionPane.showMessageDialog(ventanaPadre, "Se tuvo inconvenientes al guardar temporalmente el retiro de inventario." , "Error al retirar inventarios", JOptionPane.ERROR_MESSAGE);
+							cantAvance = 100;
 							return;
 						}
 					}
 					else
 					{
 						JOptionPane.showMessageDialog(null, "No ingreso ningun retiro temporalmente, si desea salir de clic sobre el botón cancelar " , "No Ha Ingresado nada al Inventario", JOptionPane.ERROR_MESSAGE);
+						cantAvance = 100;
 						return;
 					}
 				}
 			}
 		});
-		btnGuardarSinConfirmar.setBounds(382, 319, 182, 37);
+		btnGuardarSinConfirmar.setBounds(384, 437, 182, 37);
 		contentPanePrincipal.add(btnGuardarSinConfirmar);
+		
+		JScrollPane scrollPaneObservacion = new JScrollPane();
+		scrollPaneObservacion.setBounds(10, 337, 764, 64);
+		contentPanePrincipal.add(scrollPaneObservacion);
+		
+		textAreaObservacion = new JTextArea();
+		textAreaObservacion.setRows(5);
+		scrollPaneObservacion.setViewportView(textAreaObservacion);
+		
+		JLabel label = new JLabel("OBSERVACI\u00D3N GENERAL");
+		label.setFont(new Font("Tahoma", Font.BOLD, 14));
+		label.setBounds(20, 319, 198, 14);
+		contentPanePrincipal.add(label);
 		pintarItemsInventario();
 	}
 	
@@ -424,4 +421,58 @@ public class VentInvRetirarInventario extends JDialog {
             tc.setCellRenderer(new CellRenderIngInventario());
         }
     }
+	
+	public boolean validarCampoObservacion()
+	{
+		boolean respuesta = false;
+		String observacion = textAreaObservacion.getText();;
+		if((observacion.length() < 20)||(observacion.length() > 500))
+		{
+			respuesta = false;
+		}else
+		{
+			respuesta = true;
+		}
+		return(respuesta);
+	}
+	
+	public void inicializarHiloBarra()
+	{
+		hiloProgressBar = new Thread()
+		{
+			public void run()
+			{
+				//Definimos los parámetros de mínimo y máximo del JProgressBar
+				progressBar.setMinimum(0);
+				progressBar.setMaximum(cantidadItems);
+				
+				try
+				{
+					progressBar.setIndeterminate(true);
+					progressBar.setStringPainted(true);
+					progressBar.setBorderPainted(true);
+					//El ciclo que manejará se ejecutará mientras la cantidad de items sea menor igual a los insertados
+					// estas variables cambiarán en el hilo principal
+					while((cantAvance > 0) && (cantAvance < 100))
+					{
+						//Actualizamos el valor del JProgressBar
+		                SwingUtilities.invokeLater(new Runnable() {
+		                    public void run() {
+		                    	progressBar.setValue(cantAvance);
+		                    }
+		                  });
+						//Dormimos el hilo por un momento
+						hiloProgressBar.sleep(5);
+						
+					}
+					progressBar.setStringPainted(false);
+					progressBar.setBorderPainted(true);
+					progressBar.setIndeterminate(false);
+				}catch(Exception exc)
+				{
+					System.out.println(exc.toString());
+				}
+			}
+		};
+	}
 }

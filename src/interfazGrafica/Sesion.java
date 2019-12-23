@@ -18,8 +18,63 @@ public class Sesion {
 	private static int modeloImpresion;
 	//La inicializamos en true es decir que debe de imprimir 
 	private static boolean imprimirComandaPedido = true;
+	private static String controlEstrictoPorciones = "S";
+	private static int idProductoPorcion = 0;
+	private static int idProductoGaseosa = 0;
+	private static int estEmpDom;
+	private static int estEnRutaDom;;
+	private static int estEntregaDom;
 	
 	
+	
+
+	public static int getEstEmpDom() {
+		return estEmpDom;
+	}
+
+	public static void setEstEmpDom(int estEmpDom) {
+		Sesion.estEmpDom = estEmpDom;
+	}
+
+	public static int getEstEnRutaDom() {
+		return estEnRutaDom;
+	}
+
+	public static void setEstEnRutaDom(int estEnRutaDom) {
+		Sesion.estEnRutaDom = estEnRutaDom;
+	}
+
+	public static int getEstEntregaDom() {
+		return estEntregaDom;
+	}
+
+	public static void setEstEntregaDom(int estEntregaDom) {
+		Sesion.estEntregaDom = estEntregaDom;
+	}
+
+	public static int getIdProductoPorcion() {
+		return idProductoPorcion;
+	}
+
+	public static void setIdProductoPorcion(int idProductoPorcion) {
+		Sesion.idProductoPorcion = idProductoPorcion;
+	}
+
+	public static int getIdProductoGaseosa() {
+		return idProductoGaseosa;
+	}
+
+	public static void setIdProductoGaseosa(int idProductoGaseosa) {
+		Sesion.idProductoGaseosa = idProductoGaseosa;
+	}
+
+	public static String getControlEstrictoPorciones() {
+		return controlEstrictoPorciones;
+	}
+
+	public static void setControlEstrictoPorciones(String controlEstrictoPorciones) {
+		Sesion.controlEstrictoPorciones = controlEstrictoPorciones;
+	}
 
 	public static boolean isImprimirComandaPedido() {
 		return imprimirComandaPedido;

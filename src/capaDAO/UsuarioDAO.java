@@ -5,7 +5,10 @@ import capaModelo.Usuario;
 import capaConexion.ConexionBaseDatos;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.sql.ResultSet;
 import org.apache.log4j.Logger;
 
@@ -23,17 +26,18 @@ public class UsuarioDAO {
 	 * autenticación del usuario.
 	 * @return Se retorna un valor booleano que indica si el proceso de autenticación es satifactorio o no.
 	 */
-	public static int validarUsuario(Usuario usuario, boolean auditoria)
+	public static int validarUsuario(Usuario usuario, String servidor, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
-		Connection con1 = con.obtenerConexionBDLocal();
+		Connection con1;
+		con1 = con.obtenerConexionBDLocal();
 		int cantidad=0;
 		int idUsuario = 0;
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select nombre_largo, id, administrador, idtipoempleado,tipoinicio, ingreso from usuario where nombre = '" + usuario.getNombreUsuario() + "' and password = '" + usuario.getContrasena()+"'";
+			String consulta = "select nombre_largo, id, administrador, idtipoempleado,tipoinicio, ingreso, caducado from usuario where nombre = '" + usuario.getNombreUsuario() + "' and password = '" + usuario.getContrasena()+"'";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -47,9 +51,11 @@ public class UsuarioDAO {
 				String administrador = rs.getString("administrador");
 				String tipoInicio = rs.getString("tipoinicio");
 				int idTipoEmpleado = rs.getInt("idtipoempleado");
+				int caducado = rs.getInt("caducado");
 				usuario.setIdTipoEmpleado(idTipoEmpleado);
 				usuario.setNombreLargo(nombreUsuario);
 				usuario.setIdUsuario(idUsuario);
+				usuario.setCaducado(caducado);
 				int ingreso = rs.getInt("ingreso");
 				usuario.setIngreso(ingreso);
 				if(ingreso == 0)
@@ -88,11 +94,18 @@ public class UsuarioDAO {
 	 * @return Se retorna un valor booleano con base en el cual se realiza la validación del usuario en base de datos
 	 * 
 	 */
-	public static String validarAutenticacion(Usuario usuario, boolean auditoria)
+	public static String validarAutenticacion(Usuario usuario, String servidor,  boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
-		Connection con1 = con.obtenerConexionBDLocal();
+		Connection con1;
+		if(servidor.equals(new String("")))
+		{
+			con1 = con.obtenerConexionBDLocal();
+		}else
+		{
+			con1 = con.obtenerConexionBDGeneral(servidor);
+		}
 		String resultado = "";
 		try
 		{
@@ -134,11 +147,12 @@ public class UsuarioDAO {
 	 * @return Se retorna un valor booleano con base en el cual se realiza la validación del usuario en base de datos
 	 * 
 	 */
-	public static Usuario validarAutenticacionRapida(String claveRapida, boolean auditoria)
+	public static Usuario validarAutenticacionRapida(String claveRapida, String servidor,  boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
-		Connection con1 = con.obtenerConexionBDLocal();
+		Connection con1;
+		con1 = con.obtenerConexionBDLocal();
 		Usuario usuario = new Usuario(0,"","","", 0, "", false);
 		try
 		{
@@ -159,7 +173,17 @@ public class UsuarioDAO {
 					usuario.setIdTipoEmpleado(rs.getInt("idtipoempleado"));
 					usuario.setTipoInicio(rs.getString("tipoinicio"));
 					int ingreso = rs.getInt("ingreso");
+					int caducado = rs.getInt("caducado");
 					usuario.setIngreso(ingreso);
+					usuario.setCaducado(caducado);
+					String administrador = rs.getString("administrador");
+					if(administrador.equals(new String("S")))
+					{
+						usuario.setAdministrador(true);
+					}else
+					{
+						usuario.setAdministrador(false);
+					}
 					if(ingreso == 0)
 					{
 						darIngresoEmpleado(idUsuario, auditoria);
@@ -216,6 +240,39 @@ public class UsuarioDAO {
 			}
 			
 		}
+	}
+	
+	public static boolean asignarClaveRapida(Usuario usuario, String claveRapida, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta; 
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update usuario set claverapida = '"+ claveRapida +"' , caducado = 0 where id = " + usuario.getIdUsuario();
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+			respuesta = true;
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			respuesta = false;
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
 	}
 	
 	public static void darSalidaTodosEmpleados(boolean auditoria)
@@ -292,7 +349,95 @@ public class UsuarioDAO {
 	 * Método que se encarga de obtener en un ArrayList los empleados del sistema
 	 * @return
 	 */
-	public static ArrayList obtenerEmpleados(boolean auditoria)
+	public static ArrayList obtenerEmpleadosGeneral(String bdGeneral, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(bdGeneral);
+		ArrayList empleados = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select id,nombre, nombre_largo, administrador, tipoinicio  from empleado ";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				empleados.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(empleados);
+		
+	}
+	
+	public static ArrayList obtenerEmpleadosGeneralFiltroNom(String filtroNombre , String bdGeneral, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(bdGeneral);
+		ArrayList empleados = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select id,nombre, nombre_largo, administrador, tipoinicio  from empleado where nombre_largo like '%" + filtroNombre + "%'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				empleados.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(empleados);
+		
+	}
+	
+	public static ArrayList obtenerEmpleados( boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -384,6 +529,48 @@ public class UsuarioDAO {
 		return(idEmpleadoIns);
 	}
 	
+	public static int insertarEmpleadoGeneral(Usuario empleado, String bdGeneral, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		int idEmpleadoIns = 0;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(bdGeneral);
+		String administrador = "N";
+		try
+		{
+			if(empleado.isAdministrador())
+			{
+				administrador = "S" ;
+			}
+			Statement stm = con1.createStatement();
+			String insert = "insert into empleado (nombre, password,  nombre_largo,administrador, idtipoempleado, tipoinicio) values ('" + empleado.getNombreUsuario() + "' , '" + empleado.getContrasena() + "' , '" + empleado.getNombreLargo() + "' , '" + administrador + "', " + empleado.getidTipoEmpleado() + " , '" + empleado.getTipoInicio() + "')"; 
+			if(auditoria)
+			{
+				logger.info(insert);
+			}
+			stm.executeUpdate(insert);
+			ResultSet rs = stm.getGeneratedKeys();
+			if (rs.next()){
+				idEmpleadoIns=rs.getInt(1);
+				logger.info("id Empleado insertada en bd " + idEmpleadoIns);
+	        }
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			System.out.println(e.toString());
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(0);
+		}
+		return(idEmpleadoIns);
+	}
+	
 	/**
 	 * Método que se encarga de eliminar un empleado con base en el idEmppleado recibido como párametro
 	 * @param idEmpleado se recibe el idempleado el cual es el identificador único a nivel de base de datos
@@ -461,6 +648,44 @@ public class UsuarioDAO {
 		return(respuesta);
 	}
 	
+	public static boolean editarEmpleadoGeneral(Usuario empleadoEdi, String bdGeneral, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = false;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(bdGeneral);
+		try
+		{
+			String administrador = "N";
+			if(empleadoEdi.isAdministrador())
+			{
+				administrador = "S";
+			}
+			Statement stm = con1.createStatement();
+			String update = "update empleado set nombre = '" + empleadoEdi.getNombreUsuario()  +"' , nombre_largo = '"+ empleadoEdi.getNombreLargo() +"' , administrador ='"+ administrador +"' , idtipoempleado= "+ empleadoEdi.getidTipoEmpleado() +", tipoinicio = '"+ empleadoEdi.getTipoInicio()+ "'  where id = " + empleadoEdi.getIdUsuario();
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			respuesta = true;
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			respuesta = false;
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
 	public static Usuario obtenerEmpleado(int idEmpleado, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
@@ -499,6 +724,57 @@ public class UsuarioDAO {
 			con1.close();
 		}catch (Exception e){
 			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(empConsulta);
+		
+	}
+	
+	
+	public static Usuario obtenerEmpleadoGeneral(int idEmpleado, String bdGeneral, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(bdGeneral);
+		Usuario empConsulta = new Usuario(0, "","","",0,"", false);
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from empleado where id = " + idEmpleado;
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			String nombre = "", nombreLargo ="", tipoInicio = "";
+			String strAdmin;
+			boolean administrador = false;
+			int idTipoEmpleado = 0;
+			while(rs.next()){
+				nombre = rs.getString("nombre");
+				nombreLargo = rs.getString("nombre_largo");
+				tipoInicio = rs.getString("tipoinicio");
+				strAdmin = rs.getString("administrador");
+				if(strAdmin.equals(new String("S")))
+				{
+					administrador = true;
+				}
+				idTipoEmpleado = rs.getInt("idtipoempleado");
+				empConsulta = new Usuario(idEmpleado, nombre,"", nombreLargo, idTipoEmpleado,tipoInicio, administrador);
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			System.out.println(e.toString() + e.getMessage());
 			try
 			{
 				con1.close();
@@ -631,5 +907,146 @@ public class UsuarioDAO {
 			}
 			
 		}
+	}
+	
+	
+	public static boolean actualizarUltimoIngreso(Usuario usuario, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = false;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		//Realizamos la formación del campo de fecha de hoy
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date fechaHoy = new Date();
+		try {
+			//NO es necesario ya fechaHoy tiene la fecha actual
+			fechaHoy = sdf.parse(sdf.format(new Date()));
+			System.out.println("fecha hoy"+ fechaHoy);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String fechaActual = sdf.format(fechaHoy);
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update usuario set ultimo_ingreso  = '"+ fechaActual +"' where nombre =  '" + usuario.getNombreUsuario() + "' and password = '" + usuario.getContrasena()+"'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			respuesta = true;
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			respuesta = false;
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
+	/**
+	 * Actualización de último ingreso al sistema tomando como base la clave rápida
+	 * @param usuario
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean actualizarUltimoIngresoCR(String claveRapida, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = false;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		//Realizamos la formación del campo de fecha de hoy
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date fechaHoy = new Date();
+		try {
+			//NO es necesario ya fechaHoy tiene la fecha actual
+			fechaHoy = sdf.parse(sdf.format(new Date()));
+			System.out.println("fecha hoy"+ fechaHoy);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String fechaActual = sdf.format(fechaHoy);
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update usuario set ultimo_ingreso  = '"+ fechaActual +"' where claverapida = '" + claveRapida + "'";
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			respuesta = true;
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			respuesta = false;
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
+	/**
+	 * Método que se encarga de retornar en un booleano la validación si un determinado usuario es o no administrador.
+	 * @param idUsuario del usuario del cual se desea validar la condición de administrador o no.
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean validarEsAdministrador(int idUsuario, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		boolean respuesta = false; 
+		try
+		{
+			Statement stm = con1.createStatement();
+			String select = "SELECT * FROM usuario a, tipo_empleado b WHERE a.idtipoempleado = b.idtipoempleado AND b.es_administrador = 1 AND a.id = " + idUsuario;
+			ResultSet rs;
+			if(auditoria)
+			{
+				logger.info(select);
+			}
+			rs = stm.executeQuery(select);
+			while(rs.next())
+			{
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
 	}
 }

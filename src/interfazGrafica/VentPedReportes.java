@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
+import capaControlador.BiometriaCtrl;
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaControlador.ReportesCtrl;
@@ -30,6 +31,7 @@ public class VentPedReportes extends JDialog {
 	private JTable tableReporte;
 	private InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
+	private BiometriaCtrl bioCtrl = new BiometriaCtrl(PrincipalLogueo.habilitaAuditoria);
 	private String fechaActual;
 	/**
 	 * Launch the application.
@@ -62,7 +64,14 @@ public class VentPedReportes extends JDialog {
 		}else if(tipoReporte == 4)
 		{
 			setTitle("REPORTE DE CAJA DETALLADO");
+		}else if(tipoReporte == 5)
+		{
+			setTitle("REPORTE DE PORCIONES VENDIDAS");
+		}else if(tipoReporte == 6)
+		{
+			setTitle("REPORTE ENTRADA/SALIDA EMPLEADOS");
 		}
+		
 		setBounds(100, 100, 582, 488);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanelReportes.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -81,6 +90,7 @@ public class VentPedReportes extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			
 			JButton btnGenEstiloReporte = new JButton("GENERAR EN ESTILO REPORTE");
+			btnGenEstiloReporte.setEnabled(false);
 			btnGenEstiloReporte.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					Window ventanaPadre = SwingUtilities.getWindowAncestor(
@@ -133,7 +143,61 @@ public class VentPedReportes extends JDialog {
 		}else if(tipoReporte == 4)
 		{
 			pintarReporteDeCajaDetallado();
+		}else if(tipoReporte == 5)
+		{
+			pintarReportepPorcionesVendidas();
+		}else if(tipoReporte == 6)
+		{
+			pintarReporteEntradaSalidaEmp();
 		}
+	}
+	
+	public void pintarReporteEntradaSalidaEmp()
+	{
+		Object[] columnsName = new Object[5];
+		columnsName[0] = "Empleado";
+        columnsName[1] = "Fecha";
+        columnsName[2] = "ENTRADA";
+        columnsName[3] = "SALIDA";
+        columnsName[4] = "HORAS";
+        ArrayList repEntradasSalidas = new ArrayList();
+        repEntradasSalidas = bioCtrl.obtenerEntradasSalidasEmpleados();
+        DefaultTableModel modelo = new DefaultTableModel(){
+       	    public boolean isCellEditable(int rowIndex,int columnIndex){
+       	    	return(false);
+       	    }
+       	};
+		modelo.setColumnIdentifiers(columnsName);
+		for(int y = 0; y < repEntradasSalidas.size();y++)
+		{
+			String[] fila =(String[]) repEntradasSalidas.get(y);
+			modelo.addRow(fila);
+		}
+		tableReporte.setModel(modelo);
+		
+	}
+	
+	public void pintarReportepPorcionesVendidas()
+	{
+		Object[] columnsName = new Object[3];
+		columnsName[0] = "Tipo de Porción";
+        columnsName[1] = "Cantidad";
+        columnsName[2] = "Fecha";
+        ArrayList porcionesVendidas = new ArrayList();
+        porcionesVendidas = pedCtrl.obtenerResumenPorciones(fechaActual, fechaActual);
+        DefaultTableModel modelo = new DefaultTableModel(){
+       	    public boolean isCellEditable(int rowIndex,int columnIndex){
+       	    	return(false);
+       	    }
+       	};
+		modelo.setColumnIdentifiers(columnsName);
+		for(int y = 0; y < porcionesVendidas.size();y++)
+		{
+			String[] fila =(String[]) porcionesVendidas.get(y);
+			modelo.addRow(fila);
+		}
+		tableReporte.setModel(modelo);
+		
 	}
 	
 	public void pintarItemsInventarioConsumido()

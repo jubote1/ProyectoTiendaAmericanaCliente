@@ -93,7 +93,7 @@ public class DetallePedidoDAO {
 		
 	}
 	
-	public static boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion, String observacion,  boolean auditoria)
+	public static boolean anularDetallePedido(int idDetallePedido, int idMotivoAnulacion, String observacion, String usuarioAnulacion,  String usuarioAutorizo,   boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -102,13 +102,13 @@ public class DetallePedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update detalle_pedido set idmotivoanulacion =" + idMotivoAnulacion + " , obs_anulacion ='" + observacion +"' where iddetalle_pedido = " + idDetallePedido ;
+			String update = "update detalle_pedido set idmotivoanulacion =" + idMotivoAnulacion + " , obs_anulacion ='" + observacion + "' , usuario_anulacion = '" + usuarioAnulacion + "' , usuario_aut_anulacion = '" + usuarioAutorizo + "' where iddetalle_pedido = " + idDetallePedido ;
 			if(auditoria)
 			{
 				logger.info(update);
 			}
 			stm.executeUpdate(update);
-			update = "update detalle_pedido set idmotivoanulacion = " + idMotivoAnulacion + " , obs_anulacion ='" + observacion +"'  where iddetalle_pedido_master = " + idDetallePedido;
+			update = "update detalle_pedido set idmotivoanulacion = " + idMotivoAnulacion + " , obs_anulacion ='" + observacion + "' , usuario_anulacion = '" + usuarioAnulacion + "' , usuario_aut_anulacion = '" + usuarioAutorizo +"'  where iddetalle_pedido_master = " + idDetallePedido;
 			if(auditoria)
 			{
 				logger.info(update);
@@ -120,6 +120,7 @@ public class DetallePedidoDAO {
 		}
 		catch (Exception e){
 			logger.error(e.toString());
+			System.out.println(e.toString());
 			try
 			{
 				con1.close();
@@ -139,7 +140,7 @@ public class DetallePedidoDAO {
 	 * @param auditoria
 	 * @return
 	 */
-	public static boolean anularDetallePedidoPuntual(int idDetallePedido, int idMotivoAnulacion, String observacion, boolean auditoria)
+	public static boolean anularDetallePedidoPuntual(int idDetallePedido, int idMotivoAnulacion, String observacion, String usuario, String usuarioAutorizo,  boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -148,7 +149,7 @@ public class DetallePedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String update = "update detalle_pedido set idmotivoanulacion =" + idMotivoAnulacion + " , obs_anulacion ='" + observacion +"' where iddetalle_pedido = " + idDetallePedido ;
+			String update = "update detalle_pedido set idmotivoanulacion =" + idMotivoAnulacion + " , obs_anulacion ='" + observacion + "' , usuario_anulacion = '" + usuario + "' , usuario_aut_anulacion = '" + usuarioAutorizo +"' where iddetalle_pedido = " + idDetallePedido ;
 			if(auditoria)
 			{
 				logger.info(update);
@@ -1025,6 +1026,46 @@ public class DetallePedidoDAO {
 			
 		}
 		return(respuesta);
+	}
+	
+	public static boolean multiplicarDetallePedido(int idDetaTratar, int multiplicador , boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		boolean respuesta = true;
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList<DetallePedido> detalleMult =  obtenerDetallePedidoMaster(idDetaTratar, 0, auditoria);
+		Statement stm;
+		try
+		{
+			stm = con1.createStatement();
+			for(int i = 0; i < detalleMult.size(); i ++)
+			{
+				DetallePedido detTemp = detalleMult.get(i);
+				detTemp.setCantidad(multiplicador*detTemp.getCantidad());
+				detTemp.setValorTotal(detTemp.getValorUnitario()*detTemp.getCantidad());
+				String update = "update detalle_pedido set cantidad = " + detTemp.getCantidad() + " , valortotal = " + detTemp.getValorTotal() +" where iddetalle_pedido = " + detTemp.getIdDetallePedido() ;
+				if(auditoria)
+				{
+					logger.info(update);
+				}
+				stm.executeUpdate(update);
+			}
+			stm.close();
+			con1.close();
+		}catch(Exception e)
+		{
+			logger.error(e.toString());
+			try
+			{
+				respuesta = false;
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			return(respuesta);
+		}
+		return(true);
 	}
 	
 }

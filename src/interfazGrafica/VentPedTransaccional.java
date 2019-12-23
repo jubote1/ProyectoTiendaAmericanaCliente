@@ -42,6 +42,7 @@ import javax.swing.table.TableColumn;
 
 import JTable.CellRenderTransaccional;
 import JTable.CellRenderTransaccional2;
+import JTable.CellRenderTransaccionalTiempos;
 import JTable.CheckBoxRenderer;
 import capaControlador.AutenticacionCtrl;
 import capaControlador.EmpleadoCtrl;
@@ -757,6 +758,7 @@ public class VentPedTransaccional extends JFrame implements Runnable{
 		tblMaestroPedidos.getColumnModel().getColumn(4).setCellRenderer( new CellRenderTransaccional2());
 		tblMaestroPedidos.getColumnModel().getColumn(2).setCellRenderer( new CellRenderTransaccional2());
 		tblMaestroPedidos.getColumnModel().getColumn(5).setCellRenderer( new CellRenderTransaccional2());
+		tblMaestroPedidos.getColumnModel().getColumn(10).setCellRenderer( new CellRenderTransaccionalTiempos());
 		//setCellRender(tblMaestroPedidos);
 		
 	}

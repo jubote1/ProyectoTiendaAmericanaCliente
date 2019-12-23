@@ -30,5 +30,11 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="dpfpenrollment.jar"/>
+	<classpathentry kind="lib" path="dpfpverification.jar"/>
+	<classpathentry kind="lib" path="dpotapi.jar"/>
+	<classpathentry kind="lib" path="dpotjni.jar"/>
+	<classpathentry kind="lib" path="slf4j-api-1.7.26.jar"/>
+	<classpathentry kind="lib" path="slf4j-simple-1.7.26.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -51,6 +51,8 @@ public class VentPedDescuento extends JDialog {
 	private JTextField txtValorPorcen;
 	JTextArea textAreaObservacion;
 	JDialog ventanaActual;
+	public JLabel lblNombreUsuarioAut;
+	public static String usuarioAutorizo;
 	
 	public static void clarearVarEstaticas()
 	{
@@ -384,7 +386,7 @@ public class VentPedDescuento extends JDialog {
 					{
 						valorPorcen = 0;
 					}
-					PedidoDescuento descuento = new PedidoDescuento(idPedido, Total -  nuevoTotal, valorPorcen, textAreaObservacion.getText(), "",0,0, Sesion.getUsuario() );
+					PedidoDescuento descuento = new PedidoDescuento(idPedido, Total -  nuevoTotal, valorPorcen, textAreaObservacion.getText(), "",0,0, Sesion.getUsuario(), usuarioAutorizo );
 					boolean resp = pedCtrl.insertarPedidoDescuento(descuento);
 					VentPedTomarPedidos.descuento = Total -  nuevoTotal;
 					System.out.println("le estamos poniendo descuento " + (VentPedTomarPedidos.descuento));
@@ -518,6 +520,16 @@ public class VentPedDescuento extends JDialog {
 		lblObservacin.setFont(new Font("Tahoma", Font.BOLD, 14));
 		lblObservacin.setBounds(493, 44, 195, 16);
 		contentenorDescuento.add(lblObservacin);
+		
+		JLabel lblQuienAutoriza = new JLabel("Quien Autoriza");
+		lblQuienAutoriza.setFont(new Font("Tahoma", Font.BOLD, 15));
+		lblQuienAutoriza.setBounds(127, 533, 154, 41);
+		contentenorDescuento.add(lblQuienAutoriza);
+		
+		lblNombreUsuarioAut = new JLabel("");
+		lblNombreUsuarioAut.setFont(new Font("Tahoma", Font.BOLD, 15));
+		lblNombreUsuarioAut.setBounds(302, 533, 230, 41);
+		contentenorDescuento.add(lblNombreUsuarioAut);
 		
 		btnDesPorcentaje.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

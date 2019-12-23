@@ -86,8 +86,8 @@ public class ItemInventarioDAO {
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
 					+ "and f.iditem = a.iditem  and e.fecha_sistema ='"+ fecha +"' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
-					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo from item_inventario a";
-			System.out.println(consulta);
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo from item_inventario a order by a.orden";
+			System.out.println("OJO" + consulta);
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -139,7 +139,7 @@ public class ItemInventarioDAO {
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
 					+ "and f.iditem = a.iditem  and e.fecha_sistema = '" + fecha + "' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
-					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, a.cantidad,0 from item_inventario a";
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, a.cantidad,0 from item_inventario a order by a.orden";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -189,7 +189,7 @@ public class ItemInventarioDAO {
 					+ "from ingreso_inventario e, ingreso_inventario_detalle f where e.idingreso_inventario = f.idingreso_inventario "
 					+ "and f.iditem = a.iditem  and e.fecha_sistema = '" + fecha + "' ) ,0)as ingreso, ifnull((select sum(g.cantidad) "
 					+ "from consumo_inventario_pedido g, pedido h where g.iditem = a.iditem  and g.idpedido = h.idpedidotienda "
-					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, b.cantidad,(a.cantidad - b.cantidad) from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fecha + "' and b.tipo_inventario = 'V'";
+					+ "and h.fechapedido ='"+ fecha +"'  ) ,0)as consumo, 0, a.cantidad, b.cantidad,(a.cantidad - b.cantidad) from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fecha + "' and b.tipo_inventario = 'V' order by a.orden";
 			System.out.println("OJO" + consulta);
 			if(auditoria)
 			{
@@ -396,7 +396,7 @@ public class ItemInventarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select iditem,nombre_item,unidad_medida,cantidadxcanasta,nombrecontenedor,0 from item_inventario";
+			String consulta = "select iditem,nombre_item,unidad_medida,cantidadxcanasta,nombrecontenedor,0 from item_inventario order by orden";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -444,11 +444,11 @@ public class ItemInventarioDAO {
 			String consulta = "";
 			if(tipo == "I")
 			{
-				consulta = "select a.iditem, a.nombre_item, a.unidad_medida,a.cantidadxcanasta,a.nombrecontenedor,b.cantidad from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fechaSistema + "' and b.tipo_inventario = 'I'";
+				consulta = "select a.iditem, a.nombre_item, a.unidad_medida,a.cantidadxcanasta,a.nombrecontenedor,b.cantidad from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fechaSistema + "' and b.tipo_inventario = 'I' order by a.orden";
 				
 			}else if (tipo == "R")
 			{
-				consulta = "select a.iditem, a.nombre_item, a.unidad_medida,a.cantidadxcanasta,a.nombrecontenedor,b.cantidad from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fechaSistema + "' and b.tipo_inventario = 'R'";
+				consulta = "select a.iditem, a.nombre_item, a.unidad_medida,a.cantidadxcanasta,a.nombrecontenedor,b.cantidad from item_inventario a, inventarios_temporal b where a.iditem = b.iditem and b.fecha_sistema = '" + fechaSistema + "' and b.tipo_inventario = 'R' order by a.orden";
 				
 			}
 			if(auditoria)

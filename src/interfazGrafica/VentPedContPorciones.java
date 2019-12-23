@@ -608,7 +608,14 @@ public class VentPedContPorciones extends JDialog {
 				getRootPane().setDefaultButton(okButton);
 			}
 		}
-		
+		//Validamos el estado de la variable de controlestrictoporciones
+		if(Sesion.getControlEstrictoPorciones().equals(new String("S")))
+		{
+			btnPorcion.setEnabled(false);
+			btnDisminuirPorcion.setEnabled(false);
+			btnPorcionGaseosa.setEnabled(false);
+			btnDisminuirPorcionGaseosa.setEnabled(false);
+		}
 		//Método para poblar la pantalla
 		llenarPantallaControlPorciones();
 	}

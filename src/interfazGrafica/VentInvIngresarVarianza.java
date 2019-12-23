@@ -17,13 +17,17 @@ import javax.swing.text.JTextComponent;
 
 import JTable.CellRenderIngInventario;
 import JTable.CellRenderIngVarianza;
+import JTable.CellRenderIngVarianzaNA;
 import JTable.NextCellActioinRetInventarios;
 import JTable.NextCellActioinVarianza;
+import JTable.NextCellActioinVarianzaNA;
 import capaControlador.InventarioCtrl;
+import capaControlador.ParametrosCtrl;
 import capaControlador.PedidoCtrl;
 import capaModelo.FechaSistema;
 import capaModelo.InventariosTemporal;
 import capaModelo.ModificadorInventario;
+import capaModelo.Parametro;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -58,12 +62,14 @@ public class VentInvIngresarVarianza extends JDialog {
 	String fechaSis;
 	ArrayList<ModificadorInventario> inventarioIngresar = new ArrayList();
 	InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
+	ParametrosCtrl parCtrl = new ParametrosCtrl(PrincipalLogueo.habilitaAuditoria);
 	//Hilo para el JProgressBar
 	Thread hiloProgressBar = new Thread();
 	//Tendremos la definición de las variables de cantidadItems de Inventario y Cantidad Insertados que servirán
 	//para el JProgressBar
 	private int cantidadItems = 100;
 	private int cantAvance = 0 ;
+	String varianzaAyuda = "S";
 	/**
 	 * Launch the application.
 	 */
@@ -95,6 +101,10 @@ public class VentInvIngresarVarianza extends JDialog {
 //			this.setVisible(false);
 //			return;
 		}
+		//Validamos el estado de la variable ayuda Varianza
+		Parametro parametroAud = parCtrl.obtenerParametro("VARIANZAAYUDA");
+		varianzaAyuda = parametroAud.getValorTexto();
+		
 		setTitle("INGRESAR VARIANZA");
 		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setDefaultCloseOperation(0);
@@ -143,9 +153,14 @@ public class VentInvIngresarVarianza extends JDialog {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "Action.NextCell");
         ActionMap am = tableIngVarianza.getActionMap();
         //Definimos el action map de nextcell para el jtable e implementamos clase
-        am.put("Action.NextCell", new NextCellActioinVarianza(tableIngVarianza));
-		
-		JButton btnConfirmarIngreso = new JButton("Confirmar Ingreso");
+        if(varianzaAyuda.equals(new String("S")))
+		{
+        	am.put("Action.NextCell", new NextCellActioinVarianza(tableIngVarianza));
+		}else
+		{
+			am.put("Action.NextCell", new NextCellActioinVarianzaNA(tableIngVarianza));
+		}
+        JButton btnConfirmarIngreso = new JButton("Confirmar Ingreso");
 		//Creamos la barra de progreso que va a funcionar cuando ingresemos los inventarios
 		JProgressBar progressBar = new JProgressBar();
 		//Creamos el hilo encargado de llenar el ProgressBar
@@ -203,24 +218,47 @@ public class VentInvIngresarVarianza extends JDialog {
 				int controladorIngreso = 0;
 				cantAvance = 20;
 				//Ponemos a correr el hilo que actualizará el JProgressBar
-				
-				for(int i = 0; i < tableIngVarianza.getRowCount(); i++)
+				if(varianzaAyuda.equals(new String("S")))
 				{
-					cantAvance = 40;
-					//Capturamos el idItem	
-					idItem =Integer.parseInt((String)tableIngVarianza.getValueAt(i, 0));
-					//Capturamos la cantidad
-					try
+					for(int i = 0; i < tableIngVarianza.getRowCount(); i++)
 					{
-						cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 8));
-					}catch(Exception e)
-					{
-						cantidad = 0;
+						cantAvance = 40;
+						//Capturamos el idItem	
+						idItem =Integer.parseInt((String)tableIngVarianza.getValueAt(i, 0));
+						//Capturamos la cantidad
+						try
+						{
+							cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 8));
+						}catch(Exception e)
+						{
+							cantidad = 0;
+						}
+						
+						ModificadorInventario mod = new ModificadorInventario(idItem,cantidad);
+						inventarioIngresar.add(mod);
 					}
-					
-					ModificadorInventario mod = new ModificadorInventario(idItem,cantidad);
-					inventarioIngresar.add(mod);
+				}else
+				{
+					for(int i = 0; i < tableIngVarianza.getRowCount(); i++)
+					{
+						cantAvance = 40;
+						//Capturamos el idItem	
+						idItem =Integer.parseInt((String)tableIngVarianza.getValueAt(i, 0));
+						//Capturamos la cantidad
+						try
+						{
+							cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 5));
+						}catch(Exception e)
+						{
+							cantidad = 0;
+						}
+						
+						ModificadorInventario mod = new ModificadorInventario(idItem,cantidad);
+						inventarioIngresar.add(mod);
+					}
 				}
+				
+				
 				cantAvance = 50;
 					//Realizamos la invocación para la inclusión de la información de inventarios
 					int idInvVarianza = invCtrl.insertarVarianzaInventarios(inventarioIngresar, fechaSis);
@@ -308,22 +346,44 @@ public class VentInvIngresarVarianza extends JDialog {
 				int controladorIngreso = 0;
 				cantAvance = 20;
 				//Ponemos a correr el hilo que actualizará el JProgressBar
-				for(int i = 0; i < tableIngVarianza.getRowCount(); i++)
+				if(varianzaAyuda.equals(new String("S")))
 				{
-					cantAvance = 40;
-					//Capturamos el idItem	
-					idItem =Integer.parseInt((String)tableIngVarianza.getValueAt(i, 0));
-					//Capturamos la cantidad
-					try
+					for(int i = 0; i < tableIngVarianza.getRowCount(); i++)
 					{
-						cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 8));
-					}catch(Exception e)
-					{
-						cantidad = 0;
+						cantAvance = 40;
+						//Capturamos el idItem	
+						idItem =Integer.parseInt((String)tableIngVarianza.getValueAt(i, 0));
+						//Capturamos la cantidad
+						try
+						{
+							cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 8));
+						}catch(Exception e)
+						{
+							cantidad = 0;
+						}
+						
+						invTemp = new InventariosTemporal(fechaSis,"V", idItem, cantidad);
+						inventariosTemp.add(invTemp);
 					}
-					
-					invTemp = new InventariosTemporal(fechaSis,"V", idItem, cantidad);
-					inventariosTemp.add(invTemp);
+				}else
+				{
+					for(int i = 0; i < tableIngVarianza.getRowCount(); i++)
+					{
+						cantAvance = 40;
+						//Capturamos el idItem	
+						idItem =Integer.parseInt((String)tableIngVarianza.getValueAt(i, 0));
+						//Capturamos la cantidad
+						try
+						{
+							cantidad = Double.parseDouble((String)tableIngVarianza.getValueAt(i, 5));
+						}catch(Exception e)
+						{
+							cantidad = 0;
+						}
+						
+						invTemp = new InventariosTemporal(fechaSis,"V", idItem, cantidad);
+						inventariosTemp.add(invTemp);
+					}
 				}
 				cantAvance = 50;
 				//Realizamos la invocación para la inclusión de la información de inventarios
@@ -346,7 +406,14 @@ public class VentInvIngresarVarianza extends JDialog {
 		btnGuardarSinConfirmar.setBackground(Color.ORANGE);
 		btnGuardarSinConfirmar.setBounds(385, 319, 181, 37);
 		contentPanePrincipal.add(btnGuardarSinConfirmar);
-		pintarResumenVarianza(fechaSis);
+		if(varianzaAyuda.equals(new String("S")))
+		{
+			pintarResumenVarianza(fechaSis);
+		}else
+		{
+			pintarResumenVarianzaNA(fechaSis);
+		}
+		
 	}
 	
 	public void pintarResumenVarianza( String fecha)
@@ -422,11 +489,102 @@ public class VentInvIngresarVarianza extends JDialog {
 		
 	}
 	
-	public void setCellRender(JTable table) {
-        Enumeration<TableColumn> en = table.getColumnModel().getColumns();
-        while (en.hasMoreElements()) {
-            TableColumn tc = en.nextElement();
-            tc.setCellRenderer(new CellRenderIngVarianza());
+	/**
+	 * Este método realizará la diferenciación para la varianza cuando no se quiere la varianza con todos los detalles. Varianza NO AYUDA
+	 * @param fecha
+	 */
+	public void pintarResumenVarianzaNA( String fecha)
+	{
+		//Se valida si existe algo en las tablas temporales
+		boolean existePreVarianza = invCtrl.existeInventariosTemporal(fechaSis, "V");		
+		Object[] columnsName = new Object[6];
+        
+		columnsName[0] = "Id Item";
+		columnsName[1] = "Nombre Item";
+        columnsName[2] = "Inicio";
+        columnsName[3] = "Retiro";
+        columnsName[4] = "Ingreso";
+        columnsName[5] = "Ingrese Real";
+        ArrayList itemsResumen = new ArrayList();
+        if(existePreVarianza)
+        {
+        	JOptionPane.showMessageDialog(null, "Los datos de la varianza fueron recuperados de un proceso anterior de guardado temporal." , "Ingreso Temporal de Varianza", JOptionPane.INFORMATION_MESSAGE);
+        	itemsResumen = invCtrl.obtenerItemInventarioVarianzaTemp(fecha);
+        }else
+        {
+        	itemsResumen = invCtrl.obtenerItemInventarioVarianza(fecha);
         }
+        //Se crea el default table model y allí esperamos poder digitar los valores
+		DefaultTableModel modeloItemResumen = new DefaultTableModel(){
+			
+			
+			public boolean isCellEditable(int rowIndex,int columnIndex){
+       	    	if((columnIndex <= 4) ||(columnIndex > 5) )
+       	    	{
+       	    		return false;
+       	    	}
+       	    	return true;
+       	    }
+			
+			@Override
+            public Class getColumnClass(int col) {
+                // return your actual type tokens
+                return getValueAt(1, col).getClass();
+            }
+			
+			//En la definición del JTable definimos los tipos de cada una de las columnas
+			 Class[] types = new Class [] {
+	       	            //Defines el tipo que admitirá la COLUMNA, cada uno con el índice correspondiente
+	       	            //Codigo (Integer), Cantidad (Integer), Nombre (String), Precio(Double)
+	       	            java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class,java.lang.Double.class
+	       	        };
+			 
+       	};
+       	
+        modeloItemResumen.setColumnIdentifiers(columnsName);
+        
+        double invCalculado = 0, invInicio = 0, invIngreso = 0, invRetiro = 0, invConsumo = 0; 
+        String[] fila = new String[6];
+		for(int y = 0; y < itemsResumen.size();y++)
+		{
+			String[] filaTemp =(String[]) itemsResumen.get(y);
+			fila[0] = filaTemp[0];
+			fila[1] = filaTemp[1];
+			fila[2] = filaTemp[2];
+			fila[3] = filaTemp[3];
+			fila[4] = filaTemp[4];
+			if(existePreVarianza)
+			{
+				fila[5] = filaTemp[8];
+			}else
+			{
+				fila[5] = Double.toString(0);
+			}
+			modeloItemResumen.addRow(fila);
+			
+		}
+		tableIngVarianza.setModel(modeloItemResumen);
+		setCellRender(tableIngVarianza);
+		
+	}
+	
+	public void setCellRender(JTable table) {
+		if(varianzaAyuda.equals(new String("S")))
+		{
+	        Enumeration<TableColumn> en = table.getColumnModel().getColumns();
+	        while (en.hasMoreElements()) {
+	            TableColumn tc = en.nextElement();
+	            tc.setCellRenderer(new CellRenderIngVarianza());
+	        }
+		}else
+		{
+			System.out.println("CELL RENDER NA");
+			 Enumeration<TableColumn> en = table.getColumnModel().getColumns();
+		     while (en.hasMoreElements()) {
+		            TableColumn tc = en.nextElement();
+		            tc.setCellRenderer(new CellRenderIngVarianzaNA());
+		     }
+		}
+
     }
 }

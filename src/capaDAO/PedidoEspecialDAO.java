@@ -130,7 +130,7 @@ public class PedidoEspecialDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select a.idpedidoespecial,a.iditem, b.nombre_item, a.cantidad, b.unidad_medida, a.fecha_solicitud from pedido_especial a, item_inventario b where a.iditem = b.iditem and fecha_solicitud = '" + fecha + "'";
+			String consulta = "select a.idpedidoespecial,a.iditem, b.nombre_item, a.cantidad, b.unidad_medida, a.fecha_solicitud from pedido_especial a, item_inventario b where a.iditem = b.iditem and fecha_solicitud = '" + fecha + "' order by b.orden";
 			if(auditoria)
 			{
 				logger.info(consulta);
