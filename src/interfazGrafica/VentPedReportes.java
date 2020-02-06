@@ -13,9 +13,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import capaControlador.BiometriaCtrl;
+import capaControlador.EmpleadoCtrl;
 import capaControlador.InventarioCtrl;
 import capaControlador.PedidoCtrl;
 import capaControlador.ReportesCtrl;
+import capaModelo.EmpleadoTemporalDia;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -32,6 +34,7 @@ public class VentPedReportes extends JDialog {
 	private InventarioCtrl invCtrl = new InventarioCtrl(PrincipalLogueo.habilitaAuditoria);
 	private PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private BiometriaCtrl bioCtrl = new BiometriaCtrl(PrincipalLogueo.habilitaAuditoria);
+	private EmpleadoCtrl empCtrl = new EmpleadoCtrl(PrincipalLogueo.habilitaAuditoria);
 	private String fechaActual;
 	/**
 	 * Launch the application.
@@ -70,16 +73,19 @@ public class VentPedReportes extends JDialog {
 		}else if(tipoReporte == 6)
 		{
 			setTitle("REPORTE ENTRADA/SALIDA EMPLEADOS");
+		}else if(tipoReporte == 6)
+		{
+			setTitle("REPORTE PERSONAL TEMPORAL INGRESADO");
 		}
 		
-		setBounds(100, 100, 582, 488);
+		setBounds(100, 100, 650, 488);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanelReportes.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanelReportes, BorderLayout.CENTER);
 		contentPanelReportes.setLayout(null);
 		
 		JScrollPane scrollPaneReporte = new JScrollPane();
-		scrollPaneReporte.setBounds(10, 11, 546, 379);
+		scrollPaneReporte.setBounds(10, 11, 610, 379);
 		contentPanelReportes.add(scrollPaneReporte);
 		
 		tableReporte = new JTable();
@@ -150,6 +156,10 @@ public class VentPedReportes extends JDialog {
 		{
 			pintarReporteEntradaSalidaEmp();
 		}
+		else if(tipoReporte == 7)
+		{
+			pintarReportePersonaTemp();
+		}
 	}
 	
 	public void pintarReporteEntradaSalidaEmp()
@@ -176,6 +186,38 @@ public class VentPedReportes extends JDialog {
 		tableReporte.setModel(modelo);
 		
 	}
+	
+	public void pintarReportePersonaTemp()
+	{
+		Object[] columnsName = new Object[4];
+		columnsName[0] = "Cedula";
+        columnsName[1] = "Nombre";
+        columnsName[2] = "Empresa";
+        columnsName[3] = "Telefono";
+        ArrayList<EmpleadoTemporalDia> empleadosTemp = new ArrayList();
+        empleadosTemp = empCtrl.obtenerEmpleadoTemporalFecha(fechaActual);
+        DefaultTableModel modelo = new DefaultTableModel(){
+       	    public boolean isCellEditable(int rowIndex,int columnIndex){
+       	    	return(false);
+       	    }
+       	};
+		modelo.setColumnIdentifiers(columnsName);
+		EmpleadoTemporalDia empTemp;
+		for(int y = 0; y < empleadosTemp.size();y++)
+		{
+			empTemp = empleadosTemp.get(y);
+			String fila[] = new String[4];
+			fila[0] = empTemp.getIdentificacion();
+			fila[1] = empTemp.getNombre();
+			fila[2] = empTemp.getEmpresa();
+			fila[3] = empTemp.getTelefono();
+			modelo.addRow(fila);
+		}
+		tableReporte.setModel(modelo);
+		
+	}
+	
+	
 	
 	public void pintarReportepPorcionesVendidas()
 	{

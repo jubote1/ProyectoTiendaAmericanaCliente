@@ -277,7 +277,7 @@ public class ModificadorInventarioDAO {
 		return(idRetiroInv);
 	}
 	
-	public static int insertarVarianzaInventarios(ArrayList <ModificadorInventario> varianzas, String fecha, boolean auditoria )
+	public static int insertarVarianzaInventarios(ArrayList <ModificadorInventario> varianzas, String fecha, String observacion,  boolean auditoria )
 	{
 		Logger logger = Logger.getLogger("log_file");
 		int idInvVarianza = 0;
@@ -287,7 +287,7 @@ public class ModificadorInventarioDAO {
 		{
 			//Realizamos la inserción del IdInventario
 			Statement stm = con1.createStatement();
-			String insert = "insert into inventario_varianza (fecha_sistema) values ('" + fecha + "')"; 
+			String insert = "insert into inventario_varianza (fecha_sistema, observacion) values ('" + fecha + "' , '" + observacion +  "')"; 
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -678,6 +678,43 @@ public class ModificadorInventarioDAO {
 			}
 		}
 		return(cantidad);
+		
+	}
+	
+	public static String obtenerObservacionVarianza(String fecha, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		String observacion = "";
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select a.observacion from inventario_varianza a where " + 
+					" a.fecha_sistema = '"  + fecha + "'";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			
+			while(rs.next()){
+				observacion  = rs.getString("observacion");
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(observacion);
 		
 	}
 	

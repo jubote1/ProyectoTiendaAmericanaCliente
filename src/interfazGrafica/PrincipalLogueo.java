@@ -177,12 +177,12 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 				{
 					
 					objUsuario = new Usuario(0,usuario, claveFinal, "", 0,"" , false);
-					boolean  resultado = aut.autenticarUsuario(objUsuario);
+					//El método retorna el idUsuario en vez de resultado booleano
+					int  resultado = aut.autenticarUsuario(objUsuario, fechasSistema.getFechaApertura());
 					
 										
-					if(resultado)
+					if(resultado > 0)
 					{
-						System.out.println("CADUCADO " + objUsuario.getCaducado());
 						// Antes de validar el resultado del logueo validamos si la contraseña esta caducadada o no
 						if(objUsuario.getCaducado() == 1)
 						{
@@ -274,9 +274,18 @@ public class PrincipalLogueo extends JFrame implements Runnable{
 						dispose();
 					}else
 					{
-						JOptionPane.showMessageDialog(null, "Usuario y/o Clave Incorrecta", "Usuario y/o Clave Incorrecta", JOptionPane.ERROR_MESSAGE);
-						textUsuario.setText("");
-						jpassClave.setText("");
+						//Validamos el valor de la respuesta si es igual a -2 es porque es un temporal que no se ha dado ingreso
+						if(resultado == -2)
+						{
+							JOptionPane.showMessageDialog(null, "El usuario " + objUsuario.getNombreLargo() + " debe ser ingresado antes de darse el primer inicio.", "Validación Personal Temporal", JOptionPane.ERROR_MESSAGE);
+							textUsuario.setText("");
+							jpassClave.setText("");
+						}else
+						{
+							JOptionPane.showMessageDialog(null, "Usuario y/o Clave Incorrecta", "Usuario y/o Clave Incorrecta", JOptionPane.ERROR_MESSAGE);
+							textUsuario.setText("");
+							jpassClave.setText("");
+						}
 					}
 				}
 			}

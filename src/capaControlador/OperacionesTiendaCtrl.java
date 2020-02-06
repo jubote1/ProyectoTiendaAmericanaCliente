@@ -14,6 +14,7 @@ import org.json.simple.JSONObject;
 
 import capaConexion.ConexionBaseDatos;
 import capaDAO.EgresoDAO;
+import capaDAO.EmpleadoTemporalDiaDAO;
 import capaDAO.GeneralDAO;
 import capaDAO.ImprimirAdmDAO;
 import capaDAO.IngresoDAO;
@@ -221,6 +222,12 @@ public void realizarInventarioHistorico(String fecha)
 			{
 				respuesta = respuesta + " Se tienen porciones en el controlador de Porciones y no se han facturado.";
 			}
+		}
+		//Incluimos la nueva validación de los horarios de salida de los temporales
+		boolean pendSalTemporal = EmpleadoTemporalDiaDAO.validarHoraSalidaEmpTemporal(fecha, auditoria);
+		if(!pendSalTemporal)
+		{
+			respuesta = respuesta + " Se tienen empleados temporales que para el día en cuestión no se les ha dado la hora de salida.";
 		}
 		return(respuesta);
 	}

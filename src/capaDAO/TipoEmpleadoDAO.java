@@ -140,6 +140,75 @@ public class TipoEmpleadoDAO {
 		
 	}
 	
+	public static ArrayList<TipoEmpleado> obtenerTipoEmpleadoGeneralObj(String bdGeneral, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(bdGeneral);
+		ArrayList<TipoEmpleado> tiposEmpleado = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select * from tipo_empleado ";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			int cajero = 0, domiciliario = 0, administrador = 0, hornero = 0, cocinero = 0;	
+			boolean esCajero = false, esDomiciliario = false, esAdministrador = false, esHornero = false, esCocinero = false;	
+			int idTipoEmpleado = 0;
+			String descripcion = "";
+			TipoEmpleado tipEmp;
+			while(rs.next()){
+				idTipoEmpleado = rs.getInt("idtipoempleado");
+				descripcion = rs.getString("descripcion");
+				cajero = rs.getInt("es_cajero");
+				domiciliario = rs.getInt("es_domiciliario");
+				administrador = rs.getInt("es_administrador");
+				hornero = rs.getInt("es_hornero");
+				cocinero = rs.getInt("es_cocinero");
+				if(cajero == 1)
+				{
+					esCajero = true;
+				}
+				if(domiciliario == 1)
+				{
+					esDomiciliario = true;
+				}
+				if(administrador == 1)
+				{
+					esAdministrador = true;
+				}
+				if(hornero == 1)
+				{
+					esHornero = true;
+				}
+				if(cocinero == 1)
+				{
+					esCocinero = true;
+				}
+				tipEmp = new TipoEmpleado(idTipoEmpleado, descripcion, esCajero, esDomiciliario, esAdministrador, esHornero, esCocinero);
+				tiposEmpleado.add(tipEmp);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(tiposEmpleado);
+		
+	}
+	
 	
 		
 /**

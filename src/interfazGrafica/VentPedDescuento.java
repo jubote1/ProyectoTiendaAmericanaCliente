@@ -10,6 +10,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.parser.ParserDelegator;
 
 import capaControlador.PedidoCtrl;
+import capaControlador.PromocionesCtrl;
+import capaModelo.Oferta;
+import capaModelo.OfertaCliente;
 import capaModelo.PedidoDescuento;
 import capaModelo.TipoPedido;
 
@@ -42,7 +45,7 @@ public class VentPedDescuento extends JDialog {
 	private JPanel contentenorDescuento;
 	private final Action action = new SwingAction();
 	private JTextField txtTotalFinal;
-	
+	PromocionesCtrl promoCtrl = new PromocionesCtrl();
 	public static double DescuentoEfectivo = 0, DescuentoPorcentaje = 0, Total = VentPedTomarPedidos.totalPedido,nuevoTotal = Total ;
 	public static boolean boolEfectivo = true, boolPorcentaje = false; 
 	public static int idPedido = VentPedTomarPedidos.idPedido;
@@ -53,6 +56,12 @@ public class VentPedDescuento extends JDialog {
 	JDialog ventanaActual;
 	public JLabel lblNombreUsuarioAut;
 	public static String usuarioAutorizo;
+	private JTextField txtCodigoPromocion;
+	//Variable en la cual almacenaremos la ofertaCliente,según el código promocional
+	OfertaCliente ofertaCliente;
+	JButton btnAplicar;
+	JButton btnDesPorcentaje;
+	JButton btnDescuentoEfectivo;
 	
 	public static void clarearVarEstaticas()
 	{
@@ -119,10 +128,10 @@ public class VentPedDescuento extends JDialog {
 		ventanaActual = this;
 		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setDefaultCloseOperation(0);
-		setBounds(0,0, 961, 636);
+		setBounds(0,0, 961, 670);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 961, 636);
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 961, 670);
 		contentenorDescuento = new JPanel();
 		contentenorDescuento.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentenorDescuento);
@@ -401,7 +410,7 @@ public class VentPedDescuento extends JDialog {
 		});
 		btnFinalizar.setEnabled(false);
 		btnFinalizar.setFont(new Font("Calibri", Font.BOLD, 40));
-		btnFinalizar.setBounds(589, 494, 195, 70);
+		btnFinalizar.setBounds(592, 550, 195, 70);
 		contentenorDescuento.add(btnFinalizar);
 		
 		JButton btnBorrar = new JButton("Borrar");
@@ -410,9 +419,9 @@ public class VentPedDescuento extends JDialog {
 		btnBorrar.setBounds(462, 452, 100, 70);
 		contentenorDescuento.add(btnBorrar);
 		
-		JButton btnAplicar = new JButton("Aplicar Descuento");
+		btnAplicar = new JButton("Aplicar Descuento");
 		btnAplicar.setFont(new Font("Calibri", Font.BOLD, 17));
-		btnAplicar.setBounds(624, 351, 202, 70);
+		btnAplicar.setBounds(627, 407, 202, 70);
 		btnAplicar.setBackground(new Color(86,106,187));
 		btnAplicar.setForeground(new Color(255,255,255));
 		contentenorDescuento.add(btnAplicar);
@@ -430,17 +439,17 @@ public class VentPedDescuento extends JDialog {
 		txtTotal.setText(Double.toString(Total));
 		txtTotalFinal.setText(Double.toString(Total));
 		JPanel panelMetodosPagos = new JPanel();
-		panelMetodosPagos.setBounds(490, 198, 431, 126);
+		panelMetodosPagos.setBounds(493, 254, 431, 126);
 		contentenorDescuento.add(panelMetodosPagos);
 		panelMetodosPagos.setLayout(null);
 		
-		JButton btnDesPorcentaje = new JButton("Descuento Porcentaje");
+		btnDesPorcentaje = new JButton("Descuento Porcentaje");
 		btnDesPorcentaje.setBounds(217, 11, 204, 102);
 		panelMetodosPagos.add(btnDesPorcentaje);
 		btnDesPorcentaje.setBackground(new Color(230,230,230));
 		btnDesPorcentaje.setFont(new Font("Calibri", Font.BOLD, 17));
 		
-		JButton btnDescuentoEfectivo = new JButton("Descuento Efectivo");
+		btnDescuentoEfectivo = new JButton("Descuento Efectivo");
 		btnDescuentoEfectivo.setBounds(3, 11, 204, 102);
 		panelMetodosPagos.add(btnDescuentoEfectivo);
 		btnDescuentoEfectivo.setBackground(new Color(230,230,230));
@@ -450,16 +459,7 @@ public class VentPedDescuento extends JDialog {
 		
 		btnDescuentoEfectivo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				btnAplicar.setText("Aplicar "+btnDescuentoEfectivo.getText());
-				btnAplicar.setBackground(new Color(86,106,187));
-				btnAplicar.setForeground(new Color(255,255,255));
-				btnDescuentoEfectivo.setBackground(new Color(86,106,187));
-				btnDescuentoEfectivo.setForeground(new Color(255,255,255));
-				btnDesPorcentaje.setBackground(new Color(230,230,230));
-				btnAplicar.setEnabled(true);
-				boolEfectivo = true;
-				boolPorcentaje = false;
-				txtValorPorcen.setText("");
+				aplicarPesos();
 			}
 		});
 		
@@ -508,17 +508,17 @@ public class VentPedDescuento extends JDialog {
 			}
 		});
 		btnSalir.setFont(new Font("Calibri", Font.BOLD, 40));
-		btnSalir.setBounds(794, 494, 141, 70);
+		btnSalir.setBounds(797, 550, 141, 70);
 		contentenorDescuento.add(btnSalir);
 		
 		textAreaObservacion = new JTextArea();
 		textAreaObservacion.setLineWrap(true);
-		textAreaObservacion.setBounds(490, 73, 336, 115);
+		textAreaObservacion.setBounds(493, 129, 336, 115);
 		contentenorDescuento.add(textAreaObservacion);
 		
 		JLabel lblObservacin = new JLabel("Observaci\u00F3n");
 		lblObservacin.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblObservacin.setBounds(493, 44, 195, 16);
+		lblObservacin.setBounds(493, 102, 195, 16);
 		contentenorDescuento.add(lblObservacin);
 		
 		JLabel lblQuienAutoriza = new JLabel("Quien Autoriza");
@@ -531,18 +531,60 @@ public class VentPedDescuento extends JDialog {
 		lblNombreUsuarioAut.setBounds(302, 533, 230, 41);
 		contentenorDescuento.add(lblNombreUsuarioAut);
 		
+		JLabel lblCodigoPromocional = new JLabel("C\u00F3digo Promocional");
+		lblCodigoPromocional.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblCodigoPromocional.setBounds(510, 0, 163, 27);
+		contentenorDescuento.add(lblCodigoPromocional);
+		
+		txtCodigoPromocion = new JTextField();
+		txtCodigoPromocion.setFont(new Font("Tahoma", Font.BOLD, 16));
+		txtCodigoPromocion.setBounds(493, 30, 195, 38);
+		contentenorDescuento.add(txtCodigoPromocion);
+		txtCodigoPromocion.setColumns(10);
+		
+		JButton btnValidarCodigo = new JButton("Validar C\u00F3digo");
+		btnValidarCodigo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				validarCodigoPromocional();
+			}
+		});
+		btnValidarCodigo.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnValidarCodigo.setBounds(723, 11, 201, 50);
+		contentenorDescuento.add(btnValidarCodigo);
+		
+		JButton btnUsarCodigo = new JButton("Usar C\u00F3digo");
+		btnUsarCodigo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				String resultado = validarCodigoPromocional();
+				if(resultado.equals(new String ("OK")))
+				{
+					promoCtrl.actualizarUsoOferta(ofertaCliente.getIdOfertaCliente(), Sesion.getUsuario());
+					//La idea en este punto realizar en pantalla automaticamente el descuento
+					//Nos debemos de traer los valores de la oferta
+					Oferta oferta = promoCtrl.retornarOferta(ofertaCliente.getIdOferta());
+					if(oferta.getDescuentoFijoPorcentaje() > 0)
+					{
+						txtValorPorcen.setText(Double.toString(oferta.getDescuentoFijoPorcentaje()));
+						aplicarPorcentaje();
+					}else if(oferta.getDescuentoFijoValor() > 0)
+					{
+						txtValorPesos.setText(Double.toString(oferta.getDescuentoFijoValor()));
+						aplicarPesos();
+					}
+					textAreaObservacion.setText("Descuento proveniente de un código promocional " + ofertaCliente.getCodigoPromocion());
+					btnValidarCodigo.setEnabled(false);
+					btnUsarCodigo.setEnabled(false);
+				}
+			}
+		});
+		btnUsarCodigo.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnUsarCodigo.setBounds(723, 68, 201, 50);
+		contentenorDescuento.add(btnUsarCodigo);
+		
 		btnDesPorcentaje.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				btnAplicar.setText("Aplicar "+btnDesPorcentaje.getText());
-				btnAplicar.setBackground(new Color(255,106,98));
-				btnAplicar.setForeground(new Color(255,255,255));
-				btnDesPorcentaje.setBackground(new Color(255,106,98));
-				btnDesPorcentaje.setForeground(new Color(255,255,255));
-				btnDescuentoEfectivo.setBackground(new Color(230,230,230));
-				btnAplicar.setEnabled(true);
-				boolEfectivo = false;
-				boolPorcentaje = true;
-				txtValorPesos.setText("");
+				aplicarPorcentaje();
 			}
 		});
 		
@@ -629,5 +671,59 @@ public class VentPedDescuento extends JDialog {
 			return(false);
 		}
 		return(true);
+	}
+	
+	public String validarCodigoPromocional()
+	{
+		String codigoPromocion = txtCodigoPromocion.getText();
+		ofertaCliente = new OfertaCliente(0, 0, 0, "", 0, "",
+			"", "", "");
+		ofertaCliente.setEstadoOferta("");
+		if(codigoPromocion.length() > 0)
+		{
+			ofertaCliente = promoCtrl.retornarOfertaCodigoPromocional(codigoPromocion);
+			if(ofertaCliente.getEstadoOferta().equals(new String("NOK")))
+			{
+				JOptionPane.showMessageDialog(ventanaActual, "El código promocional no existe." , "Error en código no existente.", JOptionPane.ERROR_MESSAGE);	
+			}else if(ofertaCliente.getEstadoOferta().equals(new String("VEN")))
+			{
+				JOptionPane.showMessageDialog(ventanaActual, "El código promocional esta vencido o ya fue utilizado." , "Error en código vencido.", JOptionPane.ERROR_MESSAGE);
+			}else if(ofertaCliente.getEstadoOferta().equals(new String("OK")))
+			{
+				JOptionPane.showMessageDialog(ventanaActual, "El código promocional PUEDE SER USADO." , "Validar Código Promocional", JOptionPane.WARNING_MESSAGE);
+			}
+		}else
+		{
+			JOptionPane.showMessageDialog(ventanaActual, "No ha ingresado ningún código promocional." , "Error en código promocional ", JOptionPane.ERROR_MESSAGE);
+		}
+		return(ofertaCliente.getEstadoOferta());
+	}
+	
+	public void aplicarPorcentaje()
+	{
+		btnAplicar.setText("Aplicar "+btnDesPorcentaje.getText());
+		btnAplicar.setBackground(new Color(255,106,98));
+		btnAplicar.setForeground(new Color(255,255,255));
+		btnDesPorcentaje.setBackground(new Color(255,106,98));
+		btnDesPorcentaje.setForeground(new Color(255,255,255));
+		btnDescuentoEfectivo.setBackground(new Color(230,230,230));
+		btnAplicar.setEnabled(true);
+		boolEfectivo = false;
+		boolPorcentaje = true;
+		txtValorPesos.setText("");
+	}
+	
+	public void aplicarPesos()
+	{
+		btnAplicar.setText("Aplicar "+btnDescuentoEfectivo.getText());
+		btnAplicar.setBackground(new Color(86,106,187));
+		btnAplicar.setForeground(new Color(255,255,255));
+		btnDescuentoEfectivo.setBackground(new Color(86,106,187));
+		btnDescuentoEfectivo.setForeground(new Color(255,255,255));
+		btnDesPorcentaje.setBackground(new Color(230,230,230));
+		btnAplicar.setEnabled(true);
+		boolEfectivo = true;
+		boolPorcentaje = false;
+		txtValorPorcen.setText("");
 	}
 }

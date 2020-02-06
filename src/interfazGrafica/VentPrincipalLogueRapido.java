@@ -328,8 +328,15 @@ public class VentPrincipalLogueRapido extends JDialog implements Runnable {
 					parent.dispose();
 				}else
 				{
-					JOptionPane.showMessageDialog(null, "Clave Rápida Incorrecta", "ERROR DE LOGUEO", JOptionPane.ERROR_MESSAGE);
-					contraRapida.setText("");
+					if(usuLogueado.getIdUsuario() == -2)
+					{
+						JOptionPane.showMessageDialog(null, "El usuario " + usuLogueado.getNombreLargo() + " debe ser ingresado antes de darse el primer inicio.", "Validación Personal Temporal", JOptionPane.ERROR_MESSAGE);
+						contraRapida.setText("");
+					}else
+					{
+						JOptionPane.showMessageDialog(null, "Clave Rápida Incorrecta", "ERROR DE LOGUEO", JOptionPane.ERROR_MESSAGE);
+						contraRapida.setText("");
+					}
 				}
 			}
 		});

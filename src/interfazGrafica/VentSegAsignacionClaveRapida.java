@@ -225,6 +225,17 @@ public class VentSegAsignacionClaveRapida extends JDialog {
 			if(primerIntento)
 			{
 				valorPrimerIntento = contraRapida.getText();
+				//Realizamos la intervención para validar la clave
+				String cumpleRequisitos = autCtrl.validarParametroClave(usuario.getIdUsuario(),valorPrimerIntento);
+				if(cumpleRequisitos.equals(new String("OK")))
+				{
+					
+				}else
+				{
+					JOptionPane.showMessageDialog(ventanaPadre, cumpleRequisitos, "Renovación de clave rápida", JOptionPane.INFORMATION_MESSAGE);
+					contraRapida.setText("");
+					return;
+				}
 				primerIntento = false;
 				segundoIntento = true;
 				JOptionPane.showMessageDialog(ventanaPadre, "Por favor confirme de nuevo la clave Rápida", "Renovación de clave rápida", JOptionPane.INFORMATION_MESSAGE);
@@ -236,9 +247,14 @@ public class VentSegAsignacionClaveRapida extends JDialog {
 				{
 					// En este punto ambas contraseñas si coinciden por lo tanto se procede a actualizar la clave rápida e ingresar al sistema
 					boolean resultAct = autCtrl.asignarClaveRapida(usuario, valorSegIntento);
-					if(resultAct)
+					boolean resultActRem = autCtrl.asignarClaveRapidaGeneral(usuario, valorSegIntento);
+					if(resultAct && resultActRem)
 					{
 						JOptionPane.showMessageDialog(ventanaPadre, "La clave fue asignada correctamente!!", "Renovación de clave rápida", JOptionPane.OK_OPTION);
+						dispose();
+					}else
+					{
+						JOptionPane.showMessageDialog(ventanaPadre, "La clave aparamentemente tuvo problemas en la asignación por cumuníquele esta situación al ADMINISTRADOR DEL SISTEMA!!", "PROBLEMAS CON LA CLAVE", JOptionPane.OK_OPTION);
 						dispose();
 					}
 				}else

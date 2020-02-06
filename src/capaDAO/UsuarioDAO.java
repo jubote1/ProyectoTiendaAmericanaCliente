@@ -1,4 +1,5 @@
 package capaDAO;
+import capaModelo.FechaSistema;
 import capaModelo.TipoEmpleado;
 import capaModelo.Usuario;
 
@@ -26,7 +27,7 @@ public class UsuarioDAO {
 	 * autenticación del usuario.
 	 * @return Se retorna un valor booleano que indica si el proceso de autenticación es satifactorio o no.
 	 */
-	public static int validarUsuario(Usuario usuario, String servidor, boolean auditoria)
+	public static int validarUsuario(Usuario usuario, String fechaSistema,  String servidor, boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
@@ -37,7 +38,7 @@ public class UsuarioDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select nombre_largo, id, administrador, idtipoempleado,tipoinicio, ingreso, caducado from usuario where nombre = '" + usuario.getNombreUsuario() + "' and password = '" + usuario.getContrasena()+"'";
+			String consulta = "select nombre_largo, id, administrador, idtipoempleado,tipoinicio, ingreso, caducado, es_empleado from usuario where nombre = '" + usuario.getNombreUsuario() + "' and password = '" + usuario.getContrasena()+"'";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -52,15 +53,36 @@ public class UsuarioDAO {
 				String tipoInicio = rs.getString("tipoinicio");
 				int idTipoEmpleado = rs.getInt("idtipoempleado");
 				int caducado = rs.getInt("caducado");
+				int esEmpleado = rs.getInt("es_empleado");
 				usuario.setIdTipoEmpleado(idTipoEmpleado);
 				usuario.setNombreLargo(nombreUsuario);
 				usuario.setIdUsuario(idUsuario);
 				usuario.setCaducado(caducado);
+				usuario.setEsEmpleado(esEmpleado);
 				int ingreso = rs.getInt("ingreso");
 				usuario.setIngreso(ingreso);
 				if(ingreso == 0)
 				{
-					darIngresoEmpleado(idUsuario, auditoria);
+					//Validamos si es temporal
+					if(esEmpleado == 0)
+					{
+						//Validamos si el empleado temporal ya se dió ingreso si as así continuamos, sino debería de retornarse error.
+						String nombreTemporal = EmpleadoTemporalDiaDAO.ingresoEmpleadoTemporal(idUsuario, fechaSistema,  auditoria);
+						if(nombreTemporal.length() > 0)
+						{
+							darIngresoEmpleado(idUsuario, auditoria);
+							usuario.setNombreLargo(usuario.getNombreLargo() + " " + nombreTemporal);
+						}else
+						{
+							//Retornaremos un -2 cuando un empleado temporal no se ha dado ingreso
+							return(-2);
+						}
+					}
+					else
+					{
+						darIngresoEmpleado(idUsuario, auditoria);
+					}
+					
 				}
 				if(administrador.equals(new String("S")))
 				{
@@ -174,6 +196,8 @@ public class UsuarioDAO {
 					usuario.setTipoInicio(rs.getString("tipoinicio"));
 					int ingreso = rs.getInt("ingreso");
 					int caducado = rs.getInt("caducado");
+					int esEmpleado = rs.getInt("es_empleado");
+					usuario.setEsEmpleado(esEmpleado);
 					usuario.setIngreso(ingreso);
 					usuario.setCaducado(caducado);
 					String administrador = rs.getString("administrador");
@@ -184,7 +208,22 @@ public class UsuarioDAO {
 					{
 						usuario.setAdministrador(false);
 					}
-					if(ingreso == 0)
+					if(esEmpleado == 0)
+					{
+						//Validamos si el empleado temporal ya se dió ingreso si as así continuamos, sino debería de retornarse error.
+						FechaSistema fecha = TiendaDAO.obtenerFechasSistema( auditoria);
+						String usuarioTemporal = EmpleadoTemporalDiaDAO.ingresoEmpleadoTemporal(idUsuario, fecha.getFechaApertura(),  auditoria);
+						if(usuarioTemporal.length() > 0)
+						{
+							darIngresoEmpleado(idUsuario, auditoria);
+							usuario.setNombreLargo(usuario.getNombreLargo() + " " + usuarioTemporal);
+						}else
+						{
+							//Retornaremos un -2 en el idUsuario cuando un empleado temporal no se ha dado ingreso
+							usuario.setIdUsuario(-2);
+						}
+					}
+					else
 					{
 						darIngresoEmpleado(idUsuario, auditoria);
 					}
@@ -252,6 +291,40 @@ public class UsuarioDAO {
 		{
 			Statement stm = con1.createStatement();
 			String update = "update usuario set claverapida = '"+ claveRapida +"' , caducado = 0 where id = " + usuario.getIdUsuario();
+			if(auditoria)
+			{
+				logger.info(update);
+			}
+			stm.executeUpdate(update);
+			stm.close();
+			con1.close();
+			respuesta = true;
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			respuesta = false;
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
+	
+	public static boolean asignarClaveRapidaGeneral(Usuario usuario, String claveRapida, String conexion,  boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(conexion);
+		boolean respuesta; 
+		try
+		{
+			Statement stm = con1.createStatement();
+			String update = "update empleado set claverapida = '"+ claveRapida +"'  where id = " + usuario.getIdUsuario();
 			if(auditoria)
 			{
 				logger.info(update);
@@ -543,7 +616,7 @@ public class UsuarioDAO {
 				administrador = "S" ;
 			}
 			Statement stm = con1.createStatement();
-			String insert = "insert into empleado (nombre, password,  nombre_largo,administrador, idtipoempleado, tipoinicio) values ('" + empleado.getNombreUsuario() + "' , '" + empleado.getContrasena() + "' , '" + empleado.getNombreLargo() + "' , '" + administrador + "', " + empleado.getidTipoEmpleado() + " , '" + empleado.getTipoInicio() + "')"; 
+			String insert = "insert into empleado (nombre, password,  nombre_largo,administrador, idtipoempleado, tipoinicio, es_empleado) values ('" + empleado.getNombreUsuario() + "' , '" + empleado.getContrasena() + "' , '" + empleado.getNombreLargo() + "' , '" + administrador + "', " + empleado.getidTipoEmpleado() + " , '" + empleado.getTipoInicio() + "' ," + empleado.getEsEmpleado() + ")"; 
 			if(auditoria)
 			{
 				logger.info(insert);
@@ -1012,16 +1085,16 @@ public class UsuarioDAO {
 	 * @param auditoria
 	 * @return
 	 */
-	public static boolean validarEsAdministrador(int idUsuario, boolean auditoria)
+	public static boolean validarEsAdministrador(int idUsuario, String conexion,  boolean auditoria)
 	{
 		Logger logger = Logger.getLogger("log_file");
 		ConexionBaseDatos con = new ConexionBaseDatos();
-		Connection con1 = con.obtenerConexionBDLocal();
+		Connection con1 = con.obtenerConexionBDGeneral(conexion);
 		boolean respuesta = false; 
 		try
 		{
 			Statement stm = con1.createStatement();
-			String select = "SELECT * FROM usuario a, tipo_empleado b WHERE a.idtipoempleado = b.idtipoempleado AND b.es_administrador = 1 AND a.id = " + idUsuario;
+			String select = "SELECT * FROM empleado a, tipo_empleado b WHERE a.idtipoempleado = b.idtipoempleado AND b.es_administrador = 1 AND a.id = " + idUsuario;
 			ResultSet rs;
 			if(auditoria)
 			{
@@ -1049,4 +1122,182 @@ public class UsuarioDAO {
 		}
 		return(respuesta);
 	}
+	
+	/**
+	 * Método que retorna un valor booleano preguntando si el usuario pasado como parámetro es o no un empleado temporal
+	 * @param idUsuario
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean validarEsTemporal(int idUsuario, String conexion,  boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(conexion);
+		boolean respuesta = false; 
+		try
+		{
+			Statement stm = con1.createStatement();
+			String select = "SELECT * FROM empleado a WHERE a.es_empleado = 0 AND a.id = " + idUsuario;
+			ResultSet rs;
+			if(auditoria)
+			{
+				logger.info(select);
+			}
+			rs = stm.executeQuery(select);
+			while(rs.next())
+			{
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
+	/**
+	 * Método que se encarga de realizar la validación de si un idusuario recibido como parámetro es o no domiciliario
+	 * @param idUsuario
+	 * @param auditoria
+	 * @return
+	 */
+	public static boolean validarEsDomiciliario(int idUsuario, String conexion,  boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(conexion);
+		boolean respuesta = false; 
+		try
+		{
+			Statement stm = con1.createStatement();
+			String select = "SELECT * FROM empleado a, tipo_empleado b where a.idtipoempleado = b.idtipoempleado and b.es_domiciliario = 1 AND a.id = " + idUsuario;
+			ResultSet rs;
+			if(auditoria)
+			{
+				logger.info(select);
+			}
+			rs = stm.executeQuery(select);
+			while(rs.next())
+			{
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
+	
+	public static boolean validarSiClaveExiste(String claveVerificar, String conexion,  boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDGeneral(conexion);
+		boolean respuesta = false; 
+		try
+		{
+			Statement stm = con1.createStatement();
+			String select = "SELECT * FROM empleado a where a.claverapida = '" + claveVerificar + "'";
+			ResultSet rs;
+			if(auditoria)
+			{
+				logger.info(select);
+			}
+			rs = stm.executeQuery(select);
+			while(rs.next())
+			{
+				respuesta = true;
+				break;
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(respuesta);
+	}
+	
+	/**
+	 * Método que retorna un valor booleano preguntando si el usuario pasado como parámetro es o no un empleado temporal
+	 * @param idUsuario
+	 * @param auditoria
+	 * @return
+	 */
+	public static ArrayList<Usuario> obtenerUsuariosTemporalesDisponibles(String fechaSistema,  boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList <Usuario> usuariosTemporales = new ArrayList();
+		boolean respuesta = false; 
+		try
+		{
+			Statement stm = con1.createStatement();
+			String select = "SELECT * FROM usuario a WHERE a.es_empleado = 0 AND a.id not in (select b.id from empleado_temporal_dia b where b.fecha_sistema = '" + fechaSistema + "')" ;
+			ResultSet rs;
+			if(auditoria)
+			{
+				logger.info(select);
+			}
+			rs = stm.executeQuery(select);
+			int idUsuario;
+			String nombreUsuario, nombreLargo;
+			while(rs.next())
+			{
+				idUsuario = rs.getInt("id");
+				nombreUsuario = rs.getString("nombre");
+				nombreLargo = rs.getString("nombre_largo");
+				Usuario usuario = new Usuario(idUsuario,nombreUsuario, nombreUsuario, nombreLargo, 0 , "", false); 
+				usuariosTemporales.add(usuario);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}
+		catch (Exception e){
+			logger.error(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+			
+		}
+		return(usuariosTemporales);
+	}
+	
 }

@@ -36,9 +36,9 @@ public class ConexionBaseDatos {
 
 		try {
 
-			//con = DriverManager.getConnection(
-		    //        "jdbc:mysql://localhost/pizzaamericana?"
-		    //        + "user=root&password=naillive");
+//			con = DriverManager.getConnection(
+//		            "jdbc:mysql://localhost/pizzaamericana?"
+//		            + "user=root&password=4m32017");
 			
 			con = DriverManager.getConnection(
 		            "jdbc:mysql://192.168.0.25/pizzaamericana?"

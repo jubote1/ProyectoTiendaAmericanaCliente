@@ -53,6 +53,7 @@ import java.awt.Window;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import java.awt.Color;
+import javax.swing.JTextArea;
 
 public class VentInvIngresarVarianza extends JDialog {
 
@@ -70,6 +71,7 @@ public class VentInvIngresarVarianza extends JDialog {
 	private int cantidadItems = 100;
 	private int cantAvance = 0 ;
 	String varianzaAyuda = "S";
+	JTextArea textAreaObser;
 	/**
 	 * Launch the application.
 	 */
@@ -108,10 +110,10 @@ public class VentInvIngresarVarianza extends JDialog {
 		setTitle("INGRESAR VARIANZA");
 		//setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setDefaultCloseOperation(0);
-		setBounds(0,0, 984, 470);
+		setBounds(0,0, 984, 600);
 		int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 984, 470);
+		setBounds((ancho / 2) - (this.getWidth() / 2), (alto / 2) - (this.getHeight() / 2), 984, 600);
 		contentPanePrincipal = new JPanel();
 		contentPanePrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPanePrincipal);
@@ -200,7 +202,7 @@ public class VentInvIngresarVarianza extends JDialog {
 				}
 			}
 		};
-		progressBar.setBounds(124, 390, 292, 31);
+		progressBar.setBounds(125, 508, 292, 31);
 		contentPanePrincipal.add(progressBar);
 		btnConfirmarIngreso.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -261,7 +263,8 @@ public class VentInvIngresarVarianza extends JDialog {
 				
 				cantAvance = 50;
 					//Realizamos la invocación para la inclusión de la información de inventarios
-					int idInvVarianza = invCtrl.insertarVarianzaInventarios(inventarioIngresar, fechaSis);
+					String observacion = textAreaObser.getText();
+					int idInvVarianza = invCtrl.insertarVarianzaInventarios(inventarioIngresar, fechaSis, observacion);
 					cantAvance = 90;
 					if(idInvVarianza > 0)
 					{
@@ -281,7 +284,7 @@ public class VentInvIngresarVarianza extends JDialog {
 				
 			}
 		});
-		btnConfirmarIngreso.setBounds(20, 319, 152, 37);
+		btnConfirmarIngreso.setBounds(21, 437, 152, 37);
 		contentPanePrincipal.add(btnConfirmarIngreso);
 		
 		JButton btnCancelar = new JButton("Cancelar");
@@ -297,19 +300,19 @@ public class VentInvIngresarVarianza extends JDialog {
 				}
 			}
 		});
-		btnCancelar.setBounds(207, 319, 146, 37);
+		btnCancelar.setBounds(208, 437, 146, 37);
 		contentPanePrincipal.add(btnCancelar);
 		
 		JLabel lblFechaIngresoVarianza = new JLabel("FECHA INGRESO VARIANZA");
 		lblFechaIngresoVarianza.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblFechaIngresoVarianza.setBounds(64, 373, 240, 14);
+		lblFechaIngresoVarianza.setBounds(114, 488, 240, 14);
 		contentPanePrincipal.add(lblFechaIngresoVarianza);
 		
 		txtFechaInventario = new JTextField();
 		txtFechaInventario.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtFechaInventario.setEnabled(false);
 		txtFechaInventario.setEditable(false);
-		txtFechaInventario.setBounds(352, 367, 135, 20);
+		txtFechaInventario.setBounds(353, 485, 135, 20);
 		contentPanePrincipal.add(txtFechaInventario);
 		txtFechaInventario.setColumns(10);
 		
@@ -318,7 +321,7 @@ public class VentInvIngresarVarianza extends JDialog {
 		txtFechaInventario.setText(fechaSis);
 		
 		JLabel lblImagen = new JLabel("");
-		lblImagen.setBounds(576, 306, 198, 126);
+		lblImagen.setBounds(577, 424, 198, 126);
 		ImageIcon icon = new ImageIcon(getClass().getResource("/imagenes/LogoPizzaAmericana.png"));
 		Image imagen = icon.getImage();
 		ImageIcon iconoEscalado = new ImageIcon (imagen.getScaledInstance(198,126,Image.SCALE_SMOOTH));
@@ -404,8 +407,22 @@ public class VentInvIngresarVarianza extends JDialog {
 			}
 		});
 		btnGuardarSinConfirmar.setBackground(Color.ORANGE);
-		btnGuardarSinConfirmar.setBounds(385, 319, 181, 37);
+		btnGuardarSinConfirmar.setBounds(386, 437, 181, 37);
 		contentPanePrincipal.add(btnGuardarSinConfirmar);
+		
+		JScrollPane scrollPaneObser = new JScrollPane();
+		scrollPaneObser.setBounds(33, 344, 883, 69);
+		contentPanePrincipal.add(scrollPaneObser);
+		
+		textAreaObser = new JTextArea();
+		textAreaObser.setColumns(3);
+		textAreaObser.setText("");
+		scrollPaneObser.setViewportView(textAreaObser);
+		
+		JLabel lblObservacion = new JLabel("OBSERVACION");
+		lblObservacion.setFont(new Font("Tahoma", Font.BOLD, 17));
+		lblObservacion.setBounds(33, 319, 181, 14);
+		contentPanePrincipal.add(lblObservacion);
 		if(varianzaAyuda.equals(new String("S")))
 		{
 			pintarResumenVarianza(fechaSis);

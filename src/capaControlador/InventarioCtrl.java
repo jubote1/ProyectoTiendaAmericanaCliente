@@ -158,9 +158,9 @@ public class InventarioCtrl {
 		ArrayList itemInventarioVarianza = ItemInventarioDAO.obtenerItemInventarioVarianzaTemp(fecha, auditoria);
 		return(itemInventarioVarianza);
 	}
-	public int insertarVarianzaInventarios(ArrayList <ModificadorInventario> varianzas, String fecha )
+	public int insertarVarianzaInventarios(ArrayList <ModificadorInventario> varianzas, String fecha, String observacion )
 	{
-		int idInvVarianza = ModificadorInventarioDAO.insertarVarianzaInventarios(varianzas, fecha, auditoria);
+		int idInvVarianza = ModificadorInventarioDAO.insertarVarianzaInventarios(varianzas, fecha, observacion,  auditoria);
 		return(idInvVarianza);
 	}
 	
@@ -353,7 +353,9 @@ public class InventarioCtrl {
 			{
 				varianza =  obtenerInventarioVarianza(fechaAnterior);
 			}
-			respuesta = respuesta + resumenVarianzaDiaria(varianza, fechaAnterior);
+			String observacion = ModificadorInventarioDAO.obtenerObservacionVarianza(fechaAnterior, auditoria);
+			respuesta = respuesta + resumenVarianzaDiaria(varianza, fechaAnterior, observacion);
+			
 			for(int i = 1; i <= 6; i++)
 			{
 				calendarioActual.add(Calendar.DAY_OF_YEAR, -1);
@@ -366,7 +368,8 @@ public class InventarioCtrl {
 				{
 					varianza =  obtenerInventarioVarianza(fechaAnterior);
 				}
-				respuesta = respuesta + resumenVarianzaDiaria(varianza, fechaAnterior);
+				observacion = ModificadorInventarioDAO.obtenerObservacionVarianza(fechaAnterior, auditoria);
+				respuesta = respuesta + resumenVarianzaDiaria(varianza, fechaAnterior, observacion);
 			}
 			
 		}
@@ -418,7 +421,8 @@ public class InventarioCtrl {
 			{
 				varianza =  obtenerInventarioVarianza(fecha);
 			}
-			respuesta = respuesta + resumenVarianzaDiaria(varianza, fecha);
+			String observacion = ModificadorInventarioDAO.obtenerObservacionVarianza(fecha, auditoria);
+			respuesta = respuesta + resumenVarianzaDiaria(varianza, fecha, observacion);
 			//Incluimos la información de ingresos y retiros de inventario
 			respuesta = respuesta + resumenEncabezadoIngresos(fecha, fecha);
 			respuesta = respuesta + resumenEncabezadoRetiros(fecha, fecha);
@@ -427,7 +431,7 @@ public class InventarioCtrl {
 	
 	//GENERAR STRING DE CORREO ELECTRÓNICO
 	
-	public String resumenVarianzaDiaria(ArrayList varianza, String fecha)
+	public String resumenVarianzaDiaria(ArrayList varianza, String fecha, String observacion)
 	{
 		String respuesta  = "";
 		DecimalFormat formatea = new DecimalFormat("###,###");
@@ -451,6 +455,7 @@ public class InventarioCtrl {
 			respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td>" + formatea.format(Double.parseDouble(fila[2])) + "</td><td>" + formatea.format(Double.parseDouble(fila[3])) + "</td><td>" + formatea.format(Double.parseDouble(fila[4])) + "</td><td> " + formatea.format(Double.parseDouble(fila[5])) + "</td><td> " + formatea.format(teoricoReal) + "</td><td>" + formatea.format(Double.parseDouble(fila[6])) + "</td><td>" + formatea.format(varCalculada) +"</td></tr>";
 		}
 		respuesta = respuesta + "</table> <br/>";
+		respuesta = respuesta + "<p>OBSERVACION VARIANZA " + fecha + " : " + observacion + "</p>";
 		return(respuesta);
 	}
 	

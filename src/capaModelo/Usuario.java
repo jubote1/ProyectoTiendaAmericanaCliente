@@ -122,6 +122,9 @@ public class Usuario {
 		this.nombreUsuario = nombreUsuario;
 	}
 	
+	public String toString() {
+	    return nombreLargo;
+	}
 	
 	
 	

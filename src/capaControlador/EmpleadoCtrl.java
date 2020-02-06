@@ -2,8 +2,10 @@ package capaControlador;
 
 import java.util.ArrayList;
 
+import capaDAO.EmpleadoTemporalDiaDAO;
 import capaDAO.TipoEmpleadoDAO;
 import capaDAO.UsuarioDAO;
+import capaModelo.EmpleadoTemporalDia;
 import capaModelo.Parametro;
 import capaModelo.TipoEmpleado;
 import capaModelo.Usuario;
@@ -24,6 +26,14 @@ public class EmpleadoCtrl {
 	public ArrayList<TipoEmpleado> obtenerTipoEmpleadoObj()
 	{
 		ArrayList<TipoEmpleado> tiposEmpleado = TipoEmpleadoDAO.obtenerTipoEmpleadoObj( auditoria);
+		return(tiposEmpleado);
+	}
+	
+	public ArrayList<TipoEmpleado> obtenerTipoEmpleadoGeneralObj()
+	{
+		ParametrosCtrl parCtrl = new ParametrosCtrl(auditoria);
+		Parametro parBase = parCtrl.obtenerParametro("BDGENERAL");
+		ArrayList<TipoEmpleado> tiposEmpleado = TipoEmpleadoDAO.obtenerTipoEmpleadoGeneralObj(parBase.getValorTexto(), auditoria);
 		return(tiposEmpleado);
 	}
 	
@@ -147,4 +157,54 @@ public class EmpleadoCtrl {
 	{
 		UsuarioDAO.salidaDomiciliario(idEmpleado, auditoria);
 	}
+	
+	public EmpleadoTemporalDia consultarEmpleadoTemporal(String identificacion )
+	{
+		EmpleadoTemporalDia empRespuesta =  EmpleadoTemporalDiaDAO.consultarEmpleadoTemporal(identificacion, auditoria );
+		return(empRespuesta);
+	}
+	
+	public EmpleadoTemporalDia consultarEmpleadoTemporalFecha(int id, String fechaSistema)
+	{
+		EmpleadoTemporalDia empRespuesta = EmpleadoTemporalDiaDAO.consultarEmpleadoTemporalFecha(id, fechaSistema, auditoria );
+		return(empRespuesta);
+	}
+	
+	public ArrayList<Usuario> obtenerUsuariosTemporalesDisponibles(String fechaSistema)
+	{
+		ArrayList<Usuario> usuariosTemporales =  UsuarioDAO.obtenerUsuariosTemporalesDisponibles(fechaSistema, auditoria);
+		return(usuariosTemporales);
+		
+	}
+	
+	public boolean InsertarEmpleadoTemporalDia(EmpleadoTemporalDia empTemporal)
+	{
+		boolean respuesta =  EmpleadoTemporalDiaDAO.InsertarEmpleadoTemporalDia(empTemporal,auditoria);
+		return(respuesta);
+	}
+	
+	public boolean editarEmpleadoTemporalDia(EmpleadoTemporalDia empTemporal)
+	{
+		boolean respuesta =  EmpleadoTemporalDiaDAO.editarEmpleadoTemporalDia(empTemporal, auditoria );
+		return(respuesta);
+	}
+	
+	public ArrayList<EmpleadoTemporalDia> obtenerEmpleadoTemporalFecha(String fecha)
+	{
+		ArrayList<EmpleadoTemporalDia> empleadosTemp =  EmpleadoTemporalDiaDAO.obtenerEmpleadoTemporalFecha(fecha, auditoria );
+		return(empleadosTemp);
+	}
+	
+	public boolean eliminarEmpleadoTemporalFecha(int id, String fechaSistema)
+	{
+		boolean respuesta = EmpleadoTemporalDiaDAO.eliminarEmpleadoTemporalFecha(id, fechaSistema, auditoria );
+		return(respuesta);
+	}
+	
+	public boolean validarHoraSalidaEmpTemporal(String fechaSistema)
+	{
+		boolean respuesta = EmpleadoTemporalDiaDAO.validarHoraSalidaEmpTemporal(fechaSistema, auditoria );
+		return(respuesta);
+	}
+	
 }

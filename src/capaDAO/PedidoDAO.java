@@ -728,6 +728,56 @@ public class PedidoDAO {
 		
 	}
 	
+	
+	/** 
+	 * Método que se encargará de entregar un resumen en un arrayList de los pedidos tomados para la fecha, por hora y por tipo de pedido 
+	 * @param fechaPedido fecha de los pedidos base para extraer la información de pedidos por fecha, hora y tipo de pedido.
+	 * @return un ArrayList con los horas y cantidad de pedidos para la fecha recibida como parámetro
+	 */
+	public static ArrayList obtenerPedidosPorHorasTipo(String fechaPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			String consulta = "select substr(a.fechainsercion,12,2), b.descripcion, count(*)  from pedido a, tipo_pedido b where a.idtipopedido = b.idtipopedido and a.fechapedido = '" + fechaPedido +"' group by substr(a.fechainsercion,12,2), b.descripcion";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+				
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
 	/** 
 	 * Método que se encargará de retornar las porciones vendidas en el día por hora.
 	 * @param fechaPedido fecha de los pedidos base para extraer la información de pedidos por fecha.
@@ -1161,7 +1211,7 @@ public class PedidoDAO {
 		try
 		{
 			Statement stm = con1.createStatement();
-			String consulta = "select sum(total_neto), d.nombre_largo, count(*) from pedido a , tipo_pedido b, estado c, usuario d where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and  b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = '" +  fechaPedido + "' group by d.nombre_largo";
+			String consulta = "select sum(total_neto), CONCAT(d.nombre_largo, '-',IFNULL(e.nombre, ''), '-', IFNULL(e.empresa,'')), count(*) from pedido a , tipo_pedido b, estado c, usuario d left outer join empleado_temporal_dia e on d.id = e.id and e.fecha_sistema = '" + fechaPedido +  "' where a.idtipopedido = b.idtipopedido and a.idestado = c.idestado and c.estado_final = 1 and  b.esdomicilio = 1 and a.idmotivoanulacion IS NULL and a.iddomiciliario = d.id and  a.fechapedido = '" +  fechaPedido + "' group by d.nombre_largo";
 			if(auditoria)
 			{
 				logger.info(consulta);
@@ -2311,6 +2361,55 @@ public class PedidoDAO {
 			Statement stm = con1.createStatement();
 			//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
 			String consulta = "SELECT c.tamano, COUNT(*) FROM pedido a, detalle_pedido b , producto c WHERE a.idpedidotienda = b.idpedidotienda AND b.idproducto = c.idproducto AND c.tamano IN ('MD', 'GD', 'XL', 'PZ', 'DEDITOS') AND a.fechapedido = '" + fechaPedido + "' GROUP BY tamano";
+			if(auditoria)
+			{
+				logger.info(consulta);
+			}
+			ResultSet rs = stm.executeQuery(consulta);
+			ResultSetMetaData rsMd = (ResultSetMetaData) rs.getMetaData();
+			int numeroColumnas = rsMd.getColumnCount();
+			while(rs.next()){
+				String [] fila = new String[numeroColumnas];
+				for(int y = 0; y < numeroColumnas; y++)
+				{
+					fila[y] = rs.getString(y+1);
+				}
+				pedidos.add(fila);
+			}
+			rs.close();
+			stm.close();
+			con1.close();
+		}catch (Exception e){
+			logger.info(e.toString());
+			try
+			{
+				con1.close();
+			}catch(Exception e1)
+			{
+			}
+		}
+		return(pedidos);
+		
+	}
+	
+	/**
+	 * //Método que retona totales por tamaño de pizzas en un día determinado por hora.
+	 * @param fechaPedido
+	 * @param auditoria
+	 * @return
+	 */
+	public static ArrayList obtenerTotalPizzasDiarioHora(String fechaPedido, boolean auditoria)
+	{
+		Logger logger = Logger.getLogger("log_file");
+		ConexionBaseDatos con = new ConexionBaseDatos();
+		Connection con1 = con.obtenerConexionBDLocal();
+		ArrayList pedidos = new ArrayList();
+		
+		try
+		{
+			Statement stm = con1.createStatement();
+			//En esta consulta incluimos los pedidos anulados como se puede ver no tiene la condición idmotivoanulacion IS NULL
+			String consulta = "SELECT substr(a.fechainsercion,12,2), c.tamano, COUNT(*) FROM pedido a, detalle_pedido b , producto c WHERE a.idpedidotienda = b.idpedidotienda AND b.idproducto = c.idproducto AND c.tamano IN ('MD', 'GD', 'XL', 'PZ', 'DEDITOS') AND a.fechapedido = '" + fechaPedido + "' GROUP BY substr(a.fechainsercion,12,2), c.tamano";
 			if(auditoria)
 			{
 				logger.info(consulta);

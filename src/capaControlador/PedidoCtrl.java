@@ -662,6 +662,12 @@ public class PedidoCtrl implements Runnable {
 			return(pedidos);
 		}
 		
+		public ArrayList obtenerPedidosPorHorasTipo(String fechaPedido)
+		{
+			ArrayList pedidos = PedidoDAO.obtenerPedidosPorHorasTipo(fechaPedido,auditoria);
+			return(pedidos);
+		}
+		
 		public ArrayList obtenerPedidosPorTipo(int idTipoPedido)
 		{
 			FechaSistema fechaSistema = TiendaDAO.obtenerFechasSistema(auditoria);
@@ -980,6 +986,12 @@ public class PedidoCtrl implements Runnable {
 		public ArrayList obtenerTotalPizzasDiario(String fecha)
 		{
 			ArrayList totalPizzas =  PedidoDAO.obtenerTotalPizzasDiario(fecha, auditoria);
+			return(totalPizzas);
+		}
+				
+		public ArrayList obtenerTotalPizzasDiarioHora(String fecha)
+		{
+			ArrayList totalPizzas =  PedidoDAO.obtenerTotalPizzasDiarioHora(fecha, auditoria);
 			return(totalPizzas);
 		}
 		
@@ -3097,6 +3109,7 @@ public class PedidoCtrl implements Runnable {
 			
 			//Final de inclusión pedidos por hora
 			
+			
 			//Adicionamos los ingresos y egresos
 			//INGRESOS
 			ArrayList<Ingreso> ingresosDia = operTiendaCtrl.obtenerIngresosObj(fechaSis);
@@ -3246,7 +3259,7 @@ public class PedidoCtrl implements Runnable {
 			for(int y = 0; y < totDomiciliario.size();y++)
 			{
 				String[] fila =(String[]) totDomiciliario.get(y);
-				respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td> " + formatea.format(Double.parseDouble(fila[0])) + "</td><td> " + fila[2] +"</td></tr>";
+				respuesta = respuesta + "<tr><td>" + fila[1] + "</td><td> " + formatea.format(0) + "</td><td> " + fila[2] +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
 			
@@ -3264,6 +3277,53 @@ public class PedidoCtrl implements Runnable {
 				respuesta = respuesta + "<tr><td>" + fila[0] + "</td><td> " + fila[1] +"</td></tr>";
 			}
 			respuesta = respuesta + "</table> <br/>";
+			
+			//Inclusión de pedidos por hora y por tipo
+			respuesta = respuesta +  "<table border='2'> <tr> RESUMEN POR HORA Y TIPO DE PEDIDO </tr>";
+			respuesta = respuesta + "<tr>"
+			+  "<td><strong>Hora Pedido</strong></td>"
+			+  "<td><strong>Tipo Pedido</strong></td>"
+			+  "<td><strong>Cantidad Pedidos</strong></td>"
+			+  "</tr>";
+			ArrayList totPedidoHoratipo = new ArrayList();
+			totPedidoHoratipo = obtenerPedidosPorHorasTipo(fechaSis);
+	        for(int y = 0; y < totPedidoHoratipo.size();y++)
+			{
+				String[] fila =(String[]) totPedidoHoratipo.get(y);
+				respuesta = respuesta + "<tr><td>" + fila[0] + "</td><td> " + fila[1] + "</td><td> " + fila[2] +"</td></tr>";
+			}
+			respuesta = respuesta + "</table> <br/>";
+			
+			//Final Inclusión de pedidos por hora y por tipo
+			
+			
+			//Inclusión de Pizzas por Hora
+			//Adicionaremos a la respuesta y al informe diario unas estádisticas de total de pizzas vendidas y total especialidades
+			ArrayList resumenPizzasTamano = obtenerTotalPizzasDiarioHora(fechaSis);
+			respuesta = respuesta + "<table border='2'> <tr> RESUMEN POR TAMAÑOS DE PIZZA Y HORA </tr>";
+			respuesta = respuesta + "<tr>"
+					+  "<td><strong>HORA</strong></td>"
+					+  "<td><strong>TAMAÑO</strong></td>"
+					+  "<td><strong>CANTIDAD</strong></td>"
+					+  "</tr>";
+			String[] fila;
+			int cantTotalPizzas = 0;
+			for(int y = 0; y < resumenPizzasTamano.size();y++)
+			{
+				fila = (String[]) resumenPizzasTamano.get(y);
+				respuesta = respuesta + "<tr><td>" + fila[0] + "</td><td> " + fila[1] + "</td><td> " + fila[2] +"</td></tr>";
+				try
+				{
+					cantTotalPizzas = cantTotalPizzas + Integer.parseInt(fila[2]);
+				}catch(Exception e)
+				{
+					
+				}
+				
+			}
+			respuesta = respuesta + "<tr><td>" + "TOTAL" + "</td><td> " + Integer.toString(cantTotalPizzas)  +"</td></tr>";
+			respuesta = respuesta + "</table> <br/>";
+			//Final Inclusión de Pizzas por Hora
 			
 			//Final de inclusión pedidos por hora
 			return(respuesta);

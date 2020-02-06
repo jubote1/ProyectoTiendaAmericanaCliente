@@ -10,6 +10,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
@@ -24,6 +25,8 @@ import capaModelo.Usuario;
 
 import javax.swing.JScrollPane;
 import java.awt.Color;
+import java.awt.Component;
+
 import javax.swing.border.LineBorder;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -64,7 +67,9 @@ public class VentSegCrearEmpleado extends JDialog {
 	JButton btnAsignarPassword;
 	JButton btnIdentificarEmpleado;
 	JButton btnEnrolarBiometria;
+	JButton btnAsignarClaveRapida;
 	BiometriaCtrl bioCtrl = new BiometriaCtrl(PrincipalLogueo.habilitaAuditoria);
+	VentSegCrearEmpleado framePrincipal;
 	/**
 	 * Launch the application.
 	 */
@@ -109,7 +114,6 @@ public class VentSegCrearEmpleado extends JDialog {
 		for(int y = 0; y < empleados.size();y++)
 		{
 			String[] fila =(String[]) empleados.get(y);
-			System.out.println(fila);
 			modelo.addRow(fila);
 		}
 		
@@ -141,6 +145,7 @@ public class VentSegCrearEmpleado extends JDialog {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		framePrincipal = this;
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
 		JPanel panelDatos = new JPanel();
@@ -220,9 +225,9 @@ public class VentSegCrearEmpleado extends JDialog {
 		panelDatos.add(txtNombreLargo);
 		txtNombreLargo.setColumns(10);
 		
-		JCheckBox ckbxEsAdm = new JCheckBox("Es Administrador");
+		JCheckBox ckbxEsAdm = new JCheckBox("Es Administrador o Auxiliar Adm");
 		ckbxEsAdm.setToolTipText("Es administrador?");
-		ckbxEsAdm.setBounds(511, 46, 119, 23);
+		ckbxEsAdm.setBounds(429, 35, 248, 23);
 		panelDatos.add(ckbxEsAdm);
 		
 		comboBoxTipoInicio = new JComboBox();
@@ -244,11 +249,11 @@ public class VentSegCrearEmpleado extends JDialog {
 		
 		//Adicionamos los botones para las acciones del GRID
 		JButton btnInsertar = new JButton("Insertar");
-		btnInsertar.setBounds(105, 190, 146, 23);
+		btnInsertar.setBounds(90, 173, 146, 40);
 		panelDatos.add(btnInsertar);
 		
 		JButton btnSalir = new JButton("SALIR");
-		btnSalir.setBounds(314, 190, 146, 23);
+		btnSalir.setBounds(307, 173, 146, 40);
 		panelDatos.add(btnSalir);
 		btnSalir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -258,7 +263,7 @@ public class VentSegCrearEmpleado extends JDialog {
 		btnSalir.setFont(new Font("Tahoma", Font.BOLD, 11));
 		
 		btnIdentificarEmpleado = new JButton("Identificar Empleado");
-		btnIdentificarEmpleado.setBounds(521, 177, 187, 36);
+		btnIdentificarEmpleado.setBounds(519, 175, 187, 36);
 		panelDatos.add(btnIdentificarEmpleado);
 		btnIdentificarEmpleado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -268,25 +273,43 @@ public class VentSegCrearEmpleado extends JDialog {
 		});
 		btnIdentificarEmpleado.setFont(new Font("Tahoma", Font.BOLD, 11));
 		btnIdentificarEmpleado.setEnabled(true);
+		
+		JCheckBox ckbxEsEmpleado = new JCheckBox("Es Empleado");
+		ckbxEsEmpleado.setSelected(true);
+		ckbxEsEmpleado.setToolTipText("Es administrador?");
+		ckbxEsEmpleado.setBounds(429, 7, 248, 23);
+		panelDatos.add(ckbxEsEmpleado);
 		btnInsertar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
 				boolean validar = validarDatos();
 				if (validar)
 				{
 					String usuario = jTextUsuario.getText();
 					String nombreLargo = txtNombreLargo.getText();
 					boolean administrador = ckbxEsAdm.isSelected();
+					int esEmpleado = 0;
+					if(ckbxEsEmpleado.isSelected())
+					{
+						esEmpleado = 1;
+					}
 					String tipoInicio = (String) comboBoxTipoInicio.getSelectedItem();
 					TipoEmpleado tipEmp = (TipoEmpleado) comboBoxTipoUsuario.getSelectedItem();
-					Usuario empleado = new Usuario(0, usuario, "", nombreLargo, tipEmp.getIdTipoEmpleado(),
+					Usuario empleado = new Usuario(0, usuario, usuario, nombreLargo, tipEmp.getIdTipoEmpleado(),
 							tipoInicio, administrador);
+					empleado.setEsEmpleado(esEmpleado);
 					int idTipoEmp = empCtrl.insertarEmpleadoGeneral(empleado);
+					if(idTipoEmp > 0 )
+					{
+						JOptionPane.showMessageDialog(ventanaPadre, "Se ha creado correctamente el usuario, recuerde que si es Domiciliario, administrador o auxiliar debe asignarle clave rápida." , "Confirmación Creación", JOptionPane.OK_OPTION);
+					}
 					pintarEmpleados();
 					jTextIdUsuario.setText("");
 					jTextUsuario.setText("");
 					txtNombreLargo.setText("");
 					ckbxEsAdm.setSelected(false);
+					ckbxEsEmpleado.setSelected(true);
 					comboBoxTipoInicio.setSelectedIndex(0);
 					comboBoxTipoUsuario.setSelectedIndex(0);
 					
@@ -307,6 +330,12 @@ public class VentSegCrearEmpleado extends JDialog {
 		panelJtable.add(btnFiltrarEmpleado);
 		
 		txtFiltroNomEmpleado = new JTextField();
+		txtFiltroNomEmpleado.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				pintarEmpleados();
+				
+			}
+		});
 		txtFiltroNomEmpleado.setBounds(344, 12, 107, 20);
 		panelJtable.add(txtFiltroNomEmpleado);
 		txtFiltroNomEmpleado.setColumns(10);
@@ -318,7 +347,7 @@ public class VentSegCrearEmpleado extends JDialog {
 		btnAsignarPassword.setEnabled(false);
 		
 		btnEnrolarBiometria = new JButton("ENROLAR BIOMETRIA");
-		btnEnrolarBiometria.setBounds(517, 211, 187, 36);
+		btnEnrolarBiometria.setBounds(315, 211, 187, 36);
 		panelJtable.add(btnEnrolarBiometria);
 		btnEnrolarBiometria.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -346,6 +375,43 @@ public class VentSegCrearEmpleado extends JDialog {
 		});
 		btnEnrolarBiometria.setFont(new Font("Tahoma", Font.BOLD, 11));
 		btnEnrolarBiometria.setEnabled(false);
+		
+		btnAsignarClaveRapida = new JButton("Asignar Clave R\u00E1pida");
+		btnAsignarClaveRapida.setBounds(527, 211, 187, 36);
+		panelJtable.add(btnAsignarClaveRapida);
+		btnAsignarClaveRapida.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Window ventanaPadre = SwingUtilities.getWindowAncestor(
+                        (Component) arg0.getSource());
+				JOptionPane opt = new JOptionPane("Recuerde que la clave rápida solo es generada para Administradores, auxiliares y Domiciliarios.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+			     final JDialog dlg = opt.createDialog("CAMBIO DE CLAVE RÁPIDA");
+			     new Thread(new Runnable()
+			           {
+			             public void run()
+			             {
+			               try
+			               {
+			                 Thread.sleep(2500);
+			                 dlg.dispose();
+
+			               }
+			               catch ( Throwable th )
+			               {
+			                 
+			               }
+			             }
+			           }).start();
+			     dlg.setVisible(true);
+				//Tomamos el idUsuario al cual le vamos a asignar la clave rápida
+				int idUsuario = Integer.parseInt(jTextIdUsuario.getText());
+				Usuario usuarioIdentificado = empCtrl.obtenerEmpleado(idUsuario);
+				//En este punto llamaremos la nueva pantalla para el ingreso de la clave
+		    	VentSegAsignacionClaveRapida ventCambioClave = new VentSegAsignacionClaveRapida(null, usuarioIdentificado ,true);
+		    	ventCambioClave.setVisible(true);
+			}
+		});
+		btnAsignarClaveRapida.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnAsignarClaveRapida.setEnabled(false);
 		
 		btnEditar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -381,6 +447,7 @@ public class VentSegCrearEmpleado extends JDialog {
 				btnGrabarEdicion.setEnabled(true);
 				btnAsignarPassword.setEnabled(true);
 				btnEnrolarBiometria.setEnabled(true);
+				btnAsignarClaveRapida.setEnabled(true);
 				lblModo.setText("MODO: EDICIÓN");
 			}
 		});
@@ -414,6 +481,7 @@ public class VentSegCrearEmpleado extends JDialog {
 						btnGrabarEdicion.setEnabled(false);
 						btnAsignarPassword.setEnabled(false);
 						btnEnrolarBiometria.setEnabled(false);
+						btnAsignarClaveRapida.setEnabled(false);
 						lblModo.setText("MODO: INSERCIÓN");
 					}
 				}
@@ -428,7 +496,6 @@ public class VentSegCrearEmpleado extends JDialog {
 public boolean validarDatos()
 {
 	String usuario = jTextUsuario.getText().trim();
-	System.out.println("USUARIO" + usuario);
 	if(usuario.equals(new String("")))
 	{
 		JOptionPane.showMessageDialog(null, "Valor del campo usuario de Empleado es necesario", "Falta Información", JOptionPane.ERROR_MESSAGE);
@@ -465,7 +532,7 @@ public void llenarComboTipoInicio()
 
 public void initComboBoxTipoUsuario()
 {
-	ArrayList<TipoEmpleado> tiposEmpleado = empCtrl.obtenerTipoEmpleadoObj();
+	ArrayList<TipoEmpleado> tiposEmpleado = empCtrl.obtenerTipoEmpleadoGeneralObj();
 	for(int i = 0; i<tiposEmpleado.size();i++)
 	{
 		TipoEmpleado fila = (TipoEmpleado)  tiposEmpleado.get(i);

@@ -22,6 +22,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
@@ -40,6 +41,7 @@ public class VentPrincipalModificada extends JFrame {
 	PedidoCtrl pedCtrl = new PedidoCtrl(PrincipalLogueo.habilitaAuditoria);
 	JFrame ventPrincipal;
 	JLabel lblInformacionUsuario;
+	VentPrincipalModificada framePrincipal;
 	/**
 	 * Launch the application.
 	 */
@@ -69,6 +71,7 @@ public class VentPrincipalModificada extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		framePrincipal = this;
 		ImageIcon img = new ImageIcon("iconos\\LogoPequePizzaAmericana.jpg");
 		setIconImage(img.getImage());
 		JTabbedPane tabbedPaneModulos = new JTabbedPane(JTabbedPane.TOP);
@@ -381,14 +384,90 @@ public class VentPrincipalModificada extends JFrame {
 		horarios.add(btnSalir4);
 		
 		JButton btnEventoJornada = new JButton("Registrar Entrada/Salida Jornada");
+		btnEventoJornada.setFont(new Font("Tahoma", Font.BOLD, 15));
+		btnEventoJornada.setIcon(new ImageIcon(VentPrincipalModificada.class.getResource("/icons/capturaHuellaminiOK.jpg")));
 		btnEventoJornada.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				VentSegRegEventoEmpleado ventRegEmpleado = new VentSegRegEventoEmpleado(null, true);
 				ventRegEmpleado.setVisible(true);
 			}
 		});
-		btnEventoJornada.setBounds(278, 47, 254, 66);
+		btnEventoJornada.setBounds(278, 47, 344, 78);
 		horarios.add(btnEventoJornada);
+		
+		JButton btnCambiarClaveRapida = new JButton("Cambiar Clave R\u00E1pida");
+		btnCambiarClaveRapida.setFont(new Font("Tahoma", Font.BOLD, 16));
+		btnCambiarClaveRapida.setIcon(new ImageIcon(VentPrincipalModificada.class.getResource("/icons/cambioClave.jpg")));
+		btnCambiarClaveRapida.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JOptionPane opt = new JOptionPane("Para el cambio de clave se requiere primero el ingreso de la actual clave rápida.", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+			     final JDialog dlg = opt.createDialog("CAMBIO DE CLAVE RÁPIDA");
+			     new Thread(new Runnable()
+			           {
+			             public void run()
+			             {
+			               try
+			               {
+			                 Thread.sleep(2500);
+			                 dlg.dispose();
+
+			               }
+			               catch ( Throwable th )
+			               {
+			                 
+			               }
+			             }
+			           }).start();
+			     dlg.setVisible(true);
+			     VentSegAutenticacionLogueoRapido  ventAut = new VentSegAutenticacionLogueoRapido(framePrincipal , true);
+			     ventAut.setVisible(true);
+			     //Validamos el resultado del ingreso de la clave corta
+			     if(VentSegAutenticacionLogueoRapido.usuarioAutorizado.getIdUsuario()>0)
+			     {
+			    	 //En este punto llamaremos la nueva pantalla para el ingreso de la clave
+			    	 VentSegAsignacionClaveRapida ventCambioClave = new VentSegAsignacionClaveRapida(framePrincipal, VentSegAutenticacionLogueoRapido.usuarioAutorizado,true);
+			    	 ventCambioClave.setVisible(true);
+			     }
+			     else // Es porque el logueo no fue correcto
+			     {
+			    	 JOptionPane optNoAutorizado = new JOptionPane("La clave anterior es incorrecta", JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); // no buttons
+				     final JDialog dlgNoAutorizado = optNoAutorizado.createDialog("CLAVE ACTUAL NO CORRECTA");
+				     new Thread(new Runnable()
+				           {
+				             public void run()
+				             {
+				               try
+				               {
+				                 Thread.sleep(2500);
+				                 dlgNoAutorizado.dispose();
+
+				               }
+				               catch ( Throwable th )
+				               {
+				                 
+				               }
+				             }
+				           }).start();
+				     dlgNoAutorizado.setVisible(true);
+				     return;
+			     }
+			}
+		});
+		btnCambiarClaveRapida.setBounds(278, 294, 344, 91);
+		horarios.add(btnCambiarClaveRapida);
+		
+		JButton btnRegistrarEntradaTemporal = new JButton("Registrar Entrada Emp Temporal");
+		btnRegistrarEntradaTemporal.setFont(new Font("Tahoma", Font.BOLD, 16));
+		btnRegistrarEntradaTemporal.setIcon(new ImageIcon(VentPrincipalModificada.class.getResource("/icons/registrarTemporal.jpg")));
+		btnRegistrarEntradaTemporal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				VentPedEmpleadoTemporal ventEmpTemporal = new VentPedEmpleadoTemporal(ventPrincipal, true);
+				ventEmpTemporal.setVisible(true);
+			}
+		});
+		btnRegistrarEntradaTemporal.setBounds(28, 160, 416, 99);
+		horarios.add(btnRegistrarEntradaTemporal);
 		
 		JPanel administracion = new JPanel();
 		tabbedPaneModulos.addTab("Administrador", null, administracion, null);

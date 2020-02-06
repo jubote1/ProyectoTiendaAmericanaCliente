@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import capaDAO.EmpresaTemporalDAO;
 import capaDAO.FormaPagoDAO;
 import capaDAO.GeneralDAO;
 import capaDAO.ParametrosDAO;
@@ -12,6 +13,7 @@ import capaDAO.PedidoDAO;
 import capaDAO.TiempoPedidoDAO;
 import capaDAO.TiendaDAO;
 import capaModelo.Correo;
+import capaModelo.EmpresaTemporal;
 import capaModelo.FormaPago;
 import capaModelo.Parametro;
 import capaModelo.Tienda;
@@ -150,5 +152,11 @@ public class ParametrosCtrl {
 		{
 			Tienda tienda = TiendaDAO.obtenerTienda( auditoria);
 			return(tienda);
+		}
+		
+		public ArrayList<EmpresaTemporal> retornarEmpresasTemporales(String bdGeneral)
+		{
+			ArrayList<EmpresaTemporal> empTemporales = EmpresaTemporalDAO.retornarEmpresasTemporales(bdGeneral, auditoria);
+			return(empTemporales);
 		}
 }

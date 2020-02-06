@@ -46,14 +46,92 @@ public class AutenticacionCtrl {
 	}
 	
 	/**
+	 * Método que se encarga de realizar la validación de la clave si cumple o no con los requisitos, retornando un entero que tendrá el valor de 1 sino cumple
+	 * con los requisitos mínimos, 2 si es una clave ya utilizada o 0 si la clave si pasa las validaciones
+	 * @param idUsuario
+	 * @param clave
+	 * @return
+	 */
+	public String validarParametroClave(int idUsuario, String clave)
+	{
+		ParametrosCtrl parCtrl = new ParametrosCtrl(auditoria);
+		Parametro parBase;
+		String strConexion = "";
+		parBase = parCtrl.obtenerParametro("BDGENERAL");
+		strConexion = parBase.getValorTexto();
+		//tenemos 4 roles en el sistema, temporal, domiciliario, administrador, caja
+		boolean esTemporal = false;
+		boolean esDomiciliario = false;
+		boolean esAdministrador = false;
+		boolean esCaja = false;
+		//Si es de empleado temporal no deja cambiar la clave
+		esTemporal = UsuarioDAO.validarEsTemporal(idUsuario, strConexion, auditoria);
+		if(esTemporal)
+		{
+			//Se retorna falso dado que a los empleados temporales no se les debe cambiar la clave
+			return("El empleado es temporal y a los empleados temporales no se les debe cambiar la clave.");
+		}
+		//Debemos de validar si es administrador debe ser una clave de 4 y no ser una clave facil
+		esAdministrador = UsuarioDAO.validarEsAdministrador(idUsuario, strConexion,  auditoria);
+		if(esAdministrador)
+		{
+			if(clave.length() == 4)
+			{
+				//Se debe validar que la clave no sea una clave facil, la cual esta catalogada como los mismos números
+				String clavesFaciles[] = {"0000", "1111", "2222", "3333", "4444", "5555", "6666", "7777", "8888", "9999"};
+				for(int i = 0; i < clavesFaciles.length; i++)
+				{
+					if(clavesFaciles[i].equals(clave))
+					{
+						//Se retorna falso dado que se encontró que es una clave facil.
+						return("El usuario es de tipo administrador y la clave asignada es una clave fácil, se debe escoger otra clave.");
+					}
+				}
+			}else
+			{
+				//Se retorna falso debido a que la clave del administrador debe ser igual a 4 caracteres
+				return("El usuario es de tipo administrador y debe tener mínimo 4 dígitos.");
+			}
+		}
+		//Si es domiciliario debe ser de 3
+		esDomiciliario = UsuarioDAO.validarEsDomiciliario(idUsuario, strConexion,  auditoria);
+		if(esDomiciliario)
+		{
+			if(clave.length() == 3)
+			{
+				
+			}else
+			{
+				//Se retorna falso debido a que se encontró que la clave no tiene 3 números.
+				return("El usuario es de tipo domiciliario y debe tener mínimo 3 dígitos.");
+			}
+		}
+		//Ya nos queda la opción por descarte qeu sea un usuario regular, validaremos que tenga una clave de 4
+		if(!esAdministrador && !esDomiciliario && !esTemporal)
+		{
+			//Se retorna falso debido a que la clave del administrador debe ser igual a 4 caracteres
+			return("El empleado no es ni administrador, ni auxiliar ni domicialiario, por lo tanto no se le debe asignar clave rápida.");
+			
+		}
+		//Cumplidas estas validaciones por último se valida que la clave ya no esté asignada
+		if(UsuarioDAO.validarSiClaveExiste(clave, strConexion,  esCaja))
+		{
+			//Se retorna 2 debido a que la clave si existe ya en la base de datos.
+			return("La clave asignada ya está siendo usada, por favor seleccione una clave diferente");
+		}
+		
+		return("OK");
+	}
+	
+	/**
 	 * 
 	 * @param usuario El usuario de logueo de la aplicación
 	 * @param contrasena Contraseña asociada al usuario que se está logueando
 	 * @return Se retona un valor booleano indicando si el usuario y contraseña corresponde con alguien logueado
 	 * en al aplicación
 	 */
-	public boolean autenticarUsuario(Usuario usuario){
-		int resultado = 0;
+	public int autenticarUsuario(Usuario usuario, String fechaSistema){
+		int idUsuarioEnc = 0;
 		boolean respuesta = false;
 		//Recuperación de la variable para saber configuración de logueo
 		Parametro parametroAud = parCtrl.obtenerParametro("CONFSEGURIDAD");
@@ -61,21 +139,21 @@ public class AutenticacionCtrl {
 		if(strParam.equals(new String("S")))
 		{
 			//Se realiza validación 
-			resultado = UsuarioDAO.validarUsuario(usuario , "",  auditoria);
+			idUsuarioEnc = UsuarioDAO.validarUsuario(usuario , fechaSistema, "",  auditoria);
 		}else 
 		{
 			//Recuperar dirección de la base de datos general, para lo cual tendremos una variable para almacenar esto
 			parametroAud = parCtrl.obtenerParametro("BDGENERAL");
-			resultado = UsuarioDAO.validarUsuario(usuario , parametroAud.getValorTexto(),  auditoria);
+			idUsuarioEnc = UsuarioDAO.validarUsuario(usuario , fechaSistema, parametroAud.getValorTexto(),  auditoria);
 		}	
 
-		if(resultado > 0)
+		if(idUsuarioEnc > 0)
 		{
 			respuesta = true;
 			//Sabiendo que la respuesta es que si hubo autenticación actualizamos la fecha de último logueo
 			UsuarioDAO.actualizarUltimoIngreso(usuario, auditoria);
 		}
-		return(respuesta);
+		return(idUsuarioEnc);
 	}
 	
 	/**
@@ -105,6 +183,17 @@ public class AutenticacionCtrl {
 	public boolean asignarClaveRapida(Usuario usuario, String claveRapida)
 	{
 		boolean respuesta = UsuarioDAO.asignarClaveRapida(usuario, claveRapida, auditoria);
+		return(respuesta);
+	}
+	
+	public boolean asignarClaveRapidaGeneral(Usuario usuario, String claveRapida)
+	{
+		ParametrosCtrl parCtrl = new ParametrosCtrl(auditoria);
+		Parametro parBase;
+		String strConexion = "";
+		parBase = parCtrl.obtenerParametro("BDGENERAL");
+		strConexion = parBase.getValorTexto();
+		boolean respuesta = UsuarioDAO.asignarClaveRapidaGeneral(usuario, claveRapida, strConexion,  auditoria);
 		return(respuesta);
 	}
 	
@@ -384,7 +473,12 @@ public class AutenticacionCtrl {
 	
 	public boolean validarEsAdministrador(int idUsuario)
 	{
-		boolean respuesta = UsuarioDAO.validarEsAdministrador(idUsuario, auditoria);
+		ParametrosCtrl parCtrl = new ParametrosCtrl(auditoria);
+		Parametro parBase;
+		String strConexion = "";
+		parBase = parCtrl.obtenerParametro("BDGENERAL");
+		strConexion = parBase.getValorTexto();
+		boolean respuesta = UsuarioDAO.validarEsAdministrador(idUsuario, strConexion, auditoria);
 		return(respuesta);
 	}
 }

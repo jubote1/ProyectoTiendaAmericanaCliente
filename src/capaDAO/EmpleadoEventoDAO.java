@@ -27,6 +27,8 @@ public class EmpleadoEventoDAO {
 		{
 			stm = con1.createStatement();
 			stm.executeUpdate(insert);
+			stm.close();
+			con1.close();
 			return(true);
 		}
 		catch (Exception e){
@@ -82,6 +84,9 @@ public class EmpleadoEventoDAO {
 				empEvento.setNombreEmpleado(nombreEmpleado);
 				eventosEmpleado.add(empEvento);
 			}
+			rs.close();
+			stm.close();
+			con1.close();
 		}
 		catch (Exception e){
 			System.out.println(e.toString());
@@ -176,6 +181,9 @@ public class EmpleadoEventoDAO {
 				empEvento = new EmpleadoEvento(id, tipoEvento, fecha, fechaHoraLog, idTienda, usoBiometria);
 				eventosEmpleado.add(empEvento);
 			}
+			rs.close();
+			stm.close();
+			con1.close();
 		}
 		catch (Exception e){
 			System.out.println(e.toString());
